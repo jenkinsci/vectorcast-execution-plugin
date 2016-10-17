@@ -1,0 +1,253 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>VectorCAST integration with Jenkins</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>VCAST_MANAGE_PROJECT_NAME</name>
+          <description>Fully Qualified Manage Project Name</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>MULTIJOB_CONFIG</name>
+          <description>Checked - Use a MultiJob configuration that allows for distributed test.
+Unchecked - Single Node/Single Executor Test environment</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>CREATE_UPDATE_DELETE</name>
+          <description>Choose whether to create or update Manage based MultiJob</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>CREATE</string>
+              <string>UPDATE</string>
+              <string>DELETE</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>ENVIRONMENT_SETUP</name>
+          <description>Command to execute before the job runs to configure the environment (eg. call &quot;%VS100COMNTOOLS%\vsvars32.bat&quot;)</description>
+          <defaultValue></defaultValue>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXECUTE_PREAMBLE</name>
+          <description>Command that will be prefixed to the execute command (eg. c:\wrs\wrenv.bat, c:\cygwin\bin)</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>ENVIRONMENT_TEARDOWN</name>
+          <description>Command to execute after the job runs to shutdown the hardware</description>
+          <defaultValue></defaultValue>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>BATCH_PREFIX</name>
+          <description>When running job in batch mode [PREFIX]__________________[SUFFIX]</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>BATCH_SUFFIX</name>
+          <description>When running job in batch mode [PREFIX]__________________[SUFFIX]</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>SCM_TYPE</name>
+          <description>Source Code Management Type -- SVN is only one supported today</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>None</string>
+              <string>SVN</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SCM_REPO</name>
+          <description>SCM Repository location</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SCM_REPO_DIR</name>
+          <description>Path to Manage Project under repository</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SHARED_DRIVE</name>
+          <description>Path to shared by builder jobs - needs to be available to all nodes.  This is location where .VCR files get copied</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>VERBOSE</name>
+          <description>Execute in Verbose Mode</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>USE_REPORTING</name>
+          <description>Use Jenkins Reporting</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>BUILD_EXECUTE_ERROR_LEVEL</name>
+          <description>Errors that occur during the build or execute phase of VectorCAST will cause the build to be [unstable/failure].  If a failure is triggered, the build will not be included in the code coverage trend report</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>Unstable</string>
+              <string>Failure</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>DONT_GENERATE_EXECUTION_REPORT</name>
+          <description>Don&apos;t generate and use execution reports at the individual environment levels (less information generated -- saves time)</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand plugin="vectorcast-execution@1.0-SNAPSHOT">
+      <winCommand>%VECTORCAST_DIR%\vpython %VECTORCAST_DIR%\python\vector\apps\Jenkins\netCreate.py</winCommand>
+      <unixCommand>$VECTORCAST_DIR/vpython $VECTORCAST_DIR/python/vector/apps/Jenkins/netCreate.py</unixCommand>
+    </com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand>
+  </builders>
+  <publishers>
+    <org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder plugin="groovy-postbuild@2.3">
+      <script plugin="script-security@1.15">
+        <script>import jenkins.model.*
+import java.io.InputStream
+import java.io.FileInputStream 
+import java.io.File
+
+def add_jobs(workspace, warn) {
+    out = manager.listener.logger
+    jobs_added = &quot;&quot;
+    files = []
+    topDir = new File(workspace)
+    topDir.eachFile { files &lt;&lt; it.name }
+
+    files.each { 
+        pos = it.indexOf(&apos;.xml&apos;,0)
+        if (pos &gt; 0) {
+            name = it.substring(0, pos)
+            jobs_added += name + &quot;, &quot;
+            try {
+                InputStream is = new FileInputStream(workspace + &apos;/&apos; + it);
+                Jenkins.instance.createProjectFromXML(name, is)
+                out.println &quot;Install Job: &quot; + name
+                }
+            catch (IllegalArgumentException e) {
+                if (warn) {
+                    out.println &quot;Failed to install Job: &quot; + name + &quot;, did it exist already?&quot;
+                    }
+                }
+        }
+    }
+    return jobs_added
+}
+
+def getProjectName() {
+    project = manager.build.buildVariables.get(&quot;VCAST_MANAGE_PROJECT_NAME&quot;)
+    File pFile = new File(project)
+    projName = pFile.getName()
+    pos = projName.indexOf(&apos;.&apos;,0)
+    if (pos &gt; 0) {
+        projName = projName.substring(0, pos)
+    }
+    return projName
+}
+
+def delete_all_jobs() {
+    out = manager.listener.logger
+    projName = getProjectName()
+    out.println(&quot;Delete project: &quot; + projName)
+
+    jobs = Jenkins.instance.getAllItems()
+    jobs.each { j -&gt;
+        jobName = j.fullName
+        if (jobName.startsWith(projName)) {
+            if (jobName.endsWith(&quot;multijob&quot;) ||
+                jobName.endsWith(&quot;singlejob&quot;)||
+                jobName.endsWith(&quot;BuildExecute&quot;)||
+                jobName.endsWith(&quot;Reporting&quot;)) {
+                out.println(&quot;Deleting job: &quot; + jobName)
+                j.delete()
+            }
+        }
+    }
+}
+
+def delete_job(jobToDelete) {
+    out = manager.listener.logger
+    jobs = Jenkins.instance.getAllItems()
+    jobs.each { j -&gt;
+        jobName = j.fullName
+        if (jobName == jobToDelete) {
+            out.println(&quot;Deleting job: &quot; + jobName)
+            j.delete()
+        }
+    }
+}
+
+def update_jobs(workspace) {
+    out = manager.listener.logger
+    multiJob = manager.build.buildVariables.get(&quot;MULTIJOB_CONFIG&quot;)
+    if (multiJob == &quot;true&quot;) {
+        out.println(&quot;Multi-job update&quot;)
+        // Delete original top-level multi-job
+        projName = getProjectName() + &quot;.vcast_manage.multijob&quot;
+        delete_job(projName)
+        // add all jobs (not already present)
+        added_jobs = add_jobs(workspace, false)
+        // delete &apos;orphaned&apos; jobs
+        jobs = Jenkins.instance.getAllItems()
+        jobs.each { j -&gt;
+            jobName = j.fullName
+            if (jobName.endsWith(&quot;multijob&quot;) ||
+                jobName.endsWith(&quot;singlejob&quot;)||
+                jobName.endsWith(&quot;BuildExecute&quot;)||
+                jobName.endsWith(&quot;Reporting&quot;)) {
+                if (!added_jobs.contains(jobName)) {
+                    out.println(&quot;Deleting unused job: &quot; + jobName)
+                    j.delete();
+                }
+            }
+        }
+    } else {
+        // Nothing to do for update single job...
+    }
+}
+
+
+
+def out = manager.listener.logger
+def workspace = manager.build.getEnvironment(manager.listener)[&apos;WORKSPACE&apos;] 
+def operation = manager.build.buildVariables.get(&apos;CREATE_UPDATE_DELETE&apos;)
+
+out.println(&quot;Running with workspace = &quot; + workspace)
+
+if (operation == &quot;CREATE&quot;) {
+    add_jobs(workspace, true)
+} else if (operation == &quot;DELETE&quot;) {
+    delete_all_jobs()
+} else {
+    update_jobs(workspace)
+}
+</script>
+        <sandbox>false</sandbox>
+      </script>
+      <behavior>0</behavior>
+      <runForMatrixParent>false</runForMatrixParent>
+    </org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder>
+  </publishers>
+  <buildWrappers/>
+</project>
+
