@@ -34,9 +34,9 @@
 
   <developers>
     <developer>
-      <id>vectorcast</id>
-      <name>Vector Software</name>
-      <email>support@vectorcast.com</email>
+       <id>vectorcast</id>
+       <name>Vector Software</name>
+       <email>support@vectorcast.com</email>
     </developer>
   </developers>
 
