@@ -88,10 +88,10 @@ public final class VectorCASTJobAction implements RootAction, Describable<Vector
             if (add) {
                 try {
                     LOG.log(Level.INFO, "Add " + JOBNAME);
-                    InputStream is = JobInit.class.getClassLoader().getResourceAsStream(JOBCFG);
+                    InputStream is = VectorCASTJobAction.class.getClassLoader().getResourceAsStream(JOBCFG);
                     instance.createProjectFromXML(JOBNAME, is);
                 } catch (IOException ex) {
-                    Logger.getLogger(JobInit.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(VectorCASTJobAction.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
