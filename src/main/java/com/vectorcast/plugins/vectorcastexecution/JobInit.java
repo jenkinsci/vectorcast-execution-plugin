@@ -45,29 +45,29 @@ public class JobInit {
      * After all Jenkins job configurations have loaded, check if the 
      * VectorCAST create job already exists. Create it if required.
      */
-    @Initializer(after=InitMilestone.JOB_LOADED) 
-    public static void addVCJob() {
-        Logger log = Logger.getLogger(JobInit.class.getName());
-        Jenkins instance = Jenkins.getInstance();
-        if (instance != null) {
-            Collection<String> jobs = instance.getJobNames();
-            boolean add = true;
-            for (String job : jobs) {
-                if (job.equals(JOBNAME)) {
-                    add = false;
-                    break;
-                }
-            }
-            if (add) {
-                try {
-                    log.log(Level.INFO, "Add " + JOBNAME);
-                    InputStream is = JobInit.class.getClassLoader().getResourceAsStream(JOBCFG);
-                    instance.createProjectFromXML(JOBNAME, is);
-                } catch (IOException ex) {
-                    Logger.getLogger(JobInit.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-
-    }
+//    @Initializer(after=InitMilestone.JOB_LOADED) 
+//    public static void addVCJob() {
+//        Logger log = Logger.getLogger(JobInit.class.getName());
+//        Jenkins instance = Jenkins.getInstance();
+//        if (instance != null) {
+//            Collection<String> jobs = instance.getJobNames();
+//            boolean add = true;
+//            for (String job : jobs) {
+//                if (job.equals(JOBNAME)) {
+//                    add = false;
+//                    break;
+//                }
+//            }
+//            if (add) {
+//                try {
+//                    log.log(Level.INFO, "Add " + JOBNAME);
+//                    InputStream is = JobInit.class.getClassLoader().getResourceAsStream(JOBCFG);
+//                    instance.createProjectFromXML(JOBNAME, is);
+//                } catch (IOException ex) {
+//                    Logger.getLogger(JobInit.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//            }
+//        }
+//
+//    }
 }

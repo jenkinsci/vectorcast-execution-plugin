@@ -79,7 +79,8 @@
       <artifactId>groovy-postbuild</artifactId>
       <version>2.3</version>
     </dependency>
-      <dependency>
+<!--
+    <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>1.10.19</version>
@@ -95,6 +96,7 @@
         <artifactId>powermock-api-mockito</artifactId>
         <version>1.6.2</version>
       </dependency>
+-->      
   </dependencies>
   
      <build>
