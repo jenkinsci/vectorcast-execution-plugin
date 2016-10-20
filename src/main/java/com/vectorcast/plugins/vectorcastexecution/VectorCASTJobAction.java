@@ -25,6 +25,7 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
 import hudson.Extension;
+import hudson.PluginFirstClassLoader;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.RootAction;
@@ -47,7 +48,7 @@ public final class VectorCASTJobAction implements RootAction, Describable<Vector
 
     private static final Logger LOG = Logger.getLogger(VectorCASTJobAction.class.getName());
     private static final String JOBNAME = "VectorCAST Create Jobs from Manage Project";
-    private static final String JOBCFG = "JobConfig.xml";
+    private static final String JOBCFG = "vc-job-config.xml";
   
     private boolean exists = false;
 
@@ -88,8 +89,12 @@ public final class VectorCASTJobAction implements RootAction, Describable<Vector
             if (add) {
                 try {
                     LOG.log(Level.INFO, "Add " + JOBNAME);
-                    InputStream is = VectorCASTJobAction.class.getClassLoader().getResourceAsStream(JOBCFG);
-                    instance.createProjectFromXML(JOBNAME, is);
+                    InputStream is = VectorCASTJobAction.class.getResourceAsStream("/" + JOBCFG);
+                    if (is == null) {
+                        LOG.log(Level.SEVERE, "Error creating job, corrupt plugin/installation");
+                    } else {
+                        instance.createProjectFromXML(JOBNAME, is);
+                    }
                 } catch (IOException ex) {
                     Logger.getLogger(VectorCASTJobAction.class.getName()).log(Level.SEVERE, null, ex);
                 }
