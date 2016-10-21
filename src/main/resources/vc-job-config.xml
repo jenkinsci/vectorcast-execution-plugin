@@ -259,7 +259,7 @@ if (operation == &quot;CREATE&quot;) {
 </script>
         <sandbox>false</sandbox>
       </script>
-      <behavior>0</behavior>
+      <behavior>2</behavior>
       <runForMatrixParent>false</runForMatrixParent>
     </org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder>
   </publishers>
