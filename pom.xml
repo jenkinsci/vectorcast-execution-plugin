@@ -121,11 +121,6 @@
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>run-condition</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>token-macro</artifactId>
       <version>1.12.1</version>
     </dependency>

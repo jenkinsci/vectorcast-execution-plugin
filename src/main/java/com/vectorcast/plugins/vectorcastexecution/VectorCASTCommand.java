@@ -86,23 +86,17 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
         //
         // Get the windows batch command and run it if this node is Windows
         //
-        BatchFileCondition batchFileCondition = new BatchFileCondition("echo \"Running on Windows\"");
-        String windowsCmd = getWinCommand();
-        BatchFile batchFile = new BatchFile(windowsCmd);
-        
-        boolean isWindows = false;
-        try {
-            if (listener instanceof BuildListener) {
-                isWindows = batchFileCondition.runPerform((AbstractBuild<?,?>)build, (BuildListener)listener);
-                if (isWindows) {
-                    if (!batchFile.perform((AbstractBuild<?,?>)build, launcher, (BuildListener)listener)) {
-                        build.setResult(Result.FAILURE);
-                    }
+        if (!launcher.isUnix()) {
+            String windowsCmd = getWinCommand();
+            BatchFile batchFile = new BatchFile(windowsCmd);
+            try {
+                if (!batchFile.perform((AbstractBuild<?,?>)build, launcher, (BuildListener)listener)) {
+                    build.setResult(Result.FAILURE);
                 }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(VectorCASTCommand.class.getName()).log(Level.SEVERE, null, ex);
+                build.setResult(Result.FAILURE);
             }
-        } catch (InterruptedException ex) {
-            Logger.getLogger(VectorCASTCommand.class.getName()).log(Level.SEVERE, null, ex);
-            build.setResult(Result.FAILURE);
         }
 
         //
@@ -110,7 +104,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
         //        
         // Get the Linux/Unix batch command and run it if this node is not Windows
         //
-        if (!isWindows) {
+        if (launcher.isUnix()) {
             String unixCmd = getUnixCommand();
             Shell shell = new Shell(unixCmd);
             try {
