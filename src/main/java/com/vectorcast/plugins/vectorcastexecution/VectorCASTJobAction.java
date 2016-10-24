@@ -114,7 +114,12 @@ public final class VectorCASTJobAction implements RootAction, Describable<Vector
 
     @Override
     public String getIconFileName() {
-        return "/plugin/vectorcast-execution/icons/vector_favicon.png";
+        // Only display if user has admin rights
+        if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+            return "/plugin/vectorcast-execution/icons/vector_favicon.png";
+        } else {
+            return null;
+        }
     }
 
     @Override
