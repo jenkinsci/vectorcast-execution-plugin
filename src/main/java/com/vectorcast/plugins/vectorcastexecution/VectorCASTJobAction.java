@@ -106,13 +106,10 @@ public final class VectorCASTJobAction /*extends DummyCreateProject*/ implements
         }
     }
 
-    public void doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
-  //
+    public void doCraeteFile(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         Jenkins instance = Jenkins.getInstance();
-        
-//        MultipartFormDataParser p = new MultipartFormDataParser(request);
+
         String file = IOUtils.toString(request.getFileItem("manageProject").getInputStream());
-//        String file = IOUtils.toString(p.getFileItem("manageProject").getInputStream());
 
         AbstractProject topProject;
         topProject = instance.createProject(FreeStyleProject.class, "Dummy Job");
@@ -123,10 +120,11 @@ public final class VectorCASTJobAction /*extends DummyCreateProject*/ implements
         project = instance.createProject(FreeStyleProject.class, "Dummy Job2");
         project.setScm(topProject.getScm());
         project.save();
+    }
+    
+    public void doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
+        Jenkins instance = Jenkins.getInstance();
         
-//        FormApply.success(".").generateResponse(request, response, null);
-//        response.forwardToPreviousPage(request);
-
         if (instance != null) {
             Collection<String> jobs = instance.getJobNames();
             boolean add = true;
@@ -136,32 +134,21 @@ public final class VectorCASTJobAction /*extends DummyCreateProject*/ implements
                     break;
                 }
             }
-//            if (add) {
-//                try {
-//                    LOG.log(Level.INFO, "Add " + JOBNAME);
-//                    AbstractProject project = instance.createProject(FreeStyleProject.class, "Dummy Job");
-//                    project.setScm(scm);
-//                    project.save();
-                    
-                    
-//                    InputStream is = VectorCASTJobAction.class.getResourceAsStream("/" + JOBCFG);
-//                    if (is == null) {
-//                        LOG.log(Level.SEVERE, "Error creating job, corrupt plugin/installation");
-//                    } else {
-//                        TopLevelItem item = instance.createProjectFromXML(JOBNAME, is);
-//                        if (item instanceof AbstractProject) {
-//                            AbstractProject project = (AbstractProject)item;
-//                            LOG.log(Level.INFO,"We have a project!");
-//                            project.setScm(scm);
-//                            project.save();
-//                        }
-//                    }
-//                } catch (IOException ex) {
-//                    Logger.getLogger(VectorCASTJobAction.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            }
+            if (add) {
+                try {
+                    LOG.log(Level.INFO, "Add " + JOBNAME);
+                    InputStream is = VectorCASTJobAction.class.getResourceAsStream("/" + JOBCFG);
+                    if (is == null) {
+                        LOG.log(Level.SEVERE, "Error creating job, corrupt plugin/installation");
+                    } else {
+                        instance.createProjectFromXML(JOBNAME, is);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(VectorCASTJobAction.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
-//      response.forwardToPreviousPage(request);
+      response.forwardToPreviousPage(request);
     }
 
     public String getRootUrl() {
