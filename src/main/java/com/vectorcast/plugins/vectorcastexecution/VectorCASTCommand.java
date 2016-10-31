@@ -41,7 +41,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jenkins_ci.plugins.run_condition.contributed.BatchFileCondition;
 
 /**
  * This class allows a command script to be specified for both Linux and Windows
