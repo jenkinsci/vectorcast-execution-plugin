@@ -9,7 +9,7 @@ import time
 import shutil
 
 # adding path
-jenkinsScriptHome = os.getenv("VECTORCAST_DIR") + os.sep + "python" + os.sep + "vector" + os.sep + "apps" + os.sep + "Jenkins"
+jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
 python_path_updates += os.sep + "vpython-addons"

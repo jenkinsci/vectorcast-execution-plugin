@@ -114,7 +114,7 @@ Unchecked - Single Node/Single Executor Test environment</description>
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand plugin="vectorcast-execution@1.0-SNAPSHOT">
+    <com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand plugin="vectorcast-execution">
       <winCommand>%VECTORCAST_DIR%\vpython %VECTORCAST_DIR%\python\vector\apps\Jenkins\netCreate.py --api 2</winCommand>
       <unixCommand>$VECTORCAST_DIR/vpython $VECTORCAST_DIR/python/vector/apps/Jenkins/netCreate.py --api 2</unixCommand>
     </com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand>

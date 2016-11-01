@@ -24,22 +24,18 @@
 
 package com.vectorcast.plugins.vectorcastexecution;
 
-import hudson.DescriptorExtensionList;
+import com.vectorcast.plugins.vectorcastcoverage.VectorCASTHealthReportThresholds;
+import com.vectorcast.plugins.vectorcastcoverage.VectorCASTPublisher;
+import com.vectorcast.plugins.vectorcastcoverage.portlet.bean.VectorCASTCoverageResultSummary;
 import hudson.Extension;
-import hudson.Util;
-import hudson.model.AbstractProject;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
-import hudson.model.ItemGroup;
-import hudson.model.Job;
 import hudson.model.RootAction;
-import hudson.model.TopLevelItem;
+import hudson.plugins.ws_cleanup.PreBuildCleanup;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
-import hudson.scm.SCMDescriptor;
-import hudson.util.FormApply;
-import hudson.util.MultipartFormDataParser;
+import hudson.tasks.ArtifactArchiver;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -49,9 +45,14 @@ import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.lib.dtkit.type.TestType;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
+import org.jenkinsci.plugins.xunit.XUnitPublisher;
+import org.jenkinsci.plugins.xunit.threshold.XUnitThreshold;
+import org.jenkinsci.plugins.xunit.types.CheckType;
+import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
 
 /**
  * Add a new action that will add the VectorCAST create job
@@ -64,29 +65,23 @@ public final class VectorCASTJobAction /*extends DummyCreateProject*/ implements
     private static final String JOBCFG = "vc-job-config.xml";
   
     private boolean exists = false;
-/*
- * All things SCM....
- */
+
     private SCM scm;
     
     public VectorCASTJobAction() throws IOException {
         scm = new NullSCM();
     }
-//    public AbstractProject getProject() {
-//        return project;
-//    }
     public SCM getTheScm() {
         return scm;
     }
     public void setTheScm(SCM scm) {
         this.scm = scm;
     }
-/*
- * End all things SCM....
- */
+
     public boolean isExists() {
-        checkForJobs();
-        return exists;
+//        checkForJobs();
+//        return exists;
+        return false;
     }
     
     /**
@@ -106,23 +101,178 @@ public final class VectorCASTJobAction /*extends DummyCreateProject*/ implements
         }
     }
 
-    public void doCraeteFile(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
-        Jenkins instance = Jenkins.getInstance();
+    private void addSetup(FreeStyleProject project) {
+        VectorCASTSetup setup = new VectorCASTSetup();
+        project.getBuildersList().add(setup);
+    }
+    private void addCommand(FreeStyleProject project) {
+        String win = "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
+"%VECTORCAST_DIR%\\manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --status\n" +
+"%VECTORCAST_DIR%\\manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --release-locks\n" +
+" %VECTORCAST_DIR%\\manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --build-execute --incremental --output jenkinsDemo_manage_incremental_rebuild_report.html \n" +
+"\n" +
+"  \n" +
+"%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\generate-results.py --api 2 C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo \n" +
+"%VECTORCAST_DIR%\\manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --create-report=aggregate  \n" +
+"%VECTORCAST_DIR%\\manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --create-report=metrics     \n" +
+"%VECTORCAST_DIR%\\manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --create-report=environment \n" +
+"%VECTORCAST_DIR%\\manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --full-status=jenkinsDemo_full_report.html\n" +
+"%VECTORCAST_DIR%\\manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --full-status > jenkinsDemo_full_report.txt\n" +
+"%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\getTotals.py --api 2 jenkinsDemo_full_report.txt";
+        String unix = "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
+"$VECTORCAST_DIR/manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --status \n" +
+"$VECTORCAST_DIR/manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --release-locks \n" +
+" $VECTORCAST_DIR/manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --build-execute --incremental --output jenkinsDemo_manage_incremental_rebuild_report.html\n" +
+"\n" +
+"  \n" +
+"$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/generate-results.py --api 2 C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo \n" +
+"$VECTORCAST_DIR/manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --create-report=aggregate   --output=jenkinsDemo_aggregate_report.html\n" +
+"$VECTORCAST_DIR/manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --create-report=metrics     --output=jenkinsDemo_metrics_report.html\n" +
+"$VECTORCAST_DIR/manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --create-report=environment --output=jenkinsDemo_environment_report.html\n" +
+"$VECTORCAST_DIR/manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --full-status=jenkinsDemo_full_report.html\n" +
+"$VECTORCAST_DIR/manage --project C:\\Work\\Jenkins_VC\\vcast\\jenkinsDemo --full-status > jenkinsDemo_full_report.txt\n" +
+"$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/getTotals.py --api 2 jenkinsDemo_full_report.txt";
+        VectorCASTCommand command = new VectorCASTCommand(win, unix);
+        project.getBuildersList().add(command);
+    }
 
-        String file = IOUtils.toString(request.getFileItem("manageProject").getInputStream());
-
-        AbstractProject topProject;
-        topProject = instance.createProject(FreeStyleProject.class, "Dummy Job");
-        topProject.doConfigSubmit(request, response);
-        topProject.save();
-        
-        AbstractProject project;
-        project = instance.createProject(FreeStyleProject.class, "Dummy Job2");
-        project.setScm(topProject.getScm());
-        project.save();
+    private void addArchiveArtifacts(FreeStyleProject project) {
+        ArtifactArchiver archiver = new ArtifactArchiver(/*artifacts*/"**/*", /*excludes*/"", /*latest only*/false, /*allow empty archive*/false);
+        project.getPublishersList().add(archiver);
+    }
+    
+    private void addXunit(FreeStyleProject project) {
+        XUnitThreshold[] thresholds = null;
+        CheckType checkType = new CheckType("**/test_results_*.xml", /*skipNoTestFiles*/true, /*failIfNotNew*/true, /*deleteOpFiles*/true, /*StopProcIfErrot*/true);
+        TestType[] testTypes = new TestType[1];
+        testTypes[0] = checkType;
+        XUnitPublisher xunit = new XUnitPublisher(testTypes, thresholds);
+        project.getPublishersList().add(xunit);
+    }
+    
+    private void addVCCoverage(FreeStyleProject project) {
+        VectorCASTHealthReportThresholds healthReports = new VectorCASTHealthReportThresholds(0, 100, 0, 70, 0, 80, 0, 80, 0, 80, 0, 80);
+        VectorCASTPublisher publisher = new VectorCASTPublisher();
+        publisher.includes = "**/coverage_results_*.xml";
+        publisher.healthReports = healthReports;
+        project.getPublishersList().add(publisher);
+    }
+    
+    private void addGroovyScript(FreeStyleProject project) {
+        String script = "import hudson.FilePath\n" +
+" \n" +
+"\n" +
+"if(manager.logContains(\".*py did not execute correctly.*\") || manager.logContains(\".*Traceback .most recent call last.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"Jenkins Integration Script Failure\", false, false, false, \"red\")\n" +
+"    manager.buildUnstable()\n" +
+"    manager.addBadge(\"warning.gif\", \"Jenkins Integration Script Failure\")\n" +
+"}\n" +
+"if (manager.logContains(\".*Failed to acquire lock on environment.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"Failed to acquire lock on environment\", false, false, false, \"red\")\n" +
+"    manager.buildUnstable()\n" +
+"    manager.addBadge(\"warning.gif\", \"Failed to acquire lock on environment\")\n" +
+"}\n" +
+"if (manager.logContains(\".*Environment Creation Failed.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"Environment Creation Failed\", false, false, false, \"red\")\n" +
+"    manager.buildUnstable()\n" +
+"    manager.addBadge(\"warning.gif\", \"Environment Creation Failed\")\n" +
+"}\n" +
+"if (manager.logContains(\".*FLEXlm Error.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
+"    manager.buildUnstable()\n" +
+"    manager.addBadge(\"warning.gif\", \"FLEXlm Error\")\n" +
+"}\n" +
+"if (manager.logContains(\".*INCR_BUILD_FAILED.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"Build Error\", false, false, false, \"red\")\n" +
+"    manager.buildUnstable()\n" +
+"    manager.addBadge(\"warning.gif\", \"Build Error\")\n" +
+"}\n" +
+"if (manager.logContains(\".*NOT_LINKED.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"Link Error\", false, false, false, \"red\")\n" +
+"    manager.buildUnstable()\n" +
+"    manager.addBadge(\"warning.gif\", \"Link Error\")\n" +
+"}\n" +
+"if (manager.logContains(\".*Preprocess Failed.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"Preprocess Error\", false, false, false, \"red\")\n" +
+"    manager.buildUnstable()\n" +
+"    manager.addBadge(\"warning.gif\", \"Preprocess Error\")\n" +
+"}\n" +
+"if (manager.logContains(\".*Value Line Error - Command Ignored.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
+"    manager.buildUnstable()\n" +
+"    manager.addBadge(\"warning.gif\", \"Test Case Import Error\")\n" +
+"}\n" +
+"\n" +
+"if(manager.logContains(\".*Abnormal Termination on Environment.*\")) \n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"Abnormal Termination of at least one Environment\", false, false, false, \"red\")\n" +
+"    manager.buildUnstable()\n" +
+"    manager.addBadge(\"warning.gif\", \"Abnormal Termination of at least one Environment\")\n" +
+"}\n" +
+"FilePath fp_i = new FilePath(manager.build.getWorkspace(),'jenkinsDemo_manage_incremental_rebuild_report.html')\n" +
+"FilePath fp_f = new FilePath(manager.build.getWorkspace(),'jenkinsDemo_full_report.html')\n" +
+"if (fp_i.exists() && fp_f.exists())\n" +
+"{\n" +
+"    manager.build.description = \"Full Status Report\"\n" +
+"}\n" +
+"else\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"General Failure\", false, false, false, \"red\")\n" +
+"    manager.buildUnstable()\n" +
+"    manager.build.description = \"General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\"\n" +
+"    manager.addBadge(\"warning.gif\", \"General Error\")\n" +
+"}";
+        SecureGroovyScript secureScript = new SecureGroovyScript(script, /*sandbox*/false, /*classpath*/null);
+        GroovyPostbuildRecorder groovy = new GroovyPostbuildRecorder(secureScript, /*behaviour*/2, /*matrix parent*/false);
+        project.getPublishersList().add(groovy);
     }
     
     public void doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
+        Jenkins instance = Jenkins.getInstance();
+
+        // Read the manage project file
+        String file = IOUtils.toString(request.getFileItem("manageProject").getInputStream());
+
+        String projectName = "single.job";
+        // Create the top-level (or for single job, the only) project        
+        FreeStyleProject topProject;
+        topProject = instance.createProject(FreeStyleProject.class, projectName);
+        // Read the SCM setup
+        topProject.doConfigSubmit(request, response);
+        
+        PreBuildCleanup cleanup = new PreBuildCleanup(/*patterns*/null, true, /*cleanup param*/"", /*external delete*/"");
+        topProject.getBuildWrappersList().add(cleanup);
+
+        // Build actions...
+        addSetup(topProject);
+        addCommand(topProject);
+                
+        // Post-build actions
+        addArchiveArtifacts(topProject);
+        addXunit(topProject);
+        addVCCoverage(topProject);
+        addGroovyScript(topProject);
+        
+        topProject.save();
+        
+//        AbstractProject project;
+//        project = instance.createProject(FreeStyleProject.class, "Dummy Job2");
+//        project.setScm(topProject.getScm());
+//        project.save();
+    }
+    
+    /**
+     * Old - no longer used
+     */
+    public void doCreateOLD(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         Jenkins instance = Jenkins.getInstance();
         
         if (instance != null) {
