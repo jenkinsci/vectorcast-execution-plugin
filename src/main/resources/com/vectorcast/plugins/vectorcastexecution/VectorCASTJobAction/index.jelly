@@ -30,46 +30,77 @@
          xmlns:t="/lib/hudson" 
          xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project">
-  <l:layout permission="${permission}" title="${%VCJob.Import.Plugin.Title}">
+  <l:layout permission="${permission}" title="${%VCJob.Control.Title}">
     <l:main-panel>
       <f:form name="create" action="create" method="post">
-        <f:entry title="Manage Project">
-          <input type="file" name="manageProject" jsonAwate="yes"/>
-        </f:entry>
+        <h1>${%VCJob.Control.Title}</h1>
+        <p>${%VCJob.Control.Description}</p>
+<!-- Manage Project file/details -->
+        <f:section title="${%VCJob.Control.Project}">
+          <f:entry title="${%VCJob.Control.Project.file.title}" description="${%VCJob.Control.Project.file.description}">
+            <input type="file" name="manageProject"/>
+          </f:entry>
+          <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}">
+            <f:textbox name="manageProjectName" size="50"/>
+          </f:entry>
+        </f:section>
+<!-- Job type -->
+        <f:section title="${%VCJob.Control.JobType}">
+          <f:entry title="">
+            <f:radio name="jobType" checked="${it.jobType=='MULTI'}"
+                     title="${%VCJob.Control.JobType.multi}" value="MULTI"/>
+          </f:entry>
+          <f:entry title="">
+            <f:radio name="jobType" checked="${it.jobType=='SINGLE'}"
+                     title="${%VCJob.Control.JobType.single}" value="SINGLE"/>
+          </f:entry>
+        </f:section>
+<!-- Action -->
+        <f:section title="${%VCJob.Control.Action}">
+          <f:entry title="">
+            <f:radio name="action" checked="${it.action=='CREATE'}"
+                     title="${%VCJob.Control.Action.create}" value="CREATE"/>
+          </f:entry>
+          <f:entry title="">
+            <f:radio name="action" checked="${it.action=='UPDATE'}"
+                     title="${%VCJob.Control.Action.update}" value="UPDATE"/>
+          </f:entry>
+          <f:entry title="">
+            <f:radio name="action" checked="${it.action=='DELETE'}"
+                     title="${%VCJob.Control.Action.delete}" value="DELETE"/>
+          </f:entry>
+        </f:section>
 <!-- SCM...-->      
-        <f:section title="SCM">
-         <form>
-          <j:forEach var="descriptor" items="${h.getSCMDescriptors(instance)}" varStatus="loop">
-             <j:set var="scmd" value="${descriptor}" /><!-- backward compatibility with <1.238 -->
 <!--
-             <h2>instance:${it.theScm.descriptor.displayName}</h2>
-             <h2>loop:${descriptor.displayName}</h2>
--->
-             <f:radioBlock name="scm" help="${descriptor.helpFile}" value="${loop.index}" title="${descriptor.displayName}" checked="${it.theScm.descriptor == descriptor}">
-                <f:nested>
-                   <j:set var="instance" value="${instance.scm.descriptor == descriptor ? it.scm : null}"/>
-                   <j:set var="scm" value="${instance}" /><!-- backward compatibility with <1.238 -->
-                   <f:class-entry descriptor="${descriptor}" />
-                   <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
-                </f:nested>
-             </f:radioBlock>
-          </j:forEach>
-         </form>
+        <f:section title="${%VCJob.Control.SCM}">
+          <f:block>
+            <j:forEach var="descriptor" items="${h.getSCMDescriptors(instance)}" varStatus="loop">
+               <j:set var="scmd" value="${descriptor}" />
+               <f:radioBlock name="scm" help="${descriptor.helpFile}" value="${loop.index}" title="${descriptor.displayName}" checked="${it.theScm.descriptor == descriptor}">
+                  <f:nested>
+                     <j:set var="instance" value="${instance.scm.descriptor == descriptor ? it.scm : null}"/>
+                     <j:set var="scm" value="${instance}" />
+                     <f:class-entry descriptor="${descriptor}" />
+                     <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
+                  </f:nested>
+               </f:radioBlock>
+            </j:forEach>
+          </f:block>
        </f:section>
-<!-- End SCM...-->      
-       <h1>${%VCJob.Import.Plugin.Title}</h1>
-      <!--<h2>${%VCJob.Import.Plugin.Description}</h2>-->
-      <br/>
+-->
+<!-- End SCM...-->
       <j:if test="${!it.exists}">
-          <f:section title="${%VCJob.Import.Plugin.Create.Title}">
+          <f:section title="${%VCJob.Control.Options}">
             <f:block>
-              <input type="submit" value="${%VCJob.Import.Plugin.Create.Name}" />
+              <input type="submit" value="${%VCJob.Control.Create}" />
             </f:block>
           </f:section>
       </j:if>
+<!--
       <j:if test="${it.exists}">
         <h2>VectorCAST Job created</h2>
       </j:if>
+-->      
       </f:form>
     </l:main-panel>
   </l:layout>
