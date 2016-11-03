@@ -4,6 +4,8 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
 import hudson.model.Describable;
+import hudson.scm.NullSCM;
+import hudson.scm.SCM;
 
 import java.util.logging.Logger;
 
@@ -14,6 +16,16 @@ import jenkins.model.Jenkins;
  */
 public abstract class JobBase implements ExtensionPoint, Action, Describable<JobBase> {
 
+    private SCM scm;
+    public JobBase() {
+        scm = new NullSCM();
+    }
+    public SCM getTheScm() {
+        return scm;
+    }
+    public void setTheScm(SCM scm) {
+        this.scm = scm;
+    }
     @Override
     public String getIconFileName() {
         return "/plugin/vectorcast-execution/icons/vector_favicon.png";

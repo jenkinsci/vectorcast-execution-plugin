@@ -9,9 +9,7 @@ import java.util.List;
 import jenkins.model.Jenkins;
 
 /**
- * Entry point to all the UI samples.
- * 
- * @author Kohsuke Kawaguchi
+ * Top level of VectorCAST job control
  */
 @Extension
 public class VectorCASTJobRoot implements RootAction/*, ModelObjectWithContextMenu*/ {

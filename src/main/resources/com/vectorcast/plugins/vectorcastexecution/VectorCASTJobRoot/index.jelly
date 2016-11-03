@@ -23,13 +23,13 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="UI Samples">
+  <l:layout title="${%VCJob.Control.Title}">
     <l:main-panel>
       <h1>${%VCJob.Control.Title}</h1>
       <p>${%VCJob.Control.Description}</p>
       <table>
         <t:summary icon="${it.iconFileName}"
-                   href="single-jobX" iconOnly="true">
+                   href="single-job" iconOnly="true">
           <div class="link"><a href="${href}">${%VCJob.Control.Single.Title}</a></div>
           <div style="color:gray; text-decoration:none;">
             <j:out value="${%VCJob.Control.Single.Description}"/>
@@ -37,10 +37,38 @@ THE SOFTWARE.
         </t:summary>
       
         <t:summary icon="${it.iconFileName}"
-                   href="multi-jobX" iconOnly="true">
+                   href="multi-job" iconOnly="true">
           <div class="link"><a href="${href}">${%VCJob.Control.Multi.Title}</a></div>
           <div style="color:gray; text-decoration:none;">
             <j:out value="${%VCJob.Control.Multi.Description}"/>
+          </div>
+        </t:summary>
+
+        <t:summary icon="${it.iconFileName}"
+                   href="job-update" iconOnly="true">
+          <div class="link"><a href="${href}">${%VCJob.Control.Update.Title}</a></div>
+          <div style="color:gray; text-decoration:none;">
+            <j:out value="${%VCJob.Control.Update.Description}"/>
+          </div>
+        </t:summary>
+
+        <t:summary icon="${it.iconFileName}"
+                   href="delete-jobs" iconOnly="true">
+          <div class="link"><a href="${href}">${%VCJob.Control.Delete.Title}</a></div>
+          <div style="color:gray; text-decoration:none;">
+            <j:out value="${%VCJob.Control.Delete.Description}"/>
+          </div>
+        </t:summary>
+
+      </table>
+      
+      <h1>${%VCJob.Options.Title}</h1>
+      <table>
+        <t:summary icon="${it.iconFileName}"
+                   href="diag-job" iconOnly="true">
+          <div class="link"><a href="${href}">${%VCJob.Control.Diag.Title}</a></div>
+          <div style="color:gray; text-decoration:none;">
+            <j:out value="${%VCJob.Control.Diag.Description}"/>
           </div>
         </t:summary>
       </table>

@@ -44,7 +44,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  *
- * @author rmk
  */
 public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
@@ -76,7 +75,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 processDir(file, base + "/" + file.getName(), newDest);
             } else {
                 FilePath newFile = new FilePath(destDir, file.getName());
-                InputStream is = VectorCASTJobAction.class.getResourceAsStream(SCRIPT_DIR + base + "/" + file.getName());
+                InputStream is = VectorCASTSetup.class.getResourceAsStream(SCRIPT_DIR + base + "/" + file.getName());
                 newFile.copyFrom(is);
                 is.close();
             }
@@ -87,11 +86,11 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
         FilePath destScriptDir = new FilePath(workspace, "vc_scripts");
         try {
-            String path = VectorCASTJobAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            String path = VectorCASTSetup.class.getProtectionDomain().getCodeSource().getLocation().getPath();
             File testPath = new File(path);
             if (testPath.isFile()) {
                 // Have jar file...
-                JarFile jFile = new JarFile(VectorCASTJobAction.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+                JarFile jFile = new JarFile(VectorCASTSetup.class.getProtectionDomain().getCodeSource().getLocation().getPath());
                 Enumeration<JarEntry> entries = jFile.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
@@ -103,7 +102,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                             dest.mkdirs();
                         } else {
                             // File, copy it
-                            InputStream is = VectorCASTJobAction.class.getResourceAsStream("/" + entry.getName());
+                            InputStream is = VectorCASTSetup.class.getResourceAsStream("/" + entry.getName());
                             dest.copyFrom(is);
                         }
                     }

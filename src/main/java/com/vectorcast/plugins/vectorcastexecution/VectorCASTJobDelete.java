@@ -23,6 +23,7 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.vectorcast.plugins.vectorcastexecution.job.DeleteJobs;
 import com.vectorcast.plugins.vectorcastexecution.job.NewMultiJob;
 import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
 import hudson.Extension;
@@ -39,26 +40,22 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  */
 @Extension
-public class VectorCASTJobSingle extends JobBase /*implements ExtensionPoint, Action, Describable<VCSingleJobAction> */ /*implements ExtensionPoint, Action, Describable<VCSingleJobAction> */{
-
-//    @Override
-//    public String getDisplayName() {
-//        return "Single Job";
-//    }
+public class VectorCASTJobDelete extends JobBase /*implements ExtensionPoint, Action, Describable<VCSingleJobAction> */ /*implements ExtensionPoint, Action, Describable<VCSingleJobAction> */{
 
     @Override
     public String getUrlName() {
-        return "single-job";
+        return "delete-jobs";
     }
 
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
     }
     @RequirePOST
-    public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
-        // Create single-job
-        NewSingleJob job = new NewSingleJob(request, response);
-        job.create();
+    public HttpResponse doDelete(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
+        // Delete jobs
+        DeleteJobs deleteJobs = new DeleteJobs(request, response);
+        deleteJobs.doDelete(true);  // Multi-jobs
+        deleteJobs.doDelete(false); // Single job
         return FormApply.success(".");
     }
 }

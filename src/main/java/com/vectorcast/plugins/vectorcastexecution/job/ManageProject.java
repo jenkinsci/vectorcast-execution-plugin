@@ -23,7 +23,6 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
-import com.vectorcast.plugins.vectorcastexecution.VectorCASTJobAction;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;

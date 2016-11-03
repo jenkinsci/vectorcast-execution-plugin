@@ -29,27 +29,21 @@
          xmlns:l="/lib/layout" 
          xmlns:t="/lib/hudson" 
          xmlns:f="/lib/form"
-         xmlns:p="/lib/hudson/project"
-         xmlns:vc="/lib/VectorCAST">
-  <l:layout permission="${permission}" title="${%VCJob.Control.Title}">
-    <l:main-panel>
-      <f:form name="create" action="create" method="post">
-        <h1>${%VCJob.Control.Title}</h1>
-        <p>${%VCJob.Control.Description}</p>
-<!-- Manage Project file/details -->
-        <f:section title="${%VCJob.Control.Project}">
-          <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}">
-            <f:textbox name="manageProjectName" size="50"/>
-          </f:entry>
-        </f:section>
-        <vc:scm></vc:scm>
-        <f:section>
-          <f:block>
-            <input type="submit" value="${%VCJob.Control.Submit}" />
-          </f:block>
-        </f:section>
-      </f:form>
-    </l:main-panel>
-  </l:layout>
+         xmlns:p="/lib/hudson/project">
+    <f:section title="${%VCJob.Control.SCM}">
+      <f:block>
+        <j:forEach var="descriptor" items="${h.getSCMDescriptors(instance)}" varStatus="loop">
+           <j:set var="scmd" value="${descriptor}" />
+           <f:radioBlock name="scm" help="${descriptor.helpFile}" value="${loop.index}" title="${descriptor.displayName}" checked="${it.theScm.descriptor == descriptor}">
+              <f:nested>
+                 <j:set var="instance" value="${instance.scm.descriptor == descriptor ? it.scm : null}"/>
+                 <j:set var="scm" value="${instance}" />
+                 <f:class-entry descriptor="${descriptor}" />
+                 <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
+              </f:nested>
+           </f:radioBlock>
+        </j:forEach>
+      </f:block>
+   </f:section>
 </j:jelly>
 

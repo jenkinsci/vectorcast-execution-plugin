@@ -29,10 +29,29 @@
          xmlns:l="/lib/layout" 
          xmlns:t="/lib/hudson" 
          xmlns:f="/lib/form"
-         xmlns:p="/lib/hudson/project">
-  <l:layout permission="${permission}" title="RMK">
+         xmlns:p="/lib/hudson/project"
+         xmlns:vc="/lib/VectorCAST">
+  <l:layout permission="${permission}" title="${%VCJob.Control.Title}">
     <l:main-panel>
-        <h1>Multi-job</h1>
+      <f:form name="create" action="create" method="post">
+        <h1>${%VCJob.Control.Title}</h1>
+        <p>${%VCJob.Control.Description}</p>
+<!-- Manage Project file/details -->
+        <f:section title="${%VCJob.Control.Project}">
+          <f:entry title="${%VCJob.Control.Project.file.title}" description="${%VCJob.Control.Project.file.description}">
+            <input type="file" name="manageProject"/>
+          </f:entry>
+          <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}">
+            <f:textbox name="manageProjectName" size="50"/>
+          </f:entry>
+        </f:section>
+        <vc:scm></vc:scm>
+        <f:section>
+          <f:block>
+            <input type="submit" value="${%VCJob.Control.Submit}" />
+          </f:block>
+        </f:section>
+      </f:form>
     </l:main-panel>
   </l:layout>
 </j:jelly>
