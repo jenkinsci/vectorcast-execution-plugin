@@ -24,6 +24,7 @@
 
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.vectorcast.plugins.vectorcastexecution.job.DeleteJobs;
 import com.vectorcast.plugins.vectorcastexecution.job.NewMultiJob;
 import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
 import hudson.Extension;
@@ -32,11 +33,8 @@ import hudson.model.Descriptor;
 import hudson.model.RootAction;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
-import hudson.util.HttpResponses;
+import hudson.util.FormApply;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
@@ -48,18 +46,21 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- * Add a new action that will add the VectorCAST create job
+ * Add a new action that will add/update/delete the VectorCAST jobs
  */
 @Extension
-public final class VectorCASTJobAction /*extends DummyCreateProject*/ implements RootAction, Describable<VectorCASTJobAction> {
+public final class VectorCASTJobAction implements RootAction, Describable<VectorCASTJobAction> {
 
     private static final Logger LOG = Logger.getLogger(VectorCASTJobAction.class.getName());
-    private static final String JOBNAME = "VectorCAST Create Jobs from Manage Project";
-    private static final String JOBCFG = "vc-job-config.xml";
   
     private boolean exists = false;
     private String jobType = "MULTI";
     private String action = "CREATE";
+    
+    private boolean added = false;
+    public boolean isAdded() {
+        return added;
+    }
 
     private SCM scm;
     
@@ -108,22 +109,40 @@ public final class VectorCASTJobAction /*extends DummyCreateProject*/ implements
 //        }
 //    }
 
+    private void deleteJobs() {
+        //
+    }
+    
     @RequirePOST
-    public void doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
+    public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         JSONObject json = request.getSubmittedForm();
         if (json.optString("jobType").equals("MULTI")) {
             if (json.optString("action").equals("CREATE")) {
                 // Create multi-job
                 NewMultiJob newMultiJob = new NewMultiJob(request, response);
                 newMultiJob.create();
+            } else if (json.optString("action").equals("DELETE")) {
+                // Delete jobs
+                DeleteJobs deleteJobs = new DeleteJobs(request, response);
+                deleteJobs.doDelete(true);
+            } else {
+                // Update jobs
             }
         } else {
             if (json.optString("action").equals("CREATE")) {
                 // Create single job
                 NewSingleJob newSingleJob = new NewSingleJob(request, response);
                 newSingleJob.create();
+            } else if (json.optString("action").equals("DELETE")) {
+                // Delete jobs
+                DeleteJobs deleteJobs = new DeleteJobs(request, response);
+                deleteJobs.doDelete(false);
+            } else {
+                // Update jobs
             }
         }
+        added = true;
+        return FormApply.success(".");
 //        response.sendRedirect(request.getContextPath());
 
 //                response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
@@ -133,38 +152,6 @@ public final class VectorCASTJobAction /*extends DummyCreateProject*/ implements
 //rsp.sendError(SC_NO_CONTENT);
 
     }
-    
-    /**
-     * Old - no longer used
-     */
-    public void doCreateOLD(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
-        Jenkins instance = Jenkins.getInstance();
-        
-        if (instance != null) {
-            Collection<String> jobs = instance.getJobNames();
-            boolean add = true;
-            for (String job : jobs) {
-                if (job.equals(JOBNAME)) {
-                    add = false;
-                    break;
-                }
-            }
-            if (add) {
-                try {
-                    LOG.log(Level.INFO, "Add " + JOBNAME);
-                    InputStream is = VectorCASTJobAction.class.getResourceAsStream("/" + JOBCFG);
-                    if (is == null) {
-                        LOG.log(Level.SEVERE, "Error creating job, corrupt plugin/installation");
-                    } else {
-                        instance.createProjectFromXML(JOBNAME, is);
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(VectorCASTJobAction.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-      response.forwardToPreviousPage(request);
-    }
 
     public String getRootUrl() {
         return Jenkins.getInstance().getRootUrl();
@@ -172,7 +159,7 @@ public final class VectorCASTJobAction /*extends DummyCreateProject*/ implements
 
     @Override
     public String getDisplayName() {
-        return Messages.VectorCASTCommand_AddVCJob();
+        return Messages.VectorCASTCommand_AddVCJob() + "-OLD";
     }
 
     @Override
@@ -187,7 +174,7 @@ public final class VectorCASTJobAction /*extends DummyCreateProject*/ implements
 
     @Override
     public String getUrlName() {
-        return "/createVCJob";
+        return "/VCJobs";
     }
 
     @Override

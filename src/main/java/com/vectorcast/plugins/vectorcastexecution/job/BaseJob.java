@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 rmk.
+ * Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@ import com.vectorcast.plugins.vectorcastcoverage.VectorCASTHealthReportThreshold
 import com.vectorcast.plugins.vectorcastcoverage.VectorCASTPublisher;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
 import hudson.model.Descriptor;
-import hudson.model.FreeStyleProject;
 import hudson.model.Project;
 import hudson.plugins.ws_cleanup.PreBuildCleanup;
 import hudson.tasks.ArtifactArchiver;
@@ -45,7 +44,6 @@ import org.kohsuke.stapler.StaplerResponse;
 
 /**
  *
- * @author rmk
  */
 abstract public class BaseJob {
     
@@ -54,7 +52,6 @@ abstract public class BaseJob {
     private StaplerResponse response;
     private String manageProjectName;
     private String baseName;
-//    private FreeStyleProject project;
     private Project topProject;
     
     protected BaseJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
@@ -67,10 +64,7 @@ abstract public class BaseJob {
         manageProjectName = json.optString("manageProjectName");
         baseName = FilenameUtils.getBaseName(manageProjectName);
     }
-    
-    abstract protected void processManageProject() throws ServletException, IOException;
 
-//    protected FreeStyleProject getProject() {
     protected Project getTopProject() {
         return topProject;
     }
@@ -86,6 +80,9 @@ abstract public class BaseJob {
     protected Jenkins getInstance() {
         return instance;
     }
+    protected StaplerResponse getResponse() {
+        return response;
+    }
     protected void addDeleteWorkspaceBeforeBuildStarts(Project project) {
         PreBuildCleanup cleanup = new PreBuildCleanup(/*patterns*/null, true, /*cleanup param*/"", /*external delete*/"");
         project.getBuildWrappersList().add(cleanup);
@@ -93,13 +90,14 @@ abstract public class BaseJob {
     public void create() throws IOException, ServletException, Descriptor.FormException {
         // Create the top-level project
         topProject = createProject();
+        if (topProject == null) {
+            return;
+        }
         
         // Read the SCM setup
         topProject.doConfigSubmit(request, response);
         
         addDeleteWorkspaceBeforeBuildStarts(topProject);
-
-        processManageProject();
 
         doCreate();
     }

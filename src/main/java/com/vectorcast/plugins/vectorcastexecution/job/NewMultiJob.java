@@ -68,15 +68,12 @@ public class NewMultiJob extends BaseJob {
     }
 
     @Override
-    protected void processManageProject() throws ServletException, IOException {
+    protected void doCreate() throws IOException, ServletException, Descriptor.FormException {
         // Read the manage project file
         manageFile = getRequest().getFileItem("manageProject").getString();
         manageProject = new ManageProject(manageFile);
         manageProject.parse();
-    }
 
-    @Override
-    protected void doCreate() throws IOException, ServletException, Descriptor.FormException {
         if (manageProject == null) {
             return;
         }

@@ -30,6 +30,7 @@ import hudson.model.Project;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
@@ -168,11 +169,11 @@ public class NewSingleJob extends BaseJob {
     @Override
     protected Project createProject() throws IOException {
         String projectName = getBaseName() + ".vcast_manage.singlejob";
+        if (getInstance().getJobNames().contains(projectName)) {
+            getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED, "Project already exists");
+            return null;
+        }
         return getInstance().createProject(FreeStyleProject.class, projectName);
-    }
-    @Override
-    protected void processManageProject() throws ServletException, IOException {
-        // Not required for single job
     }
     @Override
     public void doCreate() throws IOException, ServletException, Descriptor.FormException {

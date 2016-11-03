@@ -89,18 +89,16 @@
        </f:section>
 -->
 <!-- End SCM...-->
-      <j:if test="${!it.exists}">
-          <f:section title="${%VCJob.Control.Options}">
-            <f:block>
-              <input type="submit" value="${%VCJob.Control.Create}" />
-            </f:block>
-          </f:section>
-      </j:if>
+        <f:section title="${%VCJob.Control.Options}">
+          <f:block>
+            <input type="submit" value="${%VCJob.Control.Submit}" />
+          </f:block>
+        </f:section>
 <!--
       <j:if test="${it.exists}">
         <h2>VectorCAST Job created</h2>
       </j:if>
--->      
+--> 
       </f:form>
     </l:main-panel>
   </l:layout>
