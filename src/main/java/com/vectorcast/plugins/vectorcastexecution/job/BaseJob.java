@@ -29,9 +29,16 @@ import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.plugins.ws_cleanup.PreBuildCleanup;
+import hudson.scm.SCM;
+import hudson.scm.SCMS;
 import hudson.tasks.ArtifactArchiver;
+import hudson.util.FormApply;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequestWrapper;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FilenameUtils;
@@ -39,6 +46,7 @@ import org.jenkinsci.lib.dtkit.type.TestType;
 import org.jenkinsci.plugins.xunit.XUnitPublisher;
 import org.jenkinsci.plugins.xunit.threshold.XUnitThreshold;
 import org.jenkinsci.plugins.xunit.types.CheckType;
+import org.kohsuke.stapler.RequestImpl;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -47,12 +55,20 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 abstract public class BaseJob {
     
+    private static final Logger LOG = Logger.getLogger(BaseJob.class.getName());
+    
     private Jenkins instance;
     private StaplerRequest request;
     private StaplerResponse response;
     private String manageProjectName;
     private String baseName;
     private Project topProject;
+    private String environmentSetupWin;
+    private String environmentSetupUnix;
+    private String executePreambleWin;
+    private String executePreambleUnix;
+    private String environmentTeardownWin;
+    private String environmentTeardownUnix;
     
     protected BaseJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
         instance = Jenkins.getInstance();
@@ -63,6 +79,33 @@ abstract public class BaseJob {
         
         manageProjectName = json.optString("manageProjectName");
         baseName = FilenameUtils.getBaseName(manageProjectName);
+        
+        environmentSetupWin = json.optString("environment_setup_win");
+        executePreambleWin = json.optString("execute_preamble_win");
+        environmentTeardownWin = json.optString("environment_teardown_win");
+
+        environmentSetupUnix = json.optString("environment_setup_unix");
+        executePreambleUnix = json.optString("execute_preamble_unix");
+        environmentTeardownUnix = json.optString("environment_teardown_unix");
+    }
+    
+    protected String getEnvironmentSetupWin() {
+        return environmentSetupWin;
+    }
+    protected String getExecutePreambleWin() {
+        return executePreambleWin;
+    }
+    protected String getEnvironmentTeardownWin() {
+        return environmentTeardownWin;
+    }
+    protected String getEnvironmentSetupUnix() {
+        return environmentSetupUnix;
+    }
+    protected String getExecutePreambleUnix() {
+        return executePreambleUnix;
+    }
+    protected String getEnvironmentTeardownUnix() {
+        return environmentTeardownUnix;
     }
 
     protected Project getTopProject() {
@@ -93,10 +136,18 @@ abstract public class BaseJob {
         if (topProject == null) {
             return;
         }
-        
+
         // Read the SCM setup
-        topProject.doConfigSubmit(request, response);
-        
+        SCM scm = SCMS.parseSCM(request, topProject);
+        if (scm == null) {
+            LOG.info("***************************************************************");
+            LOG.info("***************************************************************");
+            LOG.info("SCM not parsed");
+            LOG.info("***************************************************************");
+            LOG.info("***************************************************************");
+        }
+        topProject.setScm(scm);
+
         addDeleteWorkspaceBeforeBuildStarts(topProject);
 
         doCreate();

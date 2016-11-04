@@ -42,6 +42,7 @@
             <f:textbox name="manageProjectName" size="50"/>
           </f:entry>
         </f:section>
+        <vc:scripts></vc:scripts>
         <vc:scm></vc:scm>
         <f:section>
           <f:block>

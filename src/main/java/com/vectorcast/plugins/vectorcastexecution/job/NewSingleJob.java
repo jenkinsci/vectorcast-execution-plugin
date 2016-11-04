@@ -52,6 +52,7 @@ public class NewSingleJob extends BaseJob {
     private void addCommandSingleJob() {
         
         String win = 
+getEnvironmentSetupWin() + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --status\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --release-locks\n" +
@@ -68,6 +69,7 @@ public class NewSingleJob extends BaseJob {
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
         
         String unix = 
+getEnvironmentSetupUnix() + "\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --status \n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --release-locks \n" +
@@ -168,6 +170,10 @@ public class NewSingleJob extends BaseJob {
     }
     @Override
     protected Project createProject() throws IOException {
+        if (getBaseName().isEmpty()) {
+            getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED, "No project name specified");
+            return null;
+        }
         String projectName = getBaseName() + ".vcast_manage.singlejob";
         if (getInstance().getJobNames().contains(projectName)) {
             getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED, "Project already exists");

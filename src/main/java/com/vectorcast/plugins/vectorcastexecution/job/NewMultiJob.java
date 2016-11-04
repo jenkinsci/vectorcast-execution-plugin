@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
@@ -70,7 +71,12 @@ public class NewMultiJob extends BaseJob {
     @Override
     protected void doCreate() throws IOException, ServletException, Descriptor.FormException {
         // Read the manage project file
-        manageFile = getRequest().getFileItem("manageProject").getString();
+        FileItem fileItem = getRequest().getFileItem("manageProject");
+        if (fileItem == null) {
+            return;
+        }
+
+        manageFile = fileItem.getString();
         manageProject = new ManageProject(manageFile);
         manageProject.parse();
 
@@ -89,7 +95,20 @@ public class NewMultiJob extends BaseJob {
         
         for (MultiJobDetail detail : manageProject.getJobs()) {
             String name = getBaseName() + "_" + detail.getProjectName() + "_BuildExecute";
-            PhaseJobsConfig phase = new PhaseJobsConfig(name, /*jobproperties*/"", /*currParams*/true, /*configs*/null, PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, /*disablejob*/false, /*enableretrystrategy*/false, /*parsingrulespath*/null, /*retries*/0, /*enablecondition*/false, /*abort*/false, /*condition*/"", /*buildonly if scm changes*/false);
+            PhaseJobsConfig phase = new PhaseJobsConfig(name, 
+                    /*jobproperties*/"", 
+                    /*currParams*/true, 
+                    /*configs*/null, 
+                    PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, 
+                    /*disablejob*/false, 
+                    /*enableretrystrategy*/false, 
+                    /*parsingrulespath*/null, 
+                    /*retries*/0, 
+                    /*enablecondition*/false, 
+                    /*abort*/false, 
+                    /*condition*/"", 
+                    /*buildonly if scm changes*/false,
+                    /*applycond if no scm changes*/false);
             phaseJobs.add(phase);
         }
         MultiJobBuilder multiJobBuilder = new MultiJobBuilder("Build-Execute-Phase", phaseJobs, MultiJobBuilder.ContinuationCondition.COMPLETED);
@@ -99,7 +118,19 @@ public class NewMultiJob extends BaseJob {
         
         for (MultiJobDetail detail : manageProject.getJobs()) {
             String name = getBaseName() + "_" + detail.getProjectName() + "_Reporting";
-            PhaseJobsConfig phase = new PhaseJobsConfig(name, /*jobproperties*/"", /*currParams*/true, /*configs*/null, PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, /*disablejob*/false, /*enableretrystrategy*/false, /*parsingrulespath*/null, /*retries*/0, /*enablecondition*/false, /*abort*/false, /*condition*/"", /*buildonly if scm changes*/false);
+            PhaseJobsConfig phase = new PhaseJobsConfig(name, 
+                    /*jobproperties*/"", 
+                    /*currParams*/true, 
+                    /*configs*/null, 
+                    PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, 
+                    /*disablejob*/false, 
+                    /*enableretrystrategy*/false, 
+                    /*parsingrulespath*/null, 
+                    /*retries*/0, 
+                    /*enablecondition*/false, 
+                    /*abort*/false, /*condition*/"", 
+                    /*buildonly if scm changes*/false,
+                    /*applycond if no scm changes*/false);
             phaseJobs.add(phase);
         }
         multiJobBuilder = new MultiJobBuilder("Reporting-Phase", phaseJobs, MultiJobBuilder.ContinuationCondition.COMPLETED);
@@ -143,6 +174,7 @@ public class NewMultiJob extends BaseJob {
     }
     private void addMultiJobBuildCommand() {
         String win =
+getEnvironmentSetupWin() + "\n" +
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py --api 2 \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate  \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=metrics     \n" +
@@ -155,6 +187,7 @@ public class NewMultiJob extends BaseJob {
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
 
         String unix =
+getEnvironmentSetupUnix() + "\n" +
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/incremental_build_report_aggregator.py --api 2 \n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate  \n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=metrics     \n" +

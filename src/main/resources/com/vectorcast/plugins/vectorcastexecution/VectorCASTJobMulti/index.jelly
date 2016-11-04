@@ -38,11 +38,13 @@
         <p>${%VCJob.Control.Description}</p>
 <!-- Manage Project file/details -->
         <f:section title="${%VCJob.Control.Project}">
+<!--
+-->
           <f:entry title="${%VCJob.Control.Project.file.title}" description="${%VCJob.Control.Project.file.description}">
-            <input type="file" name="manageProject"/>
+            <input type="file" name="manageProject" required="true" />
           </f:entry>
           <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}">
-            <f:textbox name="manageProjectName" size="50"/>
+            <f:textbox name="manageProjectName" size="50" required="true" />
           </f:entry>
         </f:section>
         <vc:scm></vc:scm>

@@ -62,7 +62,7 @@ THE SOFTWARE.
 
       </table>
       
-      <h1>${%VCJob.Options.Title}</h1>
+      <h3>${%VCJob.Options.Title}</h3>
       <table>
         <t:summary icon="${it.iconFileName}"
                    href="diag-job" iconOnly="true">
