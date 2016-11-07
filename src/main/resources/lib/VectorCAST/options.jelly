@@ -29,31 +29,20 @@
          xmlns:l="/lib/layout" 
          xmlns:t="/lib/hudson" 
          xmlns:f="/lib/form"
-         xmlns:p="/lib/hudson/project"
-         xmlns:vc="/lib/VectorCAST">
-  <l:layout permission="${permission}" title="${%VCJob.Control.Title}">
-    <l:main-panel>
-      <f:form name="create" action="create" method="post">
-        <h1>${%VCJob.Control.Title}</h1>
-        <p>${%VCJob.Control.Description}</p>
-        <f:section title="${%VCJob.Control.Project}">
-          <f:entry title="${%VCJob.Control.Project.file.title}" description="${%VCJob.Control.Project.file.description}">
-            <input type="file" name="manageProject" required="true" />
-          </f:entry>
-          <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}">
-            <f:textbox name="manageProjectName" size="50" required="true" />
-          </f:entry>
-        </f:section>
-        <vc:scripts></vc:scripts>
-        <vc:options></vc:options>
-        <vc:scm></vc:scm>
-        <f:section>
-          <f:block>
-            <input type="submit" value="${%VCJob.Control.Submit}" />
-          </f:block>
-        </f:section>
-      </f:form>
-    </l:main-panel>
-  </l:layout>
+         xmlns:p="/lib/hudson/project">
+    <f:section title="${%VCJob.Options}">
+      <f:entry title="${%VCJob.Options.use_reporting.title}" description="${%VCJob.Options.use_reporting.description}">
+        <f:checkbox name="option_use_reporting" checked="true" />
+      </f:entry>
+      <f:entry name="option_error_level" title="${%VCJob.Options.error_level.title}" field="option_error_level" description="${%VCJob.Options.error_level.description}">
+        <select name="option_error_level">
+          <option value="Unstable" selected="true">Unstable</option>
+          <option value="Failure">Failure</option>
+        </select>
+      </f:entry>
+      <f:entry title="${%VCJob.Options.execution_report.title}" description="${%VCJob.Options.execution_report.description}">
+        <f:checkbox name="option_execution_report" checked="true" />
+      </f:entry>
+    </f:section>
 </j:jelly>
 

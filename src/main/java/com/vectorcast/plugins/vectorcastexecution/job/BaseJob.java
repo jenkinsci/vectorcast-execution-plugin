@@ -69,6 +69,9 @@ abstract public class BaseJob {
     private String executePreambleUnix;
     private String environmentTeardownWin;
     private String environmentTeardownUnix;
+    private boolean option_use_reporting;
+    private String option_error_level;
+    private boolean option_execution_report;
     
     protected BaseJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
         instance = Jenkins.getInstance();
@@ -87,6 +90,11 @@ abstract public class BaseJob {
         environmentSetupUnix = json.optString("environment_setup_unix");
         executePreambleUnix = json.optString("execute_preamble_unix");
         environmentTeardownUnix = json.optString("environment_teardown_unix");
+        
+        option_use_reporting = json.optBoolean("option_use_reporting", true);
+        option_error_level = json.optString("option_error_level", "Unstable");
+        option_execution_report = json.optBoolean("option_execution_report", true);
+
     }
     
     protected String getEnvironmentSetupWin() {
@@ -106,6 +114,15 @@ abstract public class BaseJob {
     }
     protected String getEnvironmentTeardownUnix() {
         return environmentTeardownUnix;
+    }
+    protected boolean getOptionUseReporting() {
+        return option_use_reporting;
+    }
+    protected String getOptionErrorLevel() {
+        return option_error_level;
+    }
+    protected boolean getOptionExecutionReport() {
+        return option_execution_report;
     }
 
     protected Project getTopProject() {

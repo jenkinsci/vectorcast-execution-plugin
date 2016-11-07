@@ -40,11 +40,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @Extension
 public class VectorCASTJobMulti extends JobBase /*implements ExtensionPoint, Action, Describable<VCSingleJobAction> */ /*implements ExtensionPoint, Action, Describable<VCSingleJobAction> */{
 
-//    @Override
-//    public String getDisplayName() {
-//        return "Single Job";
-//    }
-
     @Override
     public String getUrlName() {
         return "multi-job";

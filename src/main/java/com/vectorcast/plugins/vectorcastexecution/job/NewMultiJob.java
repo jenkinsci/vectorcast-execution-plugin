@@ -23,7 +23,6 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
-import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
@@ -80,9 +79,6 @@ public class NewMultiJob extends BaseJob {
         manageProject = new ManageProject(manageFile);
         manageProject.parse();
 
-        if (manageProject == null) {
-            return;
-        }
         getTopProject().setDescription("Top-level multi job to run the manage project: " + getManageProjectName());
         Label label = new LabelAtom("master");
         getTopProject().setAssignedLabel(label);
@@ -113,28 +109,30 @@ public class NewMultiJob extends BaseJob {
         }
         MultiJobBuilder multiJobBuilder = new MultiJobBuilder("Build-Execute-Phase", phaseJobs, MultiJobBuilder.ContinuationCondition.COMPLETED);
         getTopProject().getBuildersList().add(multiJobBuilder);
-        // Reporting...
-        phaseJobs = new ArrayList<>();
-        
-        for (MultiJobDetail detail : manageProject.getJobs()) {
-            String name = getBaseName() + "_" + detail.getProjectName() + "_Reporting";
-            PhaseJobsConfig phase = new PhaseJobsConfig(name, 
-                    /*jobproperties*/"", 
-                    /*currParams*/true, 
-                    /*configs*/null, 
-                    PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, 
-                    /*disablejob*/false, 
-                    /*enableretrystrategy*/false, 
-                    /*parsingrulespath*/null, 
-                    /*retries*/0, 
-                    /*enablecondition*/false, 
-                    /*abort*/false, /*condition*/"", 
-                    /*buildonly if scm changes*/false,
-                    /*applycond if no scm changes*/false);
-            phaseJobs.add(phase);
+        // Reporting only if doing reporting
+        if (getOptionUseReporting()) {
+            phaseJobs = new ArrayList<>();
+
+            for (MultiJobDetail detail : manageProject.getJobs()) {
+                String name = getBaseName() + "_" + detail.getProjectName() + "_Reporting";
+                PhaseJobsConfig phase = new PhaseJobsConfig(name, 
+                        /*jobproperties*/"", 
+                        /*currParams*/true, 
+                        /*configs*/null, 
+                        PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, 
+                        /*disablejob*/false, 
+                        /*enableretrystrategy*/false, 
+                        /*parsingrulespath*/null, 
+                        /*retries*/0, 
+                        /*enablecondition*/false, 
+                        /*abort*/false, /*condition*/"", 
+                        /*buildonly if scm changes*/false,
+                        /*applycond if no scm changes*/false);
+                phaseJobs.add(phase);
+            }
+            multiJobBuilder = new MultiJobBuilder("Reporting-Phase", phaseJobs, MultiJobBuilder.ContinuationCondition.COMPLETED);
+            getTopProject().getBuildersList().add(multiJobBuilder);
         }
-        multiJobBuilder = new MultiJobBuilder("Reporting-Phase", phaseJobs, MultiJobBuilder.ContinuationCondition.COMPLETED);
-        getTopProject().getBuildersList().add(multiJobBuilder);
         // Copy artifacts per building project
         for (MultiJobDetail detail : manageProject.getJobs()) {
             String name = getBaseName() + "_" + detail.getProjectName() + "_BuildExecute";
@@ -146,24 +144,28 @@ public class NewMultiJob extends BaseJob {
             copyArtifact.setSelector(bs);
             getTopProject().getBuildersList().add(copyArtifact);
         }
-        // Copy artifacts per reporting project
-        for (MultiJobDetail detail : manageProject.getJobs()) {
-            String name = getBaseName() + "_" + detail.getProjectName() + "_Reporting";
-            CopyArtifact copyArtifact = new CopyArtifact(name);
-            copyArtifact.setOptional(true);
-            copyArtifact.setFilter("**/*");
-            copyArtifact.setFingerprintArtifacts(false);
-            BuildSelector bs = new WorkspaceSelector();
-            copyArtifact.setSelector(bs);
-            getTopProject().getBuildersList().add(copyArtifact);
+        // Copy artifacts per reporting project if doing reporting
+        if (getOptionUseReporting()) {
+            for (MultiJobDetail detail : manageProject.getJobs()) {
+                String name = getBaseName() + "_" + detail.getProjectName() + "_Reporting";
+                CopyArtifact copyArtifact = new CopyArtifact(name);
+                copyArtifact.setOptional(true);
+                copyArtifact.setFilter("**/*");
+                copyArtifact.setFingerprintArtifacts(false);
+                BuildSelector bs = new WorkspaceSelector();
+                copyArtifact.setSelector(bs);
+                getTopProject().getBuildersList().add(copyArtifact);
+            }
         }
         addMultiJobBuildCommand();
                 
-        // Post-build actions
-        addArchiveArtifacts(getTopProject());
-        addXunit(getTopProject());
-        addVCCoverage(getTopProject());
-        addGroovyScriptMultiJob();
+        // Post-build actions if doing reporting
+        if (getOptionUseReporting()) {
+            addArchiveArtifacts(getTopProject());
+            addXunit(getTopProject());
+            addVCCoverage(getTopProject());
+            addGroovyScriptMultiJob();
+        }
         
         getTopProject().save();
         
@@ -174,7 +176,6 @@ public class NewMultiJob extends BaseJob {
     }
     private void addMultiJobBuildCommand() {
         String win =
-getEnvironmentSetupWin() + "\n" +
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py --api 2 \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate  \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=metrics     \n" +
@@ -187,7 +188,6 @@ getEnvironmentSetupWin() + "\n" +
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
 
         String unix =
-getEnvironmentSetupUnix() + "\n" +
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/incremental_build_report_aggregator.py --api 2 \n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate  \n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=metrics     \n" +
@@ -240,18 +240,20 @@ getEnvironmentSetupUnix() + "\n" +
         addPostbuildGroovy(p, detail, baseName);
         p.save();
 
-        // Reporting job
-        p = getInstance().createProject(FreeStyleProject.class, baseName + "_Reporting");
-        p.setScm(getTopProject().getScm());
-        addDeleteWorkspaceBeforeBuildStarts(p);
-        p.setAssignedLabel(label);
-        addSetup(p);
-        addReportingCommands(p, detail, baseName);
-        addArchiveArtifacts(p);
-        addXunit(p);
-        addVCCoverage(p);
-        addPostReportingGroovy(p);
-        p.save();
+        // Reporting job - only if doing reporting
+        if (getOptionUseReporting()) {
+            p = getInstance().createProject(FreeStyleProject.class, baseName + "_Reporting");
+            p.setScm(getTopProject().getScm());
+            addDeleteWorkspaceBeforeBuildStarts(p);
+            p.setAssignedLabel(label);
+            addSetup(p);
+            addReportingCommands(p, detail, baseName);
+            addArchiveArtifacts(p);
+            addXunit(p);
+            addVCCoverage(p);
+            addPostReportingGroovy(p);
+            p.save();
+        }
     }
     private void addPostReportingGroovy(Project project) {
         String script = 
@@ -316,13 +318,18 @@ getEnvironmentSetupUnix() + "\n" +
         project.getPublishersList().add(groovy);
     }
     private void addReportingCommands(Project project, MultiJobDetail detail, String baseName) {
-        String win = "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\generate-results.py --api 2 \"@PROJECT@\" --level @LEVEL@ -e @ENV@ \n" +
+        String noGenExecReport = "";
+        if (!getOptionExecutionReport()) {
+            noGenExecReport = " --dont-gen-exec-rpt";
+        }
+        
+        String win = "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\generate-results.py --api 2 \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
 "      ";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@LEVEL@", detail.getLevel());
         win = StringUtils.replace(win, "@ENV@", detail.getEnvironment());
         
-        String unix = "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/generate-results.py --api 2 \"@PROJECT@\" --level @LEVEL@ -e @ENV@ \n" +
+        String unix = "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/generate-results.py --api 2 \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
 "      ";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
         unix = StringUtils.replace(unix, "@LEVEL@", detail.getLevel());
@@ -334,7 +341,10 @@ getEnvironmentSetupUnix() + "\n" +
     private void addBuildCommands(Project project, MultiJobDetail detail, String baseName) {
         String win = 
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n" +
+getEnvironmentSetupWin() + "\n" +
+getExecutePreambleWin() +
+" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n" +
+getEnvironmentTeardownWin() + "\n" +
 "\n";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@LEVEL@", detail.getLevel());
@@ -343,7 +353,10 @@ getEnvironmentSetupUnix() + "\n" +
         
         String unix = 
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n" +
+getEnvironmentSetupUnix() + "\n" +
+getExecutePreambleUnix() +
+" $VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n" +
+getEnvironmentTeardownUnix() + "\n" +
 "\n";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
         unix = StringUtils.replace(unix, "@LEVEL@", detail.getLevel());
@@ -354,63 +367,72 @@ getEnvironmentSetupUnix() + "\n" +
         project.getBuildersList().add(command);
     }
     private void addPostbuildGroovy(Project project, MultiJobDetail detail, String baseName) {
+        String setBuildStatus;
+        String gif;
+        if (getOptionErrorLevel().equalsIgnoreCase("unstable")) {
+            setBuildStatus = "    manager.buildUnstable()\n";
+            gif = "\"warning.gif\"";
+        } else {
+            setBuildStatus = "    manager.buildFailure()\n";
+            gif = "\"error.gif\"";
+        }
         String script = 
 "import hudson.FilePath\n" +
 "\n" +
 "if(manager.logContains(\".*py did not execute correctly.*\") || manager.logContains(\".*Traceback .most recent call last.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Jenkins Integration Script Failure\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Jenkins Integration Script Failure\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Jenkins Integration Script Failure\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Jenkins Integration Script Failure\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Failed to acquire lock on environment.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Failed to acquire lock on environment\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Failed to acquire lock on environment\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Failed to acquire lock on environment\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Failed to acquire lock on environment\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Environment Creation Failed.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Environment Creation Failed\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Environment Creation Failed\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Environment Creation Failed\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Environment Creation Failed\")\n" +
 "}\n" +
 "if (manager.logContains(\".*FLEXlm Error.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"FLEXlm Error\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"FLEXlm Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*INCR_BUILD_FAILED.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Build Error\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Build Error\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Build Error\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Build Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*NOT_LINKED.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Link Error\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Link Error\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Link Error\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Link Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Preprocess Failed.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Preprocess Error\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Preprocess Error\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Preprocess Error\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Preprocess Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Value Line Error - Command Ignored.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Test Case Import Error\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Test Case Import Error\")\n" +
 "}\n" +
 "\n" +
 "if(manager.logContains(\".*Abnormal Termination on Environment.*\")) \n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Abnormal Termination of at least one Environment\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Abnormal Termination of at least one Environment\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Abnormal Termination of at least one Environment\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Abnormal Termination of at least one Environment\")\n" +
 "}\n" +
 "\n" +
 "FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@BASENAME@_manage_incremental_rebuild_report.html')\n" +

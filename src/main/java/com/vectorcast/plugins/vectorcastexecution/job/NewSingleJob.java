@@ -50,21 +50,29 @@ public class NewSingleJob extends BaseJob {
     }
     
     private void addCommandSingleJob() {
-        
+        String noGenExecReport = "";
+        if (!getOptionExecutionReport()) {
+            noGenExecReport = " --dont-gen-exec-rpt";
+        }
         String win = 
 getEnvironmentSetupWin() + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --status\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --release-locks\n" +
+getExecutePreambleWin() +
 " %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --build-execute --incremental --output \"@PROJECT_BASE@_manage_incremental_rebuild_report.html\" \n" +
 "\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --api 2 \"@PROJECT@\" \n" +
+getEnvironmentTeardownWin() + "\n";
+        if (getOptionUseReporting()) {
+            win +=
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --api 2 \"@PROJECT@\" " + noGenExecReport + "\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate  \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=metrics     \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=environment \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status=\"@PROJECT_BASE@_full_report.html\"\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status > \"@PROJECT_BASE@_full_report.txt\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\getTotals.py\" --api 2 \"@PROJECT_BASE@_full_report.txt\"";
+        }
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
         
@@ -73,15 +81,20 @@ getEnvironmentSetupUnix() + "\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --status \n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --release-locks \n" +
+getExecutePreambleUnix() +
 " $VECTORCAST_DIR/manage --project \"@PROJECT@\" --build-execute --incremental --output \"@PROJECT_BASE@_manage_incremental_rebuild_report.html\"\n" +
 "\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --api 2 \"@PROJECT@\" \n" +
+getEnvironmentTeardownUnix() + "\n";
+        if (getOptionUseReporting()) {
+            unix +=
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --api 2 \"@PROJECT@\" " + noGenExecReport + "\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate   --output=\"@PROJECT_BASE@_aggregate_report.html\"\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=metrics     --output=\"@PROJECT_BASE@_metrics_report.html\"\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=environment --output=\"@PROJECT_BASE@_environment_report.html\"\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status=\"@PROJECT_BASE@_full_report.html\"\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status > \"@PROJECT_BASE@_full_report.txt\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/getTotals.py\" --api 2 \"@PROJECT_BASE@_full_report.txt\"";
+        }
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
         unix = StringUtils.replace(unix, "@PROJECT_BASE@", getBaseName());
         
@@ -90,63 +103,72 @@ getEnvironmentSetupUnix() + "\n" +
     }
 
     private void addGroovyScriptSingleJob() {
+        String setBuildStatus;
+        String gif;
+        if (getOptionErrorLevel().equalsIgnoreCase("unstable")) {
+            setBuildStatus = "    manager.buildUnstable()\n";
+            gif = "\"warning.gif\"";
+        } else {
+            setBuildStatus = "    manager.buildFailure()\n";
+            gif = "\"error.gif\"";
+        }
         String script = 
 "import hudson.FilePath\n" +
 "\n" +
 "if(manager.logContains(\".*py did not execute correctly.*\") || manager.logContains(\".*Traceback .most recent call last.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Jenkins Integration Script Failure\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Jenkins Integration Script Failure\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Jenkins Integration Script Failure\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Jenkins Integration Script Failure\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Failed to acquire lock on environment.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Failed to acquire lock on environment\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Failed to acquire lock on environment\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Failed to acquire lock on environment\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Failed to acquire lock on environment\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Environment Creation Failed.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Environment Creation Failed\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Environment Creation Failed\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Environment Creation Failed\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Environment Creation Failed\")\n" +
 "}\n" +
 "if (manager.logContains(\".*FLEXlm Error.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"FLEXlm Error\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"FLEXlm Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*INCR_BUILD_FAILED.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Build Error\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Build Error\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Build Error\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Build Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*NOT_LINKED.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Link Error\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Link Error\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Link Error\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Link Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Preprocess Failed.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Preprocess Error\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Preprocess Error\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Preprocess Error\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Preprocess Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Value Line Error - Command Ignored.*\"))\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Test Case Import Error\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Test Case Import Error\")\n" +
 "}\n" +
 "\n" +
 "if(manager.logContains(\".*Abnormal Termination on Environment.*\")) \n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"Abnormal Termination of at least one Environment\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
-"    manager.addBadge(\"warning.gif\", \"Abnormal Termination of at least one Environment\")\n" +
+"    manager.createSummary(" + gif + ").appendText(\"Abnormal Termination of at least one Environment\", false, false, false, \"red\")\n" +
+setBuildStatus +
+"    manager.addBadge(" + gif + ", \"Abnormal Termination of at least one Environment\")\n" +
 "}\n" +
 "FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_manage_incremental_rebuild_report.html')\n" +
 "FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report.html')\n" +
@@ -156,10 +178,10 @@ getEnvironmentSetupUnix() + "\n" +
 "}\n" +
 "else\n" +
 "{\n" +
-"    manager.createSummary(\"warning.gif\").appendText(\"General Failure\", false, false, false, \"red\")\n" +
-"    manager.buildUnstable()\n" +
+"    manager.createSummary(" + gif + ").appendText(\"General Failure\", false, false, false, \"red\")\n" +
+setBuildStatus +
 "    manager.build.description = \"General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\"\n" +
-"    manager.addBadge(\"warning.gif\", \"General Error\")\n" +
+"    manager.addBadge(" + gif + ", \"General Error\")\n" +
 "}";
         script = StringUtils.replace(script, "@PROJECT_BASE@", getBaseName());
         script = StringUtils.replace(script, "@PROJECT@", getManageProjectName());
@@ -189,11 +211,13 @@ getEnvironmentSetupUnix() + "\n" +
         addSetup(getTopProject());
         addCommandSingleJob();
                 
-        // Post-build actions
-        addArchiveArtifacts(getTopProject());
-        addXunit(getTopProject());
-        addVCCoverage(getTopProject());
-        addGroovyScriptSingleJob();
+        // Post-build actions - only is using reporting
+        if (getOptionUseReporting()) {
+            addArchiveArtifacts(getTopProject());
+            addXunit(getTopProject());
+            addVCCoverage(getTopProject());
+            addGroovyScriptSingleJob();
+        }
         
         getTopProject().save();
     }
