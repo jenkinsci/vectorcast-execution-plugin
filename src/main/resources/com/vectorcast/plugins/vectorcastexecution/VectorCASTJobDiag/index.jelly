@@ -36,7 +36,14 @@
       <f:form name="create" action="create" method="post">
         <h1>${%VCJob.Control.Title}</h1>
         <p>${%VCJob.Control.Description}</p>
-        <h2>TBD</h2>
+        <f:section>
+          <j:if test="${it.exists}"> 
+            <h2>${%VCJob.Control.Exists}</h2> 
+          </j:if> 
+          <j:if test="${!it.exists}">
+            <input type="submit" value="${%VCJob.Control.Create}" />
+          </j:if>
+        </f:section>
       </f:form>
     </l:main-panel>
   </l:layout>

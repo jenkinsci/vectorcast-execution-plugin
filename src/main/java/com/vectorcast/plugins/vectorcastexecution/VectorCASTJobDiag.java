@@ -25,9 +25,11 @@ package com.vectorcast.plugins.vectorcastexecution;
 
 import hudson.Extension;
 import hudson.model.Descriptor;
+import hudson.model.FreeStyleProject;
 import hudson.util.FormApply;
 import java.io.IOException;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -38,6 +40,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @Extension
 public class VectorCASTJobDiag extends JobBase {
+    public static final String PROJECT_NAME = "VectorCAST-Diagnostics";
     
     @Override
     public String getUrlName() {
@@ -47,8 +50,121 @@ public class VectorCASTJobDiag extends JobBase {
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
     }
+    public boolean isExists() {
+        return Jenkins.getInstance().getJobNames().contains(PROJECT_NAME);
+    }
     @RequirePOST
-    public HttpResponse doUpdate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
+    public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
+        Jenkins instance = Jenkins.getInstance();
+        if (!instance.getJobNames().contains(PROJECT_NAME)) {
+            FreeStyleProject project = instance.createProject(FreeStyleProject.class, PROJECT_NAME);
+            String winCommand = 
+"@echo off\n" +
+"\n" +
+"echo\n" +
+"echo\n" +
+"\n" +
+"set RET_VAL=0\n" +
+"if \"%VECTORCAST_DIR%\"==\"\" (\n" +
+"   echo\n" +
+"   echo VECTORCAST_DIR...ERROR\n" +
+"   echo    Environment Variable not set.  Either set VECTORCAST_DIR in System Environment Variables or add to Jenkins Configuration\n" +
+"   echo\n" +
+"   set /a RET_VAL=%RET_VAL%-1\n" +
+"   goto end\n" +
+") else (\n" +
+"   echo VECTORCAST_DIR...OKAY\n" +
+")\n" +
+"\n" +
+"if \"%VECTOR_LICENSE_FILE%\"==\"\" ( \n" +
+"   if \"%LM_LICENSE_FILE%\"==\"\" (\n" +
+"      echo\n" +
+"      echo License Environment Variable...ERRRO\n" +
+"      echo    Neither VECTOR_LICENSE_FILE nor LM_LICENSE_FILE environment variable set...\n" +
+"      echo       ...Set either VECTOR_LICENSE_FILE or LM_LICENSE_FILE in System Environment Variables or add to Jenkins Configuration\n" +
+"      echo \n" +
+"      set /a RET_VAL=%RET_VAL%-1\n" +
+"      goto end\n" +
+"   ) else (\n" +
+"     echo License Environment Variable...OKAY\n" +
+"   )\n" +
+") else (\n" +
+"   echo License Environment Variable...OKAY\n" +
+")\n" +
+"\n" +
+"%VECTORCAST_DIR%\\manage --help > help.log\n" +
+"if \"%errorlevel%\"==\"1\" (\n" +
+"   echo\n" +
+"   echo VectorCAST/Manage License...ERROR\n" +
+"   echo    Error Starting VectorCAST/Manage.  Check the log below for details\n" +
+"   echo\n" +
+"   type help.log\n" +
+"   echo\n" +
+"   set /a RET_VAL=%RET_VAL%-1\n" +
+") else (\n" +
+"   echo VectorCAST/Manage License...OKAY\n" +
+")\n" +
+"\n" +
+":end\n" +
+"\n" +
+"@echo off\n" +
+"\n" +
+"\n" +
+"EXIT /B %RET_VAL%";
+            String unixCommand =
+"!/bin/sh\n" +
+"\n" +
+"echo\n" +
+"echo\n" +
+"\n" +
+"RET_VAL=0\n" +
+"if [ -o $VECTORCAST_DIR ] ; then\n" +
+"   echo\n" +
+"   echo VECTORCAST_DIR...ERROR\n" +
+"   echo \"   Environment Variable not set.  Either set VECTORCAST_DIR in System Environment Variables or add to Jenkins Configuration\"\n" +
+"   echo\n" +
+"   RET_VAL=$(($RET_VAL-1))\n" +
+"   exit $RET_VAL\n" +
+"else\n" +
+"   echo VECTORCAST_DIR...OKAY\n" +
+"fi\n" +
+"\n" +
+"if [ -o $VECTOR_LICENSE_FILE ] ; then\n" +
+"   if [ -o $LM_LICENSE_FILE ]  ] ; then\n" +
+"      echo\n" +
+"      echo License Environment Variable...ERROR\n" +
+"      echo \"   Neither VECTOR_LICENSE_FILE nor LM_LICENSE_FILE environment variable set...\"\n" +
+"      echo \"      ...Set either VECTOR_LICENSE_FILE or LM_LICENSE_FILE in System Environment Variables or add to Jenkins Configuration\"\n" +
+"      RET_VAL=$(($RET_VAL-1))\n" +
+"      exit $REV_VAL\n" +
+"   else\n" +
+"      echo License Environment Variable...OKAY\n" +
+"   fi \n" +
+"else \n" +
+"  echo License Environment Variable...OKAY\n" +
+"fi\n" +
+"\n" +
+"$VECTORCAST_DIR/manage --help > help.log\n" +
+"\n" +
+"if [ \"$?\" != \"0\" ] ; then\n" +
+"   echo\n" +
+"   echo VectorCAST/Manage License...ERROR\n" +
+"   echo    Error Starting VectorCAST/Manage.  Check the log below for details\n" +
+"   echo\n" +
+"   cat help.log\n" +
+"   echo\n" +
+"   RET_VAL=$(($RET_VAL-1))\n" +
+"else\n" +
+"   echo VectorCAST/Manage License...OKAY\n" +
+"fi\n" +
+"\n" +
+"rm -rf help.log\n" +
+"\n" +
+"exit $RET_VAL";
+            VectorCASTCommand cmd = new VectorCASTCommand(winCommand, unixCommand);
+            project.getBuildersList().add(cmd);
+            project.save();
+        }
         return FormApply.success(".");
     }
 }
