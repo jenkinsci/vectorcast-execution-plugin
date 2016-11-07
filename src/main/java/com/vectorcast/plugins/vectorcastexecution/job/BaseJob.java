@@ -29,16 +29,13 @@ import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.plugins.ws_cleanup.PreBuildCleanup;
+import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
 import hudson.tasks.ArtifactArchiver;
-import hudson.util.FormApply;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequestWrapper;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FilenameUtils;
@@ -46,7 +43,6 @@ import org.jenkinsci.lib.dtkit.type.TestType;
 import org.jenkinsci.plugins.xunit.XUnitPublisher;
 import org.jenkinsci.plugins.xunit.threshold.XUnitThreshold;
 import org.jenkinsci.plugins.xunit.types.CheckType;
-import org.kohsuke.stapler.RequestImpl;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -124,7 +120,6 @@ abstract public class BaseJob {
     protected boolean getOptionExecutionReport() {
         return option_execution_report;
     }
-
     protected Project getTopProject() {
         return topProject;
     }
@@ -147,7 +142,7 @@ abstract public class BaseJob {
         PreBuildCleanup cleanup = new PreBuildCleanup(/*patterns*/null, true, /*cleanup param*/"", /*external delete*/"");
         project.getBuildWrappersList().add(cleanup);
     }
-    public void create() throws IOException, ServletException, Descriptor.FormException {
+    public void create(boolean update) throws IOException, ServletException, Descriptor.FormException {
         // Create the top-level project
         topProject = createProject();
         if (topProject == null) {
@@ -157,20 +152,16 @@ abstract public class BaseJob {
         // Read the SCM setup
         SCM scm = SCMS.parseSCM(request, topProject);
         if (scm == null) {
-            LOG.info("***************************************************************");
-            LOG.info("***************************************************************");
-            LOG.info("SCM not parsed");
-            LOG.info("***************************************************************");
-            LOG.info("***************************************************************");
+            scm = new NullSCM();
         }
         topProject.setScm(scm);
 
         addDeleteWorkspaceBeforeBuildStarts(topProject);
 
-        doCreate();
+        doCreate(update);
     }
     abstract protected Project createProject() throws IOException;
-    abstract protected void doCreate() throws IOException, ServletException, Descriptor.FormException ;
+    abstract protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException ;
     /**
      * Add the VectorCAST setup step to copy the python scripts to
      * the workspace

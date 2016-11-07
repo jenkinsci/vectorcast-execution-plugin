@@ -56,19 +56,30 @@ public class NewMultiJob extends BaseJob {
 
     private String manageFile;
     private ManageProject manageProject = null;
+    private List<String> projectsAdded = null;
 
     public NewMultiJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
         super(request, response);
     }
 
+    public List<String> getProjectAdded() {
+        return projectsAdded;
+    }
     @Override
     protected Project createProject() throws IOException {
         String projectName = getBaseName() + ".vcast_manage.multijob";
         return getInstance().createProject(MultiJobProject.class, projectName);
     }
 
+    /**
+     * Create multi-job top-level and sub-projects, updating if required.
+     * @param update true to do an update rather than create only
+     * @throws IOException
+     * @throws ServletException
+     * @throws hudson.model.Descriptor.FormException 
+     */
     @Override
-    protected void doCreate() throws IOException, ServletException, Descriptor.FormException {
+    protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
         // Read the manage project file
         FileItem fileItem = getRequest().getFileItem("manageProject");
         if (fileItem == null) {
@@ -89,8 +100,11 @@ public class NewMultiJob extends BaseJob {
         // Building...
         List<PhaseJobsConfig> phaseJobs = new ArrayList<>();
         
+        projectsAdded = new ArrayList<>();
+        
         for (MultiJobDetail detail : manageProject.getJobs()) {
             String name = getBaseName() + "_" + detail.getProjectName() + "_BuildExecute";
+            projectsAdded.add(name);
             PhaseJobsConfig phase = new PhaseJobsConfig(name, 
                     /*jobproperties*/"", 
                     /*currParams*/true, 
@@ -115,6 +129,7 @@ public class NewMultiJob extends BaseJob {
 
             for (MultiJobDetail detail : manageProject.getJobs()) {
                 String name = getBaseName() + "_" + detail.getProjectName() + "_Reporting";
+                projectsAdded.add(name);
                 PhaseJobsConfig phase = new PhaseJobsConfig(name, 
                         /*jobproperties*/"", 
                         /*currParams*/true, 
@@ -171,7 +186,7 @@ public class NewMultiJob extends BaseJob {
         
         for (MultiJobDetail detail : manageProject.getJobs()) {
             String name = getBaseName() + "_" + detail.getProjectName();
-            createProjectPair(name, detail);
+            createProjectPair(name, detail, update);
         }
     }
     private void addMultiJobBuildCommand() {
@@ -228,31 +243,38 @@ public class NewMultiJob extends BaseJob {
         GroovyPostbuildRecorder groovy = new GroovyPostbuildRecorder(secureScript, /*behaviour*/2, /*matrix parent*/false);
         getTopProject().getPublishersList().add(groovy);
     }
-    private void createProjectPair(String baseName, MultiJobDetail detail) throws IOException {
+    private void createProjectPair(String baseName, MultiJobDetail detail, boolean update) throws IOException {
         // Building job
-        FreeStyleProject p = getInstance().createProject(FreeStyleProject.class, baseName + "_BuildExecute");
-        p.setScm(getTopProject().getScm());
-        addDeleteWorkspaceBeforeBuildStarts(p);
-        Label label = new LabelAtom(detail.getCompiler());
-        p.setAssignedLabel(label);
-        addSetup(p);
-        addBuildCommands(p, detail, baseName);
-        addPostbuildGroovy(p, detail, baseName);
-        p.save();
+        String projectName = baseName + "_BuildExecute";
+        if (!getInstance().getJobNames().contains(projectName)) {
+            FreeStyleProject p = getInstance().createProject(FreeStyleProject.class, projectName);
+            p.setScm(getTopProject().getScm());
+            addDeleteWorkspaceBeforeBuildStarts(p);
+            Label label = new LabelAtom(detail.getCompiler());
+            p.setAssignedLabel(label);
+            addSetup(p);
+            addBuildCommands(p, detail, baseName);
+            addPostbuildGroovy(p, detail, baseName);
+            p.save();
+        }
 
         // Reporting job - only if doing reporting
         if (getOptionUseReporting()) {
-            p = getInstance().createProject(FreeStyleProject.class, baseName + "_Reporting");
-            p.setScm(getTopProject().getScm());
-            addDeleteWorkspaceBeforeBuildStarts(p);
-            p.setAssignedLabel(label);
-            addSetup(p);
-            addReportingCommands(p, detail, baseName);
-            addArchiveArtifacts(p);
-            addXunit(p);
-            addVCCoverage(p);
-            addPostReportingGroovy(p);
-            p.save();
+            projectName = baseName + "_Reporting";
+            if (!getInstance().getJobNames().contains(projectName)) {
+                FreeStyleProject p = getInstance().createProject(FreeStyleProject.class, projectName);
+                p.setScm(getTopProject().getScm());
+                addDeleteWorkspaceBeforeBuildStarts(p);
+                Label label = new LabelAtom(detail.getCompiler());
+                p.setAssignedLabel(label);
+                addSetup(p);
+                addReportingCommands(p, detail, baseName);
+                addArchiveArtifacts(p);
+                addXunit(p);
+                addVCCoverage(p);
+                addPostReportingGroovy(p);
+                p.save();
+            }
         }
     }
     private void addPostReportingGroovy(Project project) {

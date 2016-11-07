@@ -204,7 +204,7 @@ setBuildStatus +
         return getInstance().createProject(FreeStyleProject.class, projectName);
     }
     @Override
-    public void doCreate() throws IOException, ServletException, Descriptor.FormException {
+    public void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
         getTopProject().setDescription("Single job to run the manage project: " + getManageProjectName());
 
         // Build actions...

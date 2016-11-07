@@ -23,6 +23,7 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import hudson.model.Descriptor;
 import hudson.model.Item;
 import hudson.model.Project;
@@ -35,31 +36,54 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- *
+ * Update a multi-job project.
+ * Basically
+ *     re-create top-level multi-job (delete then create)
+ *     delete any projects no longer needed.
+ *     add any new projects now required
  */
-public class DeleteJobs extends BaseJob {
-    
-    public DeleteJobs(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
+public class UpdateMultiJob extends NewMultiJob {
+
+    public UpdateMultiJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
         super(request, response);
     }
+
+    public void update() throws IOException, ServletException, Descriptor.FormException, InterruptedException {
+        String projectName = getBaseName() + ".vcast_manage.multijob";
+        // Delete existing multijob
+        deleteJob(projectName);
+        // Create all other projects
+        create(true);
+        // Now remove any (now) redundant project
+        List<Item> jobs = getInstance().getAllItems();
+        for (Item job : jobs) {
+            // Delete any jobs not part of the multi-job set just added
+            if (!getProjectAdded().contains(job.getFullName()) &&
+                job.getFullName().startsWith(getBaseName() + "_")) {
+                job.delete();
+            }
+        }
+    }
     
-    public void doDelete(boolean multiple) throws IOException {
+    @Override
+    protected Project createProject() throws IOException {
+        String projectName = getBaseName() + ".vcast_manage.multijob";
+        return getInstance().createProject(MultiJobProject.class, projectName);
+    }
+
+//    @Override
+//    protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
+//        throw new UnsupportedOperationException("Not supported yet.");
+//    }
+    
+    private void deleteJob(String jobName) throws IOException {
         if (getBaseName().isEmpty()) {
             return;
         }
         try {
-            String baseName = getBaseName() + "_";
-            String projName = getBaseName() + ".vcast_manage";
-            if (multiple) {
-                projName += ".multijob";
-            } else {
-                projName += ".singlejob";
-            }
             List<Item> jobs = getInstance().getAllItems();
             for (Item job : jobs) {
-                if (job.getFullName().equals(projName)) {
-                        job.delete();
-                } else if (multiple && job.getFullName().startsWith(baseName)) {
+                if (job.getFullName().equals(jobName)) {
                     job.delete();
                 }
             }
@@ -67,15 +91,4 @@ public class DeleteJobs extends BaseJob {
             Logger.getLogger(DeleteJobs.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    @Override
-    protected Project createProject() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
 }

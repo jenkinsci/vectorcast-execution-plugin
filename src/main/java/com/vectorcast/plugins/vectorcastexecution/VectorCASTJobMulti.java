@@ -52,7 +52,7 @@ public class VectorCASTJobMulti extends JobBase {
     public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         // Create multi-job
         NewMultiJob job = new NewMultiJob(request, response);
-        job.create();
+        job.create(false);
         return FormApply.success(".");
     }
 }

@@ -52,7 +52,7 @@ public class VectorCASTJobSingle extends JobBase {
     public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         // Create single-job
         NewSingleJob job = new NewSingleJob(request, response);
-        job.create();
+        job.create(false);
         return FormApply.success(".");
     }
 }
