@@ -23,7 +23,6 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
-import com.vectorcast.plugins.vectorcastexecution.job.NewMultiJob;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.util.FormApply;
@@ -38,7 +37,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  */
 @Extension
-public class VectorCASTJobUpdate extends JobBase /*implements ExtensionPoint, Action, Describable<VCSingleJobAction> */ /*implements ExtensionPoint, Action, Describable<VCSingleJobAction> */{
+public class VectorCASTJobUpdate extends JobBase {
 
     @Override
     public String getUrlName() {

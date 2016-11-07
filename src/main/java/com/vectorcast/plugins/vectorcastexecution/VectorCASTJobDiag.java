@@ -23,7 +23,6 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
-import com.vectorcast.plugins.vectorcastexecution.job.NewMultiJob;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.util.FormApply;
@@ -38,21 +37,18 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  */
 @Extension
-public class VectorCASTJobMulti extends JobBase {
-
+public class VectorCASTJobDiag extends JobBase {
+    
     @Override
     public String getUrlName() {
-        return "multi-job";
+        return "diag-job";
     }
 
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
     }
     @RequirePOST
-    public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
-        // Create multi-job
-        NewMultiJob job = new NewMultiJob(request, response);
-        job.create();
+    public HttpResponse doUpdate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         return FormApply.success(".");
     }
 }
