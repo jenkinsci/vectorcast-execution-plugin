@@ -24,38 +24,69 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
 import com.vectorcast.plugins.vectorcastexecution.job.DeleteJobs;
-import com.vectorcast.plugins.vectorcastexecution.job.NewMultiJob;
-import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
 import hudson.Extension;
 import hudson.model.Descriptor;
-import hudson.util.FormApply;
 import java.io.IOException;
 import javax.servlet.ServletException;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- *
+ * Delete jobs
  */
 @Extension
 public class VectorCASTJobDelete extends JobBase /*implements ExtensionPoint, Action, Describable<VCSingleJobAction> */ /*implements ExtensionPoint, Action, Describable<VCSingleJobAction> */{
-
+    /** The delete jobs instance */
+    DeleteJobs deleteJobs = null;
+    /**
+     * Get the delete jobs instance
+     * @return delete jobs instance
+     */
+    public DeleteJobs getDeleteJobs() {
+        return deleteJobs;
+    }
+    /**
+     * URL name for deleting jobs
+     * @return url
+     */
     @Override
     public String getUrlName() {
         return "delete-jobs";
     }
-
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
     }
+    /**
+     * Delete jobs. Called first to setup the jobs to delete prior to confirmation
+     * @param request
+     * @param response
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     * @throws hudson.model.Descriptor.FormException 
+     */
     @RequirePOST
     public HttpResponse doDelete(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         // Delete jobs
-        DeleteJobs deleteJobs = new DeleteJobs(request, response);
-        deleteJobs.doDelete(true);  // Multi-jobs
-        deleteJobs.doDelete(false); // Single job
-        return FormApply.success(".");
+        deleteJobs = new DeleteJobs(request, response);
+        deleteJobs.createJobList();
+        return new HttpRedirect("confirm");
+    }
+    /**
+     * Confirm job deletion and actually do the deletions.
+     * @param request
+     * @param response
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     * @throws hudson.model.Descriptor.FormException 
+     */
+    @RequirePOST
+    public HttpResponse doConfirmDelete(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
+        deleteJobs.doDelete();
+        return new HttpRedirect("done");
     }
 }

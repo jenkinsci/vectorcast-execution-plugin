@@ -23,12 +23,16 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.UpdateMultiJob;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.util.FormApply;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -39,7 +43,19 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @Extension
 public class VectorCASTJobUpdate extends JobBase {
-
+    /** Update multi-job object */
+    private UpdateMultiJob job;
+    /**
+     * Get multi-job
+     * @return multi-job
+     */
+    public UpdateMultiJob getJob() {
+        return job;
+    }
+    /**
+     * Get name of url for updating multi-job
+     * @return url
+     */
     @Override
     public String getUrlName() {
         return "job-update";
@@ -48,10 +64,26 @@ public class VectorCASTJobUpdate extends JobBase {
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
     }
+    /**
+     * Do the update
+     * @param request
+     * @param response
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     * @throws hudson.model.Descriptor.FormException
+     * @throws InterruptedException 
+     */
     @RequirePOST
     public HttpResponse doUpdate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException, InterruptedException {
-        UpdateMultiJob updateJobs = new UpdateMultiJob(request, response);
-        updateJobs.update();
+        job = new UpdateMultiJob(request, response);
+        try {
+            job.update();
+            return new HttpRedirect("done");
+        } catch (JobAlreadyExistsException ex) {
+            // Can'thappen when doing an update
+            Logger.getLogger(VectorCASTJobUpdate.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return FormApply.success(".");
     }
 }

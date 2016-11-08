@@ -31,10 +31,11 @@
          xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project"
          xmlns:vc="/lib/VectorCAST">
-  <l:layout permission="${permission}" title="${%Done.Title}">
+  <l:layout permission="${permission}" title="${%Exists.Title}">
     <l:main-panel>
-      <h1>${%Done.Title}</h1>
-      <p>${%Done.Description}</p>
+      <h1>${%Exists.Title}</h1>
+      <h2>${it.exception.project}</h2>
+      <p>${%Exists.Description}</p>
     </l:main-panel>
   </l:layout>
 </j:jelly>

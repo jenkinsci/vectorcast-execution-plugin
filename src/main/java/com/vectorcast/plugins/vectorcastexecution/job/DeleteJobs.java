@@ -27,6 +27,7 @@ import hudson.model.Descriptor;
 import hudson.model.Item;
 import hudson.model.Project;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,31 +36,66 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- *
+ * Delete jobs
  */
 public class DeleteJobs extends BaseJob {
-    
+    /** Jobs to delete */
+    List<String> jobsToDelete = null;
+    /**
+     * Get jobs to delete
+     * @return jobs to delete
+     */
+    public List<String> getJobsToDelete() {
+        return jobsToDelete;
+    }
+    /**
+     * Constructor
+     * @param request request
+     * @param response response
+     * @throws ServletException
+     * @throws IOException 
+     */
     public DeleteJobs(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
         super(request, response);
     }
-    
-    public void doDelete(boolean multiple) throws IOException {
+    /**
+     * Create job list
+     */
+    public void createJobList() {
+        if (getBaseName().isEmpty()) {
+            return;
+        }
+        jobsToDelete = new ArrayList<>();
+        String baseName = getBaseName() + "_";
+        String projName = getBaseName() + ".vcast_manage";
+        String singleName = projName + ".singlejob";
+        String multiName = projName + ".multijob";
+        if (getInstance().getJobNames().contains(singleName)) {
+            jobsToDelete.add(singleName);
+        }
+        if (getInstance().getJobNames().contains(multiName)) {
+            jobsToDelete.add(multiName);
+        }
+
+        List<Item> jobs = getInstance().getAllItems();
+        for (Item job : jobs) {
+            if (job.getFullName().startsWith(baseName)) {
+                jobsToDelete.add(job.getFullName());
+            }
+        }
+    }
+    /**
+     * Delete the jobs
+     * @throws IOException 
+     */
+    public void doDelete() throws IOException {
         if (getBaseName().isEmpty()) {
             return;
         }
         try {
-            String baseName = getBaseName() + "_";
-            String projName = getBaseName() + ".vcast_manage";
-            if (multiple) {
-                projName += ".multijob";
-            } else {
-                projName += ".singlejob";
-            }
             List<Item> jobs = getInstance().getAllItems();
             for (Item job : jobs) {
-                if (job.getFullName().equals(projName)) {
-                        job.delete();
-                } else if (multiple && job.getFullName().startsWith(baseName)) {
+                if (jobsToDelete.contains(job.getFullName())) {
                     job.delete();
                 }
             }
@@ -67,15 +103,12 @@ public class DeleteJobs extends BaseJob {
             Logger.getLogger(DeleteJobs.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
     @Override
     protected Project createProject() throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
     @Override
     protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
 }

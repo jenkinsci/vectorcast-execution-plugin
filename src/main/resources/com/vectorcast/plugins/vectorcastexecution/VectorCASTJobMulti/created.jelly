@@ -31,10 +31,23 @@
          xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project"
          xmlns:vc="/lib/VectorCAST">
-  <l:layout permission="${permission}" title="${%Done.Title}">
+  <l:layout permission="${permission}" title="${%Created.Title}">
     <l:main-panel>
-      <h1>${%Done.Title}</h1>
-      <p>${%Done.Description}</p>
+      <h1>${%Created.Title}</h1>
+      <p>${%Created.Description}</p>
+      <ul>
+        <j:forEach var="job" items="${it.job.projectsAdded}">
+          <li>${job}</li>
+        </j:forEach>
+      </ul>
+      <j:if test="${it.job.projectsExsiting.size()}">
+        <p>${%Created.Failed}</p>
+        <ul>
+          <j:forEach var="job" items="${it.job.projectsExisting}">
+            <li>${job}</li>
+          </j:forEach>
+        </ul>
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

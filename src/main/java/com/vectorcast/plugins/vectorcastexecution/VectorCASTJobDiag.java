@@ -26,24 +26,27 @@ package com.vectorcast.plugins.vectorcastexecution;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
-import hudson.util.FormApply;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- *
+ * Create VectorCAST diagnostic job
  */
 @Extension
 public class VectorCASTJobDiag extends JobBase {
+    /** Name of diagnostic job */
     public static final String PROJECT_NAME = "VectorCAST-Diagnostics";
     
+    /**
+     * Get the diagnostics job URL
+     * @return url
+     */
     @Override
     public String getUrlName() {
         return "diag-job";
@@ -52,9 +55,22 @@ public class VectorCASTJobDiag extends JobBase {
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
     }
+    /**
+     * Check if the diagnostics job exists
+     * @return true if it exists and false if not
+     */
     public boolean isExists() {
         return Jenkins.getInstance().getJobNames().contains(PROJECT_NAME);
     }
+    /**
+     * Create the diagnostics job
+     * @param request
+     * @param response
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     * @throws hudson.model.Descriptor.FormException 
+     */
     @RequirePOST
     public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         Jenkins instance = Jenkins.getInstance();

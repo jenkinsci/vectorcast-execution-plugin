@@ -36,13 +36,11 @@
       <f:form name="delete" action="delete" method="post">
         <h1>${%VCJob.Control.Title}</h1>
         <p>${%VCJob.Control.Description}</p>
-<!-- Manage Project file/details -->
         <f:section title="${%VCJob.Control.Project}">
           <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}">
             <f:textbox name="manageProjectName" size="50"/>
           </f:entry>
         </f:section>
-
         <f:section>
           <f:block>
             <input type="submit" value="${%VCJob.Control.Submit}" />

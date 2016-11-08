@@ -48,29 +48,64 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- *
+ * Create a new multi-job and associated build/execute and reporting jobs
  */
 public class NewMultiJob extends BaseJob {
-    
-    private static final Logger LOG = Logger.getLogger(NewMultiJob.class.getName());
-
+    /** Manage file */
     private String manageFile;
+    /** Parsed Manage project */
     private ManageProject manageProject = null;
+    /** projects actually added */
     private List<String> projectsAdded = null;
-
+    /** All projects needed */
+    private List<String> projectsNeeded = null;
+    /** Any existing projects */
+    private List<String> projectsExisting = null;
+    /**
+     * Constructor
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException 
+     */
     public NewMultiJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
         super(request, response);
     }
-
-    public List<String> getProjectAdded() {
+    /**
+     * Get projects added
+     * @return projects added
+     */
+    public List<String> getProjectsAdded() {
         return projectsAdded;
     }
+    /**
+     * Get projects needed
+     * @return projects needed
+     */
+    public List<String> getProjectsNeeded() {
+        return projectsNeeded;
+    }
+    /**
+     * Get existing projects
+     * @return existing projects
+     */
+    public List<String> getProjectsExisting() {
+        return projectsExisting;
+    }
+    /**
+     * Create project
+     * @return new top-level project
+     * @throws IOException
+     * @throws JobAlreadyExistsException 
+     */
     @Override
-    protected Project createProject() throws IOException {
+    protected Project createProject() throws IOException, JobAlreadyExistsException {
         String projectName = getBaseName() + ".vcast_manage.multijob";
+        if (getInstance().getJobNames().contains(projectName)) {
+            throw new JobAlreadyExistsException(projectName);
+        }
         return getInstance().createProject(MultiJobProject.class, projectName);
     }
-
     /**
      * Create multi-job top-level and sub-projects, updating if required.
      * @param update true to do an update rather than create only
@@ -101,10 +136,14 @@ public class NewMultiJob extends BaseJob {
         List<PhaseJobsConfig> phaseJobs = new ArrayList<>();
         
         projectsAdded = new ArrayList<>();
+        projectsNeeded = new ArrayList<>();
+        projectsExisting = new ArrayList<>();
+        
+        projectsAdded.add(getTopProject().getName());
         
         for (MultiJobDetail detail : manageProject.getJobs()) {
             String name = getBaseName() + "_" + detail.getProjectName() + "_BuildExecute";
-            projectsAdded.add(name);
+            projectsNeeded.add(name);
             PhaseJobsConfig phase = new PhaseJobsConfig(name, 
                     /*jobproperties*/"", 
                     /*currParams*/true, 
@@ -129,7 +168,7 @@ public class NewMultiJob extends BaseJob {
 
             for (MultiJobDetail detail : manageProject.getJobs()) {
                 String name = getBaseName() + "_" + detail.getProjectName() + "_Reporting";
-                projectsAdded.add(name);
+                projectsNeeded.add(name);
                 PhaseJobsConfig phase = new PhaseJobsConfig(name, 
                         /*jobproperties*/"", 
                         /*currParams*/true, 
@@ -189,6 +228,9 @@ public class NewMultiJob extends BaseJob {
             createProjectPair(name, detail, update);
         }
     }
+    /**
+     * Add multi-job build command to top-level project
+     */
     private void addMultiJobBuildCommand() {
         String win =
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py --api 2 \n" +
@@ -218,6 +260,9 @@ public class NewMultiJob extends BaseJob {
         VectorCASTCommand command = new VectorCASTCommand(win, unix);
         getTopProject().getBuildersList().add(command);
     }
+    /**
+     * Add groovy script to top-level project
+     */
     private void addGroovyScriptMultiJob() {
         String script =
 "import hudson.FilePath\n" +
@@ -243,10 +288,18 @@ public class NewMultiJob extends BaseJob {
         GroovyPostbuildRecorder groovy = new GroovyPostbuildRecorder(secureScript, /*behaviour*/2, /*matrix parent*/false);
         getTopProject().getPublishersList().add(groovy);
     }
+    /**
+     * Create pair (execute and reporting) for given details
+     * @param baseName project basename
+     * @param detail detail
+     * @param update update or new
+     * @throws IOException 
+     */
     private void createProjectPair(String baseName, MultiJobDetail detail, boolean update) throws IOException {
         // Building job
         String projectName = baseName + "_BuildExecute";
         if (!getInstance().getJobNames().contains(projectName)) {
+            projectsAdded.add(projectName);
             FreeStyleProject p = getInstance().createProject(FreeStyleProject.class, projectName);
             p.setScm(getTopProject().getScm());
             addDeleteWorkspaceBeforeBuildStarts(p);
@@ -256,12 +309,15 @@ public class NewMultiJob extends BaseJob {
             addBuildCommands(p, detail, baseName);
             addPostbuildGroovy(p, detail, baseName);
             p.save();
+        } else {
+            projectsExisting.add(projectName);
         }
 
         // Reporting job - only if doing reporting
         if (getOptionUseReporting()) {
             projectName = baseName + "_Reporting";
             if (!getInstance().getJobNames().contains(projectName)) {
+                projectsAdded.add(projectName);
                 FreeStyleProject p = getInstance().createProject(FreeStyleProject.class, projectName);
                 p.setScm(getTopProject().getScm());
                 addDeleteWorkspaceBeforeBuildStarts(p);
@@ -274,9 +330,15 @@ public class NewMultiJob extends BaseJob {
                 addVCCoverage(p);
                 addPostReportingGroovy(p);
                 p.save();
+            } else {
+                projectsExisting.add(projectName);
             }
         }
     }
+    /**
+     * Add groovy step to reporting project
+     * @param project project to add to
+     */
     private void addPostReportingGroovy(Project project) {
         String script = 
 "if(manager.logContains(\".*py did not execute correctly.*\") || manager.logContains(\".*Traceback .most recent call last.*\"))\n" +
@@ -339,6 +401,12 @@ public class NewMultiJob extends BaseJob {
         GroovyPostbuildRecorder groovy = new GroovyPostbuildRecorder(secureScript, /*behaviour*/2, /*matrix parent*/false);
         project.getPublishersList().add(groovy);
     }
+    /**
+     * Add reporting commands step to project
+     * @param project project to add to
+     * @param detail job details
+     * @param baseName project basename
+     */
     private void addReportingCommands(Project project, MultiJobDetail detail, String baseName) {
         String noGenExecReport = "";
         if (!getOptionExecutionReport()) {
@@ -360,6 +428,12 @@ public class NewMultiJob extends BaseJob {
         VectorCASTCommand command = new VectorCASTCommand(win, unix);
         project.getBuildersList().add(command);
     }
+    /**
+     * Add build commands step to project
+     * @param project project to add to
+     * @param detail job details
+     * @param baseName project basename
+     */
     private void addBuildCommands(Project project, MultiJobDetail detail, String baseName) {
         String win = 
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
@@ -388,6 +462,12 @@ getEnvironmentTeardownUnix() + "\n" +
         VectorCASTCommand command = new VectorCASTCommand(win, unix);
         project.getBuildersList().add(command);
     }
+    /**
+     * Add post-build groovy step to project
+     * @param project project to add to
+     * @param detail job details
+     * @param baseName project basename
+     */
     private void addPostbuildGroovy(Project project, MultiJobDetail detail, String baseName) {
         String setBuildStatus;
         String gif;

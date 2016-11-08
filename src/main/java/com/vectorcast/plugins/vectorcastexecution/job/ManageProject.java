@@ -40,30 +40,45 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- *
+ * Manage project
  */
 public class ManageProject {
-
-    private static final Logger LOG = Logger.getLogger(ManageProject.class.getName());
-
+    /** Manage file */
     private String manageFile;
+    /** Groups */
     private List<Group> groups;
+    /** Sources */
     private List<Source> sources;
+    /** Jobs */
     private List<MultiJobDetail> jobs;
-    
+    /**
+     * Get groups
+     * @return groups
+     */
     public List<Group> getGroups() {
         return groups;
     }
+    /**
+     * Get jobs
+     * @return jobs
+     */
     public List<MultiJobDetail> getJobs() {
         return jobs;
     }
-    
+    /**
+     * Constructor
+     * @param manageFile manage file contents
+     */
     public ManageProject(String manageFile) {
         this.manageFile = manageFile;
         groups = new ArrayList<Group>();
         sources = new ArrayList<Source>();
         jobs = new ArrayList<MultiJobDetail>();
     }
+    /**
+     * Parse the project file
+     * @throws IOException 
+     */
     public void parse() throws IOException {
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -112,11 +127,6 @@ public class ManageProject {
                                         testSuite.getName(),
                                         env.getName());
                                 jobs.add(job);
-//                                LOG.info(source.getName() + "/" +
-//                                         platform.getName() + "/" +
-//                                         compiler.getName() + "/" +
-//                                         testSuite.getName() + " -e " +
-//                                         env.getName());
                             }
                         }
                     }

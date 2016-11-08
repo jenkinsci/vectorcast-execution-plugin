@@ -38,17 +38,31 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- *
+ * Create a new single job
  */
 public class NewSingleJob extends BaseJob {
-
-    private static final Logger LOG = Logger.getLogger(NewSingleJob.class.getName());
-
-    
+    /** project name */
+    private String projectName;
+    /**
+     * Constructor
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException 
+     */
     public NewSingleJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
         super(request, response);
     }
-    
+    /**
+     * Get the name of the project
+     * @return the project name
+     */
+    public String getProjectName() {
+        return projectName;
+    }
+    /**
+     * Add build commands step to job
+     */
     private void addCommandSingleJob() {
         String noGenExecReport = "";
         if (!getOptionExecutionReport()) {
@@ -101,7 +115,9 @@ getEnvironmentTeardownUnix() + "\n";
         VectorCASTCommand command = new VectorCASTCommand(win, unix);
         getTopProject().getBuildersList().add(command);
     }
-
+    /**
+     * Add groovy script step to job
+     */
     private void addGroovyScriptSingleJob() {
         String setBuildStatus;
         String gif;
@@ -190,19 +206,31 @@ setBuildStatus +
         GroovyPostbuildRecorder groovy = new GroovyPostbuildRecorder(secureScript, /*behaviour*/2, /*matrix parent*/false);
         getTopProject().getPublishersList().add(groovy);
     }
+    /**
+     * Create project
+     * @return project
+     * @throws IOException
+     * @throws JobAlreadyExistsException 
+     */
     @Override
-    protected Project createProject() throws IOException {
+    protected Project createProject() throws IOException, JobAlreadyExistsException {
         if (getBaseName().isEmpty()) {
             getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED, "No project name specified");
             return null;
         }
-        String projectName = getBaseName() + ".vcast_manage.singlejob";
+        projectName = getBaseName() + ".vcast_manage.singlejob";
         if (getInstance().getJobNames().contains(projectName)) {
-            getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED, "Project already exists");
-            return null;
+            throw new JobAlreadyExistsException(projectName);
         }
         return getInstance().createProject(FreeStyleProject.class, projectName);
     }
+    /**
+     * Add build steps
+     * @param update
+     * @throws IOException
+     * @throws ServletException
+     * @throws hudson.model.Descriptor.FormException 
+     */
     @Override
     public void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
         getTopProject().setDescription("Single job to run the manage project: " + getManageProjectName());

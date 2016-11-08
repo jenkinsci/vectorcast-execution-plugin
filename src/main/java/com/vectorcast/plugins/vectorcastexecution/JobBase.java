@@ -36,14 +36,25 @@ import jenkins.model.Jenkins;
  * Base job
  */
 public abstract class JobBase implements ExtensionPoint, Action, Describable<JobBase> {
-
+    /** SCM to use initially */
     private SCM scm;
+    /**
+     * Default Constructor
+     */
     public JobBase() {
         scm = new NullSCM();
     }
+    /**
+     * Get the SCM
+     * @return the SCM
+     */
     public SCM getTheScm() {
         return scm;
     }
+    /**
+     * Set the SCM object
+     * @param scm new SCM
+     */
     public void setTheScm(SCM scm) {
         this.scm = scm;
     }

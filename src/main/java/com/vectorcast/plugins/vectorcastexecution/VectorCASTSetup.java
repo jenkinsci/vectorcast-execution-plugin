@@ -43,11 +43,10 @@ import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- *
+ * VectorCAST setup build action
  */
 public class VectorCASTSetup extends Builder implements SimpleBuildStep {
-
-//    private static final Logger LOG = Logger.getLogger(VectorCASTSetup.class.getName());
+    /** script directory */
     private static final String SCRIPT_DIR = "/scripts/";
     /**
      * Create a VectorCAST setup step
@@ -55,7 +54,6 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     @DataBoundConstructor
     public VectorCASTSetup() {
     }
-  
     /**
      * Copy the files in a directory recursively to the job workspace.
      * This is used when the source is NOT a jar file
@@ -81,7 +79,13 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             }
         }
     }
-    
+    /**
+     * Perform the build step. Copy the scripts from the archive/directory to the workspace
+     * @param build
+     * @param workspace
+     * @param launcher
+     * @param listener 
+     */    
     @Override
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
         FilePath destScriptDir = new FilePath(workspace, "vc_scripts");
@@ -123,7 +127,6 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
-
     /**
      * Descriptor for {@link VectorCASTSetup}. Used as a singleton.
      * The class is marked as public so that it can be accessed from views.
@@ -153,5 +156,4 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             return Messages.VectorCASTSetup_DisplayName();
         }
     }
-    
 }

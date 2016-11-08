@@ -47,28 +47,46 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- *
+ * Base job management - create/delete/update
  */
 abstract public class BaseJob {
-    
-    private static final Logger LOG = Logger.getLogger(BaseJob.class.getName());
-    
+    /** Jenkins instance */    
     private Jenkins instance;
+    /** Request */
     private StaplerRequest request;
+    /** Response */
     private StaplerResponse response;
+    /** Manage project name */
     private String manageProjectName;
+    /** Base name generated from the manage project name */
     private String baseName;
+    /** Top-level project */
     private Project topProject;
+    /** Environment setup for windows */
     private String environmentSetupWin;
+    /** Environment setup for unix */
     private String environmentSetupUnix;
+    /** Execute preamble for windows */
     private String executePreambleWin;
+    /** Execute preamble for unix */
     private String executePreambleUnix;
+    /** Environment tear down for windows */
     private String environmentTeardownWin;
+    /** Environment tear down for unix */
     private String environmentTeardownUnix;
+    /** Use Jenkins reporting */
     private boolean option_use_reporting;
+    /** What error-level to use */
     private String option_error_level;
+    /** Generate execution report */
     private boolean option_execution_report;
-    
+    /**
+     * Constructor
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException 
+     */
     protected BaseJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
         instance = Jenkins.getInstance();
         this.request = request;
@@ -90,59 +108,129 @@ abstract public class BaseJob {
         option_use_reporting = json.optBoolean("option_use_reporting", true);
         option_error_level = json.optString("option_error_level", "Unstable");
         option_execution_report = json.optBoolean("option_execution_report", true);
-
     }
-    
+    /**
+     * Get environment setup for windows
+     * @return setup
+     */
     protected String getEnvironmentSetupWin() {
         return environmentSetupWin;
     }
+    /**
+     * Get execute preamble for windows
+     * @return preamble
+     */
     protected String getExecutePreambleWin() {
         return executePreambleWin;
     }
+    /**
+     * Get environment tear down for windows
+     * @return 
+     */
     protected String getEnvironmentTeardownWin() {
         return environmentTeardownWin;
     }
+    /**
+     * Get environment setup for unix
+     * @return environment setup
+     */
     protected String getEnvironmentSetupUnix() {
         return environmentSetupUnix;
     }
+    /**
+     * Get execute preamble for unix
+     * @return preamble
+     */
     protected String getExecutePreambleUnix() {
         return executePreambleUnix;
     }
+    /**
+     * Get environment tear down for unix
+     * @return teardown
+     */
     protected String getEnvironmentTeardownUnix() {
         return environmentTeardownUnix;
     }
+    /**
+     * Get use Jenkins reporting option
+     * @return true to use, false to not
+     */
     protected boolean getOptionUseReporting() {
         return option_use_reporting;
     }
+    /**
+     * Get error level
+     * @return Unstable or Failure
+     */
     protected String getOptionErrorLevel() {
         return option_error_level;
     }
+    /**
+     * Use execution report
+     * @return true to use, false to not
+     */
     protected boolean getOptionExecutionReport() {
         return option_execution_report;
     }
+    /**
+     * Get top-level project
+     * @return project
+     */
     protected Project getTopProject() {
         return topProject;
     }
+    /**
+     * Get manage project name
+     * @return manage project name
+     */
     protected String getManageProjectName() {
         return manageProjectName;
     }
+    /**
+     * Get base name of manage project
+     * @return base name
+     */
     protected String getBaseName() {
         return baseName;
     }
+    /**
+     * Get request
+     * @return request
+     */
     protected StaplerRequest getRequest() {
         return request;
     }
+    /**
+     * Get Jenkins instance
+     * @return Jenkins instance
+     */
     protected Jenkins getInstance() {
         return instance;
     }
+    /**
+     * Get response
+     * @return response
+     */
     protected StaplerResponse getResponse() {
         return response;
     }
+    /**
+     * Add the delete workspace before build starts option
+     * @param project project to add to
+     */
     protected void addDeleteWorkspaceBeforeBuildStarts(Project project) {
         PreBuildCleanup cleanup = new PreBuildCleanup(/*patterns*/null, true, /*cleanup param*/"", /*external delete*/"");
         project.getBuildWrappersList().add(cleanup);
     }
-    public void create(boolean update) throws IOException, ServletException, Descriptor.FormException {
+    /**
+     * Create the job(s)
+     * @param update
+     * @throws IOException
+     * @throws ServletException
+     * @throws hudson.model.Descriptor.FormException
+     * @throws JobAlreadyExistsException 
+     */
+    public void create(boolean update) throws IOException, ServletException, Descriptor.FormException, JobAlreadyExistsException {
         // Create the top-level project
         topProject = createProject();
         if (topProject == null) {
@@ -160,7 +248,20 @@ abstract public class BaseJob {
 
         doCreate(update);
     }
-    abstract protected Project createProject() throws IOException;
+    /**
+     * Create top-level project
+     * @return created project
+     * @throws IOException
+     * @throws JobAlreadyExistsException 
+     */
+    abstract protected Project createProject() throws IOException, JobAlreadyExistsException;
+    /**
+     * Do create of project details
+     * @param update true if doing an update rather than a create
+     * @throws IOException
+     * @throws ServletException
+     * @throws hudson.model.Descriptor.FormException 
+     */
     abstract protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException ;
     /**
      * Add the VectorCAST setup step to copy the python scripts to
@@ -171,11 +272,18 @@ abstract public class BaseJob {
         VectorCASTSetup setup = new VectorCASTSetup();
         project.getBuildersList().add(setup);
     }
+    /**
+     * Add archive artifacts step
+     * @param project project to add to
+     */
     protected void addArchiveArtifacts(Project project) {
         ArtifactArchiver archiver = new ArtifactArchiver(/*artifacts*/"**/*", /*excludes*/"", /*latest only*/false, /*allow empty archive*/false);
         project.getPublishersList().add(archiver);
     }
-    
+    /**
+     * Add XUnit rules step
+     * @param project project to add step to
+     */
     protected void addXunit(Project project) {
         XUnitThreshold[] thresholds = null;
         CheckType checkType = new CheckType("**/test_results_*.xml", /*skipNoTestFiles*/true, /*failIfNotNew*/false, /*deleteOpFiles*/true, /*StopProcIfErrot*/true);
@@ -184,7 +292,10 @@ abstract public class BaseJob {
         XUnitPublisher xunit = new XUnitPublisher(testTypes, thresholds);
         project.getPublishersList().add(xunit);
     }
-    
+    /**
+     * Add VectorCAST coverage reporting step
+     * @param project project to add step to
+     */
     protected void addVCCoverage(Project project) {
         VectorCASTHealthReportThresholds healthReports = new VectorCASTHealthReportThresholds(0, 100, 0, 70, 0, 80, 0, 80, 0, 80, 0, 80);
         VectorCASTPublisher publisher = new VectorCASTPublisher();
@@ -192,5 +303,4 @@ abstract public class BaseJob {
         publisher.healthReports = healthReports;
         project.getPublishersList().add(publisher);
     }
-    
 }

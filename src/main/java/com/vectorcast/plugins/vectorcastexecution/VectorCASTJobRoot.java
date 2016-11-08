@@ -34,6 +34,10 @@ import jenkins.model.Jenkins;
  */
 @Extension
 public class VectorCASTJobRoot implements RootAction {
+    /**
+     * Get the icon to use.
+     * @return icon to use or null if user does not have permissions
+     */
     public String getIconFileName() {
         // Only display if user has admin rights
         if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
@@ -42,24 +46,37 @@ public class VectorCASTJobRoot implements RootAction {
             return null;
         }
     }
-
+    /**
+     * Display name for the top-level action/menu-item
+     * @return display name
+     */
     @Override
     public String getDisplayName() {
         return Messages.VectorCASTCommand_AddVCJob();
     }
-
+    /**
+     * Get name of top-level action/url
+     * @return url
+     */
     @Override
     public String getUrlName() {
         return "VectorCAST";
     }
-
+    /**
+     * Get dynamic 'job' - used by Stapler
+     * @param name name to find
+     * @return dyanmic job
+     */
     public JobBase getDynamic(String name) {
         for (JobBase ui : getAll())
             if (ui.getUrlName().equals(name))
                 return ui;
         return null;
     }
-
+    /**
+     * Get all actions associated with this URL
+     * @return list of actions
+     */
     public List<JobBase> getAll() {
         return JobBase.all();
     }

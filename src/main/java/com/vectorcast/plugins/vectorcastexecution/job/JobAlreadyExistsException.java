@@ -24,57 +24,23 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
 /**
- * Details about a manage job
+ * Exception raised if job being created already exists
  */
-public class MultiJobDetail {
-    /** Project name */
-    private String projName;
-    /** Level */
-    private String level;
-    /** Environment */
-    private String environment;
-    /** Compiler */
-    private String compiler;
+public class JobAlreadyExistsException extends Exception {
+    /** Name of project */
+    private final String project;
     /**
      * Constructor
-     * @param source source
-     * @param platform platform
-     * @param compiler compiler
-     * @param testSuite testSuite
-     * @param environment environment
+     * @param project name of project
      */
-    public MultiJobDetail(String source, String platform, String compiler, String testSuite, String environment) {
-        this.projName = compiler + "_" + testSuite + "_" + environment;
-        this.level = source + "/" + platform + "/" + compiler + "/" + testSuite;
-        this.environment = environment;
-        this.compiler = compiler;
-    }
-    /**
-     * Get compiler
-     * @return compiler
-     */
-    public String getCompiler() {
-        return compiler;
+    public JobAlreadyExistsException(String project) {
+        this.project = project;
     }
     /**
      * Get project name
      * @return project name
      */
-    public String getProjectName() {
-        return projName;
-    }
-    /**
-     * Get level
-     * @return level
-     */
-    public String getLevel() {
-        return level;
-    }
-    /**
-     * Get environment
-     * @return environment
-     */
-    public String getEnvironment() {
-        return environment;
+    public String getProject() {
+        return project;
     }
 }

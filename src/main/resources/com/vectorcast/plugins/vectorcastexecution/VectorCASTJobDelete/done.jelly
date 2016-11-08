@@ -31,10 +31,15 @@
          xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project"
          xmlns:vc="/lib/VectorCAST">
-  <l:layout permission="${permission}" title="${%Done.Title}">
+  <l:layout permission="${permission}" title="${%Confirm.Title}">
     <l:main-panel>
       <h1>${%Done.Title}</h1>
       <p>${%Done.Description}</p>
+      <ul>
+        <j:forEach var="job" items="${it.deleteJobs.jobsToDelete}">
+          <li>${job}</li>
+        </j:forEach>
+      </ul>
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -23,23 +23,45 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewMultiJob;
 import hudson.Extension;
 import hudson.model.Descriptor;
-import hudson.util.FormApply;
 import java.io.IOException;
 import javax.servlet.ServletException;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- *
+ * Create multiple jobs
  */
 @Extension
 public class VectorCASTJobMulti extends JobBase {
-
+    /** Job exists exception */
+    private JobAlreadyExistsException exception;
+    /** Multijob object */
+    private NewMultiJob job;
+    /**
+     * Get the multijob object
+     * @return multijob
+     */
+    public NewMultiJob getJob() {
+        return job;
+    }
+    /**
+     * Get the job already exists exception
+     * @return job already exists exception
+     */
+    public JobAlreadyExistsException getException() {
+        return exception;
+    }
+    /**
+     * URL for creating multi-job
+     * @return url
+     */
     @Override
     public String getUrlName() {
         return "multi-job";
@@ -48,11 +70,25 @@ public class VectorCASTJobMulti extends JobBase {
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
     }
+    /**
+     * Create multi-job
+     * @param request
+     * @param response
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     * @throws hudson.model.Descriptor.FormException 
+     */
     @RequirePOST
     public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         // Create multi-job
-        NewMultiJob job = new NewMultiJob(request, response);
-        job.create(false);
-        return FormApply.success(".");
+        job = new NewMultiJob(request, response);
+        try {
+            job.create(false);
+            return new HttpRedirect("created");
+        } catch (JobAlreadyExistsException ex) {
+            exception = ex;
+            return new HttpRedirect("exists");
+        }
     }
 }

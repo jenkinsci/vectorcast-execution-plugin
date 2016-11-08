@@ -23,23 +23,45 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
 import hudson.Extension;
 import hudson.model.Descriptor;
-import hudson.util.FormApply;
 import java.io.IOException;
 import javax.servlet.ServletException;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- *
+ * Create single job
  */
 @Extension
 public class VectorCASTJobSingle extends JobBase {
-
+    /** Job already exists exception */
+    private JobAlreadyExistsException exception;
+    /** Project name */
+    private String projectName;
+    /**
+     * Get the project name
+     * @return project name
+     */
+    public String getProjectName() {
+        return projectName;
+    }
+    /**
+     * Get job already exists exception
+     * @return exception
+     */
+    public JobAlreadyExistsException getException() {
+        return exception;
+    }
+    /**
+     * Get url name for creating single job
+     * @return url
+     */
     @Override
     public String getUrlName() {
         return "single-job";
@@ -48,11 +70,26 @@ public class VectorCASTJobSingle extends JobBase {
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
     }
+    /**
+     * Create the single job
+     * @param request
+     * @param response
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     * @throws hudson.model.Descriptor.FormException 
+     */
     @RequirePOST
     public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         // Create single-job
         NewSingleJob job = new NewSingleJob(request, response);
-        job.create(false);
-        return FormApply.success(".");
+        try {
+            job.create(false);
+            projectName = job.getProjectName();
+            return new HttpRedirect("created");
+        } catch (JobAlreadyExistsException ex) {
+            exception = ex;
+            return new HttpRedirect("exists");
+        }
     }
 }
