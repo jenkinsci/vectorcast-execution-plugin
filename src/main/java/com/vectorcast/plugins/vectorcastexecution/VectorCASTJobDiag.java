@@ -30,7 +30,9 @@ import hudson.util.FormApply;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -165,6 +167,7 @@ public class VectorCASTJobDiag extends JobBase {
             project.getBuildersList().add(cmd);
             project.save();
         }
-        return FormApply.success(".");
+
+        return new HttpRedirect("done");
     }
 }
