@@ -28,6 +28,7 @@ import hudson.model.Item;
 import hudson.model.Project;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,10 +78,12 @@ public class DeleteJobs extends BaseJob {
             jobsToDelete.add(multiName);
         }
 
-        List<Item> jobs = getInstance().getAllItems();
-        for (Item job : jobs) {
-            if (job.getFullName().startsWith(baseName)) {
-                jobsToDelete.add(job.getFullName());
+        Collection<String> jobs = getInstance().getJobNames();
+        for (String job : jobs) {
+            if (job.startsWith(baseName)) {
+                if (job.endsWith("_BuildExecute") ||
+                        job.endsWith("_Reporting"))
+                jobsToDelete.add(job);
             }
         }
     }
