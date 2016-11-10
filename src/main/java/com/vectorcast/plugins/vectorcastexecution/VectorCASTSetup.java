@@ -67,15 +67,18 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private void processDir(File dir, String base, FilePath destDir) throws IOException, InterruptedException {
         destDir.mkdirs();
         File[] files = dir.listFiles();
+        if (files == null) {
+            return;
+        }
         for (File file : files) {
             if (file.isDirectory()) {
                 FilePath newDest = new FilePath(destDir, file.getName());
                 processDir(file, base + "/" + file.getName(), newDest);
             } else {
                 FilePath newFile = new FilePath(destDir, file.getName());
-                InputStream is = VectorCASTSetup.class.getResourceAsStream(SCRIPT_DIR + base + "/" + file.getName());
-                newFile.copyFrom(is);
-                is.close();
+                try (InputStream is = VectorCASTSetup.class.getResourceAsStream(SCRIPT_DIR + base + "/" + file.getName())) {
+                    newFile.copyFrom(is);
+                }
             }
         }
     }
@@ -89,12 +92,13 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     @Override
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
         FilePath destScriptDir = new FilePath(workspace, "vc_scripts");
+        JarFile jFile = null;
         try {
             String path = VectorCASTSetup.class.getProtectionDomain().getCodeSource().getLocation().getPath();
             File testPath = new File(path);
             if (testPath.isFile()) {
                 // Have jar file...
-                JarFile jFile = new JarFile(VectorCASTSetup.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+                jFile = new JarFile(VectorCASTSetup.class.getProtectionDomain().getCodeSource().getLocation().getPath());
                 Enumeration<JarEntry> entries = jFile.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
@@ -120,6 +124,14 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             Logger.getLogger(VectorCASTSetup.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
             Logger.getLogger(VectorCASTSetup.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (jFile != null) {
+                try {
+                    jFile.close();
+                } catch (IOException ex) {
+                    // Ignore
+                }
+            }
         }
     }
 

@@ -35,6 +35,7 @@ import hudson.model.labels.LabelAtom;
 import hudson.plugins.copyartifact.BuildSelector;
 import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.plugins.copyartifact.WorkspaceSelector;
+import hudson.scm.SCM;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -301,7 +302,11 @@ public class NewMultiJob extends BaseJob {
         if (!getInstance().getJobNames().contains(projectName)) {
             projectsAdded.add(projectName);
             FreeStyleProject p = getInstance().createProject(FreeStyleProject.class, projectName);
-            p.setScm(getTopProject().getScm());
+            if (p == null) {
+                return;
+            }
+            SCM scm = getTopProject().getScm();
+            p.setScm(scm);
             addDeleteWorkspaceBeforeBuildStarts(p);
             Label label = new LabelAtom(detail.getCompiler());
             p.setAssignedLabel(label);

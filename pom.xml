@@ -6,14 +6,9 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.645</version>
+    <version>2.2</version>
     <relativePath/>
   </parent>
-
-<!--
-Minimum of 1.651 required - earlier versions have problem with Stapler that
-mean multi-part forms (i.e. form with file input like the multi-job create)      
--->
 
   <name>VectorCAST Execution</name>
   <groupId>com.vectorcast</groupId>
@@ -34,6 +29,13 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
+    <findbugs.failOnError>false</findbugs.failOnError>
+<!--
+Minimum of 1.651 required - earlier versions have problem with Stapler that
+mean multi-part forms (i.e. form with file input like the multi-job create)      
+-->
+    <jenkins.version>1.651.1</jenkins.version>
   </properties>
 
   <description>Run VectorCAST manage jobs from Jenkins</description>
@@ -65,16 +67,29 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
   </repositories>
 
   <dependencies>
-<!--
-Minimum of 1.651 required - earlier versions have problem with Stapler that
-mean multi-part forms (i.e. form with file input like the multi-job create)      
--->
+    <!-- Only needed to resolve problem with CookieSpecProvider not found when running tests -->
+    <dependency>  
+      <groupId>org.apache.httpcomponents</groupId>  
+      <artifactId>httpclient</artifactId>  
+      <version>4.5.1</version>  
+    </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>jenkins-war</artifactId>
-      <type>war</type>
-      <version>1.651.1</version>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>1.5</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <version>1.5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <version>3.0.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.vectorcast</groupId>
@@ -186,6 +201,24 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
           <configuration>
             <compatibleSinceVersion>2.0</compatibleSinceVersion>
           </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>${findbugs-maven-plugin.version}</version>
+        <configuration>
+          <xmlOutput>true</xmlOutput>
+          <failOnError>${findbugs.failOnError}</failOnError>
+        </configuration>
+        <executions>
+          <execution>
+            <id>run-findbugs</id>
+            <phase>verify</phase> 
+            <goals>
+              <goal>check</goal> 
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

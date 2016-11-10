@@ -60,7 +60,12 @@ public class VectorCASTJobDiag extends JobBase {
      * @return true if it exists and false if not
      */
     public boolean isExists() {
-        return Jenkins.getInstance().getJobNames().contains(PROJECT_NAME);
+        Jenkins instance = Jenkins.getInstance();
+        if (instance != null && instance.getJobNames().contains(PROJECT_NAME)) {
+            return true;
+        } else {
+            return false;
+        }
     }
     /**
      * Create the diagnostics job
@@ -74,7 +79,7 @@ public class VectorCASTJobDiag extends JobBase {
     @RequirePOST
     public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         Jenkins instance = Jenkins.getInstance();
-        if (!instance.getJobNames().contains(PROJECT_NAME)) {
+        if (instance != null && !instance.getJobNames().contains(PROJECT_NAME)) {
             FreeStyleProject project = instance.createProject(FreeStyleProject.class, PROJECT_NAME);
             String winCommand = 
 "@echo off\n" +
