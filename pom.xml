@@ -11,9 +11,9 @@
   </parent>
 
   <name>VectorCAST Execution</name>
-  <groupId>com.vectorcast</groupId>
+  <description>Run VectorCAST manage jobs from Jenkins</description>
   <artifactId>vectorcast-execution</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>hpi</packaging>
   <url>http://www.vectorcast.com</url>
 
@@ -36,9 +36,9 @@ Minimum of 1.651 required - earlier versions have problem with Stapler that
 mean multi-part forms (i.e. form with file input like the multi-job create)      
 -->
     <jenkins.version>1.651.1</jenkins.version>
+    <java.level>7</java.level>
+    <jenkins-test-harness.version>2.13</jenkins-test-harness.version>
   </properties>
-
-  <description>Run VectorCAST manage jobs from Jenkins</description>
 
   <developers>
     <developer>
@@ -88,7 +88,6 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>annotations</artifactId>
-      <version>3.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -205,7 +204,6 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>${findbugs-maven-plugin.version}</version>
         <configuration>
           <xmlOutput>true</xmlOutput>
           <failOnError>${findbugs.failOnError}</failOnError>
