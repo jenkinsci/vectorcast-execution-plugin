@@ -29,6 +29,7 @@ import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
 import hudson.model.Label;
 import hudson.model.Project;
 import hudson.model.labels.LabelAtom;
@@ -39,6 +40,7 @@ import hudson.scm.SCM;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import org.apache.commons.fileupload.FileItem;
@@ -52,6 +54,8 @@ import org.kohsuke.stapler.StaplerResponse;
  * Create a new multi-job and associated build/execute and reporting jobs
  */
 public class NewMultiJob extends BaseJob {
+    /** Multi-job project name */
+    private String multiProjectName;
     /** Manage file */
     private String manageFile;
     /** Parsed Manage project */
@@ -101,11 +105,29 @@ public class NewMultiJob extends BaseJob {
      */
     @Override
     protected Project createProject() throws IOException, JobAlreadyExistsException {
-        String projectName = getBaseName() + ".vcast_manage.multijob";
-        if (getInstance().getJobNames().contains(projectName)) {
-            throw new JobAlreadyExistsException(projectName);
+        multiProjectName = getBaseName() + ".vcast_manage.multijob";
+        if (getInstance().getJobNames().contains(multiProjectName)) {
+            throw new JobAlreadyExistsException(multiProjectName);
         }
-        return getInstance().createProject(MultiJobProject.class, projectName);
+        return getInstance().createProject(MultiJobProject.class, multiProjectName);
+    }
+    /**
+     * Cleanup project
+     */
+    @Override
+    protected void cleanupProject() {
+        List<Item> jobs = getInstance().getAllItems();
+        for (Item job : jobs) {
+            if (job.getFullName().equals(multiProjectName)) {
+                try {
+                    job.delete();
+                } catch (IOException ex) {
+                    Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
     }
     /**
      * Create multi-job top-level and sub-projects, updating if required.
@@ -115,7 +137,7 @@ public class NewMultiJob extends BaseJob {
      * @throws hudson.model.Descriptor.FormException 
      */
     @Override
-    protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
+    protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException, InvalidProjectFileException {
         // Read the manage project file
         FileItem fileItem = getRequest().getFileItem("manageProject");
         if (fileItem == null) {

@@ -230,7 +230,7 @@ abstract public class BaseJob {
      * @throws hudson.model.Descriptor.FormException
      * @throws JobAlreadyExistsException 
      */
-    public void create(boolean update) throws IOException, ServletException, Descriptor.FormException, JobAlreadyExistsException {
+    public void create(boolean update) throws IOException, ServletException, Descriptor.FormException, JobAlreadyExistsException, InvalidProjectFileException {
         // Create the top-level project
         topProject = createProject();
         if (topProject == null) {
@@ -246,7 +246,12 @@ abstract public class BaseJob {
 
         addDeleteWorkspaceBeforeBuildStarts(topProject);
 
-        doCreate(update);
+        try {
+            doCreate(update);
+        } catch (InvalidProjectFileException ex) {
+            cleanupProject();
+            throw ex;
+        }
     }
     /**
      * Create top-level project
@@ -256,13 +261,17 @@ abstract public class BaseJob {
      */
     abstract protected Project createProject() throws IOException, JobAlreadyExistsException;
     /**
+     * Cleanup top-level project, as in delete
+     */
+    abstract protected void cleanupProject();
+    /**
      * Do create of project details
      * @param update true if doing an update rather than a create
      * @throws IOException
      * @throws ServletException
      * @throws hudson.model.Descriptor.FormException 
      */
-    abstract protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException ;
+    abstract protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException, InvalidProjectFileException ;
     /**
      * Add the VectorCAST setup step to copy the python scripts to
      * the workspace

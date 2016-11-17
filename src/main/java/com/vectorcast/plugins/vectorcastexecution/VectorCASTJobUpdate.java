@@ -23,6 +23,7 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.UpdateMultiJob;
 import hudson.Extension;
@@ -81,8 +82,10 @@ public class VectorCASTJobUpdate extends JobBase {
             job.update();
             return new HttpRedirect("done");
         } catch (JobAlreadyExistsException ex) {
-            // Can'thappen when doing an update
+            // Can't happen when doing an update
             Logger.getLogger(VectorCASTJobUpdate.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidProjectFileException ex) {
+            return new HttpRedirect("invalid");
         }
         return FormApply.success(".");
     }

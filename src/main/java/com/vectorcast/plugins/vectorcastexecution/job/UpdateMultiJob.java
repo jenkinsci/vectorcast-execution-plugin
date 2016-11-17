@@ -71,7 +71,7 @@ public class UpdateMultiJob extends NewMultiJob {
      * @throws InterruptedException
      * @throws JobAlreadyExistsException 
      */
-    public void update() throws IOException, ServletException, Descriptor.FormException, InterruptedException, JobAlreadyExistsException {
+    public void update() throws IOException, ServletException, Descriptor.FormException, InterruptedException, JobAlreadyExistsException, InvalidProjectFileException {
         deleted = new ArrayList<>();
         String projectName = getBaseName() + ".vcast_manage.multijob";
         // Delete existing multijob

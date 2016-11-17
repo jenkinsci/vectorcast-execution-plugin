@@ -71,15 +71,16 @@ public class ManageProject {
      */
     public ManageProject(String manageFile) {
         this.manageFile = manageFile;
-        groups = new ArrayList<Group>();
-        sources = new ArrayList<Source>();
-        jobs = new ArrayList<MultiJobDetail>();
+        groups = new ArrayList<>();
+        sources = new ArrayList<>();
+        jobs = new ArrayList<>();
     }
     /**
      * Parse the project file
      * @throws IOException 
+     * @throws InvalidProjectFileException 
      */
-    public void parse() throws IOException {
+    public void parse() throws IOException, InvalidProjectFileException {
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dbBuilder = dbFactory.newDocumentBuilder();
@@ -111,8 +112,10 @@ public class ManageProject {
             }
         } catch (ParserConfigurationException ex) {
             Logger.getLogger(NewSingleJob.class.getName()).log(Level.SEVERE, null, ex);
+            throw new InvalidProjectFileException();
         } catch (SAXException ex) {
-            Logger.getLogger(NewSingleJob.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(NewSingleJob.class.getName()).log(Level.SEVERE, null, ex);
+            throw new InvalidProjectFileException();
         }
         for (Source source : sources) {
             for (Platform platform : source.platforms) {
