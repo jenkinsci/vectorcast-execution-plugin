@@ -46,7 +46,9 @@
         </f:section>
         <vc:scripts></vc:scripts>
         <vc:options></vc:options>
+<!--
         <vc:scm></vc:scm>
+-->
         <f:section>
           <f:block>
             <input type="submit" value="${%VCJob.Control.Submit}" />

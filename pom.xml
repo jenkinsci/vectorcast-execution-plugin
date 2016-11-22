@@ -54,13 +54,13 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
       </developer>
   </developers>
 
-  <!-- Assuming you want to host on @jenkinsci:
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-    <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
+    <connection>scm:git:ssh://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
+    <tag>HEAD</tag>
   </scm>
-   -->
+
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
@@ -78,6 +78,7 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
       <groupId>org.apache.httpcomponents</groupId>  
       <artifactId>httpclient</artifactId>  
       <version>4.5.1</version>  
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
@@ -94,7 +95,7 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>annotations</artifactId>
-      <scope>provided</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.vectorcast</groupId>
