@@ -13,7 +13,7 @@
   <name>VectorCAST Execution</name>
   <description>Run VectorCAST manage jobs from Jenkins</description>
   <artifactId>vectorcast-execution</artifactId>
-  <version>0.9</version>
+  <version>0.9-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <url>http://www.vectorcast.com</url>
 
