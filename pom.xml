@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
     <version>2.11</version>
-    <relativePath/>
+    <relativePath />
   </parent>
 
   <name>VectorCAST Execution</name>
   <description>Run VectorCAST manage jobs from Jenkins</description>
   <artifactId>vectorcast-execution</artifactId>
-  <version>0.9-SNAPSHOT</version>
+  <version>0.9</version>
   <packaging>hpi</packaging>
   <url>http://www.vectorcast.com</url>
 
@@ -58,7 +57,7 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
     <connection>scm:git:ssh://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
-    <tag>HEAD</tag>
+    <tag>vectorcast-execution-0.9</tag>
   </scm>
 
   <repositories>
