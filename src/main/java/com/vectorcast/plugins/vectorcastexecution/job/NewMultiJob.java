@@ -215,7 +215,7 @@ public class NewMultiJob extends BaseJob {
             String name = getBaseName() + "_" + detail.getProjectName() + "_BuildExecute";
             CopyArtifact copyArtifact = new CopyArtifact(name);
             copyArtifact.setOptional(true);
-            copyArtifact.setFilter("**/*manage_incremental_rebuild_report.html");
+            copyArtifact.setFilter("**/*manage_incremental_rebuild_report.html, *.vcr, *.cvr");
             copyArtifact.setFingerprintArtifacts(false);
             BuildSelector bs = new WorkspaceSelector();
             copyArtifact.setSelector(bs);
@@ -228,6 +228,7 @@ public class NewMultiJob extends BaseJob {
                 CopyArtifact copyArtifact = new CopyArtifact(name);
                 copyArtifact.setOptional(true);
                 copyArtifact.setFilter("**/*");
+                copyArtifact.setExcludes(".git/**");
                 copyArtifact.setFingerprintArtifacts(false);
                 BuildSelector bs = new WorkspaceSelector();
                 copyArtifact.setSelector(bs);
@@ -255,7 +256,14 @@ public class NewMultiJob extends BaseJob {
      * Add multi-job build command to top-level project
      */
     private void addMultiJobBuildCommand() {
-        String win =
+        String win = "";
+        for (MultiJobDetail detail : manageProject.getJobs()) {
+            String name = getBaseName() + "_" + detail.getProjectName();
+            win +=
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --import-result " + name + ".vcr\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level " + detail.getLevel() + " -e " + detail.getEnvironment() + " --clicast-args TOols Import_coverage %WORKSPACE%\\" + name + ".cvr\n";
+        }
+        win +=
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py --api 2 \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate  \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=metrics     \n" +
@@ -267,7 +275,14 @@ public class NewMultiJob extends BaseJob {
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
 
-        String unix =
+        String unix = "";
+        for (MultiJobDetail detail : manageProject.getJobs()) {
+            String name = getBaseName() + "_" + detail.getProjectName();
+            unix +=
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --import-result " + name + ".vcr\n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level " + detail.getLevel() + " -e " + detail.getEnvironment() + " --clicast-args TOols Import_coverage $WORKSPACE/" + name + ".cvr\n";
+        }
+        unix +=
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/incremental_build_report_aggregator.py --api 2 \n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate  \n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=metrics     \n" +
@@ -467,6 +482,8 @@ public class NewMultiJob extends BaseJob {
 getEnvironmentSetupWin() + "\n" +
 getExecutePreambleWin() +
 " %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --export-result @BASENAME@.vcr\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --clicast-args TOols EXPORT_Results_coverage %WORKSPACE%\\@BASENAME@.cvr\n" +
 getEnvironmentTeardownWin() + "\n" +
 "\n";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
@@ -479,6 +496,8 @@ getEnvironmentTeardownWin() + "\n" +
 getEnvironmentSetupUnix() + "\n" +
 getExecutePreambleUnix() +
 " $VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --export-result @BASENAME@.vcr\n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --clicast-args TOols EXPORT_Results_coverage $WORKSPACE/@BASENAME@.cvr\n" +
 getEnvironmentTeardownUnix() + "\n" +
 "\n";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
