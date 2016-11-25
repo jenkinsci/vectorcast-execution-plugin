@@ -215,7 +215,7 @@ public class NewMultiJob extends BaseJob {
             String name = getBaseName() + "_" + detail.getProjectName() + "_BuildExecute";
             CopyArtifact copyArtifact = new CopyArtifact(name);
             copyArtifact.setOptional(true);
-            copyArtifact.setFilter("**/*manage_incremental_rebuild_report.html, *.vcr, *.cvr");
+            copyArtifact.setFilter("**/*manage_incremental_rebuild_report.html, *.vcr");
             copyArtifact.setFingerprintArtifacts(false);
             BuildSelector bs = new WorkspaceSelector();
             copyArtifact.setSelector(bs);
@@ -260,8 +260,8 @@ public class NewMultiJob extends BaseJob {
         for (MultiJobDetail detail : manageProject.getJobs()) {
             String name = getBaseName() + "_" + detail.getProjectName();
             win +=
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --import-result " + name + ".vcr\n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level " + detail.getLevel() + " -e " + detail.getEnvironment() + " --clicast-args TOols Import_coverage %WORKSPACE%\\" + name + ".cvr\n";
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --import-result " + name + ".vcr\n";
+//"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level " + detail.getLevel() + " -e " + detail.getEnvironment() + " --clicast-args TOols Import_coverage %WORKSPACE%\\" + name + ".cvr\n";
         }
         win +=
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py --api 2 \n" +
@@ -279,8 +279,8 @@ public class NewMultiJob extends BaseJob {
         for (MultiJobDetail detail : manageProject.getJobs()) {
             String name = getBaseName() + "_" + detail.getProjectName();
             unix +=
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --import-result " + name + ".vcr\n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level " + detail.getLevel() + " -e " + detail.getEnvironment() + " --clicast-args TOols Import_coverage $WORKSPACE/" + name + ".cvr\n";
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --import-result " + name + ".vcr\n";
+//"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level " + detail.getLevel() + " -e " + detail.getEnvironment() + " --clicast-args TOols Import_coverage $WORKSPACE/" + name + ".cvr\n";
         }
         unix +=
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/incremental_build_report_aggregator.py --api 2 \n" +
@@ -483,7 +483,7 @@ getEnvironmentSetupWin() + "\n" +
 getExecutePreambleWin() +
 " %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --export-result @BASENAME@.vcr\n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --clicast-args TOols EXPORT_Results_coverage %WORKSPACE%\\@BASENAME@.cvr\n" +
+//"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --clicast-args TOols EXPORT_Results_coverage %WORKSPACE%\\@BASENAME@.cvr\n" +
 getEnvironmentTeardownWin() + "\n" +
 "\n";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
@@ -497,7 +497,7 @@ getEnvironmentSetupUnix() + "\n" +
 getExecutePreambleUnix() +
 " $VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --export-result @BASENAME@.vcr\n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --clicast-args TOols EXPORT_Results_coverage $WORKSPACE/@BASENAME@.cvr\n" +
+//"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --clicast-args TOols EXPORT_Results_coverage $WORKSPACE/@BASENAME@.cvr\n" +
 getEnvironmentTeardownUnix() + "\n" +
 "\n";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
