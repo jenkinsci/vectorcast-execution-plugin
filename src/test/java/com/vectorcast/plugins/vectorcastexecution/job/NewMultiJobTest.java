@@ -76,28 +76,16 @@ public class NewMultiJobTest extends TestCase {
     
     @Mock
     private FreeStyleProject project1;
-    private static final String PROJECT1 = "project_VectorCAST_MinGW_C++_TestSuite_ORDER_BuildExecute";
+    private static final String PROJECT1 = "project_VectorCAST_MinGW_C++_TestSuite_ORDER";
     private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList1;
     private DescribableList<Builder,Descriptor<Builder>> bldrsList1;
     private DescribableList<Publisher,Descriptor<Publisher>> publisherList1;
     @Mock
     private FreeStyleProject project2;
-    private static final String PROJECT2 = "project_VectorCAST_MinGW_C++_TestSuite_ORDER_Reporting";
+    private static final String PROJECT2 = "project_VectorCAST_MinGW_C_TestSuite_ORDER";
     private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList2;
     private DescribableList<Builder,Descriptor<Builder>> bldrsList2;
     private DescribableList<Publisher,Descriptor<Publisher>> publisherList2;
-    @Mock
-    private FreeStyleProject project3;
-    private static final String PROJECT3 = "project_VectorCAST_MinGW_C_TestSuite_ORDER_BuildExecute";
-    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList3;
-    private DescribableList<Builder,Descriptor<Builder>> bldrsList3;
-    private DescribableList<Publisher,Descriptor<Publisher>> publisherList3;
-    @Mock
-    private FreeStyleProject project4;
-    private static final String PROJECT4 = "project_VectorCAST_MinGW_C_TestSuite_ORDER_Reporting";
-    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList4;
-    private DescribableList<Builder,Descriptor<Builder>> bldrsList4;
-    private DescribableList<Publisher,Descriptor<Publisher>> publisherList4;
 
     @Mock
     private ScriptApproval scriptApproval;
@@ -177,8 +165,6 @@ public class NewMultiJobTest extends TestCase {
         when(mockJenkins.createProject(MultiJobProject.class, PROJECTNAME)).thenReturn(project);
         when(mockJenkins.createProject(FreeStyleProject.class, PROJECT1)).thenReturn(project1);
         when(mockJenkins.createProject(FreeStyleProject.class, PROJECT2)).thenReturn(project2);
-        when(mockJenkins.createProject(FreeStyleProject.class, PROJECT3)).thenReturn(project3);
-        when(mockJenkins.createProject(FreeStyleProject.class, PROJECT4)).thenReturn(project4);
 
         when(mockJenkins.getExtensionList(RootAction.class)).thenReturn(rootActionList);
         when(mockJenkins.getExtensionList(Language.class)).thenReturn(langList);
@@ -192,10 +178,6 @@ public class NewMultiJobTest extends TestCase {
         when(project1.getBuildWrappersList()).thenReturn(bldWrappersList1);
         bldWrappersList2 = new DescribableList(project2);
         when(project2.getBuildWrappersList()).thenReturn(bldWrappersList2);
-        bldWrappersList3 = new DescribableList(project3);
-        when(project3.getBuildWrappersList()).thenReturn(bldWrappersList3);
-        bldWrappersList4 = new DescribableList(project4);
-        when(project4.getBuildWrappersList()).thenReturn(bldWrappersList4);
 
         bldrsList = new DescribableList<>(project);
         when(project.getBuildersList()).thenReturn(bldrsList);
@@ -203,10 +185,6 @@ public class NewMultiJobTest extends TestCase {
         when(project1.getBuildersList()).thenReturn(bldrsList1);
         bldrsList2 = new DescribableList<>(project2);
         when(project2.getBuildersList()).thenReturn(bldrsList2);
-        bldrsList3 = new DescribableList<>(project3);
-        when(project3.getBuildersList()).thenReturn(bldrsList3);
-        bldrsList4 = new DescribableList<>(project4);
-        when(project4.getBuildersList()).thenReturn(bldrsList4);
 
         publisherList = new DescribableList<>(project);
         when(project.getPublishersList()).thenReturn(publisherList);
@@ -214,10 +192,6 @@ public class NewMultiJobTest extends TestCase {
         when(project1.getPublishersList()).thenReturn(publisherList1);
         publisherList2 = new DescribableList<>(project2);
         when(project2.getPublishersList()).thenReturn(publisherList2);
-        publisherList3 = new DescribableList<>(project3);
-        when(project3.getPublishersList()).thenReturn(publisherList3);
-        publisherList4 = new DescribableList<>(project4);
-        when(project4.getPublishersList()).thenReturn(publisherList4);
         
         when(rootActionList.get(ScriptApproval.class)).thenReturn(scriptApproval);
         mockStatic(ScriptApproval.class);
@@ -250,15 +224,12 @@ public class NewMultiJobTest extends TestCase {
         Assert.assertTrue(cleanup.getDeleteDirs());
         
         // Check build actions - main project...
-        Assert.assertEquals(8, bldrsList.size());
+        Assert.assertEquals(5, bldrsList.size());
         Assert.assertTrue(bldrsList.get(0) instanceof VectorCASTSetup);
         Assert.assertTrue(bldrsList.get(1) instanceof MultiJobBuilder);
-        Assert.assertTrue(bldrsList.get(2) instanceof MultiJobBuilder);
+        Assert.assertTrue(bldrsList.get(2) instanceof CopyArtifact);
         Assert.assertTrue(bldrsList.get(3) instanceof CopyArtifact);
-        Assert.assertTrue(bldrsList.get(4) instanceof CopyArtifact);
-        Assert.assertTrue(bldrsList.get(5) instanceof CopyArtifact);
-        Assert.assertTrue(bldrsList.get(6) instanceof CopyArtifact);
-        Assert.assertTrue(bldrsList.get(7) instanceof VectorCASTCommand);
+        Assert.assertTrue(bldrsList.get(4) instanceof VectorCASTCommand);
         
         // Check publishers - main project...
         checkPublishers(publisherList);
@@ -266,24 +237,18 @@ public class NewMultiJobTest extends TestCase {
         // Now check the additional build/report projects
         
         // Build/execute - project 1
-        checkBuildExecuteSteps(bldrsList1);
+        checkBuildExecuteSteps3(bldrsList1);
 
-        Assert.assertEquals(1, publisherList1.size());
-        Assert.assertTrue(publisherList1.get(0) instanceof GroovyPostbuildRecorder);
+        checkPublishers(publisherList1);
+//        Assert.assertEquals(4, publisherList1.size());
+//        Assert.assertTrue(publisherList1.get(3) instanceof GroovyPostbuildRecorder);
 
-        // Report - project 2
-        checkBuildExecuteSteps(bldrsList2);
+        // Build/execute - project 2
+        checkBuildExecuteSteps3(bldrsList2);
+
         checkPublishers(publisherList2);
-
-        // Build/execute - project 3
-        checkBuildExecuteSteps(bldrsList3);
-
-        Assert.assertEquals(1, publisherList3.size());
-        Assert.assertTrue(publisherList3.get(0) instanceof GroovyPostbuildRecorder);
-        
-        // Report - project 4
-        checkBuildExecuteSteps(bldrsList4);
-        checkPublishers(publisherList4);
+//        Assert.assertEquals(1, publisherList2.size());
+//        Assert.assertTrue(publisherList2.get(0) instanceof GroovyPostbuildRecorder);
     }
     
     @Test
@@ -326,19 +291,26 @@ public class NewMultiJobTest extends TestCase {
         // Now check the additional build/report projects
         
         // Build/execute - project 1
-        checkBuildExecuteSteps(bldrsList1);
+        checkBuildExecuteSteps2(bldrsList1);
 
         Assert.assertEquals(1, publisherList1.size());
         Assert.assertTrue(publisherList1.get(0) instanceof GroovyPostbuildRecorder);
 
-        // Build/execute - project 3
-        checkBuildExecuteSteps(bldrsList3);
+        // Build/execute - project 2
+        checkBuildExecuteSteps2(bldrsList2);
 
-        Assert.assertEquals(1, publisherList3.size());
-        Assert.assertTrue(publisherList3.get(0) instanceof GroovyPostbuildRecorder);
+        Assert.assertEquals(1, publisherList2.size());
+        Assert.assertTrue(publisherList2.get(0) instanceof GroovyPostbuildRecorder);
     }
     
-    private void checkBuildExecuteSteps(DescribableList<Builder,Descriptor<Builder>> list) {
+    private void checkBuildExecuteSteps3(DescribableList<Builder,Descriptor<Builder>> list) {
+        Assert.assertEquals(3, list.size());
+        Assert.assertTrue(list.get(0) instanceof VectorCASTSetup);
+        Assert.assertTrue(list.get(1) instanceof VectorCASTCommand);
+        Assert.assertTrue(list.get(2) instanceof VectorCASTCommand);
+    }
+
+    private void checkBuildExecuteSteps2(DescribableList<Builder,Descriptor<Builder>> list) {
         Assert.assertEquals(2, list.size());
         Assert.assertTrue(list.get(0) instanceof VectorCASTSetup);
         Assert.assertTrue(list.get(1) instanceof VectorCASTCommand);

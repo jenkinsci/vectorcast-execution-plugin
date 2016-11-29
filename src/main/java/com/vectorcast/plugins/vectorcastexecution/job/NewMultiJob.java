@@ -165,7 +165,7 @@ public class NewMultiJob extends BaseJob {
         projectsAdded.add(getTopProject().getName());
         
         for (MultiJobDetail detail : manageProject.getJobs()) {
-            String name = getBaseName() + "_" + detail.getProjectName() + "_BuildExecute";
+            String name = getBaseName() + "_" + detail.getProjectName();
             projectsNeeded.add(name);
             PhaseJobsConfig phase = new PhaseJobsConfig(name, 
                     /*jobproperties*/"", 
@@ -183,57 +183,25 @@ public class NewMultiJob extends BaseJob {
                     /*applycond if no scm changes*/false);
             phaseJobs.add(phase);
         }
-        MultiJobBuilder multiJobBuilder = new MultiJobBuilder("Build-Execute-Phase", phaseJobs, MultiJobBuilder.ContinuationCondition.COMPLETED);
+        MultiJobBuilder multiJobBuilder = new MultiJobBuilder("Build, Execute and Report", phaseJobs, MultiJobBuilder.ContinuationCondition.COMPLETED);
         getTopProject().getBuildersList().add(multiJobBuilder);
-        // Reporting only if doing reporting
-        if (getOptionUseReporting()) {
-            phaseJobs = new ArrayList<>();
 
-            for (MultiJobDetail detail : manageProject.getJobs()) {
-                String name = getBaseName() + "_" + detail.getProjectName() + "_Reporting";
-                projectsNeeded.add(name);
-                PhaseJobsConfig phase = new PhaseJobsConfig(name, 
-                        /*jobproperties*/"", 
-                        /*currParams*/true, 
-                        /*configs*/null, 
-                        PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, 
-                        /*disablejob*/false, 
-                        /*enableretrystrategy*/false, 
-                        /*parsingrulespath*/null, 
-                        /*retries*/0, 
-                        /*enablecondition*/false, 
-                        /*abort*/false, /*condition*/"", 
-                        /*buildonly if scm changes*/false,
-                        /*applycond if no scm changes*/false);
-                phaseJobs.add(phase);
-            }
-            multiJobBuilder = new MultiJobBuilder("Reporting-Phase", phaseJobs, MultiJobBuilder.ContinuationCondition.COMPLETED);
-            getTopProject().getBuildersList().add(multiJobBuilder);
-        }
         // Copy artifacts per building project
         for (MultiJobDetail detail : manageProject.getJobs()) {
-            String name = getBaseName() + "_" + detail.getProjectName() + "_BuildExecute";
+            String name = getBaseName() + "_" + detail.getProjectName();
+            String tarFile = "";
+            if (isUsingSCM()) {
+                tarFile = ", " + getBaseName() + "_" + detail.getProjectName() + "_build.tar";
+            }
             CopyArtifact copyArtifact = new CopyArtifact(name);
             copyArtifact.setOptional(true);
-            copyArtifact.setFilter("**/*manage_incremental_rebuild_report.html, *.vcr");
+            copyArtifact.setFilter("**/*manage_incremental_rebuild_report.html, " +
+                                   "xml_data/**" +
+                                   tarFile);
             copyArtifact.setFingerprintArtifacts(false);
             BuildSelector bs = new WorkspaceSelector();
             copyArtifact.setSelector(bs);
             getTopProject().getBuildersList().add(copyArtifact);
-        }
-        // Copy artifacts per reporting project if doing reporting
-        if (getOptionUseReporting()) {
-            for (MultiJobDetail detail : manageProject.getJobs()) {
-                String name = getBaseName() + "_" + detail.getProjectName() + "_Reporting";
-                CopyArtifact copyArtifact = new CopyArtifact(name);
-                copyArtifact.setOptional(true);
-                copyArtifact.setFilter("**/*");
-                copyArtifact.setExcludes(".git/**");
-                copyArtifact.setFingerprintArtifacts(false);
-                BuildSelector bs = new WorkspaceSelector();
-                copyArtifact.setSelector(bs);
-                getTopProject().getBuildersList().add(copyArtifact);
-            }
         }
         addMultiJobBuildCommand();
                 
@@ -257,38 +225,36 @@ public class NewMultiJob extends BaseJob {
      */
     private void addMultiJobBuildCommand() {
         String win = "";
-        for (MultiJobDetail detail : manageProject.getJobs()) {
-            String name = getBaseName() + "_" + detail.getProjectName();
+        if (isUsingSCM()) {
             win +=
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --import-result " + name + ".vcr\n";
-//"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level " + detail.getLevel() + " -e " + detail.getEnvironment() + " --clicast-args TOols Import_coverage %WORKSPACE%\\" + name + ".cvr\n";
+"%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\extract_build_dir.py\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --set-root-source-directory=%WORKSPACE%\n";
         }
         win +=
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py --api 2 \n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate  \n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=metrics     \n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=environment \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status=@PROJECT_BASE@_full_report.html\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status > @PROJECT_BASE@_full_report.txt\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=metrics\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=environment\n" +
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\getTotals.py --api 2 @PROJECT_BASE@_full_report.txt\n" +
 "           ";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
 
         String unix = "";
-        for (MultiJobDetail detail : manageProject.getJobs()) {
-            String name = getBaseName() + "_" + detail.getProjectName();
+        if (isUsingSCM()) {
             unix +=
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --import-result " + name + ".vcr\n";
-//"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level " + detail.getLevel() + " -e " + detail.getEnvironment() + " --clicast-args TOols Import_coverage $WORKSPACE/" + name + ".cvr\n";
+"$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/extract_build_dir.py\n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --set-root-source-directory=$WORKSPACE\n";
         }
         unix +=
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/incremental_build_report_aggregator.py --api 2 \n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate  \n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=metrics     \n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=environment\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status=@PROJECT_BASE@_full_report.html\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status > @PROJECT_BASE@_full_report.txt\n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate\n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=metrics\n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=environment\n" +
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/getTotals.py --api 2 @PROJECT_BASE@_full_report.txt\n" +
 "\n" +
 "          ";
@@ -335,10 +301,9 @@ public class NewMultiJob extends BaseJob {
      */
     private void createProjectPair(String baseName, MultiJobDetail detail, boolean update) throws IOException {
         // Building job
-        String projectName = baseName + "_BuildExecute";
-        if (!getInstance().getJobNames().contains(projectName)) {
-            projectsAdded.add(projectName);
-            FreeStyleProject p = getInstance().createProject(FreeStyleProject.class, projectName);
+        if (!getInstance().getJobNames().contains(baseName)) {
+            projectsAdded.add(baseName);
+            FreeStyleProject p = getInstance().createProject(FreeStyleProject.class, baseName);
             if (p == null) {
                 return;
             }
@@ -349,32 +314,19 @@ public class NewMultiJob extends BaseJob {
             p.setAssignedLabel(label);
             addSetup(p);
             addBuildCommands(p, detail, baseName);
-            addPostbuildGroovy(p, detail, baseName);
-            p.save();
-        } else {
-            projectsExisting.add(projectName);
-        }
-
-        // Reporting job - only if doing reporting
-        if (getOptionUseReporting()) {
-            projectName = baseName + "_Reporting";
-            if (!getInstance().getJobNames().contains(projectName)) {
-                projectsAdded.add(projectName);
-                FreeStyleProject p = getInstance().createProject(FreeStyleProject.class, projectName);
-                p.setScm(getTopProject().getScm());
-                addDeleteWorkspaceBeforeBuildStarts(p);
-                Label label = new LabelAtom(detail.getCompiler());
-                p.setAssignedLabel(label);
-                addSetup(p);
+            if (getOptionUseReporting()) {
                 addReportingCommands(p, detail, baseName);
                 addArchiveArtifacts(p);
                 addXunit(p);
                 addVCCoverage(p);
                 addPostReportingGroovy(p);
-                p.save();
+                // RMK : TODO - fixup/combine groovy
             } else {
-                projectsExisting.add(projectName);
+                addPostbuildGroovy(p, detail, baseName);
             }
+            p.save();
+        } else {
+            projectsExisting.add(baseName);
         }
     }
     /**
@@ -455,14 +407,16 @@ public class NewMultiJob extends BaseJob {
             noGenExecReport = " --dont-gen-exec-rpt";
         }
         
-        String win = "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\generate-results.py --api 2 \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
-"      ";
+        String win =
+"%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\generate-results.py --api 2 \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
+"";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@LEVEL@", detail.getLevel());
         win = StringUtils.replace(win, "@ENV@", detail.getEnvironment());
         
-        String unix = "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/generate-results.py --api 2 \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
-"      ";
+        String unix =
+"$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/generate-results.py --api 2 \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
+"";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
         unix = StringUtils.replace(unix, "@LEVEL@", detail.getLevel());
         unix = StringUtils.replace(unix, "@ENV@", detail.getEnvironment());
@@ -479,11 +433,20 @@ public class NewMultiJob extends BaseJob {
     private void addBuildCommands(Project project, MultiJobDetail detail, String baseName) {
         String win = 
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
-getEnvironmentSetupWin() + "\n" +
+getEnvironmentSetupWin() + "\n";
+        if (isUsingSCM()) {
+            win +=
 getExecutePreambleWin() +
-" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --export-result @BASENAME@.vcr\n" +
-//"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --clicast-args TOols EXPORT_Results_coverage %WORKSPACE%\\@BASENAME@.cvr\n" +
+" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --set-root-source-directory=%WORKSPACE%\n";
+        }
+        win +=
+getExecutePreambleWin() +
+" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n";
+        if (isUsingSCM()) {
+            win +=
+"%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\copy_build_dir.py \"@PROJECT@\" @LEVEL@ @BASENAME@ @ENV@\n";
+        }
+        win +=
 getEnvironmentTeardownWin() + "\n" +
 "\n";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
@@ -493,11 +456,20 @@ getEnvironmentTeardownWin() + "\n" +
         
         String unix = 
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
-getEnvironmentSetupUnix() + "\n" +
+getEnvironmentSetupUnix() + "\n";
+        if (isUsingSCM()) {
+            unix +=
 getExecutePreambleUnix() +
-" $VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --export-result @BASENAME@.vcr\n" +
-//"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --clicast-args TOols EXPORT_Results_coverage $WORKSPACE/@BASENAME@.cvr\n" +
+" $VECTORCAST_DIR/manage --project \"@PROJECT@\" --set-root-source-directory=$WORKSPACE\n";
+        }
+        unix +=
+getExecutePreambleUnix() +
+" $VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n";
+        if (isUsingSCM()) {
+            unix +=
+"$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/copy_build_dir.py \"@PROJECT@\" @LEVEL@ @BASENAME@ @ENV@\n";
+        }
+        unix +=
 getEnvironmentTeardownUnix() + "\n" +
 "\n";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());

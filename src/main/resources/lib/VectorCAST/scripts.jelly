@@ -33,24 +33,24 @@
     <f:section title="${%VCJob.Scripts}">
       <f:optionalBlock title="Windows Script Commands" checked="${instance.showWindows}" inline="true"> 
         <f:entry title="${%VCJob.Scripts.environment_setup.title}" description="${%VCJob.Scripts.environment_setup.description_win}">
-          <f:textbox name="environment_setup_win" size="50"/>
+          <f:textarea name="environment_setup_win" class="fixed-width"/>
         </f:entry>
         <f:entry title="${%VCJob.Scripts.execute_preamble.title}" description="${%VCJob.Scripts.execute_preamble.description_win}">
           <f:textbox name="execute_preamble_win" size="50"/>
         </f:entry>
         <f:entry title="${%VCJob.Scripts.environment_teardown.title}" description="${%VCJob.Scripts.environment_teardown.description_win}">
-          <f:textbox name="environment_teardown_win" size="50"/>
+          <f:textarea name="environment_teardown_win" class="fixed-width"/>
         </f:entry>
       </f:optionalBlock>
       <f:optionalBlock title="Unix Script Commands" checked="${instance.showUnix}" inline="true"> 
         <f:entry title="${%VCJob.Scripts.environment_setup.title}" description="${%VCJob.Scripts.environment_setup.description_unix}">
-          <f:textbox name="environment_setup_unix" size="50"/>
+          <f:textarea name="environment_setup_unix" class="fixed-width"/>
         </f:entry>
         <f:entry title="${%VCJob.Scripts.execute_preamble.title}" description="${%VCJob.Scripts.execute_preamble.description_unix}">
           <f:textbox name="execute_preamble_unix" size="50"/>
         </f:entry>
         <f:entry title="${%VCJob.Scripts.environment_teardown.title}" description="${%VCJob.Scripts.environment_teardown.description_unix}">
-          <f:textbox name="environment_teardown_unix" size="50"/>
+          <f:textarea name="environment_teardown_unix" class="fixed-width"/>
         </f:entry>
       </f:optionalBlock>
     </f:section>

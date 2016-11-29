@@ -80,6 +80,8 @@ abstract public class BaseJob {
     private String option_error_level;
     /** Generate execution report */
     private boolean option_execution_report;
+    /** Using some form of SCM */
+    private boolean usingSCM;
     /**
      * Constructor
      * @param request
@@ -91,10 +93,15 @@ abstract public class BaseJob {
         instance = Jenkins.getInstance();
         this.request = request;
         this.response = response;
+        this.usingSCM = false;
 
         JSONObject json = request.getSubmittedForm();
         
         manageProjectName = json.optString("manageProjectName");
+        if (!manageProjectName.isEmpty()) {
+            // Force unix style path to avoid problems later
+            manageProjectName = manageProjectName.replace('\\','/');
+        }
         baseName = FilenameUtils.getBaseName(manageProjectName);
         
         environmentSetupWin = json.optString("environment_setup_win");
@@ -108,6 +115,13 @@ abstract public class BaseJob {
         option_use_reporting = json.optBoolean("option_use_reporting", true);
         option_error_level = json.optString("option_error_level", "Unstable");
         option_execution_report = json.optBoolean("option_execution_report", true);
+    }
+    /**
+     * Using some form of SCM
+     * @return true or false
+     */
+    protected boolean isUsingSCM() {
+        return usingSCM;
     }
     /**
      * Get environment setup for windows
@@ -243,6 +257,11 @@ abstract public class BaseJob {
             scm = new NullSCM();
         }
         topProject.setScm(scm);
+        if (scm instanceof NullSCM) {
+            usingSCM = false;
+        } else {
+            usingSCM = true;
+        }
 
         addDeleteWorkspaceBeforeBuildStarts(topProject);
 
