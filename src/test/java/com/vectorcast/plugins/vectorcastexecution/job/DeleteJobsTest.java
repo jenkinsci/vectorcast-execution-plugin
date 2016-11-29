@@ -79,26 +79,23 @@ public class DeleteJobsTest extends TestCase {
         
         List<String> jobs = new ArrayList<>();
         final String PROJECT_KEEP1 = "jobToKeep";
-        final String PROJECT_KEEP2 = "project_otherEnv_Keep";
+        final String PROJECT_KEEP2 = "keep_project_otherEnv";
         final String PROJECT_MANAGE1 = "project.vcast_manage.singlejob";
         final String PROJECT_MANAGE2 = "project.vcast_manage.multijob";
-        final String PROJECT_MANAGE3 = "project_otherEnv_Reporting";
-        final String PROJECT_MANAGE4 = "project_otherEnv_BuildExecute";
+        final String PROJECT_MANAGE3 = "project_otherEnv";
         jobs.add(PROJECT_KEEP1);
         jobs.add(PROJECT_KEEP2);
         jobs.add(PROJECT_MANAGE1);
         jobs.add(PROJECT_MANAGE2);
         jobs.add(PROJECT_MANAGE3);
-        jobs.add(PROJECT_MANAGE4);
         when(mockJenkins.getJobNames()).thenReturn(jobs);
         
         DeleteJobs deleteJobs = new DeleteJobs(request, response);
         deleteJobs.createJobList();
-        Assert.assertEquals(4, deleteJobs.getJobsToDelete().size());
+        Assert.assertEquals(3, deleteJobs.getJobsToDelete().size());
         Assert.assertTrue(deleteJobs.getJobsToDelete().contains(PROJECT_MANAGE1));
         Assert.assertTrue(deleteJobs.getJobsToDelete().contains(PROJECT_MANAGE2));
         Assert.assertTrue(deleteJobs.getJobsToDelete().contains(PROJECT_MANAGE3));
-        Assert.assertTrue(deleteJobs.getJobsToDelete().contains(PROJECT_MANAGE4));
         Assert.assertFalse(deleteJobs.getJobsToDelete().contains(PROJECT_KEEP1));
         Assert.assertFalse(deleteJobs.getJobsToDelete().contains(PROJECT_KEEP2));
 
@@ -108,13 +105,11 @@ public class DeleteJobsTest extends TestCase {
         Item job3 = new TestJob(PROJECT_MANAGE1);
         Item job4 = new TestJob(PROJECT_MANAGE2);
         Item job5 = new TestJob(PROJECT_MANAGE3);
-        Item job6 = new TestJob(PROJECT_MANAGE4);
         items.add(job1);
         items.add(job2);
         items.add(job3);
         items.add(job4);
         items.add(job5);
-        items.add(job6);
         when(mockJenkins.getAllItems()).thenReturn(items);
         deleteJobs.doDelete();
         for (Item item : items) {

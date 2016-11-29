@@ -81,8 +81,6 @@ public class DeleteJobs extends BaseJob {
         Collection<String> jobs = getInstance().getJobNames();
         for (String job : jobs) {
             if (job.startsWith(baseName)) {
-                if (job.endsWith("_BuildExecute") ||
-                        job.endsWith("_Reporting"))
                 jobsToDelete.add(job);
             }
         }
