@@ -227,8 +227,7 @@ public class NewMultiJob extends BaseJob {
         String win = "";
         if (isUsingSCM()) {
             win +=
-"%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\extract_build_dir.py\n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --set-root-source-directory=%WORKSPACE%\n";
+"%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\extract_build_dir.py\n";
         }
         win +=
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py --api 2 \n" +
@@ -245,8 +244,7 @@ public class NewMultiJob extends BaseJob {
         String unix = "";
         if (isUsingSCM()) {
             unix +=
-"$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/extract_build_dir.py\n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --set-root-source-directory=$WORKSPACE\n";
+"$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/extract_build_dir.py\n";
         }
         unix +=
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/incremental_build_report_aggregator.py --api 2 \n" +
@@ -434,11 +432,6 @@ public class NewMultiJob extends BaseJob {
         String win = 
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 getEnvironmentSetupWin() + "\n";
-        if (isUsingSCM()) {
-            win +=
-getExecutePreambleWin() +
-" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --set-root-source-directory=%WORKSPACE%\n";
-        }
         win +=
 getExecutePreambleWin() +
 " %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n";
@@ -457,11 +450,6 @@ getEnvironmentTeardownWin() + "\n" +
         String unix = 
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 getEnvironmentSetupUnix() + "\n";
-        if (isUsingSCM()) {
-            unix +=
-getExecutePreambleUnix() +
-" $VECTORCAST_DIR/manage --project \"@PROJECT@\" --set-root-source-directory=$WORKSPACE\n";
-        }
         unix +=
 getExecutePreambleUnix() +
 " $VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n";
