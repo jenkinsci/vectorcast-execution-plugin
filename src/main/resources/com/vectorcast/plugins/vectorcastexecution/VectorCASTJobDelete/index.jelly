@@ -37,7 +37,8 @@
         <h1>${%VCJob.Control.Title}</h1>
         <p>${%VCJob.Control.Description}</p>
         <f:section title="${%VCJob.Control.Project}">
-          <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}">
+          <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}"
+                   help="/plugin/vectorcast-execution/help-projectDelete.html">
             <f:textbox name="manageProjectName" size="50"/>
           </f:entry>
         </f:section>

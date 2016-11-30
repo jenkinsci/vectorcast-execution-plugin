@@ -74,8 +74,7 @@ getEnvironmentSetupWin() + "\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --release-locks\n" +
 getExecutePreambleWin() +
 " %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --build-execute --incremental --output \"@PROJECT_BASE@_manage_incremental_rebuild_report.html\" \n" +
-"\n" +
-getEnvironmentTeardownWin() + "\n";
+"\n";
         if (getOptionUseReporting()) {
             win +=
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --api 2 \"@PROJECT@\" " + noGenExecReport + "\n" +
@@ -86,6 +85,7 @@ getEnvironmentTeardownWin() + "\n";
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status > \"@PROJECT_BASE@_full_report.txt\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\getTotals.py\" --api 2 \"@PROJECT_BASE@_full_report.txt\"";
         }
+        win += getEnvironmentTeardownWin() + "\n";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
         
@@ -96,8 +96,7 @@ getEnvironmentSetupUnix() + "\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --release-locks \n" +
 getExecutePreambleUnix() +
 " $VECTORCAST_DIR/manage --project \"@PROJECT@\" --build-execute --incremental --output \"@PROJECT_BASE@_manage_incremental_rebuild_report.html\"\n" +
-"\n" +
-getEnvironmentTeardownUnix() + "\n";
+"\n";
         if (getOptionUseReporting()) {
             unix +=
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --api 2 \"@PROJECT@\" " + noGenExecReport + "\n" +
@@ -108,6 +107,7 @@ getEnvironmentTeardownUnix() + "\n";
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status > \"@PROJECT_BASE@_full_report.txt\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/getTotals.py\" --api 2 \"@PROJECT_BASE@_full_report.txt\"";
         }
+        unix += getEnvironmentTeardownUnix() + "\n";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
         unix = StringUtils.replace(unix, "@PROJECT_BASE@", getBaseName());
         

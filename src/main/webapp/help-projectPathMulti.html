@@ -34,4 +34,5 @@ THE SOFTWARE.
     <pre>
     tests\project.vcm
     </pre>
+    <br/>Note: for multi-job execution across a number of slaves, the recommended execution approach is to use an SCM check-out with a relative path into the check-out. Due to locking optimism in a underlying library that VectorCAST uses, the use of network shares across multiple hosts can potentially lead to corruption of coverage data.
 </div>

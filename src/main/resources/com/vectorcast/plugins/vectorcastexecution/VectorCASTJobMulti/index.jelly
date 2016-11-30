@@ -42,7 +42,7 @@
             <input type="file" name="manageProject" required="true" />
           </f:entry>
           <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}"
-                   help="/plugin/vectorcast-execution/help-projectPath.html">
+                   help="/plugin/vectorcast-execution/help-projectPathMulti.html">
             <f:textbox name="manageProjectName" size="50" required="true" />
           </f:entry>
         </f:section>

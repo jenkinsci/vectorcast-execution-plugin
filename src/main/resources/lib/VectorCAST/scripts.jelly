@@ -31,25 +31,33 @@
          xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project">
     <f:section title="${%VCJob.Scripts}">
-      <f:optionalBlock title="Windows Script Commands" checked="${instance.showWindows}" inline="true"> 
-        <f:entry title="${%VCJob.Scripts.environment_setup.title}" description="${%VCJob.Scripts.environment_setup.description_win}">
+      <f:optionalBlock title="Windows Script Commands" checked="${instance.showWindows}" inline="true" 
+                       help="/plugin/vectorcast-execution/help-optWindows.html">
+        <f:entry title="${%VCJob.Scripts.environment_setup.title}" description="${%VCJob.Scripts.environment_setup.description_win}"
+                 help="/plugin/vectorcast-execution/help-optWinEnvSetup.html">
           <f:textarea name="environment_setup_win" class="fixed-width"/>
         </f:entry>
-        <f:entry title="${%VCJob.Scripts.execute_preamble.title}" description="${%VCJob.Scripts.execute_preamble.description_win}">
+        <f:entry title="${%VCJob.Scripts.execute_preamble.title}" description="${%VCJob.Scripts.execute_preamble.description_win}"
+                 help="/plugin/vectorcast-execution/help-optWinEnvPrefix.html">
           <f:textbox name="execute_preamble_win" size="50"/>
         </f:entry>
-        <f:entry title="${%VCJob.Scripts.environment_teardown.title}" description="${%VCJob.Scripts.environment_teardown.description_win}">
+        <f:entry title="${%VCJob.Scripts.environment_teardown.title}" description="${%VCJob.Scripts.environment_teardown.description_win}"
+                 help="/plugin/vectorcast-execution/help-optWinEnvTeardown.html">
           <f:textarea name="environment_teardown_win" class="fixed-width"/>
         </f:entry>
       </f:optionalBlock>
-      <f:optionalBlock title="Unix Script Commands" checked="${instance.showUnix}" inline="true"> 
-        <f:entry title="${%VCJob.Scripts.environment_setup.title}" description="${%VCJob.Scripts.environment_setup.description_unix}">
+      <f:optionalBlock title="Unix Script Commands" checked="${instance.showUnix}" inline="true"
+                       help="/plugin/vectorcast-execution/help-optUnix.html">
+        <f:entry title="${%VCJob.Scripts.environment_setup.title}" description="${%VCJob.Scripts.environment_setup.description_unix}"
+                 help="/plugin/vectorcast-execution/help-optUnixEnvSetup.html">
           <f:textarea name="environment_setup_unix" class="fixed-width"/>
         </f:entry>
-        <f:entry title="${%VCJob.Scripts.execute_preamble.title}" description="${%VCJob.Scripts.execute_preamble.description_unix}">
+        <f:entry title="${%VCJob.Scripts.execute_preamble.title}" description="${%VCJob.Scripts.execute_preamble.description_unix}"
+                 help="/plugin/vectorcast-execution/help-optUnixEnvPrefix.html">
           <f:textbox name="execute_preamble_unix" size="50"/>
         </f:entry>
-        <f:entry title="${%VCJob.Scripts.environment_teardown.title}" description="${%VCJob.Scripts.environment_teardown.description_unix}">
+        <f:entry title="${%VCJob.Scripts.environment_teardown.title}" description="${%VCJob.Scripts.environment_teardown.description_unix}"
+                 help="/plugin/vectorcast-execution/help-optUnixEnvTeardown.html">
           <f:textarea name="environment_teardown_unix" class="fixed-width"/>
         </f:entry>
       </f:optionalBlock>
