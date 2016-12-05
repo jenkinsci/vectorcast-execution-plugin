@@ -21,11 +21,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+import subprocess
 import os
-import tarfile
+import sys
+import argparse
+import shutil
 
-for file in os.listdir("."):
-    if file.endswith("_build.tar"):
-        print "* Extracting " + file
-        tf = tarfile.open(file, "r")
-        tf.extractall()
+# adding path
+jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
+python_path_updates = jenkinsScriptHome
+sys.path.append(python_path_updates)
+python_path_updates += os.sep + "vpython-addons"
+sys.path.append(python_path_updates)
+
+import tcmr2csv
+import vcastcsv2jenkins
+
+VECTORCAST_DIR = os.getenv('VECTORCAST_DIR') + os.sep
+
+from pprint import pprint
+import glob
+import time
+import os
+
+tcmr2csv.useLocalCsv = True
+
+print "Generating Combined Coverage from " + sys.argv[1]
+
+tcmr2csv.runCombinedCov(sys.argv[1])
+
+#vcastcsv2jenkins.run()
+

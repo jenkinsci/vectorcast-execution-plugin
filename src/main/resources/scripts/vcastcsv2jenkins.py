@@ -1,3 +1,26 @@
+#
+# The MIT License
+#
+# Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
 #vcastcsv2jenkins.py
 
 import re
@@ -201,16 +224,15 @@ def determineCoverage(titles):
         VgIndex = titles.index('Complexity')
     except ValueError:
         VgIndex = -1
-        
-                
+
 def writeEmmaHeader(emmafile):
     time_tuple = time.localtime()
     date_string = time.strftime("%m/%d/%Y", time_tuple)
     time_string = time.strftime("%I:%M %p", time_tuple)
     datetime_str = date_string + "\t" + time_string
-    emmafile.write("<!-- VectorCAST/Jenkins Integration, Generated " + datetime_str+ " -->\n<report>\n  <version value=\"2\"/>\n")
+    emmafile.write("<!-- VectorCAST/Jenkins Integration, Generated " + datetime_str+ " -->\n<report>\n  <version value=\"3\"/>\n")
     pass
-    
+
 def countUnitSubp(data):
     unitName   = ""
     unitCount  = 0
@@ -266,23 +288,20 @@ def getCoverageTotals(data,unitName):
     function     = [0,0,0]
     functionCall = [0,0,0]
     complexity   = [0,0,0]
-    
-    
+
     #loop over all the data
     for row in data:
         # if we have a different unit name -- bump up the unit count
         if row[0] == unitName or unitName == 'all':
-            
+
             #if statement coverage is available -- bump up the statement count
             if stIndex != -1:
                 try:
-                    
                     statement[COVERED_INDEX] += int(row[stIndex+COVERED_INDEX])
                     statement[TOTAL_INDEX  ] += int(row[stIndex+TOTAL_INDEX  ])
-
                 except:
                     pass
-                
+
             #if branch coverage is available -- bump up the branch count
             if brIndex != -1:
                 try:
@@ -329,7 +348,6 @@ def getCoverageTotals(data,unitName):
                 try:
                     functionCall[COVERED_INDEX] += int(row[fncCallIndex+COVERED_INDEX])
                     functionCall[TOTAL_INDEX  ] += int(row[fncCallIndex+TOTAL_INDEX  ])
-                    
                 except:
                     pass
 
@@ -341,7 +359,7 @@ def getCoverageTotals(data,unitName):
                     complexity[TOTAL_INDEX  ] += int(row[VgIndex+TOTAL_INDEX  ])
                 except:
                     pass
-                    
+
     return calulatePercentages(statement,branch,pair,path,byAnalysis,function,functionCall,complexity)
     
 def getFunctionData(data):
@@ -484,7 +502,7 @@ def runCsv2JenkinsCoverageResults(csvFilename):
 def writeBlankCCFile():
     f = open("coverage_results_blank.xml","w")
     f.write("""<report>
-  <version value="2"/>
+  <version value="3"/>
 <data>
 <all name="environments">
 <coverage type="complexity, %" value="0% (0 / 0)"/>

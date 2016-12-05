@@ -1,5 +1,29 @@
+#
+# The MIT License
+#
+# Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
 #tcmr2csv.py
 
+import time
 import re
 import argparse
 import os
@@ -351,7 +375,174 @@ def run(HtmlReportName = "", jobName = ""):
             CoverageResultsName = procCoverageResults(HtmlReportName,table, jobName)
             
     return TestResultsName,CoverageResultsName
+
+def processTotals(complexityIndex, columnTitles, info):
+    # process each of the fields in the <td> tag
+    dataStr = ""
+    idx = 0
+    myStr = "  <combined-coverage type=\"%s, %%\" value=\"%s (%s / %s)\"/>\n"
+
+    for item in info:
+        # if we haven't passed complexity yet...
+        if idx == complexityIndex:
+            dataStr += myStr % (columnTitles[0], "0%", item, "0")
+        elif idx > complexityIndex:
+            if item != BLANK:
+                #split the data into covered, total, percent
+                if "(" in item:
+                    covered,na,total,percent = item.split()
+
+                    # remove the () from around the percent field
+                    percent = str(re.sub("[()]","",percent))
+                elif item == "100%":
+                    percent = item
+                    covered = "1"
+                    total = "1"
+                else:
+                    percent = "0"
+                    covered = "0"
+                    total = "1"
+
+                dataStr += myStr % (columnTitles[idx-complexityIndex], percent, covered, total)
+
+        idx += 1
+    if not os.path.exists("xml_data"):
+        os.mkdir("xml_data")
+    xml_file = os.path.join("xml_data", "coverage_results_top-level.xml")
+    f = open(xml_file,"w")
+    time_tuple = time.localtime()
+    date_string = time.strftime("%m/%d/%Y", time_tuple)
+    time_string = time.strftime("%I:%M %p", time_tuple)
+    datetime_str = date_string + "\t" + time_string
+    f.write("<!-- VectorCAST/Jenkins Integration, Generated " + datetime_str+ " -->\n")
+    f.write("<report>\n")
+    f.write("  <version value=\"3\"/>\n")
+    f.write(dataStr)
+    f.write("</report>\n\n")
+    f.close()
+
+def procCombinedCoverageResults(HtmlReportName,table):
+
+    # setup BeautifulSoup processor for input table
+    tableSoup = BeautifulSoup(table.encode('ascii'),'html.parser')
+
+    # Get Column Titles 
+    columnTitles = []
+        
+    # navigate to Table's 3rd <tr> tag then to the <tr> tag inside that
+    # Input Table
+    #   <tr>
+    #   <tr>
+    #   <tr>
+    #       <tr>
+    # and process the children which are <td> info
+    try:
+        if tableSoup.tr.next_sibling.next_sibling is None:
+            dataTable = tableSoup.tr.next_sibling.tr
+        else:
+            dataTable = tableSoup.tr.next_sibling.next_sibling.tr        
+    except AttributeError:
+        print "No Coverage Found"
+        return None
+        
+    titleStr = ""
     
+    # remember the complexity column index so we can split the coverage info into multiple cells in CSV
+    complexityIndex = -1
+    idx = 0
+    
+    try:
+        # process the <td> tags
+        for child in dataTable.children:
+        
+            # if we haven't found the complexity yet...
+            if complexityIndex == -1:
+                # check if this field is the complexity
+                if "Complexity" in child.string:
+                    complexityIndex = idx
+                    columnTitles.append("complexity")
+            else:
+                # otherwise write it out as Covered, Total, Percent
+                if "Statements" in child.string:
+                    columnTitles.append("statement")
+                elif "Branches" in child.string:
+                    columnTitles.append("branch")
+                elif "Pairs" in child.string:
+                    columnTitles.append("mcdc")
+                elif "Paths" in child.string:
+                    columnTitles.append("basispath")
+                elif "FunctionCoverage" in child.string:
+                    columnTitles.append("function")
+                elif "FunctionCalls" in child.string:
+                    columnTitles.append("functioncall")
+                
+            idx += 1
+    except AttributeError as e:
+        print "Error with Report: " + HtmlReportName
+
+    # navigate to Table's 3rd <tr> tag then to the <tr> tag inside that
+    # Input Table
+    #   <tr>
+    #   <tr>
+    #   <tr>
+    #       <tr>
+    #       <tr>
+    # and process the children which are <td> info
+    if tableSoup.tr.next_sibling.next_sibling is None:
+        dataEntry = tableSoup.tr.next_sibling.tr.next_sibling
+    else:
+        dataEntry = tableSoup.tr.next_sibling.next_sibling.tr.next_sibling
+    unitName = ""
+
+    # loop over the <td> tags
+    while dataEntry is not None:
+    
+        # grab the info inside each of the <td> tags
+        info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK) for child in dataEntry.children]
+
+        # move to next <td> tag
+        dataEntry = dataEntry.next_sibling
+        
+        # Only process GRAND TOTALS line
+        if 'GRAND TOTALS' in info[UNIT_NAME_COL]:
+            processTotals(complexityIndex, columnTitles, info)
+            break
+    
+def runCombinedCov(HtmlReportName = ""):
+
+    TestResultsName = None
+    CoverageResultsName = None
+
+    # verify the html report exists
+    if not os.path.isfile(HtmlReportName):
+        raise IOError(HtmlReportName + ' does not exist')
+        return
+        
+    # open the file and create BS4 object
+    html_file = open(HtmlReportName,"r")
+    html_doc = html_file.read()
+    html_file.close()
+    soup = BeautifulSoup(html_doc,'html.parser')
+
+    # find all tables and loop over
+    tables = soup.findAll('table')
+
+    # loop over all the tables in the TCMR
+    for table in tables:
+        # If the table doesn't have a <span> and <strong> tag -- continue
+        try:
+            span = table.find('span')
+            title = span.find('strong')
+        except:
+            continue
+
+        if str(title) == "None":
+            continue
+        # if the title contains Metrics in the title
+        if re.search("Metrics",title.encode('ascii')) is not None:
+            #print "   Processing Coverage Results from: " + os.path.basename(HtmlReportName)
+            procCombinedCoverageResults(HtmlReportName, table)
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()

@@ -1,4 +1,28 @@
+#
+# The MIT License
+#
+# Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
 import os
+import fnmatch
 import sys
 import subprocess
 import tarfile
@@ -11,9 +35,9 @@ global ws_length
 
 def addFile(tf, file):
     global build_dir
-    fullpath = build_dir + os.path.sep + file
-    if os.path.isfile(fullpath):
-        tf.add(fullpath)
+    for f in os.listdir(build_dir):
+        if fnmatch.fnmatch(f, file):
+            tf.add(os.path.join(build_dir, f))
 
 def addConvertCoverFile(tf, file):
     global workspace
@@ -23,18 +47,21 @@ def addConvertCoverFile(tf, file):
     if os.path.isfile(fullpath):
         conn = sqlite3.connect(fullpath)
         if conn:
-            print "RMK: " + ("UPDATE source_files "
-                         "SET path = "
-                         "SUBSTR(path, " + ws_length + "), "
-                         "display_path = "
-                         "SUBSTR(display_path, " + ws_length + ") "
+            cur = conn.cursor()
+            conn.execute("UPDATE source_files "
+                         "SET display_path = "
+                         "REPLACE(SUBSTR(display_path, " + ws_length + "), \"\\\", \"/\") "
                          "WHERE path LIKE '" + workspace + "%' " + nocase)
+            conn.commit()
             conn.execute("UPDATE source_files "
                          "SET path = "
-                         "SUBSTR(path, " + ws_length + "), "
-                         "display_path = "
-                         "SUBSTR(display_path, " + ws_length + ") "
+                         "display_path "
                          "WHERE path LIKE '" + workspace + "%' " + nocase)
+            conn.commit()
+            conn.execute("UPDATE instrumented_files "
+                         "SET LIS_file = "
+                         "SUBSTR(LIS_file, " + ws_length + ") "
+                         "WHERE LIS_file LIKE '" + workspace + "%' " + nocase)
             conn.commit()
             conn.close()
             addFile(tf, file)
@@ -89,5 +116,6 @@ if build_dir != "":
         addFile(tf, "UNITDATA.VCD")
         addFile(tf, "UNITDYNA.VCD")
         addFile(tf, "manage.xml")
+        addFile(tf, "*.LIS")
     finally:
         tf.close()

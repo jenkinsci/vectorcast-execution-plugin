@@ -195,7 +195,7 @@ public class NewMultiJob extends BaseJob {
             }
             CopyArtifact copyArtifact = new CopyArtifact(name);
             copyArtifact.setOptional(true);
-            copyArtifact.setFilter("**/*manage_incremental_rebuild_report.html, " +
+            copyArtifact.setFilter("**/*_report.html, " +
                                    "xml_data/**" +
                                    tarFile);
             copyArtifact.setFingerprintArtifacts(false);
@@ -224,7 +224,8 @@ public class NewMultiJob extends BaseJob {
      * Add multi-job build command to top-level project
      */
     private void addMultiJobBuildCommand() {
-        String win = "";
+        String win = 
+getEnvironmentSetupWin() + "\n";
         if (isUsingSCM()) {
             win +=
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\extract_build_dir.py\n";
@@ -233,15 +234,17 @@ public class NewMultiJob extends BaseJob {
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py --api 2 \n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status=@PROJECT_BASE@_full_report.html\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status > @PROJECT_BASE@_full_report.txt\n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate\n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=metrics\n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=environment\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate   --output=\"@PROJECT_BASE@_aggregate_report.html\"\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=metrics     --output=\"@PROJECT_BASE@_metrics_report.html\"\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=environment --output=\"@PROJECT_BASE@_environment_report.html\"\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\"\n" +
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\getTotals.py --api 2 @PROJECT_BASE@_full_report.txt\n" +
-"           ";
+getEnvironmentTeardownWin() + "\n";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
 
-        String unix = "";
+        String unix =
+getEnvironmentSetupUnix() + "\n";
         if (isUsingSCM()) {
             unix +=
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/extract_build_dir.py\n";
@@ -250,12 +253,13 @@ public class NewMultiJob extends BaseJob {
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/incremental_build_report_aggregator.py --api 2 \n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status=@PROJECT_BASE@_full_report.html\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status > @PROJECT_BASE@_full_report.txt\n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate\n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=metrics\n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=environment\n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate   --output=\"@PROJECT_BASE@_aggregate_report.html\"\n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=metrics     --output=\"@PROJECT_BASE@_metrics_report.html\"\n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=environment --output=\"@PROJECT_BASE@_environment_report.html\"\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE%/vc_scripts/gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\"\n" +
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/getTotals.py --api 2 @PROJECT_BASE@_full_report.txt\n" +
 "\n" +
-"          ";
+getEnvironmentTeardownUnix() + "\n";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
         unix = StringUtils.replace(unix, "@PROJECT_BASE@", getBaseName());
         
@@ -406,14 +410,18 @@ public class NewMultiJob extends BaseJob {
         }
         
         String win =
+getEnvironmentSetupWin() + "\n" +
 "%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\generate-results.py --api 2 \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
+getEnvironmentTeardownWin() + "\n" +
 "";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@LEVEL@", detail.getLevel());
         win = StringUtils.replace(win, "@ENV@", detail.getEnvironment());
         
         String unix =
+getEnvironmentSetupUnix() + "\n" +
 "$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/generate-results.py --api 2 \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
+getEnvironmentTeardownUnix() + "\n" +
 "";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
         unix = StringUtils.replace(unix, "@LEVEL@", detail.getLevel());
