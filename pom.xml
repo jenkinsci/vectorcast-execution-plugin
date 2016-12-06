@@ -65,10 +65,6 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
       <id>repo.jenkins-ci.org</id>
       <url>http://repo.jenkins-ci.org/public/</url>
     </repository>
-    <repository>
-        <id>TmpRepo</id>
-        <url>file://c:/work/TmpRepo</url>
-    </repository>
   </repositories>
 
   <dependencies>
