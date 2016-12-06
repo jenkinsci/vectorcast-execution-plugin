@@ -479,6 +479,7 @@ def procCombinedCoverageResults(HtmlReportName,table):
             idx += 1
     except AttributeError as e:
         print "Error with Report: " + HtmlReportName
+        return None
 
     # navigate to Table's 3rd <tr> tag then to the <tr> tag inside that
     # Input Table

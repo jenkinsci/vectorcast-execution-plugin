@@ -99,7 +99,7 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
     <dependency>
       <groupId>com.vectorcast</groupId>
       <artifactId>vectorcast-coverage</artifactId>
-      <version>0.9</version>
+      <version>0.10</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
