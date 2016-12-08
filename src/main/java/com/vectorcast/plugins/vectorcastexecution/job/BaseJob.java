@@ -80,6 +80,8 @@ abstract public class BaseJob {
     private String option_error_level;
     /** Generate execution report */
     private boolean option_execution_report;
+    /** Clean workspace */
+    private boolean option_clean_workspace;
     /** Using some form of SCM */
     private boolean usingSCM;
     /**
@@ -115,6 +117,7 @@ abstract public class BaseJob {
         option_use_reporting = json.optBoolean("option_use_reporting", true);
         option_error_level = json.optString("option_error_level", "Unstable");
         option_execution_report = json.optBoolean("option_execution_report", true);
+        option_clean_workspace = json.optBoolean("option_clean", false);
     }
     /**
      * Using some form of SCM
@@ -233,8 +236,10 @@ abstract public class BaseJob {
      * @param project project to add to
      */
     protected void addDeleteWorkspaceBeforeBuildStarts(Project project) {
-        PreBuildCleanup cleanup = new PreBuildCleanup(/*patterns*/null, true, /*cleanup param*/"", /*external delete*/"");
-        project.getBuildWrappersList().add(cleanup);
+        if (option_clean_workspace) {
+            PreBuildCleanup cleanup = new PreBuildCleanup(/*patterns*/null, true, /*cleanup param*/"", /*external delete*/"");
+            project.getBuildWrappersList().add(cleanup);
+        }
     }
     /**
      * Create the job(s)
@@ -305,7 +310,15 @@ abstract public class BaseJob {
      * @param project project to add to
      */
     protected void addArchiveArtifacts(Project project) {
-        ArtifactArchiver archiver = new ArtifactArchiver(/*artifacts*/"**/*", /*excludes*/"", /*latest only*/false, /*allow empty archive*/false);
+        ArtifactArchiver archiver = new ArtifactArchiver(
+                /*artifacts*/"**/test_results_*.xml, " +
+                             "**/coverage_results_*.xml, " +
+                             "execution/**, " +
+                             "management/**, " +
+                             "xml_data/**",
+                /*excludes*/"",
+                /*latest only*/false,
+                /*allow empty archive*/false);
         project.getPublishersList().add(archiver);
     }
     /**

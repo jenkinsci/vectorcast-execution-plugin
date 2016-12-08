@@ -31,6 +31,10 @@
          xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project">
     <f:section title="${%VCJob.Options}">
+      <f:entry title="${%VCJob.Options.clean.title}" description="${%VCJob.Options.clean.description}"
+                help="/plugin/vectorcast-execution/help-optClean.html">
+        <f:checkbox name="option_clean" checked="false" />
+      </f:entry>
       <f:entry title="${%VCJob.Options.use_reporting.title}" description="${%VCJob.Options.use_reporting.description}"
                 help="/plugin/vectorcast-execution/help-optUseReporting.html">
         <f:checkbox name="option_use_reporting" checked="true" />

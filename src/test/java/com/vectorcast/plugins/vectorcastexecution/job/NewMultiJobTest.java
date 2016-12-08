@@ -204,6 +204,7 @@ public class NewMultiJobTest extends TestCase {
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
+        jsonForm.put("option_clean", true);
         when(request.getSubmittedForm()).thenReturn(jsonForm);
         
         FileItem fileItem = Mockito.mock(FileItem.class);
@@ -258,6 +259,7 @@ public class NewMultiJobTest extends TestCase {
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("option_use_reporting", false);
+        jsonForm.put("option_clean", false);
         when(request.getSubmittedForm()).thenReturn(jsonForm);
         
         FileItem fileItem = Mockito.mock(FileItem.class);
@@ -271,11 +273,8 @@ public class NewMultiJobTest extends TestCase {
         Assert.assertEquals(project, job.getTopProject());
 
         // Check build wrappers - main project...
-        Assert.assertEquals(1, bldWrappersList.size());
-        BuildWrapper wrapper = bldWrappersList.get(0);
-        Assert.assertTrue(wrapper instanceof PreBuildCleanup);
-        PreBuildCleanup cleanup = (PreBuildCleanup)wrapper;
-        Assert.assertTrue(cleanup.getDeleteDirs());
+        Assert.assertEquals(0, bldWrappersList.size());
+        // No cleanup
         
         // Check build actions - main project...
         Assert.assertEquals(5, bldrsList.size());
@@ -321,7 +320,12 @@ public class NewMultiJobTest extends TestCase {
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(list.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)list.get(0);
-        Assert.assertEquals("**/*",archiver.getArtifacts());
+        Assert.assertEquals("**/test_results_*.xml, " +
+                            "**/coverage_results_*.xml, " +
+                            "execution/**, " +
+                            "management/**, " +
+                            "xml_data/**",
+                            archiver.getArtifacts());
         Assert.assertFalse(archiver.getAllowEmptyArchive());
         // Publisher 1- XUnitPublisher
         Assert.assertTrue(list.get(1) instanceof XUnitPublisher);

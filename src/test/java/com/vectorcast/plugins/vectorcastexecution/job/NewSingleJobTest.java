@@ -110,6 +110,7 @@ public class NewSingleJobTest extends TestCase {
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
+        jsonForm.put("option_clean", true);
         when(request.getSubmittedForm()).thenReturn(jsonForm);
 
         NewSingleJob job = new NewSingleJob(request, response);
@@ -136,7 +137,12 @@ public class NewSingleJobTest extends TestCase {
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
-        Assert.assertEquals("**/*",archiver.getArtifacts());
+        Assert.assertEquals("**/test_results_*.xml, " +
+                            "**/coverage_results_*.xml, " +
+                            "execution/**, " +
+                            "management/**, " +
+                            "xml_data/**",
+                            archiver.getArtifacts());
         Assert.assertFalse(archiver.getAllowEmptyArchive());
         // Publisher 1- XUnitPublisher
         Assert.assertTrue(publisherList.get(1) instanceof XUnitPublisher);
