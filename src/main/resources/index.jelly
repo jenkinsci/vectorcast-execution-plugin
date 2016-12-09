@@ -23,6 +23,6 @@
 -->
 <?jelly escape-by-default='true'?>
 <div>
-This plugin integrates <a href="http://www.vectorcast.com/">VectorCAST</a> with Jenkins to allow Jenkins to build Manage projects.
+This plugin integrates <a href="http://www.vectorcast.com/">VectorCAST</a> with Jenkins to allow Jenkins to build VectorCAST/Manage projects.
 </div>
 

@@ -25,12 +25,12 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
     <!-- Batch commands to run on a windows platform -->
-    <f:entry title="${%winCommand}">
+    <f:entry title="${%winCommand}" help="/plugin/vectorcast-execution/help-winCommand.html">
       <f:textarea name="winCommand" value="${instance.winCommand}" class="fixed-width" />
     </f:entry>
 
     <!-- Shell command to run on a unix platform -->
-    <f:entry title="${%unixCommand}">
+    <f:entry title="${%unixCommand}" help="/plugin/vectorcast-execution/help-unixCommand.html">
       <f:textarea name="unixCommand" value="${instance.unixCommand}" class="fixed-width" />
     </f:entry>
 
