@@ -97,6 +97,19 @@ public class VectorCASTJobDiag extends JobBase {
 "   goto end\n" +
 ") else (\n" +
 "   echo VECTORCAST_DIR...OKAY\n" +
+"   echo VECTORCAST_DIR = %VECTORCAST_DIR%\n" +
+")\n" +
+"\n" +
+"if \"%JENKINS_URL%\"==\"\" (\n" +
+"   echo\n" +
+"   echo JENKINS_URL...ERROR\n" +
+"   echo    Environment Variable not set.  Define the URL in Jenkins configuration\n" +
+"   echo\n" +
+"   set /a RET_VAL=%RET_VAL%-1\n" +
+"   goto end\n" +
+") else (\n" +
+"   echo JENKINS_URL...OKAY\n" +
+"   echo JENKINS_URL = %JENKINS_URL%\n" +
 ")\n" +
 "\n" +
 "if \"%VECTOR_LICENSE_FILE%\"==\"\" ( \n" +
@@ -150,6 +163,19 @@ public class VectorCASTJobDiag extends JobBase {
 "   exit $RET_VAL\n" +
 "else\n" +
 "   echo VECTORCAST_DIR...OKAY\n" +
+"   echo VECTORCAST_DIR = $VECTORCAST_DIR\n" +
+"fi\n" +
+"\n" +
+"if [ -o $JENKINS_URL ] ; then\n" +
+"   echo\n" +
+"   echo JENKINS_URL...ERROR\n" +
+"   echo \"   Environment Variable not set.  Define the URL in Jenkins configuration\"\n" +
+"   echo\n" +
+"   RET_VAL=$(($RET_VAL-1))\n" +
+"   exit $RET_VAL\n" +
+"else\n" +
+"   echo JENKINS_URL...OKAY\n" +
+"   echo JENKINS_URL = $JENKINS_URL\n" +
 "fi\n" +
 "\n" +
 "if [ -o $VECTOR_LICENSE_FILE ] ; then\n" +

@@ -34,6 +34,8 @@ import hudson.tasks.Builder;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -95,10 +97,11 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         JarFile jFile = null;
         try {
             String path = VectorCASTSetup.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            path = URLDecoder.decode(path, "utf-8");
             File testPath = new File(path);
             if (testPath.isFile()) {
                 // Have jar file...
-                jFile = new JarFile(VectorCASTSetup.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+                jFile = new JarFile(testPath);
                 Enumeration<JarEntry> entries = jFile.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();

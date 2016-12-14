@@ -27,6 +27,7 @@ import sys
 import subprocess
 import tarfile
 import sqlite3
+import shutil
 
 global build_dir
 global workspace
@@ -43,10 +44,13 @@ def addConvertCoverFile(tf, file):
     global workspace
     global nocase
     global ws_length
+    global build_dir
     fullpath = build_dir + os.path.sep + file
+    bakpath = fullpath + '.bk'
     if os.path.isfile(fullpath):
         conn = sqlite3.connect(fullpath)
         if conn:
+            shutil.copyfile(fullpath, bakpath)
             cur = conn.cursor()
             conn.execute("UPDATE source_files "
                          "SET display_path = "
@@ -65,15 +69,20 @@ def addConvertCoverFile(tf, file):
             conn.commit()
             conn.close()
             addFile(tf, file)
+            os.remove(fullpath)
+            shutil.move(bakpath, fullpath)
 
 def addConvertMasterFile(tf, file):
     global workspace
     global nocase
     global ws_length
+    global build_dir
     fullpath = build_dir + os.path.sep + file
+    bakpath = fullpath + '.bk'
     if os.path.isfile(fullpath):
         conn = sqlite3.connect(fullpath)
         if conn:
+            shutil.copyfile(fullpath, bakpath)
             conn.execute("UPDATE sourcefiles "
                          "SET path = "
                          "SUBSTR(path, " + ws_length + ") "
@@ -81,6 +90,8 @@ def addConvertMasterFile(tf, file):
             conn.commit()
             conn.close()
             addFile(tf, file)
+            os.remove(fullpath)
+            shutil.move(bakpath, fullpath)
 
 ManageProjectName = sys.argv[1]
 Level = sys.argv[2]
@@ -103,7 +114,8 @@ list = out.split(os.linesep)
 build_dir = ''
 for str in list:
     if "Build Directory:" in str:
-        build_dir = os.path.relpath(str.split()[2])
+        length = len(str.split()[0]) + 1 + len(str.split()[1]) + 1 
+        build_dir = os.path.relpath(str[length:])
 
 if build_dir != "":
     build_dir = build_dir + os.path.sep + Env

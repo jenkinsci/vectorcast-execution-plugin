@@ -144,7 +144,12 @@ def writeTestCase(xunitFile,  unit, subp, tc_name, passFail):
     else:
         successFailure = 'failure'   
         if gUseExecRpt:
-            exec_link = os.getenv('BUILD_URL') + "artifact/execution/" + manageProject + "_" + jobNamePrefix + "_execution_results_report.html#section" + str(1+testCaseCount*2)
+            if 'None' in os.environ.get('BUILD_URL'):
+                print "ERROR: Jenkins environment variable BUILD_URL not set\n"
+                print "       Check Jenkins configuration - JENKINS_URL is probably not set\n"
+                exec_link = "undefined"
+            else:
+                exec_link = os.getenv('BUILD_URL') + "artifact/execution/" + manageProject + "_" + jobNamePrefix + "_execution_results_report.html#section" + str(1+testCaseCount*2)
             additional_msg = " See Execution Report: \n\t" + exec_link
             passFail += additional_msg
 
