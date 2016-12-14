@@ -311,8 +311,7 @@ abstract public class BaseJob {
      */
     protected void addArchiveArtifacts(Project project) {
         ArtifactArchiver archiver = new ArtifactArchiver(
-                /*artifacts*/"**/test_results_*.xml, " +
-                             "**/coverage_results_*.xml, " +
+                /*artifacts*/"*_report.html, " +
                              "execution/**, " +
                              "management/**, " +
                              "xml_data/**",
