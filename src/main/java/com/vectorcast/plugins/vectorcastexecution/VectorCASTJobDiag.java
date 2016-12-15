@@ -84,15 +84,15 @@ public class VectorCASTJobDiag extends JobBase {
             String winCommand = 
 "@echo off\n" +
 "\n" +
-"echo\n" +
-"echo\n" +
+"echo.\n" +
+"echo.\n" +
 "\n" +
 "set RET_VAL=0\n" +
 "if \"%VECTORCAST_DIR%\"==\"\" (\n" +
-"   echo\n" +
+"   echo.\n" +
 "   echo VECTORCAST_DIR...ERROR\n" +
 "   echo    Environment Variable not set.  Either set VECTORCAST_DIR in System Environment Variables or add to Jenkins Configuration\n" +
-"   echo\n" +
+"   echo.\n" +
 "   set /a RET_VAL=%RET_VAL%-1\n" +
 "   goto end\n" +
 ") else (\n" +
@@ -101,10 +101,10 @@ public class VectorCASTJobDiag extends JobBase {
 ")\n" +
 "\n" +
 "if \"%JENKINS_URL%\"==\"\" (\n" +
-"   echo\n" +
+"   echo.\n" +
 "   echo JENKINS_URL...ERROR\n" +
 "   echo    Environment Variable not set.  Define the URL in Jenkins configuration\n" +
-"   echo\n" +
+"   echo.\n" +
 "   set /a RET_VAL=%RET_VAL%-1\n" +
 "   goto end\n" +
 ") else (\n" +
@@ -114,11 +114,11 @@ public class VectorCASTJobDiag extends JobBase {
 "\n" +
 "if \"%VECTOR_LICENSE_FILE%\"==\"\" ( \n" +
 "   if \"%LM_LICENSE_FILE%\"==\"\" (\n" +
-"      echo\n" +
+"      echo.\n" +
 "      echo License Environment Variable...ERRRO\n" +
 "      echo    Neither VECTOR_LICENSE_FILE nor LM_LICENSE_FILE environment variable set...\n" +
 "      echo       ...Set either VECTOR_LICENSE_FILE or LM_LICENSE_FILE in System Environment Variables or add to Jenkins Configuration\n" +
-"      echo \n" +
+"      echo.\n" +
 "      set /a RET_VAL=%RET_VAL%-1\n" +
 "      goto end\n" +
 "   ) else (\n" +
@@ -130,12 +130,12 @@ public class VectorCASTJobDiag extends JobBase {
 "\n" +
 "%VECTORCAST_DIR%\\manage --help > help.log\n" +
 "if \"%errorlevel%\"==\"1\" (\n" +
-"   echo\n" +
+"   echo.\n" +
 "   echo VectorCAST/Manage License...ERROR\n" +
 "   echo    Error Starting VectorCAST/Manage.  Check the log below for details\n" +
-"   echo\n" +
+"   echo.\n" +
 "   type help.log\n" +
-"   echo\n" +
+"   echo.\n" +
 "   set /a RET_VAL=%RET_VAL%-1\n" +
 ") else (\n" +
 "   echo VectorCAST/Manage License...OKAY\n" +
@@ -148,13 +148,13 @@ public class VectorCASTJobDiag extends JobBase {
 "\n" +
 "EXIT /B %RET_VAL%";
             String unixCommand =
-"!/bin/sh\n" +
+"#!/bin/sh\n" +
 "\n" +
 "echo\n" +
 "echo\n" +
 "\n" +
 "RET_VAL=0\n" +
-"if [ -o $VECTORCAST_DIR ] ; then\n" +
+"if [ \"$VECTORCAST_DIR\" = \"\" ] ; then\n" +
 "   echo\n" +
 "   echo VECTORCAST_DIR...ERROR\n" +
 "   echo \"   Environment Variable not set.  Either set VECTORCAST_DIR in System Environment Variables or add to Jenkins Configuration\"\n" +
@@ -166,7 +166,7 @@ public class VectorCASTJobDiag extends JobBase {
 "   echo VECTORCAST_DIR = $VECTORCAST_DIR\n" +
 "fi\n" +
 "\n" +
-"if [ -o $JENKINS_URL ] ; then\n" +
+"if [ \"$JENKINS_URL\" = \"\" ] ; then\n" +
 "   echo\n" +
 "   echo JENKINS_URL...ERROR\n" +
 "   echo \"   Environment Variable not set.  Define the URL in Jenkins configuration\"\n" +
@@ -178,8 +178,8 @@ public class VectorCASTJobDiag extends JobBase {
 "   echo JENKINS_URL = $JENKINS_URL\n" +
 "fi\n" +
 "\n" +
-"if [ -o $VECTOR_LICENSE_FILE ] ; then\n" +
-"   if [ -o $LM_LICENSE_FILE ]  ] ; then\n" +
+"if [ \"$VECTOR_LICENSE_FILE\" = \"\" ] ; then\n" +
+"   if [ \"$LM_LICENSE_FILE\" = \"\" ]  ] ; then\n" +
 "      echo\n" +
 "      echo License Environment Variable...ERROR\n" +
 "      echo \"   Neither VECTOR_LICENSE_FILE nor LM_LICENSE_FILE environment variable set...\"\n" +
