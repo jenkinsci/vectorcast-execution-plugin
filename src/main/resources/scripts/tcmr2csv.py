@@ -454,7 +454,7 @@ def procCombinedCoverageResults(HtmlReportName,table):
     try:
         # process the <td> tags
         for child in dataTable.children:
-        
+
             # if we haven't found the complexity yet...
             if complexityIndex == -1:
                 # check if this field is the complexity
@@ -471,10 +471,11 @@ def procCombinedCoverageResults(HtmlReportName,table):
                     columnTitles.append("mcdc")
                 elif "Paths" in child.string:
                     columnTitles.append("basispath")
-                elif "FunctionCoverage" in child.string:
-                    columnTitles.append("function")
-                elif "FunctionCalls" in child.string:
-                    columnTitles.append("functioncall")
+                elif "Function" in child.string:
+                    if "Coverage" in child.string:
+                        columnTitles.append("function")
+                    elif "Calls" in child.string:
+                        columnTitles.append("functioncall")
                 
             idx += 1
     except AttributeError as e:
