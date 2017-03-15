@@ -63,9 +63,15 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
+      <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
   </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <dependencies>
     <!-- Only needed to resolve problem with CookieSpecProvider not found when running tests -->
@@ -93,7 +99,7 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.vectorcast</groupId>
+      <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>vectorcast-coverage</artifactId>
       <version>0.10</version>
     </dependency>
