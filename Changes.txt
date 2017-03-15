@@ -1,0 +1,4 @@
+6 Mar 2017
+* add newlines at the end of single job scripts (windows and Linux) before the teardown lines
+* Corrected check for missing BUILD_URL environment variable
+
