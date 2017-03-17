@@ -40,8 +40,9 @@ public class VectorCASTJobRoot implements RootAction {
      */
     public String getIconFileName() {
         Jenkins instance = Jenkins.getInstance();
-        // Only display if user has admin rights
-        if (instance != null && instance.hasPermission(Jenkins.ADMINISTER)) {
+        // Always display - assume that Jenkins permission checking
+        // will catch and report any permissions issues
+        if (instance != null) {
             return "/plugin/vectorcast-execution/icons/vector_favicon.png";
         } else {
             return null;
