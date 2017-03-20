@@ -191,7 +191,8 @@ setBuildStatus +
 "FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report.html')\n" +
 "if (fp_i.exists() && fp_f.exists())\n" +
 "{\n" +
-"    manager.build.description = \"Full Status Report\"\n" +
+"    manager.build.description = fp_i.readToString() + \"<br>\" + fp_f.readToString()" + 
+
 "}\n" +
 "else\n" +
 "{\n" +
