@@ -320,7 +320,8 @@ public class NewMultiJobTest extends TestCase {
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(list.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)list.get(0);
-        Assert.assertEquals("*_report.html, " +
+        Assert.assertEquals("*incremental_rebuild_report*," +
+                             "*_report.html, " +
                             "execution/**, " +
                             "management/**, " +
                             "xml_data/**",

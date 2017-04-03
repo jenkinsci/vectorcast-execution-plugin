@@ -78,6 +78,8 @@ abstract public class BaseJob {
     private boolean option_use_reporting;
     /** What error-level to use */
     private String option_error_level;
+    /** Use HTML in build description */
+    private String option_html_build_desc;
     /** Generate execution report */
     private boolean option_execution_report;
     /** Clean workspace */
@@ -116,6 +118,7 @@ abstract public class BaseJob {
         
         option_use_reporting = json.optBoolean("option_use_reporting", true);
         option_error_level = json.optString("option_error_level", "Unstable");
+        option_html_build_desc = json.optString("option_html_build_desc", "HTML");
         option_execution_report = json.optBoolean("option_execution_report", true);
         option_clean_workspace = json.optBoolean("option_clean", false);
     }
@@ -181,6 +184,13 @@ abstract public class BaseJob {
      */
     protected String getOptionErrorLevel() {
         return option_error_level;
+    }
+    /**
+     * Use HTML Build Description
+     * @return HTML or TEXT
+     */
+    protected String getOptionHtmlBuildDesc() {
+        return option_html_build_desc;
     }
     /**
      * Use execution report
@@ -311,7 +321,8 @@ abstract public class BaseJob {
      */
     protected void addArchiveArtifacts(Project project) {
         ArtifactArchiver archiver = new ArtifactArchiver(
-                /*artifacts*/"*_report.html, " +
+                /*artifacts*/"*incremental_rebuild_report*," +
+                             "*_report.html, " +
                              "execution/**, " +
                              "management/**, " +
                              "xml_data/**",

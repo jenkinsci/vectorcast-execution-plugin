@@ -64,19 +64,30 @@ public class NewSingleJob extends BaseJob {
      */
     private void addCommandSingleJob() {
         String noGenExecReport = "";
+        String html_text = "";
+        String report_format="";
         if (!getOptionExecutionReport()) {
             noGenExecReport = " --dont-gen-exec-rpt";
+        }
+        if (getOptionHtmlBuildDesc().equalsIgnoreCase("HTML")) {
+            html_text = ".html";
+            report_format = "HTML";
+        } else {
+            html_text = ".txt";
+            report_format = "TEXT";
         }
         String win = 
 getEnvironmentSetupWin() + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --status\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --release-locks\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\n" +
 getExecutePreambleWin() +
-" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --build-execute --incremental --output \"@PROJECT_BASE@_manage_incremental_rebuild_report.html\" \n" +
+" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --build-execute --incremental --output \"@PROJECT_BASE@_manage_incremental_rebuild_report" + html_text + "\" \n" +
 "\n";
         if (getOptionUseReporting()) {
             win +=
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --api 2 \"@PROJECT@\" " + noGenExecReport + "\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status=\"@PROJECT_BASE@_full_report.html\"\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate   --output=\"@PROJECT_BASE@_aggregate_report.html\"\n" +
@@ -96,10 +107,12 @@ getEnvironmentSetupUnix() + "\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --status \n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --release-locks \n" +
 getExecutePreambleUnix() +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\n" +
 " $VECTORCAST_DIR/manage --project \"@PROJECT@\" --build-execute --incremental --output \"@PROJECT_BASE@_manage_incremental_rebuild_report.html\"\n" +
 "\n";
         if (getOptionUseReporting()) {
             unix +=
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --api 2 \"@PROJECT@\" " + noGenExecReport + "\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status=\"@PROJECT_BASE@_full_report.html\"\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate   --output=\"@PROJECT_BASE@_aggregate_report.html\"\n" +
@@ -122,12 +135,21 @@ getExecutePreambleUnix() +
     private void addGroovyScriptSingleJob() {
         String setBuildStatus;
         String gif;
+        String html_text;
+        String html_newline;
         if (getOptionErrorLevel().equalsIgnoreCase("unstable")) {
             setBuildStatus = "    manager.buildUnstable()\n";
             gif = "\"warning.gif\"";
         } else {
             setBuildStatus = "    manager.buildFailure()\n";
             gif = "\"error.gif\"";
+        }
+        if (getOptionHtmlBuildDesc().equalsIgnoreCase("HTML")) {
+            html_text = ".html";
+            html_newline = "<br>";
+        } else {
+            html_text = ".txt";
+            html_newline = "\\n";
         }
         String script = 
 "import hudson.FilePath\n" +
@@ -187,11 +209,11 @@ setBuildStatus +
 setBuildStatus +
 "    manager.addBadge(" + gif + ", \"Abnormal Termination of at least one Environment\")\n" +
 "}\n" +
-"FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_manage_incremental_rebuild_report.html')\n" +
-"FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report.html')\n" +
+"FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_manage_incremental_rebuild_report" + html_text + "')\n" +
+"FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report" + html_text + "')\n" +
 "if (fp_i.exists() && fp_f.exists())\n" +
 "{\n" +
-"    manager.build.description = \"Full Status Report\"\n" +
+"    manager.build.description = fp_i.readToString() + \"" + html_newline + "\" + fp_f.readToString()" +
 "}\n" +
 "else\n" +
 "{\n" +
