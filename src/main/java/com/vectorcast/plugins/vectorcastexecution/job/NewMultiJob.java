@@ -195,7 +195,8 @@ public class NewMultiJob extends BaseJob {
             }
             CopyArtifact copyArtifact = new CopyArtifact(name);
             copyArtifact.setOptional(true);
-            copyArtifact.setFilter("**/*_report.html, " +
+            copyArtifact.setFilter("**/*incremental_rebuild_report*," +
+                                   "**/*_report.html, " +
                                    "xml_data/**" +
                                    tarFile);
             copyArtifact.setFingerprintArtifacts(false);
@@ -224,7 +225,18 @@ public class NewMultiJob extends BaseJob {
      * Add multi-job build command to top-level project
      */
     private void addMultiJobBuildCommand() {
-        String win = 
+    	String html_text = "";
+        String report_format="";
+
+        if (getOptionHtmlBuildDesc().equalsIgnoreCase("HTML")) {
+            html_text = ".html";
+            report_format = "HTML";
+        } else {
+            html_text = ".txt";
+            report_format = "TEXT";
+        }
+
+        String win =
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 getEnvironmentSetupWin() + "\n";
         if (isUsingSCM()) {
@@ -233,7 +245,7 @@ getEnvironmentSetupWin() + "\n";
         }
         if (getOptionUseReporting()) {
             win +=
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py\" --api 2 \n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py\" --api 2 --rptfmt " + report_format + "\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status=@PROJECT_BASE@_full_report.html\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status > @PROJECT_BASE@_full_report.txt\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate   --output=\"@PROJECT_BASE@_aggregate_report.html\"\n" +
@@ -256,7 +268,7 @@ getEnvironmentSetupUnix() + "\n";
         }
         if (getOptionUseReporting()) {
             unix +=
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/incremental_build_report_aggregator.py\" --api 2 \n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/incremental_build_report_aggregator.py\" --api 2 --rptfmt " + report_format + "\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status=@PROJECT_BASE@_full_report.html\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status > @PROJECT_BASE@_full_report.txt\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate   --output=\"@PROJECT_BASE@_aggregate_report.html\"\n" +
@@ -278,15 +290,25 @@ getEnvironmentTeardownUnix() + "\n";
      * Add groovy script to top-level project
      */
     private void addGroovyScriptMultiJob() {
+		String html_text = "";
+		String html_newline = "";
+
+        if (getOptionHtmlBuildDesc().equalsIgnoreCase("HTML")) {
+            html_text = ".html";
+            html_newline = "<br>";
+        } else {
+            html_text = ".txt";
+            html_newline = "\\n";
+        }
         String script =
 "import hudson.FilePath\n" +
 "\n" +
-"FilePath fp_c = new FilePath(manager.build.getWorkspace(),'CombinedReport.html')\n" +
-"FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report.html')\n" +
+"FilePath fp_c = new FilePath(manager.build.getWorkspace(),'CombinedReport" + html_text + "')\n" +
+"FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report" + html_text + "')\n" +
 "\n" +
 "if (fp_c.exists() && fp_f.exists())\n" +
 "{\n" +
-"    manager.build.description = \"Full Status Report\"\n" +
+"    manager.build.description = fp_c.readToString() + \"" + html_newline + "\" + fp_f.readToString()" +
 "}\n" +
 "else\n" +
 "{\n" +
@@ -445,12 +467,26 @@ getEnvironmentTeardownUnix() + "\n" +
      * @param baseName project basename
      */
     private void addBuildCommands(Project project, MultiJobDetail detail, String baseName) {
-        String win = 
+        String report_format="";
+        String html_text="";
+
+        if (getOptionHtmlBuildDesc().equalsIgnoreCase("HTML")) {
+            html_text = ".html";
+            report_format = "HTML";
+        } else {
+            html_text = ".txt";
+            report_format = "TEXT";
+        }
+
+        String win =
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 getEnvironmentSetupWin() + "\n";
         win +=
 getExecutePreambleWin() +
-" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n";
+" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\n" +
+" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report" + html_text + "\n" +
+" %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\n";
+
         if (isUsingSCM()) {
             win +=
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\copy_build_dir.py\" \"@PROJECT@\" @LEVEL@ @BASENAME@ @ENV@\n";
@@ -468,8 +504,10 @@ getEnvironmentTeardownWin() + "\n" +
 getEnvironmentSetupUnix() + "\n";
         unix +=
 getExecutePreambleUnix() +
-" $VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report.html\n";
-        if (isUsingSCM()) {
+" $VECTORCAST_DIR/manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\n" +
+" $VECTORCAST_DIR/manage --project \"@PROJECT@\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report" + html_text + "\n" +
+ "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\n";
+       if (isUsingSCM()) {
             unix +=
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/copy_build_dir.py\" \"@PROJECT@\" @LEVEL@ @BASENAME@ @ENV@\n";
         }
@@ -493,6 +531,7 @@ getEnvironmentTeardownUnix() + "\n" +
     private void addPostbuildGroovy(Project project, MultiJobDetail detail, String baseName) {
         String setBuildStatus;
         String gif;
+        String html_text;
         if (getOptionErrorLevel().equalsIgnoreCase("unstable")) {
             setBuildStatus = "    manager.buildUnstable()\n";
             gif = "\"warning.gif\"";
@@ -500,7 +539,12 @@ getEnvironmentTeardownUnix() + "\n" +
             setBuildStatus = "    manager.buildFailure()\n";
             gif = "\"error.gif\"";
         }
-        String script = 
+        if (getOptionHtmlBuildDesc().equalsIgnoreCase("HTML")) {
+            html_text = ".html";
+        } else {
+            html_text = ".txt";
+        }
+        String script =
 "import hudson.FilePath\n" +
 "\n" +
 "if(manager.logContains(\".*py did not execute correctly.*\") || manager.logContains(\".*Traceback .most recent call last.*\"))\n" +
@@ -559,7 +603,7 @@ setBuildStatus +
 "    manager.addBadge(" + gif + ", \"Abnormal Termination of at least one Environment\")\n" +
 "}\n" +
 "\n" +
-"FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@BASENAME@_manage_incremental_rebuild_report.html')\n" +
+"FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@BASENAME@_manage_incremental_rebuild_report" + html_text + "')\n" +
 "\n" +
 "if (!fp_i.exists())\n" +
 "    manager.build.description = \"General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\"\n" +

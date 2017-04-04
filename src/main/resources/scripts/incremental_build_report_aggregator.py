@@ -37,8 +37,74 @@ sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
 
-def parse_files():
-     
+import re
+def parse_text_files():
+    header = """
+--------------------------------------------------------------------------------
+Manage Incremental Rebuild Report
+--------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------
+Environments Affected
+--------------------------------------------------------------------------------
+  -------------------------------------------------------------------------------
+  Environment           Rebuild Status              Unaffecte Affected  Total Tes
+                                                    d Tests   Tests     ts
+  -------------------------------------------------------------------------------
+"""
+
+    report_file_list = []
+    full_file_list = os.listdir(".")
+    for file in full_file_list:
+        if "manage_incremental_rebuild_report.txt" in file[-37:]:
+            print file
+            report_file_list.append(file)
+
+
+    rebuild_count = 0
+    rebuild_total = 0
+    preserved_count = 0
+    executed_count = 0
+    total_count = 0
+
+    outStr = ""
+
+    for file in report_file_list:
+        print "processing file: " + file
+        sepCount = 0
+        f = open(file,"r")
+        lines = f.readlines()
+        f.close()
+        for line in lines:
+            if re.search ("^  Totals",line):
+                totals = line.replace("(","").replace(")","").split()
+                rebuild_count += int(totals[2])
+                rebuild_total += int(totals[4])
+                preserved_count += int(totals[5])
+                executed_count += int(totals[6])
+                total_count += int(totals[7])
+            if "--------" in line:
+                sepCount += 1
+            elif sepCount == 6:
+                outStr += line
+
+    try:
+        percentage = rebuild_count * 100 / rebuild_total
+    except:
+        percentage = 0
+
+    totalStr = "\n  -------------------------------------------------------------------------------"
+    template = "\nTotals                  %3d%% (%4d / %4d)          %9d %9d %9d"
+    totalStr += template%(percentage,rebuild_count,rebuild_total,preserved_count,executed_count,total_count)
+
+    f = open("CombinedReport.txt","w")
+    f.write(header + outStr + totalStr)
+    f.close()
+	
+def parse_html_files():
+
     report_file_list = []
     full_file_list = os.listdir(".")
     for file in full_file_list:
@@ -88,6 +154,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--api', type=int)
+    parser.add_argument('--rptfmt')
     args = parser.parse_args()
 
     if args.api != 2:
@@ -96,4 +163,8 @@ if __name__ == "__main__":
         print "**********************************************************************"
         sys.exit(-1)
 
-    parse_files()
+    if args.rptfmt and "TEXT" in args.rptfmt:
+        parse_text_files()
+    else:
+        parse_html_files()
+
