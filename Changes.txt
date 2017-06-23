@@ -3,6 +3,7 @@
 
 4 Apr 2017
 * Added option to use either HTML or TEXT format for the build description
+* Added missing src/main/webapp/help-optHtmlBuildDesc.html file
 
 6 Mar 2017
 * add newlines at the end of single job scripts (windows and Linux) before the teardown lines
