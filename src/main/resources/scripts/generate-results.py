@@ -64,7 +64,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     print "Generating Test Case Management Reports"
 
     # release locks and create all Test Case Management Report
-    callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --release-locks"
+    callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --force --release-locks"
     callList = callStr.split()
     p = subprocess.Popen(callList,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     p.wait()

@@ -1,3 +1,6 @@
+23 Jun 2017
+* Added --force option to use of --release-locks
+
 4 Apr 2017
 * Added option to use either HTML or TEXT format for the build description
 

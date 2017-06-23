@@ -80,7 +80,7 @@ public class NewSingleJob extends BaseJob {
 getEnvironmentSetupWin() + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --status\n" +
-"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --release-locks\n" +
+"%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --force --release-locks\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\n" +
 getExecutePreambleWin() +
 " %VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --build-execute --incremental --output \"@PROJECT_BASE@_manage_incremental_rebuild_report" + html_text + "\" \n" +
@@ -105,7 +105,7 @@ getExecutePreambleWin() +
 getEnvironmentSetupUnix() + "\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --status \n" +
-"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --release-locks \n" +
+"$VECTORCAST_DIR/manage --project \"@PROJECT@\" --force --release-locks \n" +
 getExecutePreambleUnix() +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\n" +
 " $VECTORCAST_DIR/manage --project \"@PROJECT@\" --build-execute --incremental --output \"@PROJECT_BASE@_manage_incremental_rebuild_report.html\"\n" +
