@@ -1,3 +1,7 @@
+16 Jul 2017
+* Added extra check in vcastcsv2jenkins to cope with Function Calls being in
+  header but not in the rest of the table
+
 23 Jun 2017
 * Added --force option to use of --release-locks
 * Added option to use either HTML or TEXT format for the build description

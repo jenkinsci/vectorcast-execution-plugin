@@ -388,7 +388,7 @@ def getFunctionData(data):
         path       = [int(data[pathIndex+COVERED_INDEX]),int(data[pathIndex+TOTAL_INDEX]),0]
     if baIndex != -1 and data[baIndex+TOTAL_INDEX]:
         byAnalysis = [int(data[baIndex+COVERED_INDEX])  ,int(data[baIndex+TOTAL_INDEX])  ,0]
-    if fncIndex != -1 and data[fncIndex+TOTAL_INDEX]:
+    if fncIndex != -1 and len(data) > fncIndex and data[fncIndex+TOTAL_INDEX]:
         function = [int(data[fncIndex+COVERED_INDEX])  ,int(data[fncIndex+TOTAL_INDEX])  ,0]
     if fncCallIndex != -1 and data[fncCallIndex+TOTAL_INDEX]:
         functionCall = [int(data[fncCallIndex+COVERED_INDEX])  ,int(data[fncCallIndex+TOTAL_INDEX])  ,0]
