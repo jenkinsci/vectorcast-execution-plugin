@@ -133,17 +133,8 @@ getExecutePreambleUnix() +
      * Add groovy script step to job
      */
     private void addGroovyScriptSingleJob() {
-        String setBuildStatus;
-        String gif;
         String html_text;
         String html_newline;
-        if (getOptionErrorLevel().equalsIgnoreCase("unstable")) {
-            setBuildStatus = "    manager.buildUnstable()\n";
-            gif = "\"warning.gif\"";
-        } else {
-            setBuildStatus = "    manager.buildFailure()\n";
-            gif = "\"error.gif\"";
-        }
         if (getOptionHtmlBuildDesc().equalsIgnoreCase("HTML")) {
             html_text = ".html";
             html_newline = "<br>";
@@ -154,61 +145,71 @@ getExecutePreambleUnix() +
         String script = 
 "import hudson.FilePath\n" +
 "\n" +
+"Boolean buildFailed = false\n" +
+"Boolean buildUnstable = false\n" +
+"\n" +
 "if(manager.logContains(\".*py did not execute correctly.*\") || manager.logContains(\".*Traceback .most recent call last.*\"))\n" +
 "{\n" +
-"    manager.createSummary(" + gif + ").appendText(\"Jenkins Integration Script Failure\", false, false, false, \"red\")\n" +
-setBuildStatus +
-"    manager.addBadge(" + gif + ", \"Jenkins Integration Script Failure\")\n" +
+"    manager.createSummary(\"error.gif\").appendText(\"Jenkins Integration Script Failure\", false, false, false, \"red\")\n" +
+"    buildFailed = true\n" +
+"    manager.addBadge(\"error.gif\", \"Jenkins Integration Script Failure\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Failed to acquire lock on environment.*\"))\n" +
 "{\n" +
-"    manager.createSummary(" + gif + ").appendText(\"Failed to acquire lock on environment\", false, false, false, \"red\")\n" +
-setBuildStatus +
-"    manager.addBadge(" + gif + ", \"Failed to acquire lock on environment\")\n" +
+"    manager.createSummary(\"error.gif\").appendText(\"Failed to acquire lock on environment\", false, false, false, \"red\")\n" +
+"    buildFailed = true\n" +
+"    manager.addBadge(\"error.gif\", \"Failed to acquire lock on environment\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Environment Creation Failed.*\"))\n" +
 "{\n" +
-"    manager.createSummary(" + gif + ").appendText(\"Environment Creation Failed\", false, false, false, \"red\")\n" +
-setBuildStatus +
-"    manager.addBadge(" + gif + ", \"Environment Creation Failed\")\n" +
+"    manager.createSummary(\"error.gif\").appendText(\"Environment Creation Failed\", false, false, false, \"red\")\n" +
+"    buildFailed = true\n" +
+"    manager.addBadge(\"error.gif\", \"Environment Creation Failed\")\n" +
 "}\n" +
 "if (manager.logContains(\".*FLEXlm Error.*\"))\n" +
 "{\n" +
-"    manager.createSummary(" + gif + ").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
-setBuildStatus +
-"    manager.addBadge(" + gif + ", \"FLEXlm Error\")\n" +
+"    manager.createSummary(\"error.gif\").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
+"    buildFailed = true\n" +
+"    manager.addBadge(\"error.gif\", \"FLEXlm Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*INCR_BUILD_FAILED.*\"))\n" +
 "{\n" +
-"    manager.createSummary(" + gif + ").appendText(\"Build Error\", false, false, false, \"red\")\n" +
-setBuildStatus +
-"    manager.addBadge(" + gif + ", \"Build Error\")\n" +
+"    manager.createSummary(\"error.gif\").appendText(\"Build Error\", false, false, false, \"red\")\n" +
+"    buildFailed = true\n" +
+"    manager.addBadge(\"error.gif\", \"Build Error\")\n" +
+"}\n" +
+"if (manager.logContains(\".*Environment was not successfully built.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"error.gif\").appendText(\"Build Error\", false, false, false, \"red\")\n" +
+"    buildFailed = true\n" +
+"    manager.addBadge(\"error.gif\", \"Build Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*NOT_LINKED.*\"))\n" +
 "{\n" +
-"    manager.createSummary(" + gif + ").appendText(\"Link Error\", false, false, false, \"red\")\n" +
-setBuildStatus +
-"    manager.addBadge(" + gif + ", \"Link Error\")\n" +
+"    manager.createSummary(\"error.gif\").appendText(\"Link Error\", false, false, false, \"red\")\n" +
+"    buildFailed = true\n" +
+"    manager.addBadge(\"error.gif\", \"Link Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Preprocess Failed.*\"))\n" +
 "{\n" +
-"    manager.createSummary(" + gif + ").appendText(\"Preprocess Error\", false, false, false, \"red\")\n" +
-setBuildStatus +
-"    manager.addBadge(" + gif + ", \"Preprocess Error\")\n" +
+"    manager.createSummary(\"error.gif\").appendText(\"Preprocess Error\", false, false, false, \"red\")\n" +
+"    buildFailed = true\n" +
+"    manager.addBadge(\"error.gif\", \"Preprocess Error\")\n" +
 "}\n" +
 "if (manager.logContains(\".*Value Line Error - Command Ignored.*\"))\n" +
 "{\n" +
-"    manager.createSummary(" + gif + ").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
-setBuildStatus +
-"    manager.addBadge(" + gif + ", \"Test Case Import Error\")\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
+"    buildUnstable = true\n" +
+"    manager.addBadge(\"warning.gif\", \"Test Case Import Error\")\n" +
 "}\n" +
 "\n" +
 "if(manager.logContains(\".*Abnormal Termination on Environment.*\")) \n" +
 "{\n" +
-"    manager.createSummary(" + gif + ").appendText(\"Abnormal Termination of at least one Environment\", false, false, false, \"red\")\n" +
-setBuildStatus +
-"    manager.addBadge(" + gif + ", \"Abnormal Termination of at least one Environment\")\n" +
+"    manager.createSummary(\"error.gif\").appendText(\"Abnormal Termination of at least one Environment\", false, false, false, \"red\")\n" +
+"    buildFailed = true\n" +
+"    manager.addBadge(\"error.gif\", \"Abnormal Termination of at least one Environment\")\n" +
 "}\n" +
+"\n" +
 "FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_manage_incremental_rebuild_report" + html_text + "')\n" +
 "FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report" + html_text + "')\n" +
 "if (fp_i.exists() && fp_f.exists())\n" +
@@ -217,11 +218,21 @@ setBuildStatus +
 "}\n" +
 "else\n" +
 "{\n" +
-"    manager.createSummary(" + gif + ").appendText(\"General Failure\", false, false, false, \"red\")\n" +
-setBuildStatus +
+"    manager.createSummary(\"warning.gif\").appendText(\"General Failure\", false, false, false, \"red\")\n" +
+"    buildUnstable = true\n" +
 "    manager.build.description = \"General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\"\n" +
-"    manager.addBadge(" + gif + ", \"General Error\")\n" +
-"}";
+"    manager.addBadge(\"warning.gif\", \"General Error\")\n" +
+"}\n" +
+"\n" +
+"if (buildFailed && !buildUnstable)\n" +
+"{\n" +
+"    manager.buildFailure()\n" +
+"}\n" +
+"if (buildUnstable)\n" +
+"{\n" +
+"    manager.buildUnstable()\n" +
+"}\n" +
+"\n";
         script = StringUtils.replace(script, "@PROJECT_BASE@", getBaseName());
         script = StringUtils.replace(script, "@PROJECT@", getManageProjectName());
         

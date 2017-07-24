@@ -1,3 +1,6 @@
+24 Jul 2017
+* Changed groovyscript checks to mark VectorCAST build/execute errors as errors
+
 16 Jul 2017
 * Added extra check in vcastcsv2jenkins to cope with Function Calls being in
   header but not in the rest of the table
