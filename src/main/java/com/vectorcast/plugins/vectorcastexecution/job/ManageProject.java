@@ -47,8 +47,10 @@ public class ManageProject {
     private String manageFile;
     /** Groups */
     private List<Group> groups;
-    /** Sources */
+    /** Sources - only valid if version of Manage file < 17 */
     private List<Source> sources;
+    /** Compilers - only valid if version of Manage file >= 17 */
+    private List<Compiler> compilers;
     /** Jobs */
     private List<MultiJobDetail> jobs;
     /**
@@ -73,6 +75,7 @@ public class ManageProject {
         this.manageFile = manageFile;
         groups = new ArrayList<>();
         sources = new ArrayList<>();
+        compilers = new ArrayList<>();
         jobs = new ArrayList<>();
     }
     /**
@@ -81,6 +84,7 @@ public class ManageProject {
      * @throws InvalidProjectFileException 
      */
     public void parse() throws IOException, InvalidProjectFileException {
+        Integer version = 14;
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dbBuilder = dbFactory.newDocumentBuilder();
@@ -88,6 +92,9 @@ public class ManageProject {
             Document doc = dbBuilder.parse(is);
             
             NodeList nList = doc.getElementsByTagName("project");
+            Node projectNode = nList.item(0);
+            String verStr = ((Element)projectNode).getAttribute("version");
+            version = Integer.valueOf(verStr);
             for (int pos = 0; pos < nList.getLength(); pos++) {
                 Node node = nList.item(pos);
                 NodeList innerList = node.getChildNodes();
@@ -100,13 +107,19 @@ public class ManageProject {
                         Group group = new Group(name);
                         groups.add(group);
                         group.parse(innerNode);
-                    } else if (innerNode.getNodeName().equals("source-collection") &&
+                    } else if (version < 17 && innerNode.getNodeName().equals("source-collection") &&
                         node.getNodeType() == Node.ELEMENT_NODE) {
                         Element element = (Element)innerNode;
                         String name = element.getAttribute("name");
                         Source source = new Source(name);
                         sources.add(source);
                         source.parse(innerNode);
+                    } else if (version >= 17 && innerNode.getNodeName().equals("compiler") &&
+                        node.getNodeType() == Node.ELEMENT_NODE) {
+                        Element element = (Element)innerNode;
+                        Compiler compiler = new Compiler();
+                        compilers.add(compiler);
+                        compiler.parse(innerNode);
                     }
                 }
             }
@@ -117,20 +130,38 @@ public class ManageProject {
 //            Logger.getLogger(NewSingleJob.class.getName()).log(Level.SEVERE, null, ex);
             throw new InvalidProjectFileException();
         }
-        for (Source source : sources) {
-            for (Platform platform : source.platforms) {
-                for (Compiler compiler : platform.compilers) {
-                    for (TestSuite testSuite : compiler.testsuites) {
-                        for (Group group : testSuite.groups) {
-                            for (Environment env : group.getEnvs()) {
-                                MultiJobDetail job = new MultiJobDetail(
-                                        source.getName(),
-                                        platform.getName(),
-                                        compiler.getName(),
-                                        testSuite.getName(),
-                                        env.getName());
-                                jobs.add(job);
+        if (version < 17) {
+            for (Source source : sources) {
+                for (Platform platform : source.platforms) {
+                    for (Compiler compiler : platform.compilers) {
+                        for (TestSuite testSuite : compiler.testsuites) {
+                            for (Group group : testSuite.groups) {
+                                for (Environment env : group.getEnvs()) {
+                                    MultiJobDetail job = new MultiJobDetail(
+                                            source.getName(),
+                                            platform.getName(),
+                                            compiler.getName(),
+                                            testSuite.getName(),
+                                            env.getName());
+                                    jobs.add(job);
+                                }
                             }
+                        }
+                    }
+                }
+            }
+        } else if (version >= 17) {
+            for (Compiler compiler : compilers) {
+                for (TestSuite testSuite : compiler.testsuites) {
+                    for (Group group : testSuite.groups) {
+                        for (Environment env : group.getEnvs()) {
+                            MultiJobDetail job = new MultiJobDetail(
+                                    /*source*/null,
+                                    /*platform*/null,
+                                    compiler.getName(),
+                                    testSuite.getName(),
+                                    env.getName());
+                            jobs.add(job);
                         }
                     }
                 }

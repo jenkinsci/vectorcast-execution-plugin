@@ -64,6 +64,8 @@ global tcmrFilename
 global fullManageProject
 global testCaseCount
 global jobNameDotted
+global manageVersion
+manageVersion = 14
 
 global stIndex,brIndex,pairIndex,pathIndex,baIndex,fncIndex,fncCallIndex,VgIndex
 
@@ -104,14 +106,26 @@ def readCsvFile(csvFilename):
     envName       = csvList[1].split(",")[1].rstrip()
     level         = csvList[2].split(",")[1].rstrip().split('/')
     htmlFilename  = csvList[3].split(",")[1].rstrip()
-    jobNamePrefix       = '_'.join([level[2],level[3],envName])
+    if manageVersion >= 17:
+        # Level does not include source and platform
+        jobNamePrefix       = '_'.join([level[0],level[1],envName])
+    else:
+        # Level includes source and platform
+        jobNamePrefix       = '_'.join([level[2],level[3],envName])
+
+
+    envName = envName.replace('.','_')
 
     level[0] = level[0].replace('.','_')
     level[1] = level[1].replace('.','_')
-    level[2] = level[2].replace('.','_')
-    level[3] = level[3].replace('.','_')
-    envName = envName.replace('.','_')
-    jobNameDotted       = '.'.join([level[2],level[3],envName])
+    if manageVersion >= 17:
+        # Level does not include source and platform
+        jobNameDotted       = '.'.join([level[0],level[1],envName])
+    else:
+        # Level includes source and platform
+        level[2] = level[2].replace('.','_')
+        level[3] = level[3].replace('.','_')
+        jobNameDotted       = '.'.join([level[2],level[3],envName])
 
     dataArray = []
     for row in csvList[4:]:
@@ -517,11 +531,13 @@ def writeBlankCCFile():
     f.close()
     print "Generating a blank coverage report\n"
 
-def run(test = "",coverage="", cleanup=True, useExecRpt = True):
+def run(test = "",coverage="", cleanup=True, useExecRpt = True, version=14):
 
     global gUseExecRpt, testCaseCount
+    global manageVersion
     gUseExecRpt = useExecRpt
     testCaseCount = 0
+    manageVersion = version
 
     if test:
         #print "      Processing Test Results File: " + test

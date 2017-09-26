@@ -26,6 +26,7 @@ import os
 import sys
 import argparse
 import shutil
+import re
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
@@ -49,6 +50,22 @@ import glob
 import time
 import os
 
+# Read the Manage project file to determine its version
+# File has already been checked for existence
+def readManageVersion(ManageFile):
+    version = 14
+    if os.path.isfile(ManageFile + ".vcm"):
+        ManageFile = ManageFile + '.vcm'
+    with open(ManageFile, 'r') as projFile:
+        for line in projFile:
+            if 'version' in line and 'project' in line:
+                version = int(re.findall(r'\d+', line)[0])
+                break
+    if verbose:
+        print "Version of Manage project file = %d" % version
+        print "(Levels change in version 17 and above)"
+    return version
+
 # build the Test Case Management Report for Manage Project
 def buildReports(FullManageProjectName = None, level = None, envName = None, genExeRpt = True):
 
@@ -56,6 +73,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if not os.path.isfile(FullManageProjectName) and not os.path.isfile(FullManageProjectName + ".vcm"):
         raise IOError(FullManageProjectName + ' does not exist')
         return
+
+    version = readManageVersion(FullManageProjectName)
 
     # parse out the manage project name
     manageProjectName = os.path.splitext(os.path.basename(FullManageProjectName))[0]
@@ -136,7 +155,12 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         if "TEST SUITE" in line:
             info  = line.split(": ")
             level = info[1].split("/")
-            jobName = manageProjectName + "_" + level[2] + "_" + level[3].rstrip()
+            if version >= 17:
+                # Level does not include source and platform
+                jobName = manageProjectName + "_" + level[0] + "_" + level[1].rstrip()
+            else:
+                # Level includes source and platform
+                jobName = manageProjectName + "_" + level[2] + "_" + level[3].rstrip()
 
         # Get the HTML file name that was created
         if "HTML report was saved" in line:
@@ -155,9 +179,9 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 print "   Processing Test Case Management Report: " + reportName
 
                 # Create the test_results_ and coverage_results_ csv files
-                testResultName, coverageResultsName = tcmr2csv.run(reportName, level)
+                testResultName, coverageResultsName = tcmr2csv.run(reportName, level, version)
 
-                vcastcsv2jenkins.run(test = testResultName,coverage = coverageResultsName,cleanup=True,useExecRpt=genExeRpt)
+                vcastcsv2jenkins.run(test = testResultName,coverage = coverageResultsName,cleanup=True,useExecRpt=genExeRpt, version=version)
 
                 adjustedReportName = "management" + os.sep + jobName + "_" + basename
 

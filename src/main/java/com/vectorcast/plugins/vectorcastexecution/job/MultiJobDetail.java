@@ -45,7 +45,11 @@ public class MultiJobDetail {
      */
     public MultiJobDetail(String source, String platform, String compiler, String testSuite, String environment) {
         this.projName = compiler + "_" + testSuite + "_" + environment;
-        this.level = source + "/" + platform + "/" + compiler + "/" + testSuite;
+        if (source != null && platform != null) {
+            this.level = source + "/" + platform + "/" + compiler + "/" + testSuite;
+        } else {
+            this.level = compiler + "/" + testSuite;
+        }
         this.environment = environment;
         this.compiler = compiler;
     }

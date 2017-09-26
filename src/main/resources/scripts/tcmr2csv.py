@@ -42,6 +42,8 @@ from bs4 import BeautifulSoup
 #global variables
 global manageProjectName
 manageProjectName = ""
+global manageVersion
+manageVersion = 14
 
 # column constants
 UNIT_NAME_COL = 0
@@ -72,7 +74,12 @@ def getCsvName(HtmlReportName,level,reportType):
     
     #get the manage project name by getting the basename less the "_management_report.html"    
     envName = os.path.basename(HtmlReportName)[:-23]
-    jobName = envName + "_" + level[2] + "_" + level[3].rstrip()
+    if manageVersion >= 17:
+        # Level does not include source and platform
+        jobName = envName + "_" + level[0] + "_" + level[1].rstrip()
+    else:
+        # Level includes source and platform
+        jobName = envName + "_" + level[2] + "_" + level[3].rstrip()
     
     (root, ext) = os.path.splitext(os.path.basename(HtmlReportName))
     
@@ -336,10 +343,12 @@ def procCoverageResults(HtmlReportName,table, level):
     return CsvFileName
     
     
-def run(HtmlReportName = "", jobName = ""):
+def run(HtmlReportName = "", jobName = "", version= 14):
+    global manageVersion
 
     TestResultsName = None
     CoverageResultsName = None
+    manageVersion = version
 
     # verify the html report exists
     if not os.path.isfile(HtmlReportName):

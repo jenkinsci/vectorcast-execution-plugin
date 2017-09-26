@@ -1,3 +1,7 @@
+26 Sept 2017
+* Added support for new version of VectorCAST Manage with only 2 levels 
+  (rather than previous 4 levels)
+
 24 Jul 2017
 * Changed groovyscript checks to mark VectorCAST build/execute errors as errors
 
@@ -10,7 +14,8 @@
 * Added option to use either HTML or TEXT format for the build description
 
 6 Mar 2017
-* add newlines at the end of single job scripts (windows and Linux) before the teardown lines
+* add newlines at the end of single job scripts (windows and Linux) before the 
+  teardown lines
 * Corrected check for missing BUILD_URL environment variable
 
 

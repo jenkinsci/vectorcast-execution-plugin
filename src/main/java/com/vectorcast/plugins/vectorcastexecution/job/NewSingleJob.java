@@ -214,7 +214,7 @@ getExecutePreambleUnix() +
 "FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report" + html_text + "')\n" +
 "if (fp_i.exists() && fp_f.exists())\n" +
 "{\n" +
-"    manager.build.description = fp_i.readToString() + \"" + html_newline + "\" + fp_f.readToString()" +
+"    manager.build.description = fp_i.readToString() + \"" + html_newline + "\" + fp_f.readToString()\n" +
 "}\n" +
 "else\n" +
 "{\n" +
