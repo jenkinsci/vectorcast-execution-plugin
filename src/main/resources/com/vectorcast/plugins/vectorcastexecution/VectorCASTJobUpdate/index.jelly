@@ -37,10 +37,12 @@
         <h1>${%VCJob.Control.Title}</h1>
         <p>${%VCJob.Control.Description}</p>
         <f:section title="${%VCJob.Control.Project}">
-          <f:entry title="${%VCJob.Control.Project.file.title}" description="${%VCJob.Control.Project.file.description}">
+          <f:entry title="${%VCJob.Control.Project.file.title}" description="${%VCJob.Control.Project.file.description}"
+                   help="/plugin/vectorcast-execution/help-projectFile.html">
             <input type="file" name="manageProject" required="true" />
           </f:entry>
-          <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}">
+          <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}"
+                   help="/plugin/vectorcast-execution/help-projectPathMulti.html">
             <f:textbox name="manageProjectName" size="50" required="true" />
           </f:entry>
         </f:section>

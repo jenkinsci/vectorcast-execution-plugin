@@ -118,7 +118,7 @@ public class NewMultiJob extends BaseJob {
     protected void cleanupProject() {
         List<Item> jobs = getInstance().getAllItems();
         for (Item job : jobs) {
-            if (job.getFullName().equals(multiProjectName)) {
+            if (job.getFullName().equalsIgnoreCase(multiProjectName)) {
                 try {
                     job.delete();
                 } catch (IOException ex) {

@@ -1,3 +1,8 @@
+17 Oct 2017
+* Added new auto-update multi-job to allow a scripted/scheduled job to
+  perform a multi-job update. (Note that this may require username/password
+  access to work)
+
 26 Sept 2017
 * Added support for new version of VectorCAST Manage with only 2 levels 
   (rather than previous 4 levels)

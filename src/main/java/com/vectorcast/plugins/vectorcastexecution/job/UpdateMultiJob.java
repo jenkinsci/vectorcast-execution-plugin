@@ -111,7 +111,7 @@ public class UpdateMultiJob extends NewMultiJob {
         try {
             List<Item> jobs = getInstance().getAllItems();
             for (Item job : jobs) {
-                if (job.getFullName().equals(jobName)) {
+                if (job.getFullName().equalsIgnoreCase(jobName)) {
                     job.delete();
                 }
             }

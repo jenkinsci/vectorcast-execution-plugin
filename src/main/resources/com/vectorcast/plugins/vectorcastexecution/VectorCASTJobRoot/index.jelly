@@ -63,15 +63,30 @@
 
       </table>
       
+      <h3>${%VCJob.ExtraOptions.Title}</h3>
+      <table>
+
+          <t:summary icon="${it.iconFileName}"
+                   href="job-auto-update" iconOnly="true">
+          <div class="link"><a href="${href}">${%VCJob.Control.AutoUpdate.Title}</a></div>
+          <div style="color:gray; text-decoration:none;">
+            <j:out value="${%VCJob.Control.AutoUpdate.Description}"/>
+          </div>
+        </t:summary>
+
+      </table>
+      
       <h3>${%VCJob.Options.Title}</h3>
       <table>
-        <t:summary icon="${it.iconFileName}"
+
+          <t:summary icon="${it.iconFileName}"
                    href="diag-job" iconOnly="true">
           <div class="link"><a href="${href}">${%VCJob.Control.Diag.Title}</a></div>
           <div style="color:gray; text-decoration:none;">
             <j:out value="${%VCJob.Control.Diag.Description}"/>
           </div>
         </t:summary>
+
       </table>
     </l:main-panel>
   </l:layout>
