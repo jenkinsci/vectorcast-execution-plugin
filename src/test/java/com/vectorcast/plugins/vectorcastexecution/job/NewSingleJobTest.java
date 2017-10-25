@@ -110,7 +110,7 @@ public class NewSingleJobTest extends TestCase {
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
-        jsonForm.put("option_clean", true);
+        jsonForm.put("optionClean", true);
         when(request.getSubmittedForm()).thenReturn(jsonForm);
 
         NewSingleJob job = new NewSingleJob(request, response);

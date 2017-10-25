@@ -23,13 +23,19 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.UpdateMultiJob;
 import hudson.Extension;
 import hudson.model.Descriptor;
+import hudson.model.Item;
+import hudson.scm.NullSCM;
+import jenkins.model.Jenkins;
+import hudson.tasks.Builder;
 import hudson.util.FormApply;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -67,17 +73,17 @@ public class VectorCASTJobUpdate extends JobBase {
     }
     /**
      * Do the update
-     * @param request
-     * @param response
-     * @return
-     * @throws ServletException
-     * @throws IOException
-     * @throws hudson.model.Descriptor.FormException
-     * @throws InterruptedException 
+     * @param request request object
+     * @param response response object
+     * @return response
+     * @throws ServletException exception
+     * @throws IOException exception
+     * @throws hudson.model.Descriptor.FormException exception
+     * @throws InterruptedException exception
      */
     @RequirePOST
     public HttpResponse doUpdate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException, InterruptedException {
-        job = new UpdateMultiJob(request, response);
+        job = new UpdateMultiJob(request, response, false);
         try {
             job.update();
             return new HttpRedirect("done");
@@ -88,5 +94,54 @@ public class VectorCASTJobUpdate extends JobBase {
             return new HttpRedirect("invalid");
         }
         return FormApply.success(".");
+    }
+    /**
+     * Do the update from saved details
+     * @param request request objext
+     * @param response response object
+     * @return response
+     * @throws ServletException exception
+     * @throws IOException exception
+     * @throws hudson.model.Descriptor.FormException exception
+     * @throws InterruptedException exception
+     */
+    @RequirePOST
+    public HttpResponse doUpdateFromSaved(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException, InterruptedException {
+        job = new UpdateMultiJob(request, response, true);
+        String projectName = job.getMultiJobName();
+
+        List<Item> jobs = Jenkins.getInstance().getAllItems();
+        for (Item searchJob : jobs) {
+            if (searchJob.getFullName().equalsIgnoreCase(projectName)) {
+                // Found the multi-job, now get the VectorCASTSetup
+                MultiJobProject project = (MultiJobProject)searchJob;
+                for (Builder builder : project.getBuilders()) {
+                    if (builder instanceof VectorCASTSetup) {
+                        // Only 1 of them, so stop afterwards
+                        VectorCASTSetup vcSetup = (VectorCASTSetup)builder;
+                        // SCM doesn't seem to be saved so use definition from project
+                        if (project.getScm() instanceof NullSCM) {
+                            vcSetup.setUsingSCM(false);
+                        } else {
+                            vcSetup.setUsingSCM(true);
+                        }
+                        vcSetup.setSCM(project.getScm());
+                        try {
+                            job.useSavedData(vcSetup);
+                            job.update();
+                            return new HttpRedirect("done");
+                        } catch (JobAlreadyExistsException ex) {
+                            // Can't happen when doing an update
+                            Logger.getLogger(VectorCASTJobUpdate.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (InvalidProjectFileException ex) {
+                            return new HttpRedirect("invalid");
+                        }
+                        return FormApply.success(".");
+                    }
+                }
+                break;
+            }
+        }
+        return new HttpRedirect("invalid");
     }
 }

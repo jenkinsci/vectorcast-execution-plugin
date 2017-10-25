@@ -29,12 +29,17 @@
          xmlns:l="/lib/layout" 
          xmlns:t="/lib/hudson" 
          xmlns:f="/lib/form"
-         xmlns:p="/lib/hudson/project"
-         xmlns:vc="/lib/VectorCAST">
-
-    <p>${%VCSetup.information}</p>
-    <vc:retry></vc:retry>
-    <vc:scripts></vc:scripts>
-    <vc:options></vc:options>
+         xmlns:p="/lib/hudson/project">
+    <f:section title="${%VCJob.LicOptions}">
+      <f:optionalBlock title="Retry License Failures" checked="${instance.showRetryLicFailures}" inline="true" 
+                       help="/plugin/vectorcast-execution/help-retryLicFailures.html">
+        <f:entry title="${%VCJob.LicOptions.wait_loops.title}" description="${%VCJob.LicOptions.wait_loops.description}">
+          <f:number clazz="positive-number" min="1" step="1" default="1" name="waitLoops" value="${instance.waitLoops}"/>
+        </f:entry>
+        <f:entry title="${%VCJob.LicOptions.wait_time.title}" description="${%VCJob.LicOptions.wait_time.description}">
+          <f:number clazz="positive-number" min="1" step="1" default="30" name="waitTime" value="${instance.waitTime}"/>
+        </f:entry>
+      </f:optionalBlock>
+    </f:section>
 </j:jelly>
 

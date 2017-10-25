@@ -43,21 +43,22 @@ public class NewMultiJobUpdate extends BaseJob {
     private String password;
     /**
      * Constructor
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException 
+     * @param request request object
+     * @param response response object
+     * @throws ServletException exception
+     * @throws IOException exception
      */
     public NewMultiJobUpdate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
-        super(request, response);
+        super(request, response, false);
         JSONObject json = request.getSubmittedForm();
         username = json.optString("userName");
         password = json.optString("password");
     }
     /**
      * Create new top-level project
-     * @return
-     * @throws IOException 
+     * @return top-level project
+     * @throws IOException exception
+     * @throws JobAlreadyExistsException exception
      */
     @Override
     protected Project createProject() throws IOException, JobAlreadyExistsException {
@@ -84,7 +85,9 @@ public class NewMultiJobUpdate extends BaseJob {
         
         getTopProject().save();
     }
-    
+    /**
+     * Add script to call back to Jenkins
+     */
     private void addScriptCall() {
         String args = " --projfile " + getManageProjectName();
         args += " --projname " + getBaseName();

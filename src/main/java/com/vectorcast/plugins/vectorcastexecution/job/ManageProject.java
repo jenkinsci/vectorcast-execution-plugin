@@ -80,8 +80,8 @@ public class ManageProject {
     }
     /**
      * Parse the project file
-     * @throws IOException 
-     * @throws InvalidProjectFileException 
+     * @throws IOException exception
+     * @throws InvalidProjectFileException exception
      */
     public void parse() throws IOException, InvalidProjectFileException {
         Integer version = 14;

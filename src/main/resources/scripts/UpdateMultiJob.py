@@ -15,7 +15,7 @@ class VcJob:
     def __init__(self, base_url, username, password, verbose):
         self.jenkins_url = base_url
         self.vc_url = base_url + '/VectorCAST'
-        self.update_job = self.vc_url + '/job-update/update'
+        self.update_job = self.vc_url + '/job-update/updateFromSaved'
         self.user = username
         self.password = password
         self.verbose = verbose

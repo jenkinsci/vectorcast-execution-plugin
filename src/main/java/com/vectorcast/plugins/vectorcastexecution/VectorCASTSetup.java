@@ -29,6 +29,8 @@ import hudson.Launcher;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.scm.NullSCM;
+import hudson.scm.SCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.File;
@@ -50,12 +52,314 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     /** script directory */
     private static final String SCRIPT_DIR = "/scripts/";
+
+    /** Environment setup for windows */
+    private String environmentSetupWin;
+    /** Environment setup for unix */
+    private String environmentSetupUnix;
+    /** Execute preamble for windows */
+    private String executePreambleWin;
+    /** Execute preamble for unix */
+    private String executePreambleUnix;
+    /** Environment tear down for windows */
+    private String environmentTeardownWin;
+    /** Environment tear down for unix */
+    private String environmentTeardownUnix;
+    /** Use Jenkins reporting */
+    private boolean optionUseReporting;
+    /** What error-level to use */
+    private String optionErrorLevel;
+    /** Use HTML in build description */
+    private String optionHtmlBuildDesc;
+    /** Generate execution report */
+    private boolean optionExecutionReport;
+    /** Clean workspace */
+    private boolean optionClean;
+    /** Wait loops */
+    private Long waitLoops;
+    /** Wait time */
+    private Long waitTime;
+    /** Using some form of SCM */
+    private boolean usingSCM;
+    /** SCM if using */
+    private SCM scm;
+
     /**
-     * Create a VectorCAST setup step
+     * Get the number of wait loops to do
+     * @return number of loops
+     */
+    public Long getWaitLoops() {
+        return waitLoops;
+    }
+    /**
+     * Set the number of wait loops
+     * @param waitLoops number of loops
+     */
+    public void setWaitLoops(Long waitLoops) {
+        this.waitLoops = waitLoops;
+    }
+    /**
+     * Get the wait time for license retries
+     * @return the wait time
+     */
+    public Long getWaitTime() {
+        return waitTime;
+    }
+    /**
+     * Set the wait time for license retries
+     * @param waitTime the wait time
+     */
+    public void setWaitTime(Long waitTime) {
+        this.waitTime = waitTime;
+    }
+    /**
+     * Get environment for windows setup
+     * @return environment setup
+     */
+    public String getEnvironmentSetupWin() {
+        return environmentSetupWin;
+    }
+    /**
+     * Set environment setup for windows
+     * @param environmentSetupWin environment setup
+     */
+    public void setEnvironmentSetupWin(String environmentSetupWin) {
+        this.environmentSetupWin = environmentSetupWin;
+    }
+    /**
+     * Get environment setup for unix
+     * @return environment setup
+     */
+    public String getEnvironmentSetupUnix() {
+        return environmentSetupUnix;
+    }
+    /**
+     * Set environment setup for unix
+     * @param environmentSetupUnix environment setup
+     */
+    public void setEnvironmentSetupUnix(String environmentSetupUnix) {
+        this.environmentSetupUnix = environmentSetupUnix;
+    }
+    /**
+     * Get execute preamble for windows
+     * @return execute preamble
+     */
+    public String getExecutePreambleWin() {
+        return executePreambleWin;
+    }
+    /**
+     * Set execute preamble for windows
+     * @param executePreambleWin execute preamble
+     */
+    public void setExecutePreambleWin(String executePreambleWin) {
+        this.executePreambleWin = executePreambleWin;
+    }
+    /**
+     * Get execute preamble for unix
+     * @return execute preamble
+     */
+    public String getExecutePreambleUnix() {
+        return executePreambleUnix;
+    }
+    /**
+     * Set execute preamble for unix
+     * @param executePreambleUnix execute preamble
+     */
+    public void setExecutePreambleUnix(String executePreambleUnix) {
+        this.executePreambleUnix = executePreambleUnix;
+    }
+    /**
+     * Get environment teardown for windows
+     * @return environment teardown
+     */
+    public String getEnvironmentTeardownWin() {
+        return environmentTeardownWin;
+    }
+    /**
+     * Set environment teardown for windows
+     * @param environmentTeardownWin environment teardown
+     */
+    public void setEnvironmentTeardownWin(String environmentTeardownWin) {
+        this.environmentTeardownWin = environmentTeardownWin;
+    }
+    /**
+     * Get environment teardown for unix
+     * @return environment teardown
+     */
+    public String getEnvironmentTeardownUnix() {
+        return environmentTeardownUnix;
+    }
+    /**
+     * Set environment teardown for unix
+     * @param environmentTeardownUnix environment teardown
+     */
+    public void setEnvironmentTeardownUnix(String environmentTeardownUnix) {
+        this.environmentTeardownUnix = environmentTeardownUnix;
+    }
+    /**
+     * Get option to use reporting
+     * @return true/false
+     */
+    public boolean getOptionUseReporting() {
+        return optionUseReporting;
+    }
+    /**
+     * Set option to use reporting
+     * @param optionUseReporting true/false
+     */
+    public void setOptionUseReporting(boolean optionUseReporting) {
+        this.optionUseReporting = optionUseReporting;
+    }
+    /**
+     * Get option error level
+     * @return error level
+     */
+    public String getOptionErrorLevel() {
+        return optionErrorLevel;
+    }
+    /**
+     * Set option error level
+     * @param optionErrorLevel error level
+     */
+    public void setOptionErrorLevel(String optionErrorLevel) {
+        this.optionErrorLevel = optionErrorLevel;
+    }
+    /**
+     * Get option for HTML Build Description
+     * @return "HTML" or "TEXT"
+     */
+    public String getOptionHtmlBuildDesc() {
+        return optionHtmlBuildDesc;
+    }
+    /**
+     * Set option for HTML build description     * 
+     * @param optionHtmlBuildDesc HTML or TEXT
+     */
+    public void setOptionHtmlBuildDesc(String optionHtmlBuildDesc) {
+        this.optionHtmlBuildDesc = optionHtmlBuildDesc;
+    }
+    /**
+     * Get option for execution report
+     * @return true/false
+     */
+    public boolean getOptionExecutionReport() {
+        return optionExecutionReport;
+    }
+    /**
+     * Set option for execution report
+     * @param optionExecutionReport true/false
+     */
+    public void setOptionExecutionReport(boolean optionExecutionReport) {
+        this.optionExecutionReport = optionExecutionReport;
+    }
+    /**
+     * Get option for cleaning workspace
+     * @return true/false
+     */
+    public boolean getOptionClean() {
+        return optionClean;
+    }
+    /**
+     * Set option for cleaning workspace
+     * @param optionClean true/false
+     */
+    public void setOptionClean(boolean optionClean) {
+        this.optionClean = optionClean;
+    }
+    /**
+     * Get using SCM
+     * @return true/false
+     */
+    public boolean getUsingSCM() {
+        return usingSCM;
+    }
+    /**
+     * Set using SCM (true yes, false no)
+     * @param usingSCM true/false
+     */
+    public void setUsingSCM(boolean usingSCM) {
+        this.usingSCM = usingSCM;
+    }
+    /**
+     * Get the SCM to use
+     * @return SCM
+     */
+    public SCM getSCM() {
+        return scm;
+    }
+    /**
+     * Set the SCM being used
+     * @param scm SCM
+     */
+    public void setSCM(SCM scm) {
+        this.scm = scm;
+    }
+    /**
+     * Create setup step
+     * @param environmentSetupWin environment setup for windows
+     * @param environmentSetupUnix environment setup for unix
+     * @param executePreambleWin execute preamble for windows
+     * @param executePreambleUnix execute preamble for unix
+     * @param environmentTeardownWin environment teardown for windows
+     * @param environmentTeardownUnix environment teardown for unix
+     * @param optionUseReporting use reporting
+     * @param optionErrorLevel error level
+     * @param optionHtmlBuildDesc HTML Build description
+     * @param optionExecutionReport execution report
+     * @param optionClean clean
+     * @param waitLoops wait loops
+     * @param waitTime wait time
      */
     @DataBoundConstructor
-    public VectorCASTSetup() {
+    public VectorCASTSetup(String environmentSetupWin,
+                           String environmentSetupUnix,
+                           String executePreambleWin,
+                           String executePreambleUnix,
+                           String environmentTeardownWin,
+                           String environmentTeardownUnix,
+                           boolean optionUseReporting,
+                           String optionErrorLevel,
+                           String optionHtmlBuildDesc,
+                           boolean optionExecutionReport,
+                           boolean optionClean,
+                           Long waitLoops,
+                           Long waitTime) {
+        this.environmentSetupWin = environmentSetupWin;
+        this.environmentSetupUnix = environmentSetupUnix;
+        this.executePreambleWin = executePreambleWin;
+        this.executePreambleUnix = executePreambleUnix;
+        this.environmentTeardownWin = environmentTeardownWin;
+        this.environmentTeardownUnix = environmentTeardownUnix;
+        this.optionUseReporting = optionUseReporting;
+        this.optionErrorLevel = optionErrorLevel;
+        this.optionHtmlBuildDesc = optionHtmlBuildDesc;
+        this.optionExecutionReport = optionExecutionReport;
+        this.optionClean = optionClean;
+        this.usingSCM = false;
+        this.scm = new NullSCM();
+        this.waitLoops = waitLoops;
+        this.waitTime = waitTime;
     }
+//    /**
+//     * Create a VectorCAST setup step
+//     */
+//    public VectorCASTSetup() {
+//        environmentSetupWin = "";
+//        environmentSetupUnix = "";
+//        executePreambleWin = "";
+//        executePreambleUnix = "";
+//        environmentTeardownWin = "";
+//        environmentTeardownUnix = "";
+//        optionUseReporting = true;
+//        optionErrorLevel = "Unstable";
+//        optionHtmlBuildDesc = "HTML";
+//        optionExecutionReport = true;
+//        optionClean = false;
+//        usingSCM = false;
+//        scm = new NullSCM();
+//        waitLoops = 1L;
+//        waitTime = 30L;
+//    }
     /**
      * Copy the files in a directory recursively to the job workspace.
      * This is used when the source is NOT a jar file
@@ -63,8 +367,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param dir directory to process
      * @param base base
      * @param destDir destination directory
-     * @throws IOException
-     * @throws InterruptedException 
+     * @throws IOException exception
+     * @throws InterruptedException exception
      */
     private void processDir(File dir, String base, FilePath destDir) throws IOException, InterruptedException {
         destDir.mkdirs();
@@ -86,10 +390,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }
     /**
      * Perform the build step. Copy the scripts from the archive/directory to the workspace
-     * @param build
-     * @param workspace
-     * @param launcher
-     * @param listener 
+     * @param build build
+     * @param workspace workspace
+     * @param launcher launcher
+     * @param listener  listener
      */    
     @Override
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {

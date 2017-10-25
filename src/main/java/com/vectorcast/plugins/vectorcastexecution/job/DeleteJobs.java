@@ -53,11 +53,11 @@ public class DeleteJobs extends BaseJob {
      * Constructor
      * @param request request
      * @param response response
-     * @throws ServletException
-     * @throws IOException 
+     * @throws ServletException exception
+     * @throws IOException exception
      */
     public DeleteJobs(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
-        super(request, response);
+        super(request, response, false);
     }
     /**
      * Create job list
@@ -71,11 +71,15 @@ public class DeleteJobs extends BaseJob {
         String projName = getBaseName() + ".vcast_manage";
         String singleName = projName + ".singlejob";
         String multiName = projName + ".multijob";
+        String updateMultiName = projName + ".updatemultijob";
         if (getInstance().getJobNames().contains(singleName)) {
             jobsToDelete.add(singleName);
         }
         if (getInstance().getJobNames().contains(multiName)) {
             jobsToDelete.add(multiName);
+        }
+        if (getInstance().getJobNames().contains(updateMultiName)) {
+            jobsToDelete.add(updateMultiName);
         }
 
         Collection<String> jobs = getInstance().getJobNames();
@@ -87,7 +91,7 @@ public class DeleteJobs extends BaseJob {
     }
     /**
      * Delete the jobs
-     * @throws IOException 
+     * @throws IOException exception
      */
     public void doDelete() throws IOException {
         if (getBaseName().isEmpty()) {

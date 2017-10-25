@@ -69,12 +69,12 @@ public class VectorCASTJobDiag extends JobBase {
     }
     /**
      * Create the diagnostics job
-     * @param request
-     * @param response
-     * @return
-     * @throws ServletException
-     * @throws IOException
-     * @throws hudson.model.Descriptor.FormException 
+     * @param request request objext
+     * @param response response object
+     * @return response
+     * @throws ServletException exception
+     * @throws IOException exception
+     * @throws hudson.model.Descriptor.FormException exception
      */
     @RequirePOST
     public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {

@@ -67,7 +67,7 @@ public class VectorCASTJobRoot implements RootAction {
     /**
      * Get dynamic 'job' - used by Stapler
      * @param name name to find
-     * @return dyanmic job
+     * @return dynamic job
      */
     public JobBase getDynamic(String name) {
         for (JobBase ui : getAll())

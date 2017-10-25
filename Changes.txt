@@ -1,3 +1,8 @@
+25 Oct 2017
+* Added (optional) command retry in the event of a license being unavailable
+* Updated auto-update job to use all saved data from when multi-job was created
+  (Won't work for previously created jobs that didn't save the data)
+
 17 Oct 2017
 * Added new auto-update multi-job to allow a scripted/scheduled job to
   perform a multi-job update. (Note that this may require username/password

@@ -75,52 +75,84 @@ abstract public class BaseJob {
     /** Environment tear down for unix */
     private String environmentTeardownUnix;
     /** Use Jenkins reporting */
-    private boolean option_use_reporting;
+    private boolean optionUseReporting;
     /** What error-level to use */
-    private String option_error_level;
+    private String optionErrorLevel;
     /** Use HTML in build description */
-    private String option_html_build_desc;
+    private String optionHtmlBuildDesc;
     /** Generate execution report */
-    private boolean option_execution_report;
+    private boolean optionExecutionReport;
     /** Clean workspace */
-    private boolean option_clean_workspace;
+    private boolean optionClean;
     /** Using some form of SCM */
     private boolean usingSCM;
+    /** The SCM being used */
+    private SCM scm;
+    /** Use saved data or not */
+    private boolean useSavedData;
     /**
      * Constructor
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException 
+     * @param request request object
+     * @param response response object
+     * @param useSavedData use saved data true/false
+     * @throws ServletException exception
+     * @throws IOException exception
      */
-    protected BaseJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
+    protected BaseJob(final StaplerRequest request, final StaplerResponse response, boolean useSavedData) throws ServletException, IOException {
         instance = Jenkins.getInstance();
         this.request = request;
         this.response = response;
-        this.usingSCM = false;
-
         JSONObject json = request.getSubmittedForm();
-        
+
         manageProjectName = json.optString("manageProjectName");
         if (!manageProjectName.isEmpty()) {
             // Force unix style path to avoid problems later
             manageProjectName = manageProjectName.replace('\\','/');
         }
         baseName = FilenameUtils.getBaseName(manageProjectName);
-        
-        environmentSetupWin = json.optString("environment_setup_win");
-        executePreambleWin = json.optString("execute_preamble_win");
-        environmentTeardownWin = json.optString("environment_teardown_win");
 
-        environmentSetupUnix = json.optString("environment_setup_unix");
-        executePreambleUnix = json.optString("execute_preamble_unix");
-        environmentTeardownUnix = json.optString("environment_teardown_unix");
+        this.useSavedData = useSavedData;
+        if (useSavedData) {
+            // Data will be set later
+        } else {
+            this.usingSCM = false;
+
+            environmentSetupWin = json.optString("environmentSetupWin");
+            executePreambleWin = json.optString("executePreambleWin");
+            environmentTeardownWin = json.optString("environmentTeardownWin");
+
+            environmentSetupUnix = json.optString("environmentSetupUnix");
+            executePreambleUnix = json.optString("executePreambleUnix");
+            environmentTeardownUnix = json.optString("environmentTeardownUnix");
+
+            optionUseReporting = json.optBoolean("optionUseReporting", true);
+            optionErrorLevel = json.optString("optionErrorLevel", "Unstable");
+            optionHtmlBuildDesc = json.optString("optionHtmlBuildDesc", "HTML");
+            optionExecutionReport = json.optBoolean("optionExecutionReport", true);
+            optionClean = json.optBoolean("optionClean", false);
+        }
+    }
+    /**
+     * Use Saved Data
+     * @param savedData saved data to use
+     */
+    public void useSavedData(VectorCASTSetup savedData) {
+        environmentSetupWin = savedData.getEnvironmentSetupWin();
+        executePreambleWin = savedData.getExecutePreambleWin();
+        environmentTeardownWin = savedData.getEnvironmentTeardownWin();
+
+        environmentSetupUnix = savedData.getEnvironmentSetupUnix();
+        executePreambleUnix = savedData.getExecutePreambleUnix();
+        environmentTeardownUnix = savedData.getEnvironmentTeardownUnix();
+
+        optionUseReporting = savedData.getOptionUseReporting();
+        optionErrorLevel = savedData.getOptionErrorLevel();
+        optionHtmlBuildDesc = savedData.getOptionHtmlBuildDesc();
+        optionExecutionReport = savedData.getOptionExecutionReport();
+        optionClean = savedData.getOptionClean();
         
-        option_use_reporting = json.optBoolean("option_use_reporting", true);
-        option_error_level = json.optString("option_error_level", "Unstable");
-        option_html_build_desc = json.optString("option_html_build_desc", "HTML");
-        option_execution_report = json.optBoolean("option_execution_report", true);
-        option_clean_workspace = json.optBoolean("option_clean", false);
+        usingSCM = savedData.getUsingSCM();
+        scm = savedData.getSCM();
     }
     /**
      * Using some form of SCM
@@ -130,11 +162,25 @@ abstract public class BaseJob {
         return usingSCM;
     }
     /**
+     * Set using some form of SCM
+     * @param usingSCM true/false
+     */
+    protected void setUsingSCM(boolean usingSCM) {
+        this.usingSCM = usingSCM;
+    }
+    /**
      * Get environment setup for windows
      * @return setup
      */
     protected String getEnvironmentSetupWin() {
         return environmentSetupWin;
+    }
+    /**
+     * Set environment setup for windows
+     * @param environmentSetupWin windows environment setup
+     */
+    protected void setEnvironmentSetupWin(String environmentSetupWin) {
+        this.environmentSetupWin = environmentSetupWin;
     }
     /**
      * Get execute preamble for windows
@@ -144,11 +190,25 @@ abstract public class BaseJob {
         return executePreambleWin;
     }
     /**
+     * Set execute preamble for windows
+     * @param executePreambleWin execute preamble for windows
+     */
+    protected void setExecutePreambleWin(String executePreambleWin) {
+        this.executePreambleWin = executePreambleWin;
+    }
+    /**
      * Get environment tear down for windows
-     * @return 
+     * @return environment tear down for windows
      */
     protected String getEnvironmentTeardownWin() {
         return environmentTeardownWin;
+    }
+    /**
+     * Set environment tear down for windows
+     * @param environmentTeardownWin environment tear down for windows
+     */
+    protected void setEnvironmentTeardownWin(String environmentTeardownWin) {
+        this.environmentTeardownWin = environmentTeardownWin;
     }
     /**
      * Get environment setup for unix
@@ -158,11 +218,25 @@ abstract public class BaseJob {
         return environmentSetupUnix;
     }
     /**
+     * Set environment setup for unix
+     * @param environmentSetupUnix environment setup for unix
+     */
+    protected void setEnvironmentSetupUnix(String environmentSetupUnix) {
+        this.environmentSetupUnix = environmentSetupUnix;
+    }
+    /**
      * Get execute preamble for unix
      * @return preamble
      */
     protected String getExecutePreambleUnix() {
         return executePreambleUnix;
+    }
+    /**
+     * Set execute preamble for unix
+     * @param executePreambleUnix execute preamble for unix
+     */
+    protected void setExecutePreambleUnix(String executePreambleUnix) {
+        this.executePreambleUnix = executePreambleUnix;
     }
     /**
      * Get environment tear down for unix
@@ -172,32 +246,81 @@ abstract public class BaseJob {
         return environmentTeardownUnix;
     }
     /**
+     * Set environment teardown for unix
+     * @param environmentTeardownUnix environment tear down for unix
+     */
+    protected void setEnvironmentTeardownUnix(String environmentTeardownUnix) {
+        this.environmentTeardownUnix = environmentTeardownUnix;
+    }
+    /**
      * Get use Jenkins reporting option
      * @return true to use, false to not
      */
     protected boolean getOptionUseReporting() {
-        return option_use_reporting;
+        return optionUseReporting;
+    }
+    /**
+     * Set use Jenkins reporting option
+     * @param optionUseReporting true to use, false to not
+     */
+    protected void setOptionUseReporting(boolean optionUseReporting) {
+        this.optionUseReporting = optionUseReporting;
     }
     /**
      * Get error level
      * @return Unstable or Failure
      */
     protected String getOptionErrorLevel() {
-        return option_error_level;
+        return optionErrorLevel;
+    }
+    /**
+     * Set option error level
+     * @param optionErrorLevel Unstable or Failure
+     */
+    protected void setOptionErrorLevel(String optionErrorLevel) {
+        this.optionErrorLevel = optionErrorLevel;
     }
     /**
      * Use HTML Build Description
      * @return HTML or TEXT
      */
-    protected String getOptionHtmlBuildDesc() {
-        return option_html_build_desc;
+    protected String getOptionHTMLBuildDesc() {
+        return optionHtmlBuildDesc;
+    }
+    /**
+     * Set use HTML Build description
+     * @param optionHtmlBuildDesc HTML build description
+     */
+    protected void setOptionHTMLBuildDesc(String optionHtmlBuildDesc) {
+        this.optionHtmlBuildDesc = optionHtmlBuildDesc;
     }
     /**
      * Use execution report
      * @return true to use, false to not
      */
     protected boolean getOptionExecutionReport() {
-        return option_execution_report;
+        return optionExecutionReport;
+    }
+    /**
+     * Set use execution report
+     * @param optionExecutionReport true to use, false to not
+     */
+    protected void setOptionExecutionReport(boolean optionExecutionReport) {
+        this.optionExecutionReport = optionExecutionReport;
+    }
+    /**
+     * Get option to clean workspace before build
+     * @return true to clean, false to not
+     */
+    protected boolean getOptionClean() {
+        return optionClean;
+    }
+    /**
+     * Set option to clean workspace before build
+     * @param optionClean  true to clean, false to not
+     */
+    protected void setOptionClean(boolean optionClean) {
+        this.optionClean = optionClean;
     }
     /**
      * Get top-level project
@@ -246,18 +369,19 @@ abstract public class BaseJob {
      * @param project project to add to
      */
     protected void addDeleteWorkspaceBeforeBuildStarts(Project project) {
-        if (option_clean_workspace) {
+        if (optionClean) {
             PreBuildCleanup cleanup = new PreBuildCleanup(/*patterns*/null, true, /*cleanup param*/"", /*external delete*/"");
             project.getBuildWrappersList().add(cleanup);
         }
     }
     /**
      * Create the job(s)
-     * @param update
-     * @throws IOException
-     * @throws ServletException
-     * @throws hudson.model.Descriptor.FormException
-     * @throws JobAlreadyExistsException 
+     * @param update true/false
+     * @throws IOException exception
+     * @throws ServletException exception
+     * @throws hudson.model.Descriptor.FormException exception
+     * @throws JobAlreadyExistsException exception
+     * @throws InvalidProjectFileException exception
      */
     public void create(boolean update) throws IOException, ServletException, Descriptor.FormException, JobAlreadyExistsException, InvalidProjectFileException {
         // Create the top-level project
@@ -266,17 +390,19 @@ abstract public class BaseJob {
             return;
         }
 
-        // Read the SCM setup
-        SCM scm = SCMS.parseSCM(request, topProject);
-        if (scm == null) {
-            scm = new NullSCM();
+        if (!useSavedData) {
+            // Read the SCM setup
+            scm = SCMS.parseSCM(request, topProject);
+            if (scm == null) {
+                scm = new NullSCM();
+            }
+            if (scm instanceof NullSCM) {
+                usingSCM = false;
+            } else {
+                usingSCM = true;
+            }
         }
         topProject.setScm(scm);
-        if (scm instanceof NullSCM) {
-            usingSCM = false;
-        } else {
-            usingSCM = true;
-        }
 
         addDeleteWorkspaceBeforeBuildStarts(topProject);
 
@@ -290,8 +416,8 @@ abstract public class BaseJob {
     /**
      * Create top-level project
      * @return created project
-     * @throws IOException
-     * @throws JobAlreadyExistsException 
+     * @throws IOException exception
+     * @throws JobAlreadyExistsException exception
      */
     abstract protected Project createProject() throws IOException, JobAlreadyExistsException;
     /**
@@ -301,19 +427,38 @@ abstract public class BaseJob {
     /**
      * Do create of project details
      * @param update true if doing an update rather than a create
-     * @throws IOException
-     * @throws ServletException
-     * @throws hudson.model.Descriptor.FormException 
+     * @throws IOException exception
+     * @throws ServletException exception
+     * @throws hudson.model.Descriptor.FormException exception
+     * @throws InvalidProjectFileException exception
      */
     abstract protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException, InvalidProjectFileException ;
     /**
      * Add the VectorCAST setup step to copy the python scripts to
      * the workspace
      * @param project project
+     * @return the setup build step
      */
-    protected void addSetup(Project project) {
-        VectorCASTSetup setup = new VectorCASTSetup();
+    protected VectorCASTSetup addSetup(Project project) {
+        VectorCASTSetup setup = 
+                new VectorCASTSetup(environmentSetupWin,
+                                    environmentSetupUnix,
+                                    executePreambleWin,
+                                    executePreambleUnix,
+                                    environmentTeardownWin,
+                                    environmentTeardownUnix,
+                                    optionUseReporting,
+                                    optionErrorLevel,
+                                    optionHtmlBuildDesc,
+                                    optionExecutionReport,
+                                    optionClean,
+                                    0L,
+                                    0L);
+        setup.setUsingSCM(usingSCM);
+        setup.setSCM(scm);
+
         project.getBuildersList().add(setup);
+        return setup;
     }
     /**
      * Add archive artifacts step

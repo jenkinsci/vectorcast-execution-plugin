@@ -61,12 +61,12 @@ public class VectorCASTJobDelete extends JobBase /*implements ExtensionPoint, Ac
     }
     /**
      * Delete jobs. Called first to setup the jobs to delete prior to confirmation
-     * @param request
-     * @param response
-     * @return
-     * @throws ServletException
-     * @throws IOException
-     * @throws hudson.model.Descriptor.FormException 
+     * @param request request object
+     * @param response response object
+     * @return response
+     * @throws ServletException exception
+     * @throws IOException exception
+     * @throws hudson.model.Descriptor.FormException exception
      */
     @RequirePOST
     public HttpResponse doDelete(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
@@ -77,12 +77,12 @@ public class VectorCASTJobDelete extends JobBase /*implements ExtensionPoint, Ac
     }
     /**
      * Confirm job deletion and actually do the deletions.
-     * @param request
-     * @param response
-     * @return
-     * @throws ServletException
-     * @throws IOException
-     * @throws hudson.model.Descriptor.FormException 
+     * @param request request object
+     * @param response response objext
+     * @return response
+     * @throws ServletException exception
+     * @throws IOException exception
+     * @throws hudson.model.Descriptor.FormException exception
      */
     @RequirePOST
     public HttpResponse doConfirmDelete(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {

@@ -153,15 +153,10 @@ def parse_html_files():
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--api', type=int)
     parser.add_argument('--rptfmt')
-    args = parser.parse_args()
+    parser.add_argument('--api',   help='Unused', type=int)
 
-    if args.api != 2:
-        print "**********************************************************************"
-        print "* Error - unsupported API version. This script expects API version 2 *"
-        print "**********************************************************************"
-        sys.exit(-1)
+    args = parser.parse_args()
 
     if args.rptfmt and "TEXT" in args.rptfmt:
         parse_text_files()

@@ -27,16 +27,10 @@ import re
 
 parser = argparse.ArgumentParser()
 parser.add_argument('fullReportName')
-parser.add_argument('--api', type=int)
+parser.add_argument('--api',   help='Unused', type=int)
+
 args = parser.parse_args()
 
-if args.api != 2:
-    print "**********************************************************************"
-    print "* Error - unsupported API version. This script expects API version 2 *"
-    print "**********************************************************************"
-    sys.exit(-1)
-
-#fullReportName = sys.argv[1];
 f = open(args.fullReportName,"r")
 lines = f.read().split("\n")
 f.close()
@@ -85,8 +79,6 @@ while True:
         break
 
     endIndex -= 1
-
-
 
 dataFile.close()
 

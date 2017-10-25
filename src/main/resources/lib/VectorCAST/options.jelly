@@ -33,28 +33,28 @@
     <f:section title="${%VCJob.Options}">
       <f:entry title="${%VCJob.Options.clean.title}" description="${%VCJob.Options.clean.description}"
                 help="/plugin/vectorcast-execution/help-optClean.html">
-        <f:checkbox name="option_clean" checked="false" />
+        <f:checkbox name="optionClean" checked="${instance.optionClean}" default="false"/>
       </f:entry>
       <f:entry title="${%VCJob.Options.use_reporting.title}" description="${%VCJob.Options.use_reporting.description}"
                 help="/plugin/vectorcast-execution/help-optUseReporting.html">
-        <f:checkbox name="option_use_reporting" checked="true" />
+        <f:checkbox name="optionUseReporting" checked="${instance.optionUseReporting}" default="true"/>
       </f:entry>
-      <f:entry name="option_error_level" title="${%VCJob.Options.error_level.title}" field="option_error_level" description="${%VCJob.Options.error_level.description}">
-        <select name="option_error_level">
-          <option value="Unstable" selected="true">Unstable</option>
-          <option value="Failure">Failure</option>
+      <f:entry name="optionErrorLevel" title="${%VCJob.Options.error_level.title}" field="optionErrorLevel" description="${%VCJob.Options.error_level.description}">
+        <select name="optionErrorLevel">
+          <option value="Unstable" selected="${instance.optionErrorLevel.equals('Unstable')?'true':null}">Unstable</option>
+          <option value="Failure" selected="${instance.optionErrorLevel.equals('Failure')?'true':null}">Failure</option>
         </select>
       </f:entry>
-      <f:entry name="option_html_build_desc" title="${%VCJob.Options.html_build_desc.title}" field="option_html_build_desc" description="${%VCJob.Options.html_build_desc.description}"
+      <f:entry name="optionHtmlBuildDesc" title="${%VCJob.Options.html_build_desc.title}" field="optionHtmlBuildDesc" description="${%VCJob.Options.html_build_desc.description}"
             help="/plugin/vectorcast-execution/help-optHtmlBuildDesc.html">
-        <select name="option_html_build_desc">
-          <option value="HTML" selected="true">HTML</option>
-          <option value="Text">Text</option>
+          <select name="optionHtmlBuildDesc">
+          <option value="HTML" selected="${instance.optionHtmlBuildDesc.equals('HTML')?'true':null}">HTML</option>
+          <option value="Text" selected="${instance.optionHtmlBuildDesc.equals('Text')?'true':null}">Text</option>
         </select>
       </f:entry>      
       <f:entry title="${%VCJob.Options.execution_report.title}" description="${%VCJob.Options.execution_report.description}"
                 help="/plugin/vectorcast-execution/help-optGenExecReport.html">
-        <f:checkbox name="option_execution_report" checked="true" />
+        <f:checkbox name="optionExecutionReport" checked="${instance.optionExecutionReport}" default="true"/>
       </f:entry>
     </f:section>
 </j:jelly>

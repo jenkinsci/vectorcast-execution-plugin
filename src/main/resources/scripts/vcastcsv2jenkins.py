@@ -23,7 +23,6 @@
 #
 #vcastcsv2jenkins.py
 
-import re
 import argparse
 import glob
 import os
@@ -38,7 +37,6 @@ sys.path.append(python_path_updates)
 python_path_updates += os.sep + "vpython-addons"
 sys.path.append(python_path_updates)
 
-from bs4 import BeautifulSoup
 from xml.sax.saxutils import escape
 
 # column constants

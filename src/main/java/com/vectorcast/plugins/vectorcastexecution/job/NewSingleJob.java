@@ -24,6 +24,7 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
+import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Project;
@@ -44,13 +45,13 @@ public class NewSingleJob extends BaseJob {
     private String projectName;
     /**
      * Constructor
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException 
+     * @param request request object
+     * @param response response object
+     * @throws ServletException exception
+     * @throws IOException exception
      */
     public NewSingleJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
-        super(request, response);
+        super(request, response, false);
     }
     /**
      * Get the name of the project
@@ -69,7 +70,7 @@ public class NewSingleJob extends BaseJob {
         if (!getOptionExecutionReport()) {
             noGenExecReport = " --dont-gen-exec-rpt";
         }
-        if (getOptionHtmlBuildDesc().equalsIgnoreCase("HTML")) {
+        if (getOptionHTMLBuildDesc().equalsIgnoreCase("HTML")) {
             html_text = ".html";
             report_format = "HTML";
         } else {
@@ -88,14 +89,14 @@ getExecutePreambleWin() +
         if (getOptionUseReporting()) {
             win +=
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --api 2 \"@PROJECT@\" " + noGenExecReport + "\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" \"@PROJECT@\" " + noGenExecReport + "\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status=\"@PROJECT_BASE@_full_report.html\"\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=aggregate   --output=\"@PROJECT_BASE@_aggregate_report.html\"\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=metrics     --output=\"@PROJECT_BASE@_metrics_report.html\"\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --create-report=environment --output=\"@PROJECT_BASE@_environment_report.html\"\n" +
 "%VECTORCAST_DIR%\\manage --project \"@PROJECT@\" --full-status > \"@PROJECT_BASE@_full_report.txt\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\getTotals.py\" --api 2 \"@PROJECT_BASE@_full_report.txt\"\n";
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\getTotals.py\" \"@PROJECT_BASE@_full_report.txt\"\n";
         }
         win += getEnvironmentTeardownWin() + "\n";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
@@ -113,14 +114,14 @@ getExecutePreambleUnix() +
         if (getOptionUseReporting()) {
             unix +=
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --api 2 \"@PROJECT@\" " + noGenExecReport + "\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" \"@PROJECT@\" " + noGenExecReport + "\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status=\"@PROJECT_BASE@_full_report.html\"\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=aggregate   --output=\"@PROJECT_BASE@_aggregate_report.html\"\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=metrics     --output=\"@PROJECT_BASE@_metrics_report.html\"\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --create-report=environment --output=\"@PROJECT_BASE@_environment_report.html\"\n" +
 "$VECTORCAST_DIR/manage --project \"@PROJECT@\" --full-status > \"@PROJECT_BASE@_full_report.txt\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\"\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/getTotals.py\" --api 2 \"@PROJECT_BASE@_full_report.txt\"\n";
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/getTotals.py\" \"@PROJECT_BASE@_full_report.txt\"\n";
         }
         unix += getEnvironmentTeardownUnix() + "\n";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
@@ -135,7 +136,7 @@ getExecutePreambleUnix() +
     private void addGroovyScriptSingleJob() {
         String html_text;
         String html_newline;
-        if (getOptionHtmlBuildDesc().equalsIgnoreCase("HTML")) {
+        if (getOptionHTMLBuildDesc().equalsIgnoreCase("HTML")) {
             html_text = ".html";
             html_newline = "<br>";
         } else {
@@ -243,8 +244,8 @@ getExecutePreambleUnix() +
     /**
      * Create project
      * @return project
-     * @throws IOException
-     * @throws JobAlreadyExistsException 
+     * @throws IOException exception
+     * @throws JobAlreadyExistsException exception
      */
     @Override
     protected Project createProject() throws IOException, JobAlreadyExistsException {
@@ -260,10 +261,10 @@ getExecutePreambleUnix() +
     }
     /**
      * Add build steps
-     * @param update
-     * @throws IOException
-     * @throws ServletException
-     * @throws hudson.model.Descriptor.FormException 
+     * @param update true to update, false to not
+     * @throws IOException exception
+     * @throws ServletException exception
+     * @throws hudson.model.Descriptor.FormException exception
      */
     @Override
     public void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {

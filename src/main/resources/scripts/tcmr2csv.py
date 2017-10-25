@@ -28,7 +28,6 @@ import re
 import argparse
 import os
 import sys
-import cgi
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"

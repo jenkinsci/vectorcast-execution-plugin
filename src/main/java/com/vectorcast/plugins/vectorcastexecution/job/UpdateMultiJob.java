@@ -55,25 +55,35 @@ public class UpdateMultiJob extends NewMultiJob {
     }
     /**
      * Constructor
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException 
+     * @param request request object
+     * @param response response object
+     * @param useSavedData use saved data true/false
+     * @throws ServletException exception
+     * @throws IOException exception
      */
-    public UpdateMultiJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
-        super(request, response);
+    public UpdateMultiJob(final StaplerRequest request, final StaplerResponse response, boolean useSavedData) throws ServletException, IOException {
+        super(request, response, useSavedData);
+    }
+    /**
+     * Get the multi job name
+     * @return multi-job name
+     */
+    public String getMultiJobName() {
+        String projectName = getBaseName() + ".vcast_manage.multijob";
+        return projectName;
     }
     /**
      * Do update
-     * @throws IOException
-     * @throws ServletException
-     * @throws hudson.model.Descriptor.FormException
-     * @throws InterruptedException
-     * @throws JobAlreadyExistsException 
+     * @throws IOException exception
+     * @throws ServletException exception
+     * @throws hudson.model.Descriptor.FormException exception
+     * @throws InterruptedException exception
+     * @throws JobAlreadyExistsException exception
+     * @throws InvalidProjectFileException exception
      */
     public void update() throws IOException, ServletException, Descriptor.FormException, InterruptedException, JobAlreadyExistsException, InvalidProjectFileException {
         deleted = new ArrayList<>();
-        String projectName = getBaseName() + ".vcast_manage.multijob";
+        String projectName = getMultiJobName();
         // Delete existing multijob
         deleteJob(projectName);
         // Create all other projects
@@ -91,8 +101,8 @@ public class UpdateMultiJob extends NewMultiJob {
     }
     /**
      * Create new top-level project
-     * @return
-     * @throws IOException 
+     * @return newly created project
+     * @throws IOException exception
      */
     @Override
     protected Project createProject() throws IOException {
@@ -102,7 +112,7 @@ public class UpdateMultiJob extends NewMultiJob {
     /**
      * Delete job
      * @param jobName job to delete
-     * @throws IOException 
+     * @throws IOException exception
      */
     private void deleteJob(String jobName) throws IOException {
         if (getBaseName().isEmpty()) {

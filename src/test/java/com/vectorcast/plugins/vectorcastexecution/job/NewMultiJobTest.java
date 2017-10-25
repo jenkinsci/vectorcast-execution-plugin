@@ -204,14 +204,14 @@ public class NewMultiJobTest extends TestCase {
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
-        jsonForm.put("option_clean", true);
+        jsonForm.put("optionClean", true);
         when(request.getSubmittedForm()).thenReturn(jsonForm);
         
         FileItem fileItem = Mockito.mock(FileItem.class);
         when(request.getFileItem("manageProject")).thenReturn(fileItem);
         when(fileItem.getString()).thenReturn(PROJECTFILE);
 
-        NewMultiJob job = new NewMultiJob(request, response);
+        NewMultiJob job = new NewMultiJob(request, response, false);
         Assert.assertEquals("project", job.getBaseName());
         job.create(false);
         Assert.assertTrue(job.getTopProject() != null);
@@ -258,15 +258,15 @@ public class NewMultiJobTest extends TestCase {
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
-        jsonForm.put("option_use_reporting", false);
-        jsonForm.put("option_clean", false);
+        jsonForm.put("optionUseReporting", false);
+        jsonForm.put("optionClean", false);
         when(request.getSubmittedForm()).thenReturn(jsonForm);
         
         FileItem fileItem = Mockito.mock(FileItem.class);
         when(request.getFileItem("manageProject")).thenReturn(fileItem);
         when(fileItem.getString()).thenReturn(PROJECTFILE);
 
-        NewMultiJob job = new NewMultiJob(request, response);
+        NewMultiJob job = new NewMultiJob(request, response, false);
         Assert.assertEquals("project", job.getBaseName());
         job.create(false);
         Assert.assertTrue(job.getTopProject() != null);
