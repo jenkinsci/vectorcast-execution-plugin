@@ -95,7 +95,7 @@ public class NewMultiJobTest extends TestCase {
     private ExtensionList<Language> langList;
     
     private static final String PROJECTNAME = "project.vcast_manage.multijob";
-    private static final String PROJECTFILE = 
+    private static final String PROJECTFILE14 = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<project version=\"14\">\n" +
 "  <config>\n" +
@@ -154,6 +154,61 @@ public class NewMultiJobTest extends TestCase {
 "    </platform>\n" +
 "  </source-collection>\n" +
 "</project>";
+    private static final String PROJECTFILE17 = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<project version=\"17\">\n" +
+"  <config>\n" +
+"    <saved-logs>5</saved-logs>\n" +
+"    <build-directory-naming-strategy>COMPRESSED</build-directory-naming-strategy>\n" +
+"  </config>\n" +
+"  <project-id>1473776183</project-id>\n" +
+"  <factor-config-options>0</factor-config-options>\n" +
+"  <environment name=\"ORDER\" type=\"UNIT\">\n" +
+"    <language>1</language>\n" +
+"    <is-monitored>0</is-monitored>\n" +
+"    <config>\n" +
+"      <original-environment-directory>jenkinsDemo/build/1481489187</original-environment-directory>\n" +
+"    </config>\n" +
+"  </environment>\n" +
+"  <environment name=\"ORDERS\" type=\"UNIT\">\n" +
+"    <language>1</language>\n" +
+"    <is-monitored>0</is-monitored>\n" +
+"    <config>\n" +
+"      <original-environment-directory>jenkinsDemo/build/2187318026</original-environment-directory>\n" +
+"    </config>\n" +
+"  </environment>\n" +
+"  <group name=\"Group\">\n" +
+"    <environment name=\"ORDER\"/>\n" +
+"  </group>\n" +
+"      <compiler>\n" +
+"        <compiler>\n" +
+"          <name>VectorCAST_MinGW_C</name>\n" +
+"          <config>\n" +
+"            <config>\n" +
+"              <key>C_COMPILER_TAG</key>\n" +
+"              <value>BUILTIN_MINGW_45_C</value>\n" +
+"            </config>\n" +
+"          </config>\n" +
+"        </compiler>\n" +
+"        <testsuite name=\"TestSuite\">\n" +
+"          <group name=\"Group\"/>\n" +
+"        </testsuite>\n" +
+"      </compiler>\n" +
+"      <compiler>\n" +
+"        <compiler>\n" +
+"          <name>VectorCAST_MinGW_C++</name>\n" +
+"          <config>\n" +
+"            <config>\n" +
+"              <key>C_COMPILER_TAG</key>\n" +
+"              <value>BUILTIN_MINGW_45_CPP</value>\n" +
+"            </config>\n" +
+"          </config>\n" +
+"        </compiler>\n" +
+"        <testsuite name=\"TestSuite\">\n" +
+"          <group name=\"Group\"/>\n" +
+"        </testsuite>\n" +
+"      </compiler>\n" +
+"</project>";
     
     @Before
     public void setUp() throws Exception {
@@ -198,8 +253,7 @@ public class NewMultiJobTest extends TestCase {
         when(ScriptApproval.get()).thenReturn(scriptApproval);
     }
 
-    @Test
-    public void testBasic() throws Exception {
+    public void basicCommon(String projectFile) throws Exception {
         StaplerRequest request = Mockito.mock(StaplerRequest.class);
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
         JSONObject jsonForm = new JSONObject();
@@ -209,7 +263,7 @@ public class NewMultiJobTest extends TestCase {
         
         FileItem fileItem = Mockito.mock(FileItem.class);
         when(request.getFileItem("manageProject")).thenReturn(fileItem);
-        when(fileItem.getString()).thenReturn(PROJECTFILE);
+        when(fileItem.getString()).thenReturn(projectFile);
 
         NewMultiJob job = new NewMultiJob(request, response, false);
         Assert.assertEquals("project", job.getBaseName());
@@ -241,15 +295,23 @@ public class NewMultiJobTest extends TestCase {
         checkBuildExecuteSteps3(bldrsList1);
 
         checkPublishers(publisherList1);
-//        Assert.assertEquals(4, publisherList1.size());
-//        Assert.assertTrue(publisherList1.get(3) instanceof GroovyPostbuildRecorder);
 
         // Build/execute - project 2
         checkBuildExecuteSteps3(bldrsList2);
 
         checkPublishers(publisherList2);
-//        Assert.assertEquals(1, publisherList2.size());
-//        Assert.assertTrue(publisherList2.get(0) instanceof GroovyPostbuildRecorder);
+    }
+
+    @Test
+    public void testBasic14() throws Exception {
+        // Test using version 14 Manage project with 4 levels
+        basicCommon(PROJECTFILE14);
+    }
+    
+    @Test
+    public void testBasic17() throws Exception {
+        // Test using version 17 Manage project with only 2 levels
+        basicCommon(PROJECTFILE17);
     }
     
     @Test
@@ -264,7 +326,7 @@ public class NewMultiJobTest extends TestCase {
         
         FileItem fileItem = Mockito.mock(FileItem.class);
         when(request.getFileItem("manageProject")).thenReturn(fileItem);
-        when(fileItem.getString()).thenReturn(PROJECTFILE);
+        when(fileItem.getString()).thenReturn(PROJECTFILE14);
 
         NewMultiJob job = new NewMultiJob(request, response, false);
         Assert.assertEquals("project", job.getBaseName());
