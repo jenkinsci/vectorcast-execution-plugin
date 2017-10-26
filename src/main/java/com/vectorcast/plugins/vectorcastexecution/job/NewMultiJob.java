@@ -68,10 +68,6 @@ public class NewMultiJob extends BaseJob {
     private List<String> projectsNeeded = null;
     /** Any existing projects */
     private List<String> projectsExisting = null;
-    /** Wait time */
-    private Long waitTime;
-    /** Wait loops */
-    private Long waitLoops;
     /**
      * Constructor
      * @param request request object
@@ -82,9 +78,6 @@ public class NewMultiJob extends BaseJob {
      */
     public NewMultiJob(final StaplerRequest request, final StaplerResponse response, boolean useSavedData) throws ServletException, IOException {
         super(request, response, useSavedData);
-        JSONObject json = request.getSubmittedForm();
-        waitTime = json.optLong("waitTime", 5);
-        waitLoops = json.optLong("waitLoops", 2);
     }
     /**
      * Use Saved Data
@@ -93,8 +86,6 @@ public class NewMultiJob extends BaseJob {
     @Override
     public void useSavedData(VectorCASTSetup savedData) {
         super.useSavedData(savedData);
-        waitTime = savedData.getWaitTime();
-        waitLoops = savedData.getWaitLoops();
     }
     /**
      * Get projects added
@@ -175,8 +166,6 @@ public class NewMultiJob extends BaseJob {
         
         // Build actions...
         VectorCASTSetup setup = addSetup(getTopProject());
-        setup.setWaitLoops(waitLoops);
-        setup.setWaitTime(waitTime);
         // Add multi-job phases
         // Building...
         List<PhaseJobsConfig> phaseJobs = new ArrayList<>();
@@ -269,11 +258,11 @@ getEnvironmentSetupWin() + "\n";
         if (getOptionUseReporting()) {
             win +=
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py\" --rptfmt " + report_format + "\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=@PROJECT_BASE@_full_report.html\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --full-status > @PROJECT_BASE@_full_report.txt\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=@PROJECT_BASE@_full_report.html\"\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status > @PROJECT_BASE@_full_report.txt\"\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\getTotals.py\" @PROJECT_BASE@_full_report.txt\n";
         }
@@ -292,11 +281,11 @@ getEnvironmentSetupUnix() + "\n";
         if (getOptionUseReporting()) {
             unix +=
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/incremental_build_report_aggregator.py\" --rptfmt " + report_format + "\n" +
-"$VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=@PROJECT_BASE@_full_report.html\"\n" +
-"$VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --full-status > @PROJECT_BASE@_full_report.txt\"\n" +
-"$VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
-"$VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
-"$VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
+"$VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=@PROJECT_BASE@_full_report.html\"\n" +
+"$VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status > @PROJECT_BASE@_full_report.txt\"\n" +
+"$VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
+"$VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
+"$VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/getTotals.py\" @PROJECT_BASE@_full_report.txt\n" +
 "\n";
@@ -331,7 +320,7 @@ getEnvironmentTeardownUnix() + "\n";
 "\n" +
 "if (fp_c.exists() && fp_f.exists())\n" +
 "{\n" +
-"    manager.build.description = fp_c.readToString() + \"" + html_newline + "\" + fp_f.readToString()" +
+"    manager.createSummary(\"monitor.png\").appendText(fp_c.readToString() + \"" + html_newline + "\" + fp_f.readToString(), false)\n" +
 "}\n" +
 "else\n" +
 "{\n" +
@@ -483,7 +472,7 @@ getEnvironmentTeardownUnix() + "\n";
         
         String win =
 getEnvironmentSetupWin() + "\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
 getEnvironmentTeardownWin() + "\n" +
 "";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
@@ -492,7 +481,7 @@ getEnvironmentTeardownWin() + "\n" +
         
         String unix =
 getEnvironmentSetupUnix() + "\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
 getEnvironmentTeardownUnix() + "\n" +
 "";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
@@ -525,9 +514,9 @@ getEnvironmentTeardownUnix() + "\n" +
 getEnvironmentSetupWin() + "\n";
         win +=
 getExecutePreambleWin() +
-" %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
-" %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report" + html_text + "\"\n" +
-" %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n";
+" %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
+" %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report" + html_text + "\"\n" +
+" %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n";
 
         if (isUsingSCM()) {
             win +=
@@ -546,9 +535,9 @@ getEnvironmentTeardownWin() + "\n" +
 getEnvironmentSetupUnix() + "\n";
         unix +=
 getExecutePreambleUnix() +
-" $VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
-" $VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report" + html_text + "\"\n" +
-" $VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + waitTime + " --wait_loops " + waitLoops + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n";
+" $VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
+" $VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report" + html_text + "\"\n" +
+" $VECTORCAST_DIR/vpython \"%WORKSPACE%/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n";
        if (isUsingSCM()) {
             unix +=
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/copy_build_dir.py\" \"@PROJECT@\" @LEVEL@ @BASENAME@ @ENV@\n";

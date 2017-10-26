@@ -1,3 +1,8 @@
+xxx
+* Update to summary being written in groovy script - no longer sets description
+  but sets summary text instead, avoiding HTML formatting problems in build history
+* Allow retry when licenses unavailable to be used for single jobs as well
+
 26 Oct 2o17
 * Update to retry to support jobs created with earlier plugin versions
 

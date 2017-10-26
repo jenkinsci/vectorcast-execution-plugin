@@ -90,6 +90,10 @@ abstract public class BaseJob {
     private SCM scm;
     /** Use saved data or not */
     private boolean useSavedData;
+    /** Wait time */
+    private Long waitTime;
+    /** Wait loops */
+    private Long waitLoops;
     /**
      * Constructor
      * @param request request object
@@ -130,6 +134,9 @@ abstract public class BaseJob {
             optionHtmlBuildDesc = json.optString("optionHtmlBuildDesc", "HTML");
             optionExecutionReport = json.optBoolean("optionExecutionReport", true);
             optionClean = json.optBoolean("optionClean", false);
+
+            waitTime = json.optLong("waitTime", 5);
+            waitLoops = json.optLong("waitLoops", 2);
         }
     }
     /**
@@ -153,6 +160,9 @@ abstract public class BaseJob {
         
         usingSCM = savedData.getUsingSCM();
         scm = savedData.getSCM();
+
+        waitTime = savedData.getWaitTime();
+        waitLoops = savedData.getWaitLoops();
     }
     /**
      * Using some form of SCM
@@ -323,6 +333,20 @@ abstract public class BaseJob {
         this.optionClean = optionClean;
     }
     /**
+     * Get the time to wait between retries
+     * @return number of seconds
+     */
+    protected Long getWaitTime() {
+        return waitTime;
+    }
+    /**
+     * Get the number of wait loops
+     * @return number of iterations
+     */
+    protected Long getWaitLoops() {
+        return waitLoops;
+    }
+    /**
      * Get top-level project
      * @return project
      */
@@ -452,8 +476,8 @@ abstract public class BaseJob {
                                     optionHtmlBuildDesc,
                                     optionExecutionReport,
                                     optionClean,
-                                    0L,
-                                    0L);
+                                    waitLoops,
+                                    waitTime);
         setup.setUsingSCM(usingSCM);
         setup.setSCM(scm);
 
