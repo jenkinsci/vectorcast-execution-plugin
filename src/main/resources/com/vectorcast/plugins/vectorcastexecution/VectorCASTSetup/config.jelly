@@ -32,9 +32,11 @@
          xmlns:p="/lib/hudson/project"
          xmlns:vc="/lib/VectorCAST">
 
-    <p>${%VCSetup.information}</p>
-    <vc:retry></vc:retry>
-    <vc:scripts></vc:scripts>
-    <vc:options></vc:options>
+    <f:optionalBlock title="${%VCSetup.information}" checked="${instance.showDetails}" inline="true" 
+                     help="/plugin/vectorcast-execution/help-setupCommand.html">
+      <vc:retry></vc:retry>
+      <vc:scripts></vc:scripts>
+      <vc:options></vc:options>
+    </f:optionalBlock>
 </j:jelly>
 

@@ -92,9 +92,6 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
     # release locks and create all Test Case Management Report
     callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --force --release-locks"
-#    callList = callStr.split()
-#    p = subprocess.Popen(callList,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-#    p.wait()
     out_mgt = runManageWithWait(callStr)
 
     if level and envName:
@@ -103,22 +100,13 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --clicast-args report custom management"
     print callStr
 
-#    callList = callStr.split()
-
     # capture the output of the manage call
-#    p = subprocess.Popen(callList,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-#    out_mgt,err_mgt = p.communicate()
     out_mgt = runManageWithWait(callStr)
 
     if "database missing or inaccessible" in out_mgt:
         callStr = callStr.replace("report custom","cover report")
         print callStr
-#        callList = callStr.split()
-#        p = subprocess.Popen(callList,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-#        out_mgt2,err_mgt2 = p.communicate()
         out_mgt2 = runManageWithWait(callStr)
-#        out_mgt = out_mgt + out_mgt2
-#        err_mgt = err_mgt + err_mgt2
         out_mgt = out_mgt + out_mgt2
 
     if genExeRpt:
@@ -129,17 +117,11 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --clicast-args report custom actual"
 
         print callStr
-#        callList = callStr.split()
 
         out_exe = runManageWithWait(callStr)
-#        p = subprocess.Popen(callList,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-#        out_exe,err_exe = p.communicate()
         out = out_mgt + out_exe
-#        out = out_mgt + out_exe
-#        err = err_mgt + err_exe
     else:
         out = out_mgt
-#        err = err_mgt
 
     if verbose:
         print out
@@ -218,8 +200,8 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--level',   help='Environment Name if only doing single environment.  Should be in the form of level/env')
     parser.add_argument('-e', '--environment',   help='Environment Name if only doing single environment.  Should be in the form of level/env')
     parser.add_argument('-g', '--dont-gen-exec-rpt',   help='Don\'t Generated Individual Execution Reports',  action="store_true")
-    parser.add_argument('--wait_time',   help='Time (in seconds) to wait between execution attempts', type=int)
-    parser.add_argument('--wait_loops',   help='Number of times to retry execution', type=int)
+    parser.add_argument('--wait_time',   help='Time (in seconds) to wait between execution attempts', type=int, default=30)
+    parser.add_argument('--wait_loops',   help='Number of times to retry execution', type=int, default=1)
     parser.add_argument('--api',   help='Unused', type=int)
 
     args = parser.parse_args()
