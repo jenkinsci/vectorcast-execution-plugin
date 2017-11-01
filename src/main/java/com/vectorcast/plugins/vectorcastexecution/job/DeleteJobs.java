@@ -23,6 +23,7 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
 import hudson.model.Descriptor;
 import hudson.model.Item;
 import hudson.model.Project;
@@ -67,25 +68,35 @@ public class DeleteJobs extends BaseJob {
             return;
         }
         jobsToDelete = new ArrayList<>();
+        // Old, string based job name matching
         String baseName = getBaseName() + "_";
         String projName = getBaseName() + ".vcast_manage";
         String singleName = projName + ".singlejob";
         String multiName = projName + ".multijob";
         String updateMultiName = projName + ".updatemultijob";
-        if (getInstance().getJobNames().contains(singleName)) {
-            jobsToDelete.add(singleName);
-        }
-        if (getInstance().getJobNames().contains(multiName)) {
-            jobsToDelete.add(multiName);
-        }
-        if (getInstance().getJobNames().contains(updateMultiName)) {
-            jobsToDelete.add(updateMultiName);
-        }
-
-        Collection<String> jobs = getInstance().getJobNames();
-        for (String job : jobs) {
-            if (job.startsWith(baseName)) {
-                jobsToDelete.add(job);
+        // New, job / VectorCASTSetup job matching
+        List<Item> jobs = getInstance().getAllItems();
+        for (Item job : jobs) {
+            if (job instanceof Project) {
+                Project project = (Project)job;
+                for (Object builder : project.getBuilders()) {
+                    if (builder instanceof VectorCASTSetup) {
+                        VectorCASTSetup vcSetup = (VectorCASTSetup)builder;
+                        if (vcSetup.getManageProjectName().isEmpty()) {
+                            // Old project - use string comparison of name
+                            if (job.getFullName().startsWith(baseName) ||
+                                job.getFullName().equals(singleName) ||
+                                job.getFullName().equals(multiName) ||
+                                job.getFullName().equals(updateMultiName)) {
+                                jobsToDelete.add(job.getFullName());
+                            }
+                        } else if (vcSetup.getManageProjectName().equalsIgnoreCase(getManageProjectName())) {
+                            jobsToDelete.add(job.getFullName());
+                        }
+                        // Only 1 of them, so stop afterwards
+                        break;
+                    }
+                }
             }
         }
     }

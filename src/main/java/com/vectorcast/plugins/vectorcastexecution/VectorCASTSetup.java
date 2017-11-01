@@ -36,7 +36,6 @@ import hudson.tasks.Builder;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
@@ -83,7 +82,12 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private boolean usingSCM;
     /** SCM if using */
     private SCM scm;
-
+    /** Manage project name */
+    private String manageProjectName;
+    /** Base Job name */
+    private String jobName;
+    /** Node label */
+    private String nodeLabel;
     /**
      * Get the number of wait loops to do
      * @return number of loops
@@ -295,6 +299,48 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.scm = scm;
     }
     /**
+     * Get the Manage project file/name
+     * @return Manage project name
+     */
+    public String getManageProjectName() {
+        return manageProjectName;
+    }
+    /**
+     * Set the Manage project file/name
+     * @param manageProjectName Manage project name
+     */
+    public void setManageProjectName(String manageProjectName) {
+        this.manageProjectName = manageProjectName;
+    }
+    /**
+     * Get the job name
+     * @return job name
+     */
+    public String getJobName() {
+        return jobName;
+    }
+    /**
+     * Set the job name
+     * @param jobName job name
+     */
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
+    /**
+     * Get the node label
+     * @return node label
+     */
+    public String getNodeLabel() {
+        return nodeLabel;
+    }
+    /**
+     * Set the node label
+     * @param nodeLabel node label
+     */
+    public void setNodeLabel(String nodeLabel) {
+        this.nodeLabel = nodeLabel;
+    }
+    /**
      * Create setup step
      * @param environmentSetupWin environment setup for windows
      * @param environmentSetupUnix environment setup for unix
@@ -309,6 +355,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param optionClean clean
      * @param waitLoops wait loops
      * @param waitTime wait time
+     * @param manageProjectName manage project name
+     * @param jobName job name
+     * @param nodeLabel node label
      */
     @DataBoundConstructor
     public VectorCASTSetup(String environmentSetupWin,
@@ -323,7 +372,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            boolean optionExecutionReport,
                            boolean optionClean,
                            Long waitLoops,
-                           Long waitTime) {
+                           Long waitTime,
+                           String manageProjectName,
+                           String jobName,
+                           String nodeLabel) {
         this.environmentSetupWin = environmentSetupWin;
         this.environmentSetupUnix = environmentSetupUnix;
         this.executePreambleWin = executePreambleWin;
@@ -339,27 +391,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.scm = new NullSCM();
         this.waitLoops = waitLoops;
         this.waitTime = waitTime;
+        this.manageProjectName = manageProjectName;
+        this.jobName = jobName;
+        this.nodeLabel = nodeLabel;
     }
-//    /**
-//     * Create a VectorCAST setup step
-//     */
-//    public VectorCASTSetup() {
-//        environmentSetupWin = "";
-//        environmentSetupUnix = "";
-//        executePreambleWin = "";
-//        executePreambleUnix = "";
-//        environmentTeardownWin = "";
-//        environmentTeardownUnix = "";
-//        optionUseReporting = true;
-//        optionErrorLevel = "Unstable";
-//        optionHtmlBuildDesc = "HTML";
-//        optionExecutionReport = true;
-//        optionClean = false;
-//        usingSCM = false;
-//        scm = new NullSCM();
-//        waitLoops = 1L;
-//        waitTime = 30L;
-//    }
     /**
      * Copy the files in a directory recursively to the job workspace.
      * This is used when the source is NOT a jar file
@@ -441,7 +476,6 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             }
         }
     }
-
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
@@ -459,13 +493,11 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         public DescriptorImpl() {
             load();
         }
-
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             // Indicates that this builder can be used with all kinds of project types 
             return true;
         }
-
         /**
          * This human readable name is used in the configuration screen.
          * @return the display name

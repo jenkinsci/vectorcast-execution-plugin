@@ -29,21 +29,10 @@
          xmlns:l="/lib/layout" 
          xmlns:t="/lib/hudson" 
          xmlns:f="/lib/form"
-         xmlns:p="/lib/hudson/project"
-         xmlns:vc="/lib/VectorCAST">
-
-    <f:optionalBlock title="${%VCSetup.information}" checked="${instance.showDetails}" inline="true" 
-                     help="/plugin/vectorcast-execution/help-setupCommand.html">
-      <f:section title="${%VCSetup.Control.Project}">
-        <f:entry title="${%VCSetup.Control.Project.path.title}" description="${%VCSetup.Control.Project.path.description}"
-                 help="/plugin/vectorcast-execution/help-projectPathMulti.html">
-          <f:textbox name="manageProjectName" size="50" required="true" value="${instance.manageProjectName}"/>
+         xmlns:p="/lib/hudson/project">
+        <f:entry title="${%VCJob.JobOptions.nodeLabel.title}" description="${%VCJob.JobOptions.nodeLabel.description}"
+                 help="/plugin/vectorcast-execution/help-jobOptNodeLabel.html">
+          <f:textbox name="nodeLabel" size="50" value="${instance.nodeLabel}" default="master"/>
         </f:entry>
-      </f:section>
-      <vc:retry></vc:retry>
-      <vc:jobOptionsNoDefault></vc:jobOptionsNoDefault>
-      <vc:scripts></vc:scripts>
-      <vc:options></vc:options>
-    </f:optionalBlock>
 </j:jelly>
 

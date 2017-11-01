@@ -23,233 +23,64 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.search.Search;
-import hudson.search.SearchIndex;
-import hudson.security.ACL;
-import hudson.security.Permission;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.SortedMap;
-import jenkins.model.Jenkins;
-import junit.framework.TestCase;
+import com.tikal.jenkins.plugins.multijob.MultiJobProject;
+import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
+import hudson.model.FreeStyleProject;
 import net.sf.json.JSONObject;
-import org.acegisecurity.AccessDeniedException;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Jenkins.class)
-public class DeleteJobsTest extends TestCase {
-    @Mock
-    private Jenkins mockJenkins;
+public class DeleteJobsTest {
 
-    @Before
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-
-        mockStatic(Jenkins.class);
-        when(Jenkins.getInstance()).thenReturn(mockJenkins);
-    }
+    @Rule
+    public JenkinsRule rule = new JenkinsRule();
     
+    private static final String MANAGE_PROJECT = "/home/jenkins/vcast/project.vcm";
+
     @Test
     public void deleteTest() throws Exception {
+        FreeStyleProject singleJobProject = rule.createFreeStyleProject("single.vcast");
+        VectorCASTSetup vcSetup = new VectorCASTSetup("environmentSetupWin",
+                "environmentSetupUnix",
+                "executePreambleWin",
+                "executePreambleUnix",
+                "environmentTeardownWin",
+                "environmentTeardownUnix",
+                true,
+                "optionErrorLevel",
+                "optionHtmlBuildDesc",
+                true,
+                true,
+                0L,
+                0L,
+                MANAGE_PROJECT,
+                "jobName",
+                "nodeLabel");
+        singleJobProject.getBuildersList().add(vcSetup);
+        
+        MultiJobProject multiJobProject = rule.createProject(MultiJobProject.class, "multi.vcast");
+        multiJobProject.getBuildersList().add(vcSetup);
+        
         StaplerRequest request = Mockito.mock(StaplerRequest.class);
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
         JSONObject jsonForm = new JSONObject();
-        jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
+        jsonForm.put("manageProjectName", MANAGE_PROJECT);
         when(request.getSubmittedForm()).thenReturn(jsonForm);
-        
-        List<String> jobs = new ArrayList<>();
-        final String PROJECT_KEEP1 = "jobToKeep";
-        final String PROJECT_KEEP2 = "keep_project_otherEnv";
-        final String PROJECT_MANAGE1 = "project.vcast_manage.singlejob";
-        final String PROJECT_MANAGE2 = "project.vcast_manage.multijob";
-        final String PROJECT_MANAGE3 = "project_otherEnv";
-        jobs.add(PROJECT_KEEP1);
-        jobs.add(PROJECT_KEEP2);
-        jobs.add(PROJECT_MANAGE1);
-        jobs.add(PROJECT_MANAGE2);
-        jobs.add(PROJECT_MANAGE3);
-        when(mockJenkins.getJobNames()).thenReturn(jobs);
-        
+
+        FreeStyleProject jobToKeep = rule.createFreeStyleProject("jobToKeep");
+
         DeleteJobs deleteJobs = new DeleteJobs(request, response);
         deleteJobs.createJobList();
-        Assert.assertEquals(3, deleteJobs.getJobsToDelete().size());
-        Assert.assertTrue(deleteJobs.getJobsToDelete().contains(PROJECT_MANAGE1));
-        Assert.assertTrue(deleteJobs.getJobsToDelete().contains(PROJECT_MANAGE2));
-        Assert.assertTrue(deleteJobs.getJobsToDelete().contains(PROJECT_MANAGE3));
-        Assert.assertFalse(deleteJobs.getJobsToDelete().contains(PROJECT_KEEP1));
-        Assert.assertFalse(deleteJobs.getJobsToDelete().contains(PROJECT_KEEP2));
-
-        List<Item> items = new ArrayList<>();
-        Item job1 = new TestJob(PROJECT_KEEP1);
-        Item job2 = new TestJob(PROJECT_KEEP2);
-        Item job3 = new TestJob(PROJECT_MANAGE1);
-        Item job4 = new TestJob(PROJECT_MANAGE2);
-        Item job5 = new TestJob(PROJECT_MANAGE3);
-        items.add(job1);
-        items.add(job2);
-        items.add(job3);
-        items.add(job4);
-        items.add(job5);
-        when(mockJenkins.getAllItems()).thenReturn(items);
-        deleteJobs.doDelete();
-        for (Item item : items) {
-            TestJob job = (TestJob)item;
-            if (job.name.equals(PROJECT_KEEP1) || job.name.equals(PROJECT_KEEP2)) {
-                Assert.assertFalse(job.deleted);
-            } else {
-                Assert.assertTrue(job.deleted);
-            }
-        }
-    }
-    
-    public class TestJob implements Item {
-
-        public String name;
-        public boolean deleted = false;
-        public TestJob(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public ItemGroup<? extends Item> getParent() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Collection<? extends Job> getAllJobs() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getName() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getFullName() {
-            return name;
-        }
-
-        @Override
-        public String getDisplayName() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getFullDisplayName() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getRelativeNameFrom(ItemGroup g) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getRelativeNameFrom(Item item) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getUrl() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getShortUrl() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getAbsoluteUrl() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void onCopiedFrom(Item src) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void onCreatedFromScratch() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void save() throws IOException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void delete() throws IOException, InterruptedException {
-            deleted = true;
-        }
-
-        @Override
-        public File getRootDir() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Search getSearch() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getSearchName() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getSearchUrl() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public SearchIndex getSearchIndex() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public ACL getACL() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void checkPermission(Permission permission) throws AccessDeniedException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public boolean hasPermission(Permission permission) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
+        Assert.assertEquals(2, deleteJobs.getJobsToDelete().size());
+        Assert.assertEquals(3, rule.jenkins.getView("All").getAllItems().size());
         
+        deleteJobs.doDelete();
+        Assert.assertEquals(1, rule.jenkins.getView("All").getAllItems().size());
     }
 }

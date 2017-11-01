@@ -1,22 +1,27 @@
-xxx
+1 Nov 2017 (0.26)
 * Update to summary being written in groovy script - no longer sets description
   but sets summary text instead, avoiding HTML formatting problems in build history
 * Allow retry when licenses unavailable to be used for single jobs as well
+* Add ability to name the node label to be used for a single job or the top-level
+  multi-job
+* Allow the single job or top-level multi-job's name to be changed
+* Use the Manage Project path (from the VectorCASTSetup stored information) to find
+  the project to delete (if set, otherwise use the job name)
 
-26 Oct 2o17
+26 Oct 2017 (0.25)
 * Update to retry to support jobs created with earlier plugin versions
 
-25 Oct 2017
+25 Oct 2017 (0.24)
 * Added (optional) command retry in the event of a license being unavailable
 * Updated auto-update job to use all saved data from when multi-job was created
   (Won't work for previously created jobs that didn't save the data)
 
-17 Oct 2017
+17 Oct 2017 (0.23)
 * Added new auto-update multi-job to allow a scripted/scheduled job to
   perform a multi-job update. (Note that this may require username/password
   access to work)
 
-26 Sept 2017
+26 Sept 2017 (0.22)
 * Added support for new version of VectorCAST Manage with only 2 levels 
   (rather than previous 4 levels)
 

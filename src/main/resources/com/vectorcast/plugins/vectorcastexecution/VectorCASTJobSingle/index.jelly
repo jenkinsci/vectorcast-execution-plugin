@@ -43,6 +43,7 @@
           </f:entry>
         </f:section>
         <vc:retry></vc:retry>
+        <vc:jobOptionsNoDefault></vc:jobOptionsNoDefault>
         <vc:scripts></vc:scripts>
         <vc:options></vc:options>
         <vc:scm></vc:scm>

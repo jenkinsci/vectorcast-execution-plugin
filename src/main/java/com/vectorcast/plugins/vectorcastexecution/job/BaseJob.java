@@ -94,6 +94,10 @@ abstract public class BaseJob {
     private Long waitTime;
     /** Wait loops */
     private Long waitLoops;
+    /** Base Job name */
+    private String jobName;
+    /** Node label */
+    private String nodeLabel;
     /**
      * Constructor
      * @param request request object
@@ -137,6 +141,9 @@ abstract public class BaseJob {
 
             waitTime = json.optLong("waitTime", 5);
             waitLoops = json.optLong("waitLoops", 2);
+            
+            jobName = json.optString("jobName", null);
+            nodeLabel = json.optString("nodeLabel", "");
         }
     }
     /**
@@ -157,12 +164,14 @@ abstract public class BaseJob {
         optionHtmlBuildDesc = savedData.getOptionHtmlBuildDesc();
         optionExecutionReport = savedData.getOptionExecutionReport();
         optionClean = savedData.getOptionClean();
-        
+
         usingSCM = savedData.getUsingSCM();
         scm = savedData.getSCM();
 
         waitTime = savedData.getWaitTime();
         waitLoops = savedData.getWaitLoops();
+        jobName = savedData.getJobName();
+        nodeLabel = savedData.getNodeLabel();
     }
     /**
      * Using some form of SCM
@@ -347,6 +356,13 @@ abstract public class BaseJob {
         return waitLoops;
     }
     /**
+     * Get the user-specified job name
+     * @return job name (null for use default)
+     */
+    protected String getJobName() {
+        return jobName;
+    }
+    /**
      * Get top-level project
      * @return project
      */
@@ -366,6 +382,13 @@ abstract public class BaseJob {
      */
     protected String getBaseName() {
         return baseName;
+    }
+    /**
+     * Get node label
+     * @return node label
+     */
+    protected String getNodeLabel() {
+        return nodeLabel;
     }
     /**
      * Get request
@@ -477,7 +500,10 @@ abstract public class BaseJob {
                                     optionExecutionReport,
                                     optionClean,
                                     waitLoops,
-                                    waitTime);
+                                    waitTime,
+                                    manageProjectName,
+                                    jobName,
+                                    nodeLabel);
         setup.setUsingSCM(usingSCM);
         setup.setSCM(scm);
 

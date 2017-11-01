@@ -27,10 +27,13 @@ import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
+import hudson.model.Label;
 import hudson.model.Project;
+import hudson.model.labels.LabelAtom;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
@@ -215,6 +218,9 @@ getExecutePreambleUnix() +
 "FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report" + html_text + "')\n" +
 "if (fp_i.exists() && fp_f.exists())\n" +
 "{\n" +
+// Must put HTML in createSummary and not description. Description will be truncated
+// and shown in Build history on left and cause corruption in the display, particularly
+// if using 'anything-goes-formatter'
 "    manager.createSummary(\"monitor.png\").appendText(fp_i.readToString() + \"" + html_newline + "\" + fp_f.readToString(), false)\n" +
 "}\n" +
 "else\n" +
@@ -254,10 +260,18 @@ getExecutePreambleUnix() +
             return null;
         }
         projectName = getBaseName() + ".vcast_manage.singlejob";
+        if (getJobName() != null && !getJobName().isEmpty()) {
+            projectName = getJobName();
+        }
         if (getInstance().getJobNames().contains(projectName)) {
             throw new JobAlreadyExistsException(projectName);
         }
-        return getInstance().createProject(FreeStyleProject.class, projectName);
+        Project project = getInstance().createProject(FreeStyleProject.class, projectName);
+        if (getNodeLabel() != null && !getNodeLabel().isEmpty()) {
+            Label label = new LabelAtom(getNodeLabel());
+            project.setAssignedLabel(label);
+        }
+        return project;
     }
     /**
      * Add build steps

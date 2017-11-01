@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
-import net.sf.json.JSONObject;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
@@ -117,6 +116,9 @@ public class NewMultiJob extends BaseJob {
     @Override
     protected Project createProject() throws IOException, JobAlreadyExistsException {
         multiProjectName = getBaseName() + ".vcast_manage.multijob";
+        if (getJobName() != null && !getJobName().isEmpty()) {
+            multiProjectName = getJobName();
+        }
         if (getInstance().getJobNames().contains(multiProjectName)) {
             throw new JobAlreadyExistsException(multiProjectName);
         }
@@ -161,11 +163,15 @@ public class NewMultiJob extends BaseJob {
         manageProject.parse();
 
         getTopProject().setDescription("Top-level multi job to run the manage project: " + getManageProjectName());
-        Label label = new LabelAtom("master");
+        String tmpLabel = getNodeLabel();
+        if (tmpLabel == null || tmpLabel.isEmpty()) {
+            tmpLabel = "master";
+        }
+        Label label = new LabelAtom(tmpLabel);
         getTopProject().setAssignedLabel(label);
         
         // Build actions...
-        VectorCASTSetup setup = addSetup(getTopProject());
+        addSetup(getTopProject());
         // Add multi-job phases
         // Building...
         List<PhaseJobsConfig> phaseJobs = new ArrayList<>();
@@ -176,8 +182,12 @@ public class NewMultiJob extends BaseJob {
         
         projectsAdded.add(getTopProject().getName());
         
+        String baseName = getBaseName();
+        if (getJobName() != null && !getJobName().isEmpty()) {
+            baseName = getJobName();
+        }
         for (MultiJobDetail detail : manageProject.getJobs()) {
-            String name = getBaseName() + "_" + detail.getProjectName();
+            String name = baseName + "_" + detail.getProjectName();
             projectsNeeded.add(name);
             PhaseJobsConfig phase = new PhaseJobsConfig(name, 
                     /*jobproperties*/"", 
@@ -200,7 +210,7 @@ public class NewMultiJob extends BaseJob {
 
         // Copy artifacts per building project
         for (MultiJobDetail detail : manageProject.getJobs()) {
-            String name = getBaseName() + "_" + detail.getProjectName();
+            String name = baseName + "_" + detail.getProjectName();
             String tarFile = "";
             if (isUsingSCM()) {
                 tarFile = ", " + getBaseName() + "_" + detail.getProjectName() + "_build.tar";
@@ -229,7 +239,7 @@ public class NewMultiJob extends BaseJob {
         getTopProject().save();
         
         for (MultiJobDetail detail : manageProject.getJobs()) {
-            String name = getBaseName() + "_" + detail.getProjectName();
+            String name = baseName + "_" + detail.getProjectName();
             createProjectPair(name, detail, update);
         }
     }
@@ -319,6 +329,9 @@ getEnvironmentTeardownUnix() + "\n";
 "FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report" + html_text + "')\n" +
 "\n" +
 "if (fp_c.exists() && fp_f.exists())\n" +
+// Must put HTML in createSummary and not description. Description will be truncated
+// and shown in Build history on left and cause corruption in the display, particularly
+// if using 'anything-goes-formatter'
 "{\n" +
 "    manager.createSummary(\"monitor.png\").appendText(fp_c.readToString() + \"" + html_newline + "\" + fp_f.readToString(), false)\n" +
 "}\n" +
