@@ -1,3 +1,6 @@
+2 Nov 2017 (0.28)
+* Fix regression %VAR% rather than $VAR in generated commands
+
 2 Nov 2017 (0.27)
 * Fix regression with missing space between --wait_loops and project name in
   call to generate-results.py in single job
