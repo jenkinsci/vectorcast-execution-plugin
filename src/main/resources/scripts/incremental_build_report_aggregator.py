@@ -58,7 +58,7 @@ Environments Affected
     report_file_list = []
     full_file_list = os.listdir(".")
     for file in full_file_list:
-        if "manage_incremental_rebuild_report.txt" in file[-37:]:
+        if "_rebuild.txt" in file[-37:]:
             print file
             report_file_list.append(file)
 
@@ -108,7 +108,7 @@ def parse_html_files():
     report_file_list = []
     full_file_list = os.listdir(".")
     for file in full_file_list:
-        if "manage_incremental_rebuild_report.html" in file[-38:]:
+        if "_rebuild.html" in file[-38:]:
             report_file_list.append(file)
 
     main_soup = BeautifulSoup(open(report_file_list[0]))

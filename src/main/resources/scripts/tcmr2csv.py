@@ -85,9 +85,9 @@ def getCsvName(HtmlReportName,level,reportType):
     if jobName:
         jobName = jobName + "_"
     else:
-        jobName = ""
+        jobName = root
 
-    CsvFileName = reportType + jobName + root + ".csv"
+    CsvFileName = reportType + jobName + ".csv"
     return CsvFileName
 
 ## Process the Test Results Section of the Test Case Managemenet Report

@@ -115,7 +115,7 @@ public class NewMultiJob extends BaseJob {
      */
     @Override
     protected Project createProject() throws IOException, JobAlreadyExistsException {
-        multiProjectName = getBaseName() + ".vcast_manage.multijob";
+        multiProjectName = getBaseName() + ".vcast.multi";
         if (getJobName() != null && !getJobName().isEmpty()) {
             multiProjectName = getJobName();
         }
@@ -217,7 +217,7 @@ public class NewMultiJob extends BaseJob {
             }
             CopyArtifact copyArtifact = new CopyArtifact(name);
             copyArtifact.setOptional(true);
-            copyArtifact.setFilter("**/*incremental_rebuild_report*," +
+            copyArtifact.setFilter("**/*_rebuild*," +
                                    "**/*_report.html, " +
                                    "xml_data/**" +
                                    tarFile);
@@ -370,7 +370,7 @@ getEnvironmentTeardownUnix() + "\n";
             Label label = new LabelAtom(detail.getCompiler());
             p.setAssignedLabel(label);
             addSetup(p);
-            addBuildCommands(p, detail, baseName);
+            addBuildCommands(p, detail, baseName, detail.getProjectName());
             if (getOptionUseReporting()) {
                 addReportingCommands(p, detail, baseName);
                 addArchiveArtifacts(p);
@@ -466,7 +466,7 @@ getEnvironmentTeardownUnix() + "\n";
 "    manager.buildUnstable()\n" +
 "}\n" +
 "\n";
-        
+
         SecureGroovyScript secureScript = new SecureGroovyScript(script, /*sandbox*/false, /*classpath*/null);
         GroovyPostbuildRecorder groovy = new GroovyPostbuildRecorder(secureScript, /*behaviour*/2, /*matrix parent*/false);
         project.getPublishersList().add(groovy);
@@ -509,8 +509,9 @@ getEnvironmentTeardownUnix() + "\n" +
      * @param project project to add to
      * @param detail job details
      * @param baseName project basename
+     * @param name project environment+compiler name (no manage project)
      */
-    private void addBuildCommands(Project project, MultiJobDetail detail, String baseName) {
+    private void addBuildCommands(Project project, MultiJobDetail detail, String baseName, String name) {
         String report_format="";
         String html_text="";
 
@@ -528,7 +529,7 @@ getEnvironmentSetupWin() + "\n";
         win +=
 getExecutePreambleWin() +
 " %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
-" %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report" + html_text + "\"\n" +
+" %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @NAME@_rebuild" + html_text + "\"\n" +
 " %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n";
 
         if (isUsingSCM()) {
@@ -542,6 +543,7 @@ getEnvironmentTeardownWin() + "\n" +
         win = StringUtils.replace(win, "@LEVEL@", detail.getLevel());
         win = StringUtils.replace(win, "@ENV@", detail.getEnvironment());
         win = StringUtils.replace(win, "@BASENAME@", baseName);
+        win = StringUtils.replace(win, "@NAME@", name);
         
         String unix = 
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
@@ -549,7 +551,7 @@ getEnvironmentSetupUnix() + "\n";
         unix +=
 getExecutePreambleUnix() +
 " $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
-" $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @BASENAME@_manage_incremental_rebuild_report" + html_text + "\"\n" +
+" $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --level @LEVEL@ -e @ENV@ --build-execute --incremental --output @NAME@_rebuild" + html_text + "\"\n" +
 " $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n";
        if (isUsingSCM()) {
             unix +=
@@ -562,6 +564,7 @@ getEnvironmentTeardownUnix() + "\n" +
         unix = StringUtils.replace(unix, "@LEVEL@", detail.getLevel());
         unix = StringUtils.replace(unix, "@ENV@", detail.getEnvironment());
         unix = StringUtils.replace(unix, "@BASENAME@", baseName);
+        unix = StringUtils.replace(unix, "@NAME@", name);
 
         VectorCASTCommand command = new VectorCASTCommand(win, unix);
         project.getBuildersList().add(command);
@@ -656,7 +659,7 @@ getEnvironmentTeardownUnix() + "\n" +
 "    manager.buildUnstable()\n" +
 "}\n" +
 "\n" +
-"FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@BASENAME@_manage_incremental_rebuild_report" + html_text + "')\n" +
+"FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@NAME@_rebuild" + html_text + "')\n" +
 "\n" +
 "if (!fp_i.exists())\n" +
 "{\n" +
@@ -664,6 +667,7 @@ getEnvironmentTeardownUnix() + "\n" +
 "}\n" +
 "\n";
         script = StringUtils.replace(script, "@BASENAME@", baseName);
+        script = StringUtils.replace(script, "@NAME@", detail.getProjectName());
         
         SecureGroovyScript secureScript = new SecureGroovyScript(script, /*sandbox*/false, /*classpath*/null);
         GroovyPostbuildRecorder groovy = new GroovyPostbuildRecorder(secureScript, /*behaviour*/2, /*matrix parent*/false);

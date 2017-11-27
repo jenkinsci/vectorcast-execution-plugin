@@ -94,7 +94,7 @@ public class NewMultiJobTest extends TestCase {
     @Mock
     private ExtensionList<Language> langList;
     
-    private static final String PROJECTNAME = "project.vcast_manage.multijob";
+    private static final String PROJECTNAME = "project.vcast.multi";
     private static final String PROJECTFILE14 = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<project version=\"14\">\n" +
@@ -382,7 +382,7 @@ public class NewMultiJobTest extends TestCase {
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(list.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)list.get(0);
-        Assert.assertEquals("*incremental_rebuild_report*," +
+        Assert.assertEquals("*_rebuild*," +
                              "*_report.html, " +
                             "execution/**, " +
                             "management/**, " +

@@ -62,7 +62,7 @@ public class NewMultiJobUpdate extends BaseJob {
      */
     @Override
     protected Project createProject() throws IOException, JobAlreadyExistsException {
-        String projectName = getBaseName() + ".vcast_manage.updatemultijob";
+        String projectName = getBaseName() + ".vcast.updatemulti";
         if (getInstance().getJobNames().contains(projectName)) {
             throw new JobAlreadyExistsException(projectName);
         }

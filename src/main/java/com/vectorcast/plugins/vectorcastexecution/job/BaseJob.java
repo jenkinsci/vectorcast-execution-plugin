@@ -516,7 +516,7 @@ abstract public class BaseJob {
      */
     protected void addArchiveArtifacts(Project project) {
         ArtifactArchiver archiver = new ArtifactArchiver(
-                /*artifacts*/"*incremental_rebuild_report*," +
+                /*artifacts*/"*_rebuild*," +
                              "*_report.html, " +
                              "execution/**, " +
                              "management/**, " +

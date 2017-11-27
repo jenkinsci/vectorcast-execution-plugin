@@ -76,7 +76,7 @@ public class NewSingleJobTest extends TestCase {
     @Mock
     private ExtensionList<Language> langList;
     
-    private static final String PROJECTNAME = "project.vcast_manage.singlejob";
+    private static final String PROJECTNAME = "project.vcast.single";
     
     @Before
     public void setUp() throws Exception {
@@ -137,7 +137,7 @@ public class NewSingleJobTest extends TestCase {
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
-        Assert.assertEquals("*incremental_rebuild_report*," +
+        Assert.assertEquals("*_rebuild*," +
                              "*_report.html, " +
                             "execution/**, " +
                             "management/**, " +

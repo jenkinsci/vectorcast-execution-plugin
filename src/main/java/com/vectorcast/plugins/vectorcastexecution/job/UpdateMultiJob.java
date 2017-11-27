@@ -69,7 +69,7 @@ public class UpdateMultiJob extends NewMultiJob {
      * @return multi-job name
      */
     public String getMultiJobName() {
-        String projectName = getBaseName() + ".vcast_manage.multijob";
+        String projectName = getBaseName() + ".vcast.multi";
         return projectName;
     }
     /**
@@ -106,7 +106,7 @@ public class UpdateMultiJob extends NewMultiJob {
      */
     @Override
     protected Project createProject() throws IOException {
-        String projectName = getBaseName() + ".vcast_manage.multijob";
+        String projectName = getBaseName() + ".vcast.multi";
         return getInstance().createProject(MultiJobProject.class, projectName);
     }
     /**

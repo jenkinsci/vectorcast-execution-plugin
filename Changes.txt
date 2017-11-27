@@ -1,3 +1,6 @@
+27 Nov 2017 (0.29)
+* Improved support for Manage projects / environment / compilers with long names
+
 2 Nov 2017 (0.28)
 * Fix regression %VAR% rather than $VAR in generated commands
 

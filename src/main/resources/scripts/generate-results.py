@@ -125,7 +125,6 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
     if verbose:
         print out
-        print err
 
     # save the output of the manage command for debug purposes
     outFile = open("build.log", "w")
@@ -153,25 +152,29 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             level = info[1].split("/")
             if version >= 17:
                 # Level does not include source and platform
-                jobName = manageProjectName + "_" + level[0] + "_" + level[1].rstrip()
+                jobName = level[0] + "_" + level[1].rstrip()
             else:
                 # Level includes source and platform
-                jobName = manageProjectName + "_" + level[2] + "_" + level[3].rstrip()
+                jobName = level[2] + "_" + level[3].rstrip()
 
         # Get the HTML file name that was created
         if "HTML report was saved" in line:
 
             # strip out anything that isn't the html file name
             reportName = line.rstrip()[34:-2]
-            basename = os.path.basename(reportName)
+#            basename = os.path.basename(reportName)
 
             # setup to save the execution report
             if 'execution_results_report' in reportName:
-                adjustedReportName = "execution" + os.sep + jobName + "_" + basename
+                print "   Processing Execution Report: " + reportName
 
+                if envName:
+                    adjustedReportName = "execution" + os.sep + envName + "_" + jobName + ".html"
+                else:
+                    adjustedReportName = "execution" + os.sep + jobName + ".html"
+
+            # setup to save the management report
             if 'management_report' in reportName:
-
-                #process the test case management report
                 print "   Processing Test Case Management Report: " + reportName
 
                 # Create the test_results_ and coverage_results_ csv files
@@ -179,7 +182,10 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
                 vcastcsv2jenkins.run(test = testResultName,coverage = coverageResultsName,cleanup=True,useExecRpt=genExeRpt, version=version)
 
-                adjustedReportName = "management" + os.sep + jobName + "_" + basename
+                if envName:
+                    adjustedReportName = "management" + os.sep + envName + "_" + jobName + ".html"
+                else:
+                    adjustedReportName = "management" + os.sep + jobName + ".html"
 
             # Create a list for later to copy the files over
             copyList.append([reportName,adjustedReportName])
