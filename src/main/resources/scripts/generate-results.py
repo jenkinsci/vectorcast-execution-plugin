@@ -75,6 +75,8 @@ def readManageVersion(ManageFile):
     return version
 
 # build the Test Case Management Report for Manage Project
+# envName and level only supplied when doing reports for a sub-project
+# of a multi-job
 def buildReports(FullManageProjectName = None, level = None, envName = None, genExeRpt = True):
 
     # make sure the project exists
@@ -144,25 +146,32 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         os.mkdir("execution")
 
     #loop over each line of the manage command output
+    env = None
+    compiler = None
     for line in out.split('\n'):
         # the TEST_SUITE line will give us information for building a jobName that will be
         # inserted into the CSV name so it will match with the Jenkins integration job names
+        # Generated jobName ONLY used for reports in a single job
+        if "COMMAND:" in line:
+            info = line.split("-e ")
+            env = info[1].split(" ")[0]
         if "TEST SUITE" in line:
             info  = line.split(": ")
             level = info[1].split("/")
             if version >= 17:
                 # Level does not include source and platform
                 jobName = level[0] + "_" + level[1].rstrip()
+                compiler = level[0]
             else:
                 # Level includes source and platform
                 jobName = level[2] + "_" + level[3].rstrip()
+                compiler = level[2]
 
         # Get the HTML file name that was created
         if "HTML report was saved" in line:
 
             # strip out anything that isn't the html file name
             reportName = line.rstrip()[34:-2]
-#            basename = os.path.basename(reportName)
 
             # setup to save the execution report
             if 'execution_results_report' in reportName:
@@ -171,7 +180,10 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 if envName:
                     adjustedReportName = "execution" + os.sep + envName + "_" + jobName + ".html"
                 else:
-                    adjustedReportName = "execution" + os.sep + jobName + ".html"
+                    if env and compiler:
+                        adjustedReportName = "execution" + os.sep + env + "_" + compiler + ".html"
+                    else:
+                        adjustedReportName = "execution" + os.sep + jobName + ".html"
 
             # setup to save the management report
             if 'management_report' in reportName:
@@ -185,10 +197,16 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 if envName:
                     adjustedReportName = "management" + os.sep + envName + "_" + jobName + ".html"
                 else:
-                    adjustedReportName = "management" + os.sep + jobName + ".html"
+                    if env and compiler:
+                        adjustedReportName = "management" + os.sep + env + "_" + compiler + ".html"
+                    else:
+                        adjustedReportName = "management" + os.sep + jobName + ".html"
 
             # Create a list for later to copy the files over
             copyList.append([reportName,adjustedReportName])
+            # Reset env/compiler
+            env = None
+            compiler = None
 
     for file in copyList:
 
