@@ -34,6 +34,7 @@ import hudson.scm.SCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
@@ -43,6 +44,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.tasks.SimpleBuildStep;
+import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -405,7 +407,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @throws IOException exception
      * @throws InterruptedException exception
      */
-    private void processDir(File dir, String base, FilePath destDir) throws IOException, InterruptedException {
+    private void processDir(File dir, String base, FilePath destDir, Boolean directDir) throws IOException, InterruptedException {
         destDir.mkdirs();
         File[] files = dir.listFiles();
         if (files == null) {
@@ -414,11 +416,16 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         for (File file : files) {
             if (file.isDirectory()) {
                 FilePath newDest = new FilePath(destDir, file.getName());
-                processDir(file, base + "/" + file.getName(), newDest);
+                processDir(file, base + "/" + file.getName(), newDest, directDir);
             } else {
-                FilePath newFile = new FilePath(destDir, file.getName());
-                try (InputStream is = VectorCASTSetup.class.getResourceAsStream(SCRIPT_DIR + base + "/" + file.getName())) {
-                    newFile.copyFrom(is);
+                if (directDir) {
+                    File newFile = new File(destDir + File.separator + file.getName());
+                    FileUtils.copyFile(file, newFile);
+                } else {
+                    FilePath newFile = new FilePath(destDir, file.getName());
+                    try (InputStream is = VectorCASTSetup.class.getResourceAsStream(SCRIPT_DIR + base + "/" + file.getName())) {
+                        newFile.copyFrom(is);
+                    }
                 }
             }
         }
@@ -435,8 +442,20 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         FilePath destScriptDir = new FilePath(workspace, "vc_scripts");
         JarFile jFile = null;
         try {
-            String path = VectorCASTSetup.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-            path = URLDecoder.decode(path, "utf-8");
+            String path = null;
+            String override_path = System.getenv("VCAST_VC_SCRIPTS");
+            String extra_script_path = SCRIPT_DIR;
+            Boolean directDir = false;
+            if (override_path != null && !override_path.isEmpty()) {
+                path = override_path;
+                extra_script_path = "";
+                directDir = true;
+                String msg = "VectorCAST - overriding vc_scripts. Copying from '" + path + "'";
+                Logger.getLogger(VectorCASTSetup.class.getName()).log(Level.ALL, msg);
+            } else {
+                path = VectorCASTSetup.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+                path = URLDecoder.decode(path, "utf-8");
+            }
             File testPath = new File(path);
             if (testPath.isFile()) {
                 // Have jar file...
@@ -459,8 +478,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 }
             } else {
                 // Have directory
-                File scriptDir = new File(path + SCRIPT_DIR);
-                processDir(scriptDir, "./", destScriptDir);
+                File scriptDir = new File(path + extra_script_path);
+                processDir(scriptDir, "./", destScriptDir, directDir);
             }
         } catch (IOException ex) {
             Logger.getLogger(VectorCASTSetup.class.getName()).log(Level.SEVERE, null, ex);

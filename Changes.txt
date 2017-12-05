@@ -1,5 +1,7 @@
 ? Dec 2017 (0.30)
 * Fixed regression with naming of archived execution and management reports
+* Added VCAST_VC_SCRIPT environment variable that if set, will copy the scripts
+  to %WORKSPACE%/vc_scripts from there instead of from the plugin
 
 27 Nov 2017 (0.29)
 * Improved support for Manage projects / environment / compilers with long names
