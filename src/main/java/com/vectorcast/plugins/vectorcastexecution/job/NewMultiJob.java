@@ -218,7 +218,8 @@ public class NewMultiJob extends BaseJob {
             CopyArtifact copyArtifact = new CopyArtifact(name);
             copyArtifact.setOptional(true);
             copyArtifact.setFilter("**/*_rebuild*," +
-                                   "**/*_report.html, " +
+                                   "execution/*.html, " +
+                                   "management/*.html, " +
                                    "xml_data/**" +
                                    tarFile);
             copyArtifact.setFingerprintArtifacts(false);
