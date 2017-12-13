@@ -57,6 +57,8 @@ testCaseString = """
 
 global manageProject
 global level
+global compiler
+global jobName
 global jobNamePrefix
 global tcmrFilename
 global fullManageProject
@@ -90,6 +92,8 @@ gUseExecRpt = True
 def readCsvFile(csvFilename):
     global fullManageProject
     global manageProject
+    global compiler
+    global jobName
     global level
     global envName
     global jobNamePrefix
@@ -107,10 +111,13 @@ def readCsvFile(csvFilename):
     if manageVersion >= 17:
         # Level does not include source and platform
         jobNamePrefix       = '_'.join([level[0],level[1],envName])
+        jobName = level[0] + "_" + level[1].rstrip()
+        compiler = level[0]
     else:
         # Level includes source and platform
         jobNamePrefix       = '_'.join([level[2],level[3],envName])
-
+        jobName = level[2] + "_" + level[3].rstrip()
+        compiler = level[2]
 
     envName = envName.replace('.','_')
 
@@ -144,7 +151,7 @@ def writeXunitHeader(xunitfile):
     xunitfile.write("    <suite>\n")
     xunitfile.write("    <title>" + jobNameDotted + "</title>\n")
 
-def writeTestCase(xunitFile,  unit, subp, tc_name, passFail):
+def writeTestCase(xunitFile, unit, subp, tc_name, passFail):
     global jobNamePrefix
     global testCaseCount
     testCaseCount += 1
@@ -161,7 +168,7 @@ def writeTestCase(xunitFile,  unit, subp, tc_name, passFail):
             print "       Check Jenkins configuration - JENKINS_URL is probably not set\n"
             exec_link = "undefined"
         else:
-            exec_link = os.getenv('BUILD_URL') + "artifact/execution/" + manageProject + "_" + jobNamePrefix + "_execution_results_report.html#section" + str(1+testCaseCount*2)
+            exec_link = os.getenv('BUILD_URL') + "artifact/execution/" + envName + "_" + jobName + ".html#section" + str(1+testCaseCount*2)
         additional_msg = " See Execution Report: \n\t" + exec_link
         passFail += additional_msg
 

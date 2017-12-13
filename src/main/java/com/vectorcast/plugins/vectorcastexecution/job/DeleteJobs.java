@@ -82,7 +82,8 @@ public class DeleteJobs extends BaseJob {
                 for (Object builder : project.getBuilders()) {
                     if (builder instanceof VectorCASTSetup) {
                         VectorCASTSetup vcSetup = (VectorCASTSetup)builder;
-                        if (vcSetup.getManageProjectName().isEmpty()) {
+                        if (vcSetup.getManageProjectName() != null && 
+                            vcSetup.getManageProjectName().isEmpty()) {
                             // Old project - use string comparison of name
                             if (job.getFullName().startsWith(baseName) ||
                                 job.getFullName().equals(singleName) ||
@@ -90,7 +91,8 @@ public class DeleteJobs extends BaseJob {
                                 job.getFullName().equals(updateMultiName)) {
                                 jobsToDelete.add(job.getFullName());
                             }
-                        } else if (vcSetup.getManageProjectName().equalsIgnoreCase(getManageProjectName())) {
+                        } else if (vcSetup.getManageProjectName() != null &&
+                                   vcSetup.getManageProjectName().equalsIgnoreCase(getManageProjectName())) {
                             jobsToDelete.add(job.getFullName());
                         }
                         // Only 1 of them, so stop afterwards

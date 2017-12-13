@@ -1,4 +1,8 @@
-? Dec 2017 (0.30)
+13 Dec 2017 (0.31)
+* Corrected redundant quote in Linux single job
+* Corrected link from xUnit trend graph to results
+
+5 Dec 2017 (0.30)
 * Fixed regression with naming of archived execution and management reports
 * Added VCAST_VC_SCRIPT environment variable that if set, will copy the scripts
   to %WORKSPACE%/vc_scripts from there instead of from the plugin

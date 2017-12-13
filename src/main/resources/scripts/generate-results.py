@@ -180,10 +180,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 if envName:
                     adjustedReportName = "execution" + os.sep + envName + "_" + jobName + ".html"
                 else:
-                    if env and compiler:
-                        adjustedReportName = "execution" + os.sep + env + "_" + compiler + ".html"
-                    else:
-                        adjustedReportName = "execution" + os.sep + jobName + ".html"
+                    adjustedReportName = "execution" + os.sep + env + "_" + jobName + ".html"
 
             # setup to save the management report
             if 'management_report' in reportName:
@@ -197,10 +194,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 if envName:
                     adjustedReportName = "management" + os.sep + envName + "_" + jobName + ".html"
                 else:
-                    if env and compiler:
-                        adjustedReportName = "management" + os.sep + env + "_" + compiler + ".html"
-                    else:
-                        adjustedReportName = "management" + os.sep + jobName + ".html"
+                    adjustedReportName = "management" + os.sep + env + "_" + jobName + ".html"
 
             # Create a list for later to copy the files over
             copyList.append([reportName,adjustedReportName])
