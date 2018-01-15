@@ -462,6 +462,7 @@ def writeEmmaDataHeader(emmafile,data):
 
 def writeEmmaData(emmafile,data):
     global jobNamePrefix
+    unit_found = False
     emmafile.write ("  <data>\n")
     writeEmmaDataHeader(emmafile,data)
     emmafile.write ("\n      <environment name =\"" + jobNamePrefix + "\">\n")
@@ -469,6 +470,7 @@ def writeEmmaData(emmafile,data):
 
     unitName   = ""
     for row in data:
+        unit_found = True
         row[UNIT_NAME_COL] = escape(row[UNIT_NAME_COL])
         row[SUBPROG_COL] = escape(row[SUBPROG_COL])
         row[TEST_CASE_COL] = escape(row[TEST_CASE_COL])
@@ -488,7 +490,8 @@ def writeEmmaData(emmafile,data):
         writeEmmaSummaryData(emmafile,12,getFunctionData(row))
         emmafile.write("          </subprogram>\n")
 
-    emmafile.write("        </unit>\n")
+    if unit_found:
+        emmafile.write("        </unit>\n")
 
 def writeEmmaFooter(emmafile):
     emmafile.write ("      </environment>\n")
