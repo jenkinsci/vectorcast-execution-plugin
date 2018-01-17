@@ -224,6 +224,8 @@ def procCoverageResults(HtmlReportName,table, level):
         csv_file.write("No Coverage Found\n")
         csv_file.close()
         print "No Coverage Found"
+        if os.path.isfile(CsvFileName):
+            os.remove(CsvFileName)
         return None
         
     titleStr = ""
@@ -254,6 +256,8 @@ def procCoverageResults(HtmlReportName,table, level):
         print "Error with Test Case Management Report: " + HtmlReportName
         csv_file.write("Error with Test Case Management Report:\n")
         csv_file.close()
+        if os.path.isfile(CsvFileName):
+            os.remove(CsvFileName)
         return None
         
     # write out the title information except for the trailing comma

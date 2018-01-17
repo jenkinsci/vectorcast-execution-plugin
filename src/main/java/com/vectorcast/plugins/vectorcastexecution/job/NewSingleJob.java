@@ -169,6 +169,12 @@ getExecutePreambleUnix() +
 "    buildFailed = true\n" +
 "    manager.addBadge(\"error.gif\", \"Environment Creation Failed\")\n" +
 "}\n" +
+"if (manager.logContains(\".*Error with Test Case Management Report.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"error.gif\").appendText(\"Error with Test Case Management Report of at least one Environment\", false, false, false, \"red\")\n" +
+"    buildFailed = true\n" +
+"    manager.addBadge(\"error.gif\", \"Error with Test Case Management Report of at least one Environment\")\n" +
+"}\n" +
 "if (manager.logContains(\".*FLEXlm Error.*\"))\n" +
 "{\n" +
 "    manager.createSummary(\"error.gif\").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
