@@ -1,3 +1,7 @@
+17 Jan 2018 (0.33)
+* Don't create intermediate CSV file for bad test case management report 
+* Raise post-groovy alert for bad test case management report
+
 15 Jan 2018 (0.32)
 * Change to cope with coverage without a unit, to avoid
   corrupted coverage xml file
