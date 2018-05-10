@@ -39,6 +39,8 @@ import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.plugins.copyartifact.WorkspaceSelector;
 import hudson.scm.SCM;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -189,7 +191,27 @@ public class NewMultiJob extends BaseJob {
         for (MultiJobDetail detail : manageProject.getJobs()) {
             String name = baseName + "_" + detail.getProjectName();
             projectsNeeded.add(name);
-            PhaseJobsConfig phase = new PhaseJobsConfig(name, 
+            PhaseJobsConfig phase = null;
+            try {
+                // Orginal (pre MultiJob 1.30 and possibly earlier), use these
+                // parameters
+                Constructor ctor = PhaseJobsConfig.class.getConstructor(
+                        /*name*/String.class,
+                        /*jobproperties*/String.class,
+                        /*currParams*/boolean.class,
+                        /*configs*/List.class,
+                        /*killPhaseOnJobResultCondition*/PhaseJobsConfig.KillPhaseOnJobResultCondition.class,
+                        /*disablejob*/boolean.class,
+                        /*enableretrystrategy*/boolean.class,
+                        /*parsingrulespath*/String.class,
+                        /*retries*/int.class,
+                        /*enablecondition*/boolean.class,
+                        /*abort*/boolean.class,
+                        /*condition*/String.class,
+                        /*buildonly if scm changes*/boolean.class,
+                        /*applycond if no scm changes*/boolean.class);
+            
+                phase = (PhaseJobsConfig)ctor.newInstance(name, 
                     /*jobproperties*/"", 
                     /*currParams*/true, 
                     /*configs*/null, 
@@ -203,6 +225,79 @@ public class NewMultiJob extends BaseJob {
                     /*condition*/"", 
                     /*buildonly if scm changes*/false,
                     /*applycond if no scm changes*/false);
+            } catch (NoSuchMethodException ex) {
+                try {
+                    // By MultiJob 1.30 there is a new parameter
+                    Constructor ctor = PhaseJobsConfig.class.getConstructor(
+                            /*jobAlias*/String.class,
+                            /*name*/String.class,
+                            /*jobproperties*/String.class,
+                            /*currParams*/boolean.class,
+                            /*configs*/List.class,
+                            /*killPhaseOnJobResultCondition*/PhaseJobsConfig.KillPhaseOnJobResultCondition.class,
+                            /*disablejob*/boolean.class,
+                            /*enableretrystrategy*/boolean.class,
+                            /*parsingrulespath*/String.class,
+                            /*retries*/int.class,
+                            /*enablecondition*/boolean.class,
+                            /*abort*/boolean.class,
+                            /*condition*/String.class,
+                            /*buildonly if scm changes*/boolean.class,
+                            /*applycond if no scm changes*/boolean.class);
+                    phase = (PhaseJobsConfig)ctor.newInstance(name, 
+                        /*jobAlias*/"",
+                        /*jobproperties*/"", 
+                        /*currParams*/true, 
+                        /*configs*/null, 
+                        PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, 
+                        /*disablejob*/false, 
+                        /*enableretrystrategy*/false, 
+                        /*parsingrulespath*/null, 
+                        /*retries*/0, 
+                        /*enablecondition*/false, 
+                        /*abort*/false, 
+                        /*condition*/"", 
+                        /*buildonly if scm changes*/false,
+                        /*applycond if no scm changes*/false);
+                } catch (NoSuchMethodException ex1) {
+                    Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex1);
+                } catch (SecurityException ex1) {
+                    Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex1);
+                } catch (InstantiationException ex1) {
+                    Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex1);
+                } catch (IllegalAccessException ex1) {
+                    Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex1);
+                } catch (IllegalArgumentException ex1) {
+                    Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex1);
+                } catch (InvocationTargetException ex1) {
+                    Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex1);
+                }
+            } catch (SecurityException ex) {
+                Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+//            PhaseJobsConfig phase = new PhaseJobsConfig(name, 
+//                    /*jobproperties*/"", 
+//                    /*currParams*/true, 
+//                    /*configs*/null, 
+//                    PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, 
+//                    /*disablejob*/false, 
+//                    /*enableretrystrategy*/false, 
+//                    /*parsingrulespath*/null, 
+//                    /*retries*/0, 
+//                    /*enablecondition*/false, 
+//                    /*abort*/false, 
+//                    /*condition*/"", 
+//                    /*buildonly if scm changes*/false,
+//                    /*applycond if no scm changes*/false);
             phaseJobs.add(phase);
         }
         MultiJobBuilder multiJobBuilder = new MultiJobBuilder("Build, Execute and Report", phaseJobs, MultiJobBuilder.ContinuationCondition.COMPLETED);
