@@ -110,36 +110,40 @@ public class VectorCASTJobUpdate extends JobBase {
         job = new UpdateMultiJob(request, response, true);
         String projectName = job.getMultiJobName();
 
-        List<Item> jobs = Jenkins.getInstance().getAllItems();
-        for (Item searchJob : jobs) {
-            if (searchJob.getFullName().equalsIgnoreCase(projectName)) {
-                // Found the multi-job, now get the VectorCASTSetup
-                MultiJobProject project = (MultiJobProject)searchJob;
-                for (Builder builder : project.getBuilders()) {
-                    if (builder instanceof VectorCASTSetup) {
-                        // Only 1 of them, so stop afterwards
-                        VectorCASTSetup vcSetup = (VectorCASTSetup)builder;
-                        // SCM doesn't seem to be saved so use definition from project
-                        if (project.getScm() instanceof NullSCM) {
-                            vcSetup.setUsingSCM(false);
-                        } else {
-                            vcSetup.setUsingSCM(true);
+        Jenkins instance;
+        instance = Jenkins.getInstance();
+        if (instance != null) {
+            List<Item> jobs = instance.getAllItems();
+            for (Item searchJob : jobs) {
+                if (searchJob.getFullName().equalsIgnoreCase(projectName)) {
+                    // Found the multi-job, now get the VectorCASTSetup
+                    MultiJobProject project = (MultiJobProject)searchJob;
+                    for (Builder builder : project.getBuilders()) {
+                        if (builder instanceof VectorCASTSetup) {
+                            // Only 1 of them, so stop afterwards
+                            VectorCASTSetup vcSetup = (VectorCASTSetup)builder;
+                            // SCM doesn't seem to be saved so use definition from project
+                            if (project.getScm() instanceof NullSCM) {
+                                vcSetup.setUsingSCM(false);
+                            } else {
+                                vcSetup.setUsingSCM(true);
+                            }
+                            vcSetup.setSCM(project.getScm());
+                            try {
+                                job.useSavedData(vcSetup);
+                                job.update();
+                                return new HttpRedirect("done");
+                            } catch (JobAlreadyExistsException ex) {
+                                // Can't happen when doing an update
+                                Logger.getLogger(VectorCASTJobUpdate.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (InvalidProjectFileException ex) {
+                                return new HttpRedirect("invalid");
+                            }
+                            return FormApply.success(".");
                         }
-                        vcSetup.setSCM(project.getScm());
-                        try {
-                            job.useSavedData(vcSetup);
-                            job.update();
-                            return new HttpRedirect("done");
-                        } catch (JobAlreadyExistsException ex) {
-                            // Can't happen when doing an update
-                            Logger.getLogger(VectorCASTJobUpdate.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (InvalidProjectFileException ex) {
-                            return new HttpRedirect("invalid");
-                        }
-                        return FormApply.success(".");
                     }
+                    break;
                 }
-                break;
             }
         }
         return new HttpRedirect("invalid");

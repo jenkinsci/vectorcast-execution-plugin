@@ -283,22 +283,9 @@ public class NewMultiJob extends BaseJob {
             } catch (InvocationTargetException ex) {
                 Logger.getLogger(NewMultiJob.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
-//            PhaseJobsConfig phase = new PhaseJobsConfig(name, 
-//                    /*jobproperties*/"", 
-//                    /*currParams*/true, 
-//                    /*configs*/null, 
-//                    PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, 
-//                    /*disablejob*/false, 
-//                    /*enableretrystrategy*/false, 
-//                    /*parsingrulespath*/null, 
-//                    /*retries*/0, 
-//                    /*enablecondition*/false, 
-//                    /*abort*/false, 
-//                    /*condition*/"", 
-//                    /*buildonly if scm changes*/false,
-//                    /*applycond if no scm changes*/false);
-            phaseJobs.add(phase);
+            if (phaseJobs != null) {
+                phaseJobs.add(phase);
+            }
         }
         MultiJobBuilder multiJobBuilder = new MultiJobBuilder("Build, Execute and Report", phaseJobs, MultiJobBuilder.ContinuationCondition.COMPLETED);
         getTopProject().getBuildersList().add(multiJobBuilder);
