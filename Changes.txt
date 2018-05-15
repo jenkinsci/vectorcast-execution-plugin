@@ -1,3 +1,6 @@
+15 May 2018
+* Support newer versions of xUnit
+
 10 May 2018
 * Support newer versions of Multijob (1.30 onwards)
 

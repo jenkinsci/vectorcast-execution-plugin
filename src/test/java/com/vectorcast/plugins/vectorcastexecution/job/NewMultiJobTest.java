@@ -392,7 +392,6 @@ public class NewMultiJobTest extends TestCase {
         // Publisher 1- XUnitPublisher
         Assert.assertTrue(list.get(1) instanceof XUnitPublisher);
         XUnitPublisher xUnit = (XUnitPublisher)list.get(1);
-        Assert.assertArrayEquals(null, xUnit.getThresholds());
         Assert.assertTrue(xUnit.getTypes()[0] instanceof CheckType);
         CheckType checkType = (CheckType)xUnit.getTypes()[0];
         Assert.assertEquals("**/test_results_*.xml", checkType.getPattern());

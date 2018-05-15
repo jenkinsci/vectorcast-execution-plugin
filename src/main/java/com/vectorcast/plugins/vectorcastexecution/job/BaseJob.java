@@ -531,11 +531,11 @@ abstract public class BaseJob {
      * @param project project to add step to
      */
     protected void addXunit(Project project) {
-        XUnitThreshold[] thresholds = null;
+        XUnitThreshold[] thresholds = new XUnitThreshold[0];
         CheckType checkType = new CheckType("**/test_results_*.xml", /*skipNoTestFiles*/true, /*failIfNotNew*/false, /*deleteOpFiles*/true, /*StopProcIfErrot*/true);
         TestType[] testTypes = new TestType[1];
         testTypes[0] = checkType;
-        XUnitPublisher xunit = new XUnitPublisher(testTypes, thresholds);
+        XUnitPublisher xunit = new XUnitPublisher(testTypes, thresholds, 1, "3000");
         project.getPublishersList().add(xunit);
     }
     /**
