@@ -85,6 +85,7 @@ public class ManageProject {
      */
     public void parse() throws IOException, InvalidProjectFileException {
         Integer version = 14;
+        Boolean SourceCollectionFound = false;
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dbBuilder = dbFactory.newDocumentBuilder();
@@ -107,13 +108,14 @@ public class ManageProject {
                         Group group = new Group(name);
                         groups.add(group);
                         group.parse(innerNode);
-                    } else if (version < 17 && innerNode.getNodeName().equals("source-collection") &&
+                    } else if (innerNode.getNodeName().equals("source-collection") &&
                         node.getNodeType() == Node.ELEMENT_NODE) {
                         Element element = (Element)innerNode;
                         String name = element.getAttribute("name");
                         Source source = new Source(name);
                         sources.add(source);
                         source.parse(innerNode);
+                        SourceCollectionFound = true;
                     } else if (version >= 17 && innerNode.getNodeName().equals("compiler") &&
                         node.getNodeType() == Node.ELEMENT_NODE) {
                         Element element = (Element)innerNode;
@@ -130,7 +132,7 @@ public class ManageProject {
 //            Logger.getLogger(NewSingleJob.class.getName()).log(Level.SEVERE, null, ex);
             throw new InvalidProjectFileException();
         }
-        if (version < 17) {
+        if (SourceCollectionFound) {
             for (Source source : sources) {
                 for (Platform platform : source.platforms) {
                     for (Compiler compiler : platform.compilers) {
@@ -150,7 +152,7 @@ public class ManageProject {
                     }
                 }
             }
-        } else if (version >= 17) {
+        } else {
             for (Compiler compiler : compilers) {
                 for (TestSuite testSuite : compiler.testsuites) {
                     for (Group group : testSuite.groups) {

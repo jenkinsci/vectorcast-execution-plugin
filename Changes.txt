@@ -1,3 +1,7 @@
+25 Sept 2018
+* Support overlapping version 17 manage projects
+* Updates to support long directory pathing in VectorCAST/Manage reporting
+
 15 May 2018
 * Support newer versions of xUnit
 

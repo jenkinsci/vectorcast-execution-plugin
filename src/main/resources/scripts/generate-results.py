@@ -166,12 +166,17 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 # Level includes source and platform
                 jobName = level[2] + "_" + level[3].rstrip()
                 compiler = level[2]
+        if "DIRECTORY:" in line:
+            directory = line.split(": ")[1].strip()
 
         # Get the HTML file name that was created
         if "HTML report was saved" in line:
 
             # strip out anything that isn't the html file name
             reportName = line.rstrip()[34:-2]
+            
+            if not os.path.isfile(reportName):
+                reportName = os.path.join(directory,env,os.path.basename(reportName))
 
             # setup to save the execution report
             if 'execution_results_report' in reportName:

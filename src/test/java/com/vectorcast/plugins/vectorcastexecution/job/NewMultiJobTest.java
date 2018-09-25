@@ -154,6 +154,68 @@ public class NewMultiJobTest extends TestCase {
 "    </platform>\n" +
 "  </source-collection>\n" +
 "</project>";
+
+
+    private static final String PROJECTFILE17_645 = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<project version=\"17\">\n" +
+"  <config>\n" +
+"    <saved-logs>5</saved-logs>\n" +
+"    <build-directory-naming-strategy>COMPRESSED</build-directory-naming-strategy>\n" +
+"  </config>\n" +
+"  <project-id>1473776183</project-id>\n" +
+"  <factor-config-options>0</factor-config-options>\n" +
+"  <environment name=\"ORDER\" type=\"UNIT\">\n" +
+"    <language>1</language>\n" +
+"    <is-monitored>0</is-monitored>\n" +
+"    <config>\n" +
+"      <original-environment-directory>jenkinsDemo/build/1481489187</original-environment-directory>\n" +
+"    </config>\n" +
+"  </environment>\n" +
+"  <environment name=\"ORDERS\" type=\"UNIT\">\n" +
+"    <language>1</language>\n" +
+"    <is-monitored>0</is-monitored>\n" +
+"    <config>\n" +
+"      <original-environment-directory>jenkinsDemo/build/2187318026</original-environment-directory>\n" +
+"    </config>\n" +
+"  </environment>\n" +
+"  <group name=\"Group\">\n" +
+"    <environment name=\"ORDER\"/>\n" +
+"  </group>\n" +
+"  <source-collection name=\"Source\">\n" +
+"    <platform name=\"Windows\">\n" +
+"      <compiler>\n" +
+"        <compiler>\n" +
+"          <name>VectorCAST_MinGW_C</name>\n" +
+"          <config>\n" +
+"            <config>\n" +
+"              <key>C_COMPILER_TAG</key>\n" +
+"              <value>BUILTIN_MINGW_45_C</value>\n" +
+"            </config>\n" +
+"          </config>\n" +
+"        </compiler>\n" +
+"        <testsuite name=\"TestSuite\">\n" +
+"          <group name=\"Group\"/>\n" +
+"        </testsuite>\n" +
+"      </compiler>\n" +
+"      <compiler>\n" +
+"        <compiler>\n" +
+"          <name>VectorCAST_MinGW_C++</name>\n" +
+"          <config>\n" +
+"            <config>\n" +
+"              <key>C_COMPILER_TAG</key>\n" +
+"              <value>BUILTIN_MINGW_45_CPP</value>\n" +
+"            </config>\n" +
+"          </config>\n" +
+"        </compiler>\n" +
+"        <testsuite name=\"TestSuite\">\n" +
+"          <group name=\"Group\"/>\n" +
+"        </testsuite>\n" +
+"      </compiler>\n" +
+"    </platform>\n" +
+"  </source-collection>\n" +
+"</project>";
+    
     private static final String PROJECTFILE17 = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<project version=\"17\">\n" +
@@ -306,6 +368,12 @@ public class NewMultiJobTest extends TestCase {
     public void testBasic14() throws Exception {
         // Test using version 14 Manage project with 4 levels
         basicCommon(PROJECTFILE14);
+    }
+    
+    @Test
+    public void testBasic17_645() throws Exception {
+        // Test using version 17 Manage project with only 2 levels
+        basicCommon(PROJECTFILE17_645);
     }
     
     @Test
