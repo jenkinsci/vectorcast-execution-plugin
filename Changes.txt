@@ -1,4 +1,4 @@
-25 Sept 2018
+26 Sept 2018
 * Support overlapping version 17 manage projects
 * Updates to support long directory pathing in VectorCAST/Manage reporting
 

@@ -73,7 +73,7 @@ def getCsvName(HtmlReportName,level,reportType):
     
     #get the manage project name by getting the basename less the "_management_report.html"    
     envName = os.path.basename(HtmlReportName)[:-23]
-    if manageVersion >= 17:
+    if len(level) == 2:
         # Level does not include source and platform
         jobName = envName + "_" + level[0] + "_" + level[1].rstrip()
     else:

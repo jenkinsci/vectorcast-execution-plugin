@@ -71,7 +71,7 @@ def readManageVersion(ManageFile):
                 break
     if verbose:
         print "Version of Manage project file = %d" % version
-        print "(Levels change in version 17 and above)"
+        print "(Levels change in version 17 (*maybe) and above)"
     return version
 
 # build the Test Case Management Report for Manage Project
@@ -158,7 +158,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         if "TEST SUITE" in line:
             info  = line.split(": ")
             level = info[1].split("/")
-            if version >= 17:
+            if len(level) == 2:
                 # Level does not include source and platform
                 jobName = level[0] + "_" + level[1].rstrip()
                 compiler = level[0]

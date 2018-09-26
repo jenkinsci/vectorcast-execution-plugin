@@ -108,7 +108,7 @@ def readCsvFile(csvFilename):
     envName       = csvList[1].split(",")[1].rstrip()
     level         = csvList[2].split(",")[1].rstrip().split('/')
     htmlFilename  = csvList[3].split(",")[1].rstrip()
-    if manageVersion >= 17:
+    if len(level) == 2:
         # Level does not include source and platform
         jobNamePrefix       = '_'.join([level[0],level[1],envName])
         jobName = level[0] + "_" + level[1].rstrip()
@@ -123,7 +123,7 @@ def readCsvFile(csvFilename):
 
     level[0] = level[0].replace('.','_')
     level[1] = level[1].replace('.','_')
-    if manageVersion >= 17:
+    if len(level) == 2:
         # Level does not include source and platform
         jobNameDotted       = '.'.join([level[0],level[1],envName])
     else:
