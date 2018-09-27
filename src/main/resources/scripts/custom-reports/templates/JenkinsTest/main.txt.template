@@ -1,0 +1,25 @@
+<testsuites xmlns="http://check.sourceforge.net/ns">
+    <datetime>{{report.time | vt_date_time}}</datetime>
+    <suite>
+        <title>{{report.environment.name}}</title>
+{%- for tc in testcases %}
+  {%- if tc.object %}
+    {%- if tc.object.passed %}
+        <test result="success">
+    {%- else %}
+        <test result="failure">
+    {%- endif %}
+            <fn>{{tc.object.function.unit.name}}.{{tc.object.function.display_name}}</fn>
+            <id>{{tc.object.function.unit.name}}.{{tc.object.function.display_name}}.{{tc.object.name}}</id>
+            <iteration>1</iteration>
+            <description>Simple Test Case</description>
+    {%- if tc.object.passed %}
+            <message>PASS See Execution Report: {{build_url}}{{tc.object.id}}</message>
+    {%- else %}
+            <message>FAIL See Execution Report: {{build_url}}{{tc.object.id}}</message>
+    {%- endif %}
+        </test>
+  {%- endif %}
+{%- endfor %}
+    </suite>
+</testsuites>

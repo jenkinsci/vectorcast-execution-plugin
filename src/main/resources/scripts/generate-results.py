@@ -58,6 +58,20 @@ def runManageWithWait(command_line):
     manageWait = ManageWait(verbose, command_line, wait_time, wait_loops)
     return manageWait.exec_manage()
 
+# Determine if this version of manage support new-style reporting
+def checkUseNewReports():
+    check_file = os.path.join(os.getenv("VECTORCAST_DIR"),
+                             "python",
+                             "vector",
+                             "apps",
+                             "ReportBuilder",
+                             "reports",
+                             "full_report.pyc")
+    if os.path.isfile(check_file):
+        return True
+    else:
+        return False
+
 # Read the Manage project file to determine its version
 # File has already been checked for existence
 def readManageVersion(ManageFile):
@@ -85,6 +99,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         return
 
     version = readManageVersion(FullManageProjectName)
+    useNewReport = checkUseNewReports()
 
     # parse out the manage project name
     manageProjectName = os.path.splitext(os.path.basename(FullManageProjectName))[0]
@@ -189,12 +204,51 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
             # setup to save the management report
             if 'management_report' in reportName:
-                print "   Processing Test Case Management Report: " + reportName
 
-                # Create the test_results_ and coverage_results_ csv files
-                testResultName, coverageResultsName = tcmr2csv.run(reportName, level, version)
+                if useNewReport:
+                    print "   Create Jenkins Test Results report"
+                    os.environ['VCAST_RPTS_USER_REPORTS_DIR'] = jenkinsScriptHome + os.sep + "custom-reports"
+                    if not os.path.exists("xml_data"):
+                        os.mkdir("xml_data")
+                    if envName:
+                        os.environ["JENKINS_LINK_NAME"] = envName + "_" + jobName
+                        xmlReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + envName + "_" + jobName + ".xml"
+                    else:
+                        os.environ["JENKINS_LINK_NAME"] = env + "_" + jobName
+                        xmlReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + env + "_" + jobName + ".xml"
+                    if level and envName:
+                        callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report user jenkins_test_report " + xmlReportName
+                    else:
+                        callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --clicast-args report user jenkins_test_report " + xmlReportName
+                    print callStr
 
-                vcastcsv2jenkins.run(test = testResultName,coverage = coverageResultsName,cleanup=True,useExecRpt=genExeRpt, version=version)
+                    out_exe = runManageWithWait(callStr)
+                    if verbose:
+                        print out_exe
+
+                    print "   Create Jenkins Coverage Results report"
+                    os.environ['VCAST_RPTS_USER_REPORTS_DIR'] = jenkinsScriptHome + os.sep + "custom-reports"
+                    if envName:
+                        os.environ["JENKINS_FULL_NAME"] = jobName + "_" + envName
+                        xmlReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + envName + "_" + jobName + ".xml"
+                    else:
+                        os.environ["JENKINS_FULL_NAME"] = jobName + "_" + env
+                        xmlReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + env + "_" + jobName + ".xml"
+                    if level and envName:
+                        callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report user jenkins_coverage_report " + xmlReportName
+                    else:
+                        callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --clicast-args report user jenkins_coverage_report " + xmlReportName
+                    print callStr
+
+                    out_exe = runManageWithWait(callStr)
+                    if verbose:
+                        print out_exe
+                else:
+                    print "   Processing Test Case Management Report: " + reportName
+                    # Create the test_results_ and coverage_results_ csv files
+                    testResultName, coverageResultsName = tcmr2csv.run(reportName, level, version)
+
+                    vcastcsv2jenkins.run(test = testResultName,coverage = coverageResultsName,cleanup=True,useExecRpt=genExeRpt, version=version)
 
                 if envName:
                     adjustedReportName = "management" + os.sep + envName + "_" + jobName + ".html"

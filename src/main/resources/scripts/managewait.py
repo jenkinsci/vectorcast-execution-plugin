@@ -51,7 +51,7 @@ class ManageWait():
             p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
             (out_mgt, out_mgt2) = p.communicate()
 
-            output += "\n" + out_mgt
+            output += "\n" + out_mgt.rstrip()
             # No point checking error code - errors are not propagated from
             # clicast to manage
             if "Licensed number of users already reached" in out_mgt:
