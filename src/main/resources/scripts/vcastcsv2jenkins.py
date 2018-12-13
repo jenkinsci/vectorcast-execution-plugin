@@ -189,7 +189,6 @@ def writeXunitFooter(xunitfile):
 
 def runCsv2JenkinsTestResults(csvFilename):
     dataArray = readCsvFile(csvFilename)
-    titles = dataArray[0]
 
     xunitfile = open(csvFilename[:-4]+".xml","w")
 

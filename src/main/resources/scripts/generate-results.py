@@ -21,7 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-import subprocess
 import os
 import sys
 import argparse
@@ -58,8 +57,8 @@ def runManageWithWait(command_line):
     manageWait = ManageWait(verbose, command_line, wait_time, wait_loops)
     return manageWait.exec_manage()
 
-# Determine if this version of manage support new-style reporting
-def checkUseNewReports():
+# Determine if this version of VectorCAST supports new-style reporting/Data API
+def checkUseNewReportsAndAPI():
     check_file = os.path.join(os.getenv("VECTORCAST_DIR"),
                              "python",
                              "vector",
@@ -88,6 +87,43 @@ def readManageVersion(ManageFile):
         print "(Levels change in version 17 (*maybe) and above)"
     return version
 
+# Call manage to get the mapping of Envs to Directory etc.
+def getManageEnvs(FullManageProjectName):
+    manageEnvs = {}
+
+    callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --build-directory-name"
+    out_mgt = runManageWithWait(callStr)
+    for line in out_mgt.split('\n'):
+        if "Compiler:" in line:
+            compiler = line.split()[1]
+        elif "Testsuite ID:" in line:
+            pass
+        elif "TestSuite:" in line:
+            testsuite = line.split()[1]
+        elif "Environment:" in line:
+            env_name = line.split()[1]
+        elif "Build Directory:" in line:
+            build_dir = line.split()[2]
+            build_dir_number = build_dir.split("/")[-1]
+            level = compiler + "/" + testsuite + "/" + env_name.upper()
+            entry = {}
+            entry["env"] = env_name.upper()
+            entry["compiler"] = compiler
+            entry["testsuite"] = testsuite
+            entry["build_dir"] = build_dir
+            entry["build_dir_number"] = build_dir_number
+            manageEnvs[level] = entry
+        elif "Log Directory:" in line:
+            pass
+        elif "Control Status:" in line:
+            pass
+
+    return manageEnvs
+
+def delete_file(filename):
+    if os.path.exists(filename):
+        os.remove(filename)
+
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
@@ -99,7 +135,10 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         return
 
     version = readManageVersion(FullManageProjectName)
-    useNewReport = checkUseNewReports()
+    useNewReport = checkUseNewReportsAndAPI()
+    manageEnvs = {}
+    if useNewReport:
+        manageEnvs = getManageEnvs(FullManageProjectName)
 
     # parse out the manage project name
     manageProjectName = os.path.splitext(os.path.basename(FullManageProjectName))[0]
@@ -162,7 +201,6 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
     #loop over each line of the manage command output
     env = None
-    compiler = None
     for line in out.split('\n'):
         # the TEST_SUITE line will give us information for building a jobName that will be
         # inserted into the CSV name so it will match with the Jenkins integration job names
@@ -176,11 +214,9 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             if len(level) == 2:
                 # Level does not include source and platform
                 jobName = level[0] + "_" + level[1].rstrip()
-                compiler = level[0]
             else:
                 # Level includes source and platform
                 jobName = level[2] + "_" + level[3].rstrip()
-                compiler = level[2]
         if "DIRECTORY:" in line:
             directory = line.split(": ")[1].strip()
 
@@ -195,7 +231,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
             # setup to save the execution report
             if 'execution_results_report' in reportName:
-                print "   Processing Execution Report: " + reportName
+                print "Processing Execution Report: " + reportName
 
                 if envName:
                     adjustedReportName = "execution" + os.sep + envName + "_" + jobName + ".html"
@@ -206,45 +242,48 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             if 'management_report' in reportName:
 
                 if useNewReport:
-                    print "   Create Jenkins Test Results report"
-                    os.environ['VCAST_RPTS_USER_REPORTS_DIR'] = jenkinsScriptHome + os.sep + "custom-reports"
+                    # Only import when available (i.e. new reports are available)
+                    from generate_xml import GenerateXml
+
                     if not os.path.exists("xml_data"):
                         os.mkdir("xml_data")
+
                     if envName:
-                        os.environ["JENKINS_LINK_NAME"] = envName + "_" + jobName
-                        xmlReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + envName + "_" + jobName + ".xml"
+                        index = "{}/{}/{}".format(level[0].strip(), level[1].strip(), envName)
+                        jenkins_name = jobName + "_" + envName
+                        jenkins_link = envName + "_" + jobName
+                        old_xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + envName + "_" + jobName + "_.xml"
+                        old_xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + envName + "_" + jobName + "_.xml"
+                        xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + envName + "_" + jobName + ".xml"
+                        xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + envName + "_" + jobName + ".xml"
                     else:
-                        os.environ["JENKINS_LINK_NAME"] = env + "_" + jobName
-                        xmlReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + env + "_" + jobName + ".xml"
-                    if level and envName:
-                        callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report user jenkins_test_report " + xmlReportName
-                    else:
-                        callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --clicast-args report user jenkins_test_report " + xmlReportName
-                    print callStr
+                        index = "{}/{}/{}".format(level[0].strip(), level[1].strip(), env)
+                        jenkins_name = jobName + "_" + env
+                        jenkins_link = env + "_" + jobName
+                        old_xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + env + "_" + jobName + "_.xml"
+                        old_xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + env + "_" + jobName + "_.xml"
+                        xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + env + "_" + jobName + ".xml"
+                        xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + env + "_" + jobName + ".xml"
 
-                    out_exe = runManageWithWait(callStr)
-                    if verbose:
-                        print out_exe
+                    # Remove any existing (old and newer) XML files
+                    delete_file(old_xmlUnitReportName)
+                    delete_file(old_xmlCoverReportName)
+                    delete_file(xmlUnitReportName)
+                    delete_file(xmlCoverReportName)
+                    
+                    xml_file = GenerateXml(manageEnvs[index]["build_dir"],
+                                           manageEnvs[index]["env"],
+                                           xmlCoverReportName,
+                                           jenkins_name,
+                                           xmlUnitReportName,
+                                           jenkins_link)
 
-                    print "   Create Jenkins Coverage Results report"
-                    os.environ['VCAST_RPTS_USER_REPORTS_DIR'] = jenkinsScriptHome + os.sep + "custom-reports"
-                    if envName:
-                        os.environ["JENKINS_FULL_NAME"] = jobName + "_" + envName
-                        xmlReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + envName + "_" + jobName + ".xml"
-                    else:
-                        os.environ["JENKINS_FULL_NAME"] = jobName + "_" + env
-                        xmlReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + env + "_" + jobName + ".xml"
-                    if level and envName:
-                        callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report user jenkins_coverage_report " + xmlReportName
-                    else:
-                        callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --clicast-args report user jenkins_coverage_report " + xmlReportName
-                    print callStr
+                    xml_file.generate_unit()
 
-                    out_exe = runManageWithWait(callStr)
-                    if verbose:
-                        print out_exe
+                    xml_file.generate_cover()
+
                 else:
-                    print "   Processing Test Case Management Report: " + reportName
+                    print "Processing Test Case Management Report: " + reportName
                     # Create the test_results_ and coverage_results_ csv files
                     testResultName, coverageResultsName = tcmr2csv.run(reportName, level, version)
 
@@ -257,9 +296,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
             # Create a list for later to copy the files over
             copyList.append([reportName,adjustedReportName])
-            # Reset env/compiler
+            # Reset env
             env = None
-            compiler = None
 
     for file in copyList:
 
