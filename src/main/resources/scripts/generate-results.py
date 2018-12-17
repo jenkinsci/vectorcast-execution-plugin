@@ -59,6 +59,9 @@ def runManageWithWait(command_line):
 
 # Determine if this version of VectorCAST supports new-style reporting/Data API
 def checkUseNewReportsAndAPI():
+    if "VCAST_REPORT_ENGINE" in os.environ and os.environ["VCAST_REPORT_ENGINE"] == "LEGACY":
+        # USing legacy reporting with new reports - fall back to parsing html report
+        return False
     check_file = os.path.join(os.getenv("VECTORCAST_DIR"),
                              "python",
                              "vector",
@@ -249,6 +252,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                         os.mkdir("xml_data")
 
                     if envName:
+                        jobNameDotted = '.'.join([level[0],level[1],envName])
                         index = "{}/{}/{}".format(level[0].strip(), level[1].strip(), envName)
                         jenkins_name = jobName + "_" + envName
                         jenkins_link = envName + "_" + jobName
@@ -257,6 +261,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                         xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + envName + "_" + jobName + ".xml"
                         xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + envName + "_" + jobName + ".xml"
                     else:
+                        jobNameDotted = '.'.join([level[0],level[1],env])
                         index = "{}/{}/{}".format(level[0].strip(), level[1].strip(), env)
                         jenkins_name = jobName + "_" + env
                         jenkins_link = env + "_" + jobName
@@ -276,7 +281,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                                            xmlCoverReportName,
                                            jenkins_name,
                                            xmlUnitReportName,
-                                           jenkins_link)
+                                           jenkins_link,
+                                           jobNameDotted)
 
                     xml_file.generate_unit()
 

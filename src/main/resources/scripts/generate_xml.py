@@ -23,6 +23,7 @@
 #
 import os
 import datetime
+import cgi
 from vector.apps.DataAPI.api import Api
 from vector.apps.DataAPI.cover_api import CoverApi
 from vector.apps.ReportBuilder.custom_report import fmt_percent
@@ -32,13 +33,14 @@ from vector.apps.DataAPI.models import TestCase
 
 class GenerateXml(object):
 
-    def __init__(self, build_dir, env, cover_report_name, jenkins_name, unit_report_name, jenkins_link):
+    def __init__(self, build_dir, env, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted):
         self.build_dir = build_dir
         self.env = env
         self.cover_report_name = cover_report_name
         self.unit_report_name = unit_report_name
         self.jenkins_name = jenkins_name
         self.jenkins_link = jenkins_link
+        self.jobNameDotted = jobNameDotted
         self.using_cover = False
         cov_path = os.path.join(build_dir,env + '.vcp')
         unit_path = os.path.join(build_dir,env + '.vce')
@@ -387,11 +389,9 @@ class GenerateXml(object):
 #        self.total_functions = 0
 #
 #        added_tests = False
-        self.unit_name = '<<COMPOUND>>'
-        self.func_name = ''
         for tc in self.api.TestCase.all():
             if tc.kind == TestCase.KINDS['compound']:
-                self.write_testcase(tc)
+                self.write_testcase(tc, "<<COMPOUND>>", "<<COMPOUND>>")
 #                added_tests = True
 #
 #        if added_tests:
@@ -411,7 +411,7 @@ class GenerateXml(object):
 #        self.func_name = ''
         for tc in self.api.TestCase.all():
             if tc.kind == TestCase.KINDS['init']:
-                self.write_testcase(tc)
+                self.write_testcase(tc, "<<INIT>>", "<<INIT>>")
 #                self.add_testcase(tc)
 #                added_tests = True
 #
@@ -423,7 +423,6 @@ class GenerateXml(object):
 
 
     def generate_unit(self):
-        print "RMK-generate_unit"
         if "BUILD_URL" in os.environ:
             self.build_url = os.getenv('BUILD_URL') + "artifact/execution/" + self.jenkins_link + ".html#ExecutionResults_"
         else:
@@ -454,9 +453,7 @@ class GenerateXml(object):
         self.add_compound_tests()
         self.add_init_tests()
         for unit in self.api.Unit.all():
-            print "RMKA-unit={}".format(unit.name)
             if unit.is_uut:
-                print "RMKB-unit={}".format(unit.name)
 #                self.added_unit = False
 #                self.unit_name = unit.name
 #                self.total_tests = 0
@@ -464,14 +461,12 @@ class GenerateXml(object):
 #                self.passes = 0
 #                self.total_functions = 0
                 for func in unit.functions:
-                    print "    RMK-func={}".format(func.display_name)
                     if not func.is_non_testable_stub:
 #        self.added_func = False
 #        self.func_name = func.display_name
                         for tc in func.testcases:
-                            print "        RMK-test={}".format(tc.name)
                             if not tc.is_csv_map:
-                                self.write_testcase(tc)
+                                self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
 #
 #        if self.added_func == False and func.index != 0 and func.display_name != "":
 #            # Add empty function entry (for when a function had no testcases)
@@ -549,25 +544,40 @@ class GenerateXml(object):
         self.fh.write('<testsuites xmlns="http://check.sourceforge.net/ns">\n')
         self.fh.write('    <datetime>%s</datetime>\n' % self.get_timestamp())
         self.fh.write('    <suite>\n')
-        self.fh.write('        <title>%s</title>\n' % self.env)
+        self.fh.write('        <title>%s</title>\n' % self.jobNameDotted)
 
-    def write_testcase(self, tc):
+    def write_testcase(self, tc, unit_name, func_name):
+        unit_name = cgi.escape(unit_name)
+        func_name = cgi.escape(func_name)
+        tc_name = cgi.escape(tc.name)
         if tc.passed:
             self.fh.write('        <test result="success">\n')
         else:
             self.fh.write('        <test result="failure">\n')
-        self.fh.write('            <fn>{}.{}</fn>\n'.format(tc.function.unit.name, tc.function.display_name))
-        self.fh.write('            <id>{}.{}.{}</id>\n'.format(tc.function.unit.name, tc.function.display_name, tc.name))
+        self.fh.write('            <fn>{}.{}</fn>\n'.format(unit_name, func_name))
+        self.fh.write('            <id>{}.{}.{}</id>\n'.format(unit_name, func_name, tc_name))
         self.fh.write('            <iteration>1</iteration>\n')
         self.fh.write('            <description>Simple Test Case</description>\n')
+        summary = tc.history.summary
+        exp_total = summary.expected_total
+        exp_pass = exp_total - summary.expected_fail
+        if self.api.environment.get_option("VCAST_OLD_STYLE_MANAGEMENT_REPORT"):
+            exp_pass += summary.control_flow_total - summary.control_flow_fail
+            exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
         if tc.passed:
-            self.fh.write('            <message>PASS See Execution Report: {}{}</message>\n'.format(self.build_url,tc.id))
+            status = "PASS"
         else:
-            self.fh.write('            <message>FAIL See Execution Report: {}{}</message>\n'.format(self.build_url,tc.id))
+            status = "FAIL"
+        if exp_pass == 0 and exp_total == 0:
+            msg = "{} See Execution Report:\n {}{}".format(status, self.build_url, tc.id)
+        else:
+            msg = "{} {} / {} See Execution Report:\n {}{}".format(status, exp_pass, exp_total, self.build_url, tc.id)
+        self.fh.write('            <message>%s</message>\n' % msg)
         self.fh.write('        </test>\n')
 
     def end_unit_file(self):
         self.fh.write('    </suite>\n')
+        self.fh.write('    <duration>1</duration>\n\n')
         self.fh.write('</testsuites>\n')
         self.fh.close()
 
