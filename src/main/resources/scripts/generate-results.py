@@ -246,47 +246,51 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
                 if useNewReport:
                     # Only import when available (i.e. new reports are available)
-                    from generate_xml import GenerateXml
+                    try:
+                        from generate_xml import GenerateXml
+                        if not os.path.exists("xml_data"):
+                            os.mkdir("xml_data")
 
-                    if not os.path.exists("xml_data"):
-                        os.mkdir("xml_data")
+                        if envName:
+                            jobNameDotted = '.'.join([level[0],level[1],envName])
+                            index = "{}/{}/{}".format(level[0].strip(), level[1].strip(), envName)
+                            jenkins_name = jobName + "_" + envName
+                            jenkins_link = envName + "_" + jobName
+                            old_xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + envName + "_" + jobName + "_.xml"
+                            old_xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + envName + "_" + jobName + "_.xml"
+                            xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + envName + "_" + jobName + ".xml"
+                            xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + envName + "_" + jobName + ".xml"
+                        else:
+                            jobNameDotted = '.'.join([level[0],level[1],env])
+                            index = "{}/{}/{}".format(level[0].strip(), level[1].strip(), env)
+                            jenkins_name = jobName + "_" + env
+                            jenkins_link = env + "_" + jobName
+                            old_xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + env + "_" + jobName + "_.xml"
+                            old_xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + env + "_" + jobName + "_.xml"
+                            xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + env + "_" + jobName + ".xml"
+                            xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + env + "_" + jobName + ".xml"
 
-                    if envName:
-                        jobNameDotted = '.'.join([level[0],level[1],envName])
-                        index = "{}/{}/{}".format(level[0].strip(), level[1].strip(), envName)
-                        jenkins_name = jobName + "_" + envName
-                        jenkins_link = envName + "_" + jobName
-                        old_xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + envName + "_" + jobName + "_.xml"
-                        old_xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + envName + "_" + jobName + "_.xml"
-                        xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + envName + "_" + jobName + ".xml"
-                        xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + envName + "_" + jobName + ".xml"
-                    else:
-                        jobNameDotted = '.'.join([level[0],level[1],env])
-                        index = "{}/{}/{}".format(level[0].strip(), level[1].strip(), env)
-                        jenkins_name = jobName + "_" + env
-                        jenkins_link = env + "_" + jobName
-                        old_xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + env + "_" + jobName + "_.xml"
-                        old_xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + env + "_" + jobName + "_.xml"
-                        xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + env + "_" + jobName + ".xml"
-                        xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + env + "_" + jobName + ".xml"
+                        # Remove any existing (old and newer) XML files
+                        delete_file(old_xmlUnitReportName)
+                        delete_file(old_xmlCoverReportName)
+                        delete_file(xmlUnitReportName)
+                        delete_file(xmlCoverReportName)
 
-                    # Remove any existing (old and newer) XML files
-                    delete_file(old_xmlUnitReportName)
-                    delete_file(old_xmlCoverReportName)
-                    delete_file(xmlUnitReportName)
-                    delete_file(xmlCoverReportName)
-                    
-                    xml_file = GenerateXml(manageEnvs[index]["build_dir"],
-                                           manageEnvs[index]["env"],
-                                           xmlCoverReportName,
-                                           jenkins_name,
-                                           xmlUnitReportName,
-                                           jenkins_link,
-                                           jobNameDotted)
+                        xml_file = GenerateXml(manageEnvs[index]["build_dir"],
+                                               manageEnvs[index]["env"],
+                                               xmlCoverReportName,
+                                               jenkins_name,
+                                               xmlUnitReportName,
+                                               jenkins_link,
+                                               jobNameDotted)
 
-                    xml_file.generate_unit()
+                        xml_file.generate_unit()
 
-                    xml_file.generate_cover()
+                        xml_file.generate_cover()
+
+                    except RuntimeError as r_error:
+                        print "ERROR: failed to generate XML reports using vpython and the Data API"
+                        print r_error
 
                 else:
                     print "Processing Test Case Management Report: " + reportName
