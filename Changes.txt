@@ -1,4 +1,4 @@
-xx Jan 2019 (0.37)
+10 Jan 2019 (0.37)
 * Corrected missing " that could affect Linux jobs running
 * Added support for generating unit and cover XML reports for Jenkins with
   VectorCAST 2019
