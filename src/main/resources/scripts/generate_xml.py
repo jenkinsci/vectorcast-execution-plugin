@@ -60,6 +60,9 @@ class GenerateXml(object):
             self.api = None
             print "Error: Could not determine project type for {}/{}".format(build_dir, env)
 
+#
+# Internal - calculate coverage value
+#
     def calc_cov_values(self, x, y):
         column = ''
         if y == 0:
@@ -68,6 +71,10 @@ class GenerateXml(object):
             column = '%s%% (%d / %d)' % (fmt_percent(x, y), x, y)
         return column
 
+#
+# Internal - create coverage data object for given metrics entry
+# for coverage report
+#
     def add_coverage(self, metrics, cov_type):
         entry = {}
         entry["statement"] = None
@@ -105,6 +112,9 @@ class GenerateXml(object):
 
         return entry
 
+#
+# Internal - calculate 'grand total' coverage values for coverage report
+#
     def grand_total_coverage(self, cov_type):
         entry = {}
         entry["statement"] = None
@@ -138,16 +148,25 @@ class GenerateXml(object):
 
         return entry
 
+#
+# Internal - add any compound tests to the unit report
+#
     def add_compound_tests(self):
         for tc in self.api.TestCase.all():
             if tc.kind == TestCase.KINDS['compound']:
                 self.write_testcase(tc, "<<COMPOUND>>", "<<COMPOUND>>")
 
+#
+# Internal - add any intialisation tests to the unit report
+#
     def add_init_tests(self):
         for tc in self.api.TestCase.all():
             if tc.kind == TestCase.KINDS['init']:
                 self.write_testcase(tc, "<<INIT>>", "<<INIT>>")
 
+#
+# Generate the xUnit XML file
+#
     def generate_unit(self):
         if "BUILD_URL" in os.environ:
             self.build_url = os.getenv('BUILD_URL') + "artifact/execution/" + self.jenkins_link + ".html#ExecutionResults_"
@@ -165,6 +184,9 @@ class GenerateXml(object):
                                 self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
         self.end_unit_file()
 
+#
+# Internal - start the xUnit XML file
+#
     def start_unit_file(self):
         print "Writing unit xml file: {}".format(self.unit_report_name)
         self.fh = open(self.unit_report_name, "w")
@@ -173,6 +195,9 @@ class GenerateXml(object):
         self.fh.write('    <suite>\n')
         self.fh.write('        <title>%s</title>\n' % self.jobNameDotted)
 
+#
+# Internal - write a testcase to the xUnit XML file
+#
     def write_testcase(self, tc, unit_name, func_name):
         unit_name = cgi.escape(unit_name)
         func_name = cgi.escape(func_name)
@@ -202,12 +227,18 @@ class GenerateXml(object):
         self.fh.write('            <message>%s</message>\n' % msg)
         self.fh.write('        </test>\n')
 
+#
+# Internal - write the end of the xUnit XML file and close it
+#
     def end_unit_file(self):
         self.fh.write('    </suite>\n')
         self.fh.write('    <duration>1</duration>\n\n')
         self.fh.write('</testsuites>\n')
         self.fh.close()
 
+#
+# Generate the XML 'Emma' coverage data
+#
     def generate_cover(self):
         self.num_functions = 0
 
@@ -307,6 +338,9 @@ class GenerateXml(object):
         self.write_cov_units()
         self.end_cov_file()
         
+#
+# Internal - generate the formatted timestamp to write to the coverage file
+#
     def get_timestamp(self):
         dt = datetime.datetime.now()
         hour = dt.hour
@@ -314,6 +348,9 @@ class GenerateXml(object):
             hour -= 12
         return dt.strftime('%d %b %Y  @HR@:%M:%S %p').upper().replace('@HR@', str(hour))
 
+#
+# Internal - start writing to the coverage file
+#
     def start_cov_file(self):
         print "Writing coverage xml file: {}".format(self.cover_report_name)
         self.fh = open(self.cover_report_name, "w")
@@ -358,6 +395,9 @@ class GenerateXml(object):
         self.fh.write('        <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
         self.fh.write('\n')
 
+#
+# Internal - write the units to the coverage file
+#
     def write_cov_units(self):
         for unit in self.units:
             self.fh.write('        <unit name="%s">\n' % unit["unit"].name)
@@ -394,6 +434,9 @@ class GenerateXml(object):
                 self.fh.write('          </subprogram>\n')
             self.fh.write('        </unit>\n')
 
+#
+# Internal - write the end of the coverage file and close it
+#
     def end_cov_file(self):
         self.fh.write('      </environment>\n')
         self.fh.write('    </all>\n')

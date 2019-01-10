@@ -1,11 +1,16 @@
-26 Sept 2018
+xx Jan 2019 (0.37)
+* Corrected missing " that could affect Linux jobs running
+* Added support for generating unit and cover XML reports for Jenkins with
+  VectorCAST 2019
+
+26 Sept 2018 (0.36)
 * Support overlapping version 17 manage projects
 * Updates to support long directory pathing in VectorCAST/Manage reporting
 
-15 May 2018
+15 May 2018 (0.35)
 * Support newer versions of xUnit
 
-10 May 2018
+10 May 2018 (0.34)
 * Support newer versions of Multijob (1.30 onwards)
 
 17 Jan 2018 (0.33)
