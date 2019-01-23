@@ -1,3 +1,7 @@
+23 Jan 2019 (0.38)
+* Fix for spurious newline characters in report title in XML for Jenkins with
+  VectorCAST 2019
+
 10 Jan 2019 (0.37)
 * Corrected missing " that could affect Linux jobs running
 * Added support for generating unit and cover XML reports for Jenkins with

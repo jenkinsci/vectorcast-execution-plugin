@@ -259,7 +259,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                             os.mkdir("xml_data")
 
                         if envName:
-                            jobNameDotted = '.'.join([level[0],level[1],envName])
+                            jobNameDotted = '.'.join([level[0].strip(), level[1].strip(), envName])
                             index = "{}/{}/{}".format(level[0].strip(), level[1].strip(), envName)
                             jenkins_name = jobName + "_" + envName
                             jenkins_link = envName + "_" + jobName
@@ -268,7 +268,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                             xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + envName + "_" + jobName + ".xml"
                             xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + envName + "_" + jobName + ".xml"
                         else:
-                            jobNameDotted = '.'.join([level[0],level[1],env])
+                            jobNameDotted = '.'.join([level[0].strip(), level[1].strip(), env])
                             index = "{}/{}/{}".format(level[0].strip(), level[1].strip(), env)
                             jenkins_name = jobName + "_" + env
                             jenkins_link = env + "_" + jobName
