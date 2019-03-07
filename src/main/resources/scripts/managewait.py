@@ -29,8 +29,6 @@ import shutil
 import re
 import time
 
-VECTORCAST_DIR = os.getenv('VECTORCAST_DIR') + os.sep
-
 class ManageWait():
     def __init__(self, verbose, command_line, wait_time, wait_loops):
         self.wait_time = wait_time
@@ -39,7 +37,7 @@ class ManageWait():
         self.command_line = command_line
 
     def exec_manage(self):
-        callStr = VECTORCAST_DIR + "manage "+ self.command_line
+        callStr = "manage "+ self.command_line
         output = ''
         if self.verbose:
             output += "Verbose: %s" % callStr

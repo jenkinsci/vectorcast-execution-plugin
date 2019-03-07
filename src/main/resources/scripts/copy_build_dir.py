@@ -105,8 +105,7 @@ else:
     nocase = ""
 ws_length = str(len(workspace)+2)
 
-VECTORCAST_DIR = os.getenv('VECTORCAST_DIR')
-manageCMD = VECTORCAST_DIR + os.sep + "manage"
+manageCMD = "manage"
 
 p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,shell=True,stdout=subprocess.PIPE)
 out, err = p.communicate()

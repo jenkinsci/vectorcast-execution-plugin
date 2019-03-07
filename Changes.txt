@@ -1,3 +1,7 @@
+7 Mar 2019 (0.39)
+* Removed all uses of the environment variable VECTORCAST_DIR. From now on it
+  is assumed that VectorCAST executables are on the system PATH.
+
 23 Jan 2019 (0.38)
 * Fix for spurious newline characters in report title in XML for Jenkins with
   VectorCAST 2019

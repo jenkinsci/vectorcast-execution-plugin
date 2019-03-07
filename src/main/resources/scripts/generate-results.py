@@ -45,8 +45,6 @@ global wait_loops
 
 verbose = False
 
-VECTORCAST_DIR = os.getenv('VECTORCAST_DIR') + os.sep
-
 import os
 
 def runManageWithWait(command_line):
@@ -59,20 +57,12 @@ def runManageWithWait(command_line):
 
 # Determine if this version of VectorCAST supports new-style reporting/Data API
 def checkUseNewReportsAndAPI():
-    if "VCAST_REPORT_ENGINE" in os.environ and os.environ["VCAST_REPORT_ENGINE"] == "LEGACY":
+    if os.environ.get("VCAST_REPORT_ENGINE", "") == "LEGACY":
         # Using legacy reporting with new reports - fall back to parsing html report
         if verbose:
             print "Reports forced to be old/legacy, so use them"
         return False
-    # Look for existence of file that only exists in distribution with the new reports
-    check_file = os.path.join(os.getenv("VECTORCAST_DIR"),
-                             "python",
-                             "vector",
-                             "apps",
-                             "ReportBuilder",
-                             "reports",
-                             "full_report.pyc")
-    if os.path.isfile(check_file):
+    if os.environ.get("VCAST_REPORT_ENGINE", "") == "NEW":
         if verbose:
             print "Using VectorCAST with new style reporting. Use Data API for Jenkins reports."
         return True
@@ -101,7 +91,7 @@ def readManageVersion(ManageFile):
 def getManageEnvs(FullManageProjectName):
     manageEnvs = {}
 
-    callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --build-directory-name"
+    callStr = "manage --project " + FullManageProjectName + " --build-directory-name"
     out_mgt = runManageWithWait(callStr)
     for line in out_mgt.split('\n'):
         if "Compiler:" in line:
@@ -157,13 +147,13 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     print "Generating Test Case Management Reports"
 
     # release locks and create all Test Case Management Report
-    callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --force --release-locks"
+    callStr = "manage --project " + FullManageProjectName + " --force --release-locks"
     out_mgt = runManageWithWait(callStr)
 
     if level and envName:
-        callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom management"
+        callStr = "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom management"
     else:
-        callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --clicast-args report custom management"
+        callStr = "manage --project " + FullManageProjectName + " --clicast-args report custom management"
     print callStr
 
     # capture the output of the manage call
@@ -178,9 +168,9 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if genExeRpt:
         print "Generating Execution Reports"
         if level and envName:
-            callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom actual"
+            callStr = "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom actual"
         else:
-            callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --clicast-args report custom actual"
+            callStr = "manage --project " + FullManageProjectName + " --clicast-args report custom actual"
 
         print callStr
 
