@@ -24,6 +24,7 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
 import hudson.Launcher;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
@@ -39,8 +40,11 @@ import hudson.tasks.Shell;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.StringJoiner;
 
 /**
  * This class allows a command script to be specified for both Linux and Windows
@@ -80,6 +84,21 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
     
     @Override
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
+        //
+        // Older builds of VectorCAST do not assume VectorCAST executables are on the the system PATH.
+        // They used an environment variable called VECTORCAST_DIR, we will add that to our PATH.
+        //
+        try {
+            EnvVars buildEnv = build.getEnvironment(listener);
+            if (findExecutableOnPath(buildEnv, "clicast") == null) {
+                buildEnv.put("PATH", buildEnv.get("VECTORCAST_DIR", "") + File.pathSeparator + buildEnv.get("PATH", ""));
+                launcher = launcher.decorateByEnv(buildEnv);
+            }
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(VectorCASTCommand.class.getName()).log(Level.SEVERE, null, ex);
+            build.setResult(Result.FAILURE);
+        }
+
         //
         // Windows check and run batch command
         //
@@ -151,4 +170,15 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
             return Messages.VectorCASTCommand_DisplayName();
         }
     }
+
+    private static String findExecutableOnPath(EnvVars vars, String name) {
+        for (String dirname : vars.get("PATH", "").split(File.pathSeparator)) {
+            File file = new File(dirname, name);
+            if (file.isFile() && file.canExecute()) {
+                return file.getParentFile().getAbsolutePath();
+            }
+        }
+        return null;
+    }
 }
+
