@@ -32,7 +32,7 @@ import time
 # Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
 # We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
 cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
-cmd_prefix = "" if cmd_exists("manage") else (os.environ["VECTORCAST_DIR"] + os.sep)
+cmd_prefix = "" if cmd_exists("manage") else (os.environ.get("VECTORCAST_DIR", "") + os.sep)
 
 class ManageWait():
     def __init__(self, verbose, command_line, wait_time, wait_loops):

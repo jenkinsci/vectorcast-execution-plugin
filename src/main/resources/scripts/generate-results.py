@@ -48,8 +48,8 @@ verbose = False
 # Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
 # We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
 valid_cmd_paths = lambda x: (path for path in os.environ["PATH"].split(os.pathsep) if os.access(os.path.join(path, x), os.X_OK))
-vectorcast_install_dir = next(valid_cmd_paths("manage"), os.environ["VECTORCAST_DIR"])
-cmd_prefix = "" if next(valid_cmd_paths("manage"), None) is not None else (os.environ["VECTORCAST_DIR"] + os.sep)
+vectorcast_install_dir = next(valid_cmd_paths("manage"), os.environ.get("VECTORCAST_DIR", ""))
+cmd_prefix = "" if next(valid_cmd_paths("manage"), None) is not None else (os.environ.get("VECTORCAST_DIR", "") + os.sep)
 
 import os
 
