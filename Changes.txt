@@ -1,3 +1,6 @@
+19 Mar 2019
+* Update to make the management report be generated for a cover project
+
 23 Jan 2019 (0.38)
 * Fix for spurious newline characters in report title in XML for Jenkins with
   VectorCAST 2019

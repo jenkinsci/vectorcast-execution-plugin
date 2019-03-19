@@ -169,7 +169,12 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     # capture the output of the manage call
     out_mgt = runManageWithWait(callStr)
 
+    missing = False
     if "database missing or inaccessible" in out_mgt:
+        missing = True
+    elif re.search('Environment directory.*is missing', out_mgt):
+        missing = True
+    if missing:
         callStr = callStr.replace("report custom","cover report")
         print callStr
         out_mgt2 = runManageWithWait(callStr)
