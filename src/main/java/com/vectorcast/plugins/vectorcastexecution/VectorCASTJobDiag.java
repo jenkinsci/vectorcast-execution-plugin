@@ -141,6 +141,8 @@ public class VectorCASTJobDiag extends JobBase {
 "   echo VectorCAST/Manage License...OKAY\n" +
 ")\n" +
 "\n" +
+"%VECTORCAST_DIR%\\vpython %WORKSPACE%\\vc_scripts\\crumbDiag.py" +
+"\n" +
 ":end\n" +
 "\n" +
 "@echo off\n" +
@@ -206,6 +208,8 @@ public class VectorCASTJobDiag extends JobBase {
 "else\n" +
 "   echo VectorCAST/Manage License...OKAY\n" +
 "fi\n" +
+"\n" +
+"$VECTORCAST_DIR/vpython $WORKSPACE/vc_scripts/crumbDiag.py" +
 "\n" +
 "rm -rf help.log\n" +
 "\n" +
