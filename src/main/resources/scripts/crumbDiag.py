@@ -3,8 +3,12 @@ import sys
 import os
 
 verbose=True
-username=os.environ['USERNAME']
-password=os.environ['PASSWORD']
+try:
+    username=os.environ['USERNAME']
+    password=os.environ['PASSWORD']
+except:
+    print "Crumb Diaganostic requires USERNAME/PASSWORD to be set as environment variables"
+    sys.exit(-1)
 jenkins_url=os.environ['JENKINS_URL']
 url = jenkins_url + 'crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)'
 print url
