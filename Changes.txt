@@ -1,4 +1,8 @@
-19 Mar 2019
+10 Apr 2019 (0.40)
+* Update to fix auto job updates (where path to Manage project was being
+  removed)
+
+19 Mar 2019 (0.39)
 * Update to make the management report be generated for a cover project
 
 23 Jan 2019 (0.38)
