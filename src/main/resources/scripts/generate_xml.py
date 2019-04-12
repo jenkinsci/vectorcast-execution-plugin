@@ -75,7 +75,7 @@ class GenerateXml(object):
 # Internal - create coverage data object for given metrics entry
 # for coverage report
 #
-    def add_coverage(self, metrics, cov_type):
+    def add_coverage(self, is_unit, unit_or_func, metrics, cov_type):
         entry = {}
         entry["statement"] = None
         entry["branch"] = None
@@ -84,10 +84,14 @@ class GenerateXml(object):
         entry["function"] = None
         entry["functioncall"] = None
         if self.has_function_coverage:
-            if cover_func.has_covered_objects:
-                entry["function"] = '100% (1 / 1)'
+            if is_unit:
+                (total_funcs, funcs_covered) = unit_or_func.cover_data.functions_covered
+                entry["function"] = self.calc_cov_values(funcs_covered, total_funcs)
             else:
-                entry["function"] = '0% (0 / 1)'
+                if unit_or_func.has_covered_objects:
+                    entry["function"] = '100% (1 / 1)'
+                else:
+                    entry["function"] = '0% (0 / 1)'
         if self.has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
         if cov_type == "MC/DC":
@@ -95,7 +99,7 @@ class GenerateXml(object):
             if not self.simplified_mcdc:
                 entry["mcdc"] = self.calc_cov_values(metrics.max_covered_mcdc_pairs, metrics.mcdc_pairs)
         elif cov_type == "Basis Paths":
-            (cov,total) = func.basis_paths_coverage
+            (cov,total) = unit_or_func.basis_paths_coverage
             entry["basis_path"] = self.calc_cov_values(cov, total)
         elif cov_type == "Statement+MC/DC":
             entry["statement"] = self.calc_cov_values(metrics.max_covered_statements, metrics.statements)
@@ -284,7 +288,7 @@ class GenerateXml(object):
             entry["unit"] = unit
             entry["functions"] = []
             entry["complexity"] = 0
-            entry["coverage"] = self.add_coverage(unit.cover_metrics, cov_type)
+            entry["coverage"] = self.add_coverage(True, unit, unit.cover_metrics, cov_type)
             functions_added = False
             funcs_with_cover_data = []
             for func in unit.all_functions:
@@ -305,7 +309,7 @@ class GenerateXml(object):
                 func_entry = {}
                 func_entry["func"] = func
                 func_entry["complexity"] = func.cover_data.complexity
-                func_entry["coverage"] = self.add_coverage(func.cover_data.metrics, cov_type)
+                func_entry["coverage"] = self.add_coverage(False, func, func.cover_data.metrics, cov_type)
                 self.num_functions += 1
                 entry["functions"].append(func_entry)
             if functions_added:

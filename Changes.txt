@@ -1,3 +1,6 @@
+12 Apr 2019 (0.41)
+* Fix for function and basis path coverage with VectorCAST 2019
+
 10 Apr 2019 (0.40)
 * Update to fix auto job updates (where path to Manage project was being
   removed)
