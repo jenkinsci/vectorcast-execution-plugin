@@ -1,6 +1,16 @@
-7 Mar 2019 (0.39)
+17 Apr 2019 (0.42)
 * Removed all uses of the environment variable VECTORCAST_DIR. From now on it
   is assumed that VectorCAST executables are on the system PATH.
+
+12 Apr 2019 (0.41)
+* Fix for function and basis path coverage with VectorCAST 2019
+
+10 Apr 2019 (0.40)
+* Update to fix auto job updates (where path to Manage project was being
+  removed)
+
+19 Mar 2019 (0.39)
+* Update to make the management report be generated for a cover project
 
 23 Jan 2019 (0.38)
 * Fix for spurious newline characters in report title in XML for Jenkins with

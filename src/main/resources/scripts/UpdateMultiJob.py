@@ -29,7 +29,7 @@ class VcJob:
                 if self.verbose:
                     print "Got crumb: %s" % crumb.text
             else:
-                print "Failed to get crumb"
+                print "Failed to get crumb: %s" % crumb.text
                 sys.exit(-1)
 
     def update_multi(self, proj_name, proj_file):
@@ -39,7 +39,7 @@ class VcJob:
             project_name - name of manage project
             project_file - path to manage project file
         '''
-        payload = {'manageProjectName' : proj_name}
+        payload = {'manageProjectName' : proj_file}
         files = {'manageProject' : open(proj_file, 'rb')}
         # Jenkins form submission requires data (or payload) to be part of
         # form element 'json'
