@@ -563,6 +563,11 @@ def run(test = "",coverage="", cleanup=True, useExecRpt = True, version=14):
         #    os.remove(fl)
         if not os.path.exists("xml_data"):
             os.mkdir("xml_data")
+        for file in glob.glob("xml_data/*.xml"):
+            try:
+                os.remove("xml_data/" + file);
+            except:
+                pass
         for file in glob.glob("*.xml"):
             try:
                 # Remove destination first

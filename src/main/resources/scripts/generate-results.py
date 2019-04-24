@@ -26,6 +26,7 @@ import sys
 import argparse
 import shutil
 import re
+import glob
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
@@ -103,17 +104,23 @@ def getManageEnvs(FullManageProjectName):
 
     callStr = VECTORCAST_DIR + "manage --project " + FullManageProjectName + " --build-directory-name"
     out_mgt = runManageWithWait(callStr)
+    if verbose:
+        print out_mgt
+        
     for line in out_mgt.split('\n'):
         if "Compiler:" in line:
-            compiler = line.split()[1]
+            compiler = line.split(":")[-1].strip()
         elif "Testsuite ID:" in line:
             pass
         elif "TestSuite:" in line:
-            testsuite = line.split()[1]
+            testsuite = line.split(":")[-1].strip()
         elif "Environment:" in line:
-            env_name = line.split()[1]
+            env_name = line.split(":")[-1].strip()
         elif "Build Directory:" in line:
-            build_dir = line.split()[2]
+            build_dir = line.split(":")[-1].strip()
+            #rare case where there's a problem with the environment
+            if build_dir == "":
+                continue
             build_dir_number = build_dir.split("/")[-1]
             level = compiler + "/" + testsuite + "/" + env_name.upper()
             entry = {}
@@ -123,6 +130,11 @@ def getManageEnvs(FullManageProjectName):
             entry["build_dir"] = build_dir
             entry["build_dir_number"] = build_dir_number
             manageEnvs[level] = entry
+            
+            if verbose:
+                print level
+                print entry
+                
         elif "Log Directory:" in line:
             pass
         elif "Control Status:" in line:
@@ -178,7 +190,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         callStr = callStr.replace("report custom","cover report")
         print callStr
         out_mgt2 = runManageWithWait(callStr)
-        out_mgt = out_mgt + out_mgt2
+        out_mgt = out_mgt +  "\n" + out_mgt2
 
     if genExeRpt:
         print "Generating Execution Reports"
@@ -190,7 +202,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         print callStr
 
         out_exe = runManageWithWait(callStr)
-        out = out_mgt + out_exe
+        out = out_mgt + "\n" + out_exe
     else:
         out = out_mgt
 
@@ -262,6 +274,11 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                         from generate_xml import GenerateXml
                         if not os.path.exists("xml_data"):
                             os.mkdir("xml_data")
+                        for file in glob.glob("xml_data/*.xml"):
+                            try:
+                                os.remove("xml_data/" + file);
+                            except:
+                                pass
 
                         if envName:
                             jobNameDotted = '.'.join([level[0].strip(), level[1].strip(), envName])
