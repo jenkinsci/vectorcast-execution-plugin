@@ -214,7 +214,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     outFile.write(out)
     outFile.close()
 
-    vcastcsv2jenkins.run()
+    #vcastcsv2jenkins.run()
 
     copyList = []
     jobName = ""
@@ -228,6 +228,20 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
     #loop over each line of the manage command output
     env = None
+    
+    if not os.path.exists("xml_data"):
+        os.mkdir("xml_data")
+    if verbose:
+        print "Cleaning up old XML data files"
+    for file in glob.glob("xml_data/*.xml"):
+        try:
+            os.remove(file);
+            if verbose:
+                print "Removing file: " + file
+        except Exception as e:
+            print "Error removing " + file
+            print e
+
     for line in out.split('\n'):
         # the TEST_SUITE line will give us information for building a jobName that will be
         # inserted into the CSV name so it will match with the Jenkins integration job names
@@ -272,13 +286,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                     # Only import when available (i.e. new reports are available)
                     try:
                         from generate_xml import GenerateXml
-                        if not os.path.exists("xml_data"):
-                            os.mkdir("xml_data")
-                        for file in glob.glob("xml_data/*.xml"):
-                            try:
-                                os.remove("xml_data/" + file);
-                            except:
-                                pass
+                        
 
                         if envName:
                             jobNameDotted = '.'.join([level[0].strip(), level[1].strip(), envName])
