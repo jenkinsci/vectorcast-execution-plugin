@@ -1,6 +1,15 @@
-17 Apr 2019 (0.42)
+25 Apr 2019 (0.43)
 * Removed all uses of the environment variable VECTORCAST_DIR. From now on it
-  is assumed that VectorCAST executables are on the system PATH.
+  is assumed that VectorCAST executables are on the system PATH. Legacy support
+  is still maintained for older versions of VectorCAST.
+
+25 Apr 2010 (0.42)
+* Updates for corner cases, verbose out issue, and cleaning up previous build's
+  files
+* Problem when function coverage enabled, but not function call
+* Function coverage format incorrect in XML causing plugin to throw an error
+* Added catch for additional licensing errors
+* Added catch for all (E) Line: errors in the console log
 
 12 Apr 2019 (0.41)
 * Fix for function and basis path coverage with VectorCAST 2019

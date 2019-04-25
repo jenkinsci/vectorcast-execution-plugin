@@ -45,7 +45,7 @@ class ManageWait():
         callStr = cmd_prefix + "manage " + self.command_line
         output = ''
         if self.verbose:
-            output += "Verbose: %s" % callStr
+            output += "\nVerbose: %s" % callStr
 
         # capture the output of the manage call
         loop_count = 0

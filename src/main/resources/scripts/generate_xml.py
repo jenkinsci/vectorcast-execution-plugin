@@ -128,7 +128,7 @@ class GenerateXml(object):
         entry["function"] = None
         entry["functioncall"] = None
         if self.has_function_coverage:
-            entry["function"] = self.calc_cov_values(self.grand_total_max_covered_functions, self.grand_total_function_calls)
+            entry["function"] = self.calc_cov_values(self.grand_total_max_covered_functions, self.grand_total_max_coverable_functions)
         if self.has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)
         if cov_type == "MC/DC":
@@ -263,6 +263,7 @@ class GenerateXml(object):
         self.grand_total_max_covered_function_calls = 0
         self.grand_total_function_calls = 0
         self.grand_total_max_covered_functions = 0
+        self.grand_total_max_coverable_functions = 0
         self.grand_total_total_basis_path = 0
         self.grand_total_cov_basis_path = 0
         cov_type = self.api.environment.coverage_type_text
@@ -329,12 +330,13 @@ class GenerateXml(object):
             self.grand_total_function_calls += metrics.function_calls
             (total_funcs, funcs_covered) = cover_file.functions_covered
             self.grand_total_max_covered_functions += funcs_covered
-
+            self.grand_total_max_coverable_functions += total_funcs
+            
             if cov_type == "Basis Paths":
                 (cov, total) = unit.basis_paths_coverage
                 self.grand_total_total_basis_path += total
                 self.grand_total_cov_basis_path += cov
-
+    
         self.coverage = self.grand_total_coverage(cov_type)
         self.num_units = len(self.units)
         
@@ -393,7 +395,7 @@ class GenerateXml(object):
         if self.coverage["basispath"]:
             self.fh.write('        <coverage type="basispath, %%" value="%s"/>\n' % self.coverage["basispath"])
         if self.coverage["function"]:
-            self.fh.write('        <coverage type="function,% %" value="%s"/>\n' % self.coverage["function"])
+            self.fh.write('        <coverage type="function, %%" value="%s"/>\n' % self.coverage["function"])
         if self.coverage["functioncall"]:
             self.fh.write('        <coverage type="functioncall, %%" value="%s"/>\n' % self.coverage["functioncall"])
         self.fh.write('        <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
@@ -414,7 +416,7 @@ class GenerateXml(object):
             if unit["coverage"]["basispath"]:
                 self.fh.write('          <coverage type="basispath, %%" value="%s"/>\n' % unit["coverage"]["basispath"])
             if unit["coverage"]["function"]:
-                self.fh.write('          <coverage type="function,% %" value="%s"/>\n' % unit["coverage"]["function"])
+                self.fh.write('          <coverage type="function, %%" value="%s"/>\n' % unit["coverage"]["function"])
             if unit["coverage"]["functioncall"]:
                 self.fh.write('          <coverage type="functioncall, %%" value="%s"/>\n' % unit["coverage"]["functioncall"])
             self.fh.write('          <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % unit["complexity"])
@@ -430,7 +432,7 @@ class GenerateXml(object):
                 if func["coverage"]["basispath"]:
                     self.fh.write('            <coverage type="basispath, %%" value="%s"/>\n' % func["coverage"]["basispath"])
                 if func["coverage"]["function"]:
-                    self.fh.write('            <coverage type="function,% %" value="%s"/>\n' % func["coverage"]["function"])
+                    self.fh.write('            <coverage type="function, %%" value="%s"/>\n' % func["coverage"]["function"])
                 if func["coverage"]["functioncall"]:
                     self.fh.write('            <coverage type="functioncall, %%" value="%s"/>\n' % func["coverage"]["functioncall"])
                 self.fh.write('            <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % func["complexity"])

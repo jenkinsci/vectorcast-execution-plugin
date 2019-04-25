@@ -173,7 +173,7 @@ getEnvironmentSetupUnix() + "\n" +
 "    buildFailed = true\n" +
 "    manager.addBadge(\"error.gif\", \"Error with Test Case Management Report of at least one Environment\")\n" +
 "}\n" +
-"if (manager.logContains(\".*FLEXlm Error.*\"))\n" +
+"if (manager.logContains(\".*FLEXlm Error.*\") || manager.logContains(\".*ERROR: Failed to obtain a license.*\"))\n" +
 "{\n" +
 "    manager.createSummary(\"error.gif\").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
 "    buildFailed = true\n" +
@@ -203,7 +203,7 @@ getEnvironmentSetupUnix() + "\n" +
 "    buildFailed = true\n" +
 "    manager.addBadge(\"error.gif\", \"Preprocess Error\")\n" +
 "}\n" +
-"if (manager.logContains(\".*Value Line Error - Command Ignored.*\"))\n" +
+"if (manager.logContains(\".*Value Line Error - Command Ignored.*\") || manager.logContains(\".*(E) @LINE:.*\"))\n" +
 "{\n" +
 "    manager.createSummary(\"warning.gif\").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
 "    buildUnstable = true\n" +
