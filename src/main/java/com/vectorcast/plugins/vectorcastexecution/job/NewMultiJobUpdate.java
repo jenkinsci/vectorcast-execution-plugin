@@ -98,13 +98,13 @@ public class NewMultiJobUpdate extends BaseJob {
         }
 
         String win =
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\UpdateMultiJob.py\" ";
+"vpython \"%WORKSPACE%\\vc_scripts\\UpdateMultiJob.py\" ";
         win += " --url %JENKINS_URL%";
         win += args;
         win += "\n";
 
         String unix =
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/UpdateMultiJob.py\" ";
+"vpython \"$WORKSPACE/vc_scripts/UpdateMultiJob.py\" ";
         unix += " --url $JENKINS_URL";
         unix += args;
         unix += "\n";

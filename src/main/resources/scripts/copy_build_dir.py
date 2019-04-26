@@ -105,8 +105,8 @@ else:
     nocase = ""
 ws_length = str(len(workspace)+2)
 
-VECTORCAST_DIR = os.getenv('VECTORCAST_DIR')
-manageCMD = VECTORCAST_DIR + os.sep + "manage"
+cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
+manageCMD = "" if cmd_exists("manage") else (os.environ.get("VECTORCAST_DIR", "") + os.sep) + "manage"
 
 p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,shell=True,stdout=subprocess.PIPE)
 out, err = p.communicate()

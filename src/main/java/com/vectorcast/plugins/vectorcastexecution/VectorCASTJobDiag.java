@@ -88,18 +88,6 @@ public class VectorCASTJobDiag extends JobBase {
 "echo.\n" +
 "\n" +
 "set RET_VAL=0\n" +
-"if \"%VECTORCAST_DIR%\"==\"\" (\n" +
-"   echo.\n" +
-"   echo VECTORCAST_DIR...ERROR\n" +
-"   echo    Environment Variable not set.  Either set VECTORCAST_DIR in System Environment Variables or add to Jenkins Configuration\n" +
-"   echo.\n" +
-"   set /a RET_VAL=%RET_VAL%-1\n" +
-"   goto end\n" +
-") else (\n" +
-"   echo VECTORCAST_DIR...OKAY\n" +
-"   echo VECTORCAST_DIR = %VECTORCAST_DIR%\n" +
-")\n" +
-"\n" +
 "if \"%JENKINS_URL%\"==\"\" (\n" +
 "   echo.\n" +
 "   echo JENKINS_URL...ERROR\n" +
@@ -128,7 +116,7 @@ public class VectorCASTJobDiag extends JobBase {
 "   echo License Environment Variable...OKAY\n" +
 ")\n" +
 "\n" +
-"%VECTORCAST_DIR%\\manage --help > help.log\n" +
+"manage --help > help.log\n" +
 "if \"%errorlevel%\"==\"1\" (\n" +
 "   echo.\n" +
 "   echo VectorCAST/Manage License...ERROR\n" +
@@ -154,18 +142,6 @@ public class VectorCASTJobDiag extends JobBase {
 "echo\n" +
 "\n" +
 "RET_VAL=0\n" +
-"if [ \"$VECTORCAST_DIR\" = \"\" ] ; then\n" +
-"   echo\n" +
-"   echo VECTORCAST_DIR...ERROR\n" +
-"   echo \"   Environment Variable not set.  Either set VECTORCAST_DIR in System Environment Variables or add to Jenkins Configuration\"\n" +
-"   echo\n" +
-"   RET_VAL=$(($RET_VAL-1))\n" +
-"   exit $RET_VAL\n" +
-"else\n" +
-"   echo VECTORCAST_DIR...OKAY\n" +
-"   echo VECTORCAST_DIR = $VECTORCAST_DIR\n" +
-"fi\n" +
-"\n" +
 "if [ \"$JENKINS_URL\" = \"\" ] ; then\n" +
 "   echo\n" +
 "   echo JENKINS_URL...ERROR\n" +
@@ -193,7 +169,7 @@ public class VectorCASTJobDiag extends JobBase {
 "  echo License Environment Variable...OKAY\n" +
 "fi\n" +
 "\n" +
-"$VECTORCAST_DIR/manage --help > help.log\n" +
+"manage --help > help.log\n" +
 "\n" +
 "if [ \"$?\" != \"0\" ] ; then\n" +
 "   echo\n" +
