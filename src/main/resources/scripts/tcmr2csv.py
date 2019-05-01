@@ -82,9 +82,7 @@ def getCsvName(HtmlReportName,level,reportType):
     
     (root, ext) = os.path.splitext(os.path.basename(HtmlReportName))
     
-    if jobName:
-        jobName = jobName + "_"
-    else:
+    if not jobName:
         jobName = root
 
     CsvFileName = reportType + jobName + ".csv"

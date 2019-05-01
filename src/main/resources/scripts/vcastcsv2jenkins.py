@@ -563,11 +563,17 @@ def run(test = "",coverage="", cleanup=True, useExecRpt = True, version=14):
         #    os.remove(fl)
         if not os.path.exists("xml_data"):
             os.mkdir("xml_data")
+            
+        # clean up old files
         for file in glob.glob("xml_data/*.xml"):
+            if file == "xml_data/coverage_results_blank.xml":
+                continue
             try:
-                os.remove("xml_data/" + file);
-            except:
-                pass
+                os.remove(file);
+            except Exception as e:
+                print "Error removing " + file
+                print e
+                
         for file in glob.glob("*.xml"):
             try:
                 # Remove destination first
@@ -575,6 +581,7 @@ def run(test = "",coverage="", cleanup=True, useExecRpt = True, version=14):
                     os.remove("xml_data/" + file);
                 except:
                     pass
+
                 shutil.move(file, "xml_data")
             except:
                 pass
@@ -596,7 +603,7 @@ if __name__ == '__main__':
         use_exec_rpt = False
     else:
         use_exec_rpt = True
-
+        
     run(args.test,args.coverage, args.cleanup,use_exec_rpt)
 
     print "done"
