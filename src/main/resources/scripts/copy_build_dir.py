@@ -105,10 +105,11 @@ else:
     nocase = ""
 ws_length = str(len(workspace)+2)
 
-VECTORCAST_DIR = os.getenv('VECTORCAST_DIR')
-manageCMD = VECTORCAST_DIR + os.sep + "manage"
+exe_env = os.environ.copy()
+if 'VECTORCAST_DIR' in os.environ:
+    exe_env['PATH'] = os.pathsep.join([os.environ.get('PATH', ''), exe_env['VECTORCAST_DIR']])
 
-p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,shell=True,stdout=subprocess.PIPE)
+p = subprocess.Popen("manage --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,shell=True,stdout=subprocess.PIPE, env=exe_env)
 out, err = p.communicate()
 list = out.split(os.linesep)
 build_dir = ''

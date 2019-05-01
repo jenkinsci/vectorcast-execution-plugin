@@ -29,7 +29,6 @@ import shutil
 import re
 import time
 
-VECTORCAST_DIR = os.getenv('VECTORCAST_DIR') + os.sep
 
 class ManageWait():
     def __init__(self, verbose, command_line, wait_time, wait_loops):
@@ -38,8 +37,14 @@ class ManageWait():
         self.verbose = verbose
         self.command_line = command_line
 
-    def exec_manage(self, silent = False):
-        callStr = VECTORCAST_DIR + "manage "+ self.command_line
+    def exec_manage(self):
+        # Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
+        # We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
+        exe_env = os.environ.copy()
+        if 'VECTORCAST_DIR' in os.environ:
+            exe_env['PATH'] = os.pathsep.join([os.environ.get('PATH', ''), exe_env['VECTORCAST_DIR']])
+
+        callStr = "manage " + self.command_line
         output = ''
         if self.verbose:
             output += "\nVerbose: %s" % callStr
@@ -48,7 +53,7 @@ class ManageWait():
         loop_count = 0
         while 1:
             loop_count += 1
-            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
+            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, env=exe_env)
             (out_mgt, out_mgt2) = p.communicate()
 
             output += "\n" + out_mgt.rstrip()
