@@ -254,24 +254,31 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if verbose:
         print "Version Check: " + str(time.time())
 
-    for path in ["xml_data","management"]:
-        if not os.path.exists(path):
-            os.mkdir(path)
-        if verbose:
-            print "Cleaning up old data files"
-        for file in glob.glob(path+"/*.*"):
-            try:
-                os.remove(file);
-                if verbose:
-                    print "Removing file: " + file
-            except Exception as e:
-                print "Error removing " + file
-                print e
-
+    # cleaning up old builds
+    for path in ["xml_data","management","execution"]:
+        try:
+            shutil.rmtree(path)
+        except
+            pass
+        os.mkdir(path)
+                
+    for file in glob.glob("*.csv")
+        try:
+            os.remove(file);
+            if verbose:
+                print "Removing file: " + file
+        except Exception as e:
+            print "Error removing " + file
+            print e
+    
     ### Using new data API - 2019 and beyond
     if verbose:
 	    print "Cleanup: " + str(time.time())
     if useNewReport:
+        try:
+            shutil.rmtree("execution") 
+        except:
+            pass
         manageEnvs = getManageEnvs(FullManageProjectName)
         if verbose:
 		    print "Get Info: " + str(time.time())
