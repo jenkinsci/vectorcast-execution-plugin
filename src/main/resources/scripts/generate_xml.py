@@ -30,6 +30,7 @@ from vector.apps.ReportBuilder.custom_report import fmt_percent
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
 from vector.apps.DataAPI.models import TestCase
+from vector.apps.ReportBuilder.custom_report import CustomReport
 
 #
 # This class generates the XML (xUnit based) report for dynamic tests and
@@ -39,7 +40,7 @@ from vector.apps.DataAPI.models import TestCase
 #
 class GenerateXml(object):
 
-    def __init__(self, build_dir, env, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted):
+    def __init__(self, build_dir, env, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False):
         self.build_dir = build_dir
         self.env = env
         self.cover_report_name = cover_report_name
@@ -47,6 +48,7 @@ class GenerateXml(object):
         self.jenkins_name = jenkins_name
         self.jenkins_link = jenkins_link
         self.jobNameDotted = jobNameDotted
+        self.verbose = verbose
         self.using_cover = False
         cov_path = os.path.join(build_dir,env + '.vcp')
         unit_path = os.path.join(build_dir,env + '.vce')
@@ -56,9 +58,25 @@ class GenerateXml(object):
         elif os.path.exists(unit_path):
             self.using_cover = False
             self.api = Api(unit_path)
+            
+            # get the execution report info for all TCs
+            CustomReport.report_from_api(self.api, report_type="Demo", formats=["TEXT"], 
+                output_file="execution_results.txt", 
+                sections=[ "TESTCASE_SECTIONS"],  
+                testcase_sections=["EXECUTION_RESULTS"])
+            data = open("execution_results.txt","r").read()
+
+            results = data.split("Start of Test Case")
+
+            self.resultsDict = {}
+
+            for idx,result in enumerate(results[1:]):
+                tcName = result.split("\n")[0].split("\"")[1]
+                self.resultsDict[tcName] = "  Start of Test Case" + cgi.escape(result)
         else:
             self.api = None
-            print "Error: Could not determine project type for {}/{}".format(build_dir, env)
+            if verbose: 
+                print "Error: Could not determine project type for {}/{}".format(build_dir, env)
 
 #
 # Internal - calculate coverage value
@@ -172,33 +190,42 @@ class GenerateXml(object):
 # Generate the xUnit XML file
 #
     def generate_unit(self):
-        if "BUILD_URL" in os.environ:
-            self.build_url = os.getenv('BUILD_URL') + "artifact/execution/" + self.jenkins_link + ".html#ExecutionResults_"
-        else:
-            self.build_url = "undefined"
-        self.start_unit_file()
-        self.add_compound_tests()
-        self.add_init_tests()
-        for unit in self.api.Unit.all():
-            if unit.is_uut:
-                for func in unit.functions:
-                    if not func.is_non_testable_stub:
-                        for tc in func.testcases:
-                            if not tc.is_csv_map:
-                                self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
-        self.end_unit_file()
-
+        if isinstance(self.api, CoverApi):
+            print "   Skipping test results for QA project " + os.path.join(self.build_dir,self.env)
+            return
+            
+        try:
+            if "BUILD_URL" in os.environ:
+                self.build_url = os.getenv('BUILD_URL') + "artifact/execution/" + self.jenkins_link + ".html#ExecutionResults_"
+            else:
+                self.build_url = "undefined"
+            self.start_unit_file()
+            self.add_compound_tests()
+            self.add_init_tests()
+            for unit in self.api.Unit.all():
+                if unit.is_uut:
+                    for func in unit.functions:
+                        if not func.is_non_testable_stub:
+                            for tc in func.testcases:
+                                if not tc.is_csv_map:
+                                    if not tc.for_compound_only:
+                                        self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
+            self.end_unit_file()
+        except AttributeError as e:
+            print e
+            pass
 #
 # Internal - start the xUnit XML file
 #
     def start_unit_file(self):
-        print "Writing unit xml file: {}".format(self.unit_report_name)
+        if self.verbose:
+            print "Writing unit xml file: {}".format(self.unit_report_name)
         self.fh = open(self.unit_report_name, "w")
         self.fh.write('<testsuites xmlns="http://check.sourceforge.net/ns">\n')
         self.fh.write('    <datetime>%s</datetime>\n' % self.get_timestamp())
         self.fh.write('    <suite>\n')
         self.fh.write('        <title>%s</title>\n' % self.jobNameDotted)
-
+        
 #
 # Internal - write a testcase to the xUnit XML file
 #
@@ -224,10 +251,17 @@ class GenerateXml(object):
             status = "PASS"
         else:
             status = "FAIL"
-        if exp_pass == 0 and exp_total == 0:
-            msg = "{} See Execution Report:\n {}{}".format(status, self.build_url, tc.id)
-        else:
-            msg = "{} {} / {} See Execution Report:\n {}{}".format(status, exp_pass, exp_total, self.build_url, tc.id)
+            
+        try:
+            if exp_pass == 0 and exp_total == 0:
+                msg = "{} Execution Report:\n {}".format(status, self.resultsDict[tc.name])
+            else:
+                msg = "{} {} / {} See Execution Report:\n {}".format(status, exp_pass, exp_total, self.resultsDict[tc.name])
+        except:
+            print "Can't find " + tc.name + " in "
+            print self.resultsDict
+            msg = status
+            
         self.fh.write('            <message>%s</message>\n' % msg)
         self.fh.write('        </test>\n')
 
@@ -358,7 +392,8 @@ class GenerateXml(object):
 # Internal - start writing to the coverage file
 #
     def start_cov_file(self):
-        print "Writing coverage xml file: {}".format(self.cover_report_name)
+        if self.verbose:
+            print "Writing coverage xml file: {}".format(self.cover_report_name)
         self.fh = open(self.cover_report_name, "w")
         self.fh.write('<!-- VectorCAST/Jenkins Integration, Generated %s -->\n' % self.get_timestamp())
         self.fh.write('<report>\n')

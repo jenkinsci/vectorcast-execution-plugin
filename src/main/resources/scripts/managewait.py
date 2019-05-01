@@ -38,7 +38,7 @@ class ManageWait():
         self.verbose = verbose
         self.command_line = command_line
 
-    def exec_manage(self):
+    def exec_manage(self, silent = False):
         callStr = VECTORCAST_DIR + "manage "+ self.command_line
         output = ''
         if self.verbose:
@@ -71,7 +71,8 @@ class ManageWait():
                     output += "\n" + msg
                     sys.exit(-1)
             else:
-                print out_mgt
+                if not silent:
+                    print out_mgt
                 break;
 
         return output
