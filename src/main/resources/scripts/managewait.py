@@ -29,10 +29,6 @@ import shutil
 import re
 import time
 
-# Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
-# We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
-cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
-cmd_prefix = "" if cmd_exists("manage") else (os.environ.get("VECTORCAST_DIR", "") + os.sep)
 
 class ManageWait():
     def __init__(self, verbose, command_line, wait_time, wait_loops):
@@ -42,7 +38,13 @@ class ManageWait():
         self.command_line = command_line
 
     def exec_manage(self):
-        callStr = cmd_prefix + "manage " + self.command_line
+        # Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
+        # We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
+        exe_env = os.environ.copy()
+        if 'VECTORCAST_DIR' in os.environ:
+            exe_env['PATH'] = os.pathsep.join([os.environ.get('PATH', ''), exe_env['VECTORCAST_DIR']])
+
+        callStr = "manage " + self.command_line
         output = ''
         if self.verbose:
             output += "\nVerbose: %s" % callStr
@@ -51,7 +53,7 @@ class ManageWait():
         loop_count = 0
         while 1:
             loop_count += 1
-            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
+            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, env=exe_env)
             (out_mgt, out_mgt2) = p.communicate()
 
             output += "\n" + out_mgt.rstrip()

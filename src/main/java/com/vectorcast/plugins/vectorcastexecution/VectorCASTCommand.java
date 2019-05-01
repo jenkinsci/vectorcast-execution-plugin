@@ -60,7 +60,15 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * @return windows command
      */
     public final String getWinCommand() {
-        return winCommand;
+        //
+        // Older builds of VectorCAST do not assume VectorCAST executables are on the the system PATH.
+        // They used an environment variable called VECTORCAST_DIR, we will add that to our PATH.
+        //
+        //
+        return "setlocal\n"
+               + "set PATH=%PATH%;%VECTORCAST_DIR%\n"
+               + winCommand
+               + "\nendlocal";
     }
 
     /**
@@ -68,7 +76,13 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * @return unix command
      */
     public final String getUnixCommand() {
-        return unixCommand;
+        //
+        // Older builds of VectorCAST do not assume VectorCAST executables are on the the system PATH.
+        // They used an environment variable called VECTORCAST_DIR, we will add that to our PATH.
+        //
+        //
+        return "PATH=\"${PATH:+\"$PATH:\"}$VECTORCAST_DIR\"\n"
+               + unixCommand;
     }
     
     /**
@@ -84,22 +98,6 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
     
     @Override
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
-        //
-        // Older builds of VectorCAST do not assume VectorCAST executables are on the the system PATH.
-        // They used an environment variable called VECTORCAST_DIR, we will add that to our PATH.
-        //
-        try {
-            EnvVars buildEnv = build.getEnvironment(listener);
-            if (findExecutableOnPath(buildEnv, "clicast") == null) {
-                buildEnv.put("PATH", buildEnv.get("VECTORCAST_DIR", "") + File.pathSeparator + buildEnv.get("PATH", ""));
-                launcher = launcher.decorateByEnv(buildEnv);
-            }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(VectorCASTCommand.class.getName()).log(Level.SEVERE, null, ex);
-            build.setResult(Result.FAILURE);
-        }
-
-        //
         // Windows check and run batch command
         //
         // Get the windows batch command and run it if this node is Windows
@@ -171,14 +169,5 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
         }
     }
 
-    private static String findExecutableOnPath(EnvVars vars, String name) {
-        for (String dirname : vars.get("PATH", "").split(File.pathSeparator)) {
-            File file = new File(dirname, name);
-            if (file.isFile() && file.canExecute()) {
-                return file.getParentFile().getAbsolutePath();
-            }
-        }
-        return null;
-    }
 }
 

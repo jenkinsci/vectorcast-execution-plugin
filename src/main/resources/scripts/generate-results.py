@@ -48,11 +48,10 @@ verbose = False
 
 # Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
 # We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
-valid_cmd_paths = lambda x: (path for path in os.environ["PATH"].split(os.pathsep) if os.access(os.path.join(path, x), os.X_OK))
-vectorcast_install_dir = next(valid_cmd_paths("manage"), os.environ.get("VECTORCAST_DIR", ""))
-cmd_prefix = "" if next(valid_cmd_paths("manage"), None) is not None else (os.environ.get("VECTORCAST_DIR", "") + os.sep)
-
-import os
+has_exe = lambda p, x : os.access(os.path.join(p, x), os.X_OK)
+has_vcast_exe = lambda p : has_exe(p, 'manage') or has_exe(p, 'manage.exe')
+vcast_dirs = (path for path in os.environ["PATH"].split(os.pathsep) if has_vcast_exe(path))
+vectorcast_install_dir = next(vcast_dirs, os.environ.get("VECTORCAST_DIR", ""))
 
 def runManageWithWait(command_line):
     global verbose
@@ -106,7 +105,7 @@ def readManageVersion(ManageFile):
 def getManageEnvs(FullManageProjectName):
     manageEnvs = {}
 
-    callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --build-directory-name"
+    callStr = "manage --project " + FullManageProjectName + " --build-directory-name"
     out_mgt = runManageWithWait(callStr)
     if verbose:
         print out_mgt
@@ -173,13 +172,13 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     print "Generating Test Case Management Reports"
 
     # release locks and create all Test Case Management Report
-    callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --force --release-locks"
+    callStr = "manage --project " + FullManageProjectName + " --force --release-locks"
     out_mgt = runManageWithWait(callStr)
 
     if level and envName:
-        callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom management"
+        callStr = "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom management"
     else:
-        callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --clicast-args report custom management"
+        callStr = "manage --project " + FullManageProjectName + " --clicast-args report custom management"
     print callStr
 
     # capture the output of the manage call
@@ -199,9 +198,9 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if genExeRpt:
         print "Generating Execution Reports"
         if level and envName:
-            callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom actual"
+            callStr = "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom actual"
         else:
-            callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --clicast-args report custom actual"
+            callStr = "manage --project " + FullManageProjectName + " --clicast-args report custom actual"
 
         print callStr
 

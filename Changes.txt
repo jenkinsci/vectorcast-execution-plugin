@@ -1,3 +1,7 @@
+1 May 2019 (0.44)
+* Added better legacy support for VectorCAST installations that do not have
+  their executables on the system PATH.
+
 25 Apr 2019 (0.43)
 * Removed all uses of the environment variable VECTORCAST_DIR. From now on it
   is assumed that VectorCAST executables are on the system PATH. Legacy support
