@@ -314,7 +314,7 @@ public class NewMultiJob extends BaseJob {
         // Post-build actions if doing reporting
         if (getOptionUseReporting()) {
             addArchiveArtifacts(getTopProject());
-            addXunit(getTopProject());
+            addJunit(getTopProject());
             addVCCoverage(getTopProject());
             addGroovyScriptMultiJob();
         }
@@ -457,7 +457,8 @@ getEnvironmentTeardownUnix() + "\n";
             if (getOptionUseReporting()) {
                 addReportingCommands(p, detail, baseName);
                 addArchiveArtifacts(p);
-                addXunit(p);
+                //addXunit(p);
+                addJunit(p);
                 addVCCoverage(p);
                 addPostReportingGroovy(p);
                 // RMK : TODO - fixup/combine groovy
@@ -568,7 +569,7 @@ getEnvironmentTeardownUnix() + "\n";
         
         String win =
 getEnvironmentSetupWin() + "\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
 getEnvironmentTeardownWin() + "\n" +
 "";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
@@ -577,7 +578,7 @@ getEnvironmentTeardownWin() + "\n" +
         
         String unix =
 getEnvironmentSetupUnix() + "\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
 getEnvironmentTeardownUnix() + "\n" +
 "";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());

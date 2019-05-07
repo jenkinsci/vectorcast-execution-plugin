@@ -37,7 +37,7 @@ class ManageWait():
         self.verbose = verbose
         self.command_line = command_line
 
-    def exec_manage(self):
+    def exec_manage(self, silent = False):
         # Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
         # We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
         exe_env = os.environ.copy()

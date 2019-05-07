@@ -29,12 +29,6 @@ import re
 import glob
 import subprocess
 import time
-from vector.apps.ReportBuilder.custom_report import CustomReport
-from vector.apps.DataAPI.api import Api
-from vector.apps.DataAPI.api import Api
-from vector.apps.DataAPI.cover_api import CoverApi
-import generate_qa_results_xml
-
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
@@ -46,6 +40,7 @@ sys.path.append(python_path_updates)
 import tcmr2csv
 import vcastcsv2jenkins
 from managewait import ManageWait
+import generate_qa_results_xml
 
 #global variables
 global verbose
@@ -60,6 +55,25 @@ has_exe = lambda p, x : os.access(os.path.join(p, x), os.X_OK)
 has_vcast_exe = lambda p : has_exe(p, 'manage') or has_exe(p, 'manage.exe')
 vcast_dirs = (path for path in os.environ["PATH"].split(os.pathsep) if has_vcast_exe(path))
 vectorcast_install_dir = next(vcast_dirs, os.environ.get("VECTORCAST_DIR", ""))
+
+#
+# Internal - jUnit works best with one overall file for all test results
+#
+def writeJunitCombineTestResults(env):
+    f=open("xml_data/test_results_"+env+"_combined.xml","w")
+    f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+    f.write("<testsuites>\n")
+
+    for testResults in glob.glob('xml_data/test_results*.xml'):
+        if  "combined" in testResults:
+            continue
+        data = open(testResults,"r").readlines()[2:-1]
+        #os.remove(testResults)
+        wrData =  "".join(data)
+        f.write(wrData)
+     
+    f.write("\n</testsuites>\n")
+    f.close()
 
 def runManageWithWait(command_line, silent=False):
     global verbose
@@ -142,9 +156,6 @@ def getManageEnvs(FullManageProjectName):
             entry["build_dir_number"] = build_dir_number
             manageEnvs[level] = entry
             
-            if verbose:
-                print level
-                print entry
                 
         elif "Log Directory:" in line:
             pass
@@ -157,7 +168,7 @@ def delete_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
         
-def genDataApiReports(entry):
+def genDataApiReports(entry, jUnit):
     try:
         from generate_xml import GenerateXml
 
@@ -178,10 +189,13 @@ def genDataApiReports(entry):
                                jenkins_name,
                                xmlUnitReportName,
                                jenkins_link,
-                               jobNameDotted)
+                               jobNameDotted, 
+                               verbose, 
+                               jUnit)
+                               
         if xml_file.api != None:
             if verbose:
-                print "  Generate Jenkins xUnit report: {}".format(xmlUnitReportName)
+                print "  Generate Jenkins testcase report: {}".format(xmlUnitReportName)
             xml_file.generate_unit()
 
             if verbose:
@@ -193,8 +207,13 @@ def genDataApiReports(entry):
     except RuntimeError as r_error:
         print "ERROR: failed to generate XML reports using vpython and the Data API"
         print r_error
+        
+    return xml_file
 
 def generateCoverReport(path, env, level ):
+
+    from vector.apps.ReportBuilder.custom_report import CustomReport
+    from vector.apps.DataAPI.cover_api import CoverApi
 
     api=CoverApi(path)
     
@@ -203,6 +222,8 @@ def generateCoverReport(path, env, level ):
     CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
     
 def generateUTReport(path, env, level): 
+    from vector.apps.ReportBuilder.custom_report import CustomReport
+    from vector.apps.DataAPI.api import Api
     api=Api(path)
 
     report_name = "management/" + env + "_" + level + ".html"
@@ -229,43 +250,45 @@ def generateIndividualReports(entry, envName):
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
     
-def useNewAPI(manageEnvs, level, envName):
+def useNewAPI(manageEnvs, level, envName, jUnit):
         
     for currentEnv in manageEnvs:
         if envName == None or manageEnvs[currentEnv]["env"] == envName:
-            genDataApiReports(manageEnvs[currentEnv])
+            genDataApiReports(manageEnvs[currentEnv], jUnit)
             generateIndividualReports(manageEnvs[currentEnv], envName)
     
     
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
-def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True):
+def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, jUnit = True):
 
-    if verbose:
+    if timing:
         print "Start: " + str(time.time())
     
     # make sure the project exists
     if not os.path.isfile(FullManageProjectName) and not os.path.isfile(FullManageProjectName + ".vcm"):
         raise IOError(FullManageProjectName + ' does not exist')
         return
+        
+    manageProjectName = os.path.splitext(os.path.basename(FullManageProjectName))[0]
 
     version = readManageVersion(FullManageProjectName)
     useNewReport = checkUseNewReportsAndAPI()
     manageEnvs = {}
 
-    if verbose:
+    if timing:
         print "Version Check: " + str(time.time())
 
     # cleaning up old builds
     for path in ["xml_data","management","execution"]:
         try:
             shutil.rmtree(path)
-        except
+        except:
             pass
         os.mkdir(path)
                 
-    for file in glob.glob("*.csv")
+    for file in glob.glob("*.csv"):
         try:
             os.remove(file);
             if verbose:
@@ -274,29 +297,28 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             print "Error removing " + file
             print e
     
+    
     ### Using new data API - 2019 and beyond
-    if verbose:
+    if timing:
 	    print "Cleanup: " + str(time.time())
     if useNewReport:
+
         try:
             shutil.rmtree("execution") 
         except:
             pass
         manageEnvs = getManageEnvs(FullManageProjectName)
-        if verbose:
-		    print "Get Info: " + str(time.time())
-        useNewAPI(manageEnvs, level, envName)
-        if verbose:
+        if timing:
+            print "Using DataAPI for reporting"
+            print "Get Info: " + str(time.time())
+        useNewAPI(manageEnvs, level, envName, jUnit)
+        if timing:
 		    print "XML and Individual reports: " + str(time.time())
-        generate_qa_results_xml.genQATestResults(FullManageProjectName)
-        if verbose:
-		    print "QA Results reports: " + str(time.time())
 
     ### NOT Using new data API        
     else:
     
         # parse out the manage project name
-        manageProjectName = os.path.splitext(os.path.basename(FullManageProjectName))[0]
         tcmr2csv.manageProjectName = manageProjectName
 
         print "Generating Test Case Management Reports"
@@ -346,13 +368,13 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         outFile = open("build.log", "w")
         outFile.write(out)
         outFile.close()
-
-        #vcastcsv2jenkins.run()
-
         copyList = []
         jobName = ""
         level = ""
 
+        if timing:
+            print "Using report scraping for metrics"
+            print "Individual report generation: " + str(time.time())
         if not os.path.exists("management"):
             os.mkdir("management")
 
@@ -407,7 +429,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                     # Create the test_results_ and coverage_results_ csv files
                     testResultName, coverageResultsName = tcmr2csv.run(reportName, level, version)
 
-                    vcastcsv2jenkins.run(test = testResultName,coverage = coverageResultsName,cleanup=True,useExecRpt=generate_individual_reports, version=version)
+                    vcastcsv2jenkins.run  (test = testResultName, coverage = coverageResultsName, useExecRpt=generate_individual_reports, version=version, junit=junit)
 
                     if envName:
                         adjustedReportName = "management" + os.sep + envName + "_" + jobName + ".html"
@@ -418,6 +440,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 copyList.append([reportName,adjustedReportName])
                 # Reset env
                 env = None
+                
 
         for file in copyList:
 
@@ -425,8 +448,19 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 print "moving %s -> %s" % (file[0], file[1])
 
             shutil.move(file[0], file[1])
+            
+    generate_qa_results_xml.genQATestResults(FullManageProjectName)
+    if timing:
+        print "QA Results reports: " + str(time.time())
+            
+    if junit:   
+        if verbose:
+		    print "Writing combined test data for JUnit"
+        writeJunitCombineTestResults(manageProjectName)
 
-
+    if timing:
+        print "Complete: " + str(time.time())
+        
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -437,6 +471,8 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--dont-generate-individual-reports',   help='Don\'t Generated Individual Reports (below 2019 - this just controls execution report generate, 2019 and later - no individual reports will be generated',  action="store_true")
     parser.add_argument('--wait_time',   help='Time (in seconds) to wait between execution attempts', type=int, default=30)
     parser.add_argument('--wait_loops',   help='Number of times to retry execution', type=int, default=1)
+    parser.add_argument('--timing',   help='Display timing information for report generation', action="store_true")
+    parser.add_argument('--junit',   help='Output test resutls in junit format', action="store_true")
     parser.add_argument('--api',   help='Unused', type=int)
 
     args = parser.parse_args()
@@ -453,7 +489,17 @@ if __name__ == '__main__':
     else:
         dont_generate_individual_reports = True
 
+    if args.timing:
+        timing = True
+    else:
+        timing = False
+
+    if args.junit:
+        junit = True
+    else:
+        junit = False
+
     os.environ['VCAST_RPTS_PRETTY_PRINT_HTML'] = 'FALSE'
 
-    buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports)
+    buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, junit)
 

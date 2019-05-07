@@ -30,6 +30,8 @@ import sys
 import time
 import shutil
 
+import cgi
+
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
 python_path_updates = jenkinsScriptHome
@@ -102,6 +104,7 @@ def readCsvFile(csvFilename):
     csvfile = open(csvFilename, 'rb')
     csvList = csvfile.read().split('\n')
     csvfile.close()
+    os.remove(csvFilename)
 
     fullManageProject = csvList[0].split(",")[1].rstrip()
     (manageProject, ext) = os.path.splitext(os.path.basename(fullManageProject))
@@ -151,10 +154,14 @@ def writeXunitHeader(xunitfile):
     xunitfile.write("    <suite>\n")
     xunitfile.write("    <title>" + jobNameDotted + "</title>\n")
 
-def writeTestCase(xunitFile, unit, subp, tc_name, passFail):
+def writeXunitTestCase(xunitFile, unit, subp, tc_name, passFail):
     global jobNamePrefix
     global testCaseCount
     testCaseCount += 1
+    
+    unit = cgi.escape(unit)
+    subp = cgi.escape(subp)
+    tc_name = cgi.escape(tc_name)
 
     tc_name = '.'.join([unit, subp, tc_name])
 
@@ -185,24 +192,100 @@ def writeXunitFooter(xunitfile):
     xunitfile.write("   </suite>\n")
     xunitfile.write("   <duration>33</duration>\n\n")
     xunitfile.write("</testsuites>\n")
+    
+def writeJunitHeader(junitfile,dataArray):
+    
+    global jobNameDotted
+    global envName
 
+    junitfile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+    junitfile.write("<testsuites>\n")
+    
+    errors = 0
+    failed = 0
+    
+    for data in dataArray:
+        if 'ABNORMAL' in data[TC_STATUS_COL]:
+            errors += 1
+      
+        elif not 'PASS' in data[TC_STATUS_COL]:
+            failed += 1
+            
+    junitfile.write(" 	<testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
+        (errors,len(dataArray), failed, envName))
+ 
+def writeJunitTestCase(junitfile,  unit, subp, tc_name, passFail):
+    global jobNamePrefix
+    global testCaseCount
+    
+    testCasePassString =" 		<testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
+    testCaseFailString ="""
+            <testcase name="%s" classname="%s" time="0">
+                <failure type="failure" message="FAIL: %s"/>
+            </testcase>
+    """
+    testCaseCount += 1
+    
+    unit = cgi.escape(unit)
+    subp = cgi.escape(subp)
+    tc_name = cgi.escape(tc_name)
+    
+    if 'PASS' in passFail:
+        successFailure = 'success'
+    else:
+        successFailure = 'failure'    
 
-def runCsv2JenkinsTestResults(csvFilename):
+    if 'ABNORMAL' in passFail:
+        print "Abnormal Termination on Environment\n"
+
+    unit_subp = unit + "." + subp
+   
+    if 'PASS' in passFail:
+        junitfile.write(testCasePassString % (tc_name, unit_subp))
+    else:   
+        junitfile.write(testCaseFailString % (tc_name, unit_subp, passFail))
+    
+def writeJunitFooter(junitfile):
+
+    junitfile.write("   </testsuite>\n")
+    junitfile.write("</testsuites>\n")
+
+def runCsv2JenkinsTestResults(csvFilename, junit):
+
     dataArray = readCsvFile(csvFilename)
 
-    xunitfile = open(csvFilename[:-4]+".xml","w")
+    if junit:
+        
+        titles = dataArray[0]
 
-    writeXunitHeader(xunitfile)
+        junitfile = open(csvFilename[:-4]+".xml","w")
+                
+        writeJunitHeader(junitfile,dataArray[1:])
 
-    for data in dataArray[1:]:
-        data[UNIT_NAME_COL] = escape(data[UNIT_NAME_COL])
-        data[SUBPROG_COL] = escape(data[SUBPROG_COL])
-        data[TEST_CASE_COL] = escape(data[TEST_CASE_COL])
-        writeTestCase(xunitfile, data[UNIT_NAME_COL],data[SUBPROG_COL],data[TEST_CASE_COL],data[TC_STATUS_COL])
+        for data in dataArray[1:]:
+            data[UNIT_NAME_COL] = escape(data[UNIT_NAME_COL])
+            data[SUBPROG_COL] = escape(data[SUBPROG_COL])
+            data[TEST_CASE_COL] = escape(data[TEST_CASE_COL])
+            writeJunitTestCase(junitfile, data[UNIT_NAME_COL],data[SUBPROG_COL].replace("%2C",","),data[TEST_CASE_COL].replace("%2C",","),data[TC_STATUS_COL])
 
-    writeXunitFooter(xunitfile)
+        writeJunitFooter(junitfile)
+        
+        junitfile.close()
+    else:
 
-    xunitfile.close()
+        xunitfile = open(csvFilename[:-4]+".xml","w")
+
+        writeXunitHeader(xunitfile)
+
+        for data in dataArray[1:]:
+            data[UNIT_NAME_COL] = escape(data[UNIT_NAME_COL])
+            data[SUBPROG_COL] = escape(data[SUBPROG_COL])
+            data[TEST_CASE_COL] = escape(data[TEST_CASE_COL])
+            writeXunitTestCase(xunitfile, data[UNIT_NAME_COL],data[SUBPROG_COL],data[TEST_CASE_COL],data[TC_STATUS_COL])
+
+        writeXunitFooter(xunitfile)
+
+        xunitfile.close()
 
 def determineCoverage(titles):
     global stIndex,brIndex,pairIndex,pathIndex,baIndex,fncIndex,fncCallIndex,VgIndex
@@ -538,7 +621,7 @@ def writeBlankCCFile():
     f.close()
     print "Generating a blank coverage report\n"
 
-def run(test = "",coverage="", cleanup=True, useExecRpt = True, version=14):
+def run(test = "",coverage="", useExecRpt = True, version=14, junit = True):
 
     global gUseExecRpt, testCaseCount
     global manageVersion
@@ -547,55 +630,37 @@ def run(test = "",coverage="", cleanup=True, useExecRpt = True, version=14):
     manageVersion = version
 
     if test:
-        #print "      Processing Test Results File: " + test
-        runCsv2JenkinsTestResults(test);
+        #print "Processing Test Results File: " + test
+        runCsv2JenkinsTestResults(test, junit)
 
     if coverage:
-        #print "      Processing Coverage Results File: " + coverage
-        runCsv2JenkinsCoverageResults(coverage);
+        #print "Processing Coverage Results File: " + coverage
+        runCsv2JenkinsCoverageResults(coverage)
     else:
         writeBlankCCFile();
-
-    if cleanup:
-        print "Cleaning up workspace..."
-
-        #for fl in glob.glob("*.csv"):
-        #    os.remove(fl)
-        if not os.path.exists("xml_data"):
-            os.mkdir("xml_data")
-            
-        # clean up old files
-        for file in glob.glob("xml_data/*.xml"):
-            if file == "xml_data/coverage_results_blank.xml":
-                continue
+        
+    for file in glob.glob("*.xml"):
+        try:
+            # Remove destination first
             try:
-                os.remove(file);
-            except Exception as e:
-                print "Error removing " + file
-                print e
-                
-        for file in glob.glob("*.xml"):
-            try:
-                # Remove destination first
-                try:
-                    os.remove("xml_data/" + file);
-                except:
-                    pass
-
-                shutil.move(file, "xml_data")
+                os.remove("xml_data/" + file);
             except:
                 pass
-        if os.path.isfile("xml_data/coverage_results_blank.xml") and len(glob.glob("xml_data/*.xml")) > 1:
-            print "Removing xml_data/coverage_results_blank.xml..."
-            os.remove("xml_data/coverage_results_blank.xml")
+            shutil.move(file, "xml_data")
+        except:
+            pass
+                
+    if os.path.isfile("xml_data/coverage_results_blank.xml") and len(glob.glob("xml_data/*.xml")) > 1:
+        print "Removing xml_data/coverage_results_blank.xml..."
+        os.remove("xml_data/coverage_results_blank.xml")
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--test',        help='Test Result CSV Filename')
     parser.add_argument('--coverage',    help='Coverage Result CSV Filename')
-    parser.add_argument('--cleanup',     help='Clean up CSV files', action="store_true")
     parser.add_argument('--ignore-exec-rpt',     help='Don\'t use execution report', action="store_true")
+    parser.add_argument('--junit',     help='Use Junit for testcase format', action="store_true")
 
     args = parser.parse_args()
 
@@ -604,6 +669,11 @@ if __name__ == '__main__':
     else:
         use_exec_rpt = True
         
-    run(args.test,args.coverage, args.cleanup,use_exec_rpt)
+    if args.junit:
+        junit = True
+    else:
+        junit = False
+        
+    run(args.test,args.coverage,use_exec_rpt, junit)
 
     print "done"

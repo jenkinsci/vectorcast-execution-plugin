@@ -7,8 +7,13 @@ global compiler, testsuite, envName  , fh
 compiler = ""
 testsuite = ""
 envName = ""
-fh = None
-VECTORCAST_DIR = os.getenv('VECTORCAST_DIR') + os.sep
+
+# Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
+# We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
+has_exe = lambda p, x : os.access(os.path.join(p, x), os.X_OK)
+has_vcast_exe = lambda p : has_exe(p, 'manage') or has_exe(p, 'manage.exe')
+vcast_dirs = (path for path in os.environ["PATH"].split(os.pathsep) if has_vcast_exe(path))
+vectorcast_install_dir = next(vcast_dirs, os.environ.get("VECTORCAST_DIR", ""))
 
 def get_timestamp():
     dt = datetime.datetime.now()
@@ -16,57 +21,61 @@ def get_timestamp():
     if hour > 12:
         hour -= 12
     return dt.strftime('%d %b %Y  @HR@:%M:%S %p').upper().replace('@HR@', str(hour))
-#
-# Internal - start the xUnit XML file
-#
-def start_unit_file(unit_report_name, jobNameDotted, verbose = False):
-    global fh
-    if verbose:
-        print "Writing unit xml file: {}".format(unit_report_name)
-    fh = open("xml_data/" + unit_report_name, "w")
-    fh.write('<testsuites xmlns="http://check.sourceforge.net/ns">\n')
-    fh.write('    <datetime>%s</datetime>\n' % get_timestamp())
-    fh.write('    <suite>\n')
-    fh.write('        <title>%s</title>\n' % jobNameDotted)
 
+def writeJunitHeader(junitfile, failed, total):
     
-#
-# Internal - write a testcase to the xUnit XML file
-#
-def write_testcase(jobNameSlashed, tc_name, unit_name, func_name, tc_passed, tc_ratio, tc_percent):
-    global fh
-    unit_name = cgi.escape(unit_name)
-    func_name = cgi.escape(func_name)
-    tc_name = cgi.escape(tc_name)
-    if tc_passed:
-        fh.write('        <test result="success">\n')
-    else:
-        fh.write('        <test result="failure">\n')
-    fh.write('            <fn>{}</fn>\n'.format(unit_name))
-    fh.write('            <id>{}.{}</id>\n'.format(unit_name, tc_name))
-    fh.write('            <iteration>1</iteration>\n')
-    fh.write('            <description>System Test Case</description>\n')
-    if tc_passed:
-        status = "PASS"
-    else:
-        status = "FAIL"        
+    global envName
 
-    msg = "{} : {} {} ".format(status, tc_ratio, tc_percent)
-        
-    fh.write('            <message>System Test: %s : %s</message>\n' % (jobNameSlashed, msg))
-    fh.write('        </test>\n')
+    junitfile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+    junitfile.write("<testsuites>\n")
+                    
+    junitfile.write(" 	<testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
+        (0, total, failed, envName))
 
-#
-# Internal - write the end of the xUnit XML file and close it
-#
-def end_unit_file():
-    fh.write('    </suite>\n')
-    fh.write('    <duration>1</duration>\n\n')
-    fh.write('</testsuites>\n')
+def writeJunitData(junitfile,all_tc_data):
+    junitfile.write(all_tc_data)
+    
+def writeJunitFooter(junitfile):
+    junitfile.write("   </testsuite>\n")
+    junitfile.write("</testsuites>\n")
+
+def write_tc_data(unit_report_name, jobNameDotted, passed, failed, error):
+    fh = open("xml_data/" + unit_report_name, "w")
+
+    writeJunitHeader(fh, failed, failed+passed)
+    writeJunitData(fh, testcase_data)
+    writeJunitFooter(fh)
     fh.close()
 
-#
+def generateJunitTestCase(unit, subp, tc_name, passFail):
+    testCasePassString =" 		<testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
+    testCaseFailString ="""
+            <testcase name="%s" classname="%s" time="0">
+                <failure type="failure" message="FAIL: %s"/>
+            </testcase>
+    """
+    
+    unit = cgi.escape(unit)
+    subp = cgi.escape(subp)
+    tc_name = cgi.escape(tc_name)
+    
+    if 'PASS' in passFail:
+        successFailure = 'success'
+    else:
+        successFailure = 'failure'    
 
+    if 'ABNORMAL' in passFail:
+        print "Abnormal Termination on Environment\n"
+
+    unit_subp = unit + "." + subp
+   
+    if 'PASS' in passFail:
+        tc_data = (testCasePassString % (tc_name, unit_subp)) 
+    else:   
+        tc_data = (testCaseFailString % (tc_name, unit_subp, passFail))
+        
+    return tc_data
+        
 def getTestCaseData(line):
 
     data = line.split()
@@ -86,12 +95,6 @@ def getTestCaseData(line):
     
     return testcase_name, ratio, percent
     
-
-compiler = ""
-testsuite = ""
-envName = ""
-
-
 def processDataLine(line):
     global compiler, testsuite, envName  
     line = line.rstrip()
@@ -117,7 +120,13 @@ def processSystemTestResultsData(lines):
     oneMore = False
     oldEnvName = ""
     firstEnvFound = False
+    
+    testcase_data = ""
+    passed = 0
+    failed = 0
+    error = 0
 
+    ## get the summary
     for line in lines:
         if line == "":
             continue
@@ -132,9 +141,16 @@ def processSystemTestResultsData(lines):
         else:
             testcase_name, tc_ratio, tc_percent, tc_passed = processDataLine(line)
             
+            # new files
             if oldEnvName != envName:
                 if firstEnvFound:
-                    end_unit_file()
+                    write_tc_data(unit_report_name, jobNameDotted, passed, failed, error)
+                    
+                    # reset summary
+                    testcase_data = ""
+                    passed        = 0
+                    failed        = 0
+                    error         = 0
                 else:
                     firstEnvFound = True;
                 oldEnvName = envName
@@ -143,18 +159,24 @@ def processSystemTestResultsData(lines):
                 jobNameDotted = ".".join([compiler, testsuite, envName])
                 jobNameSlashed = "/".join([compiler, testsuite, envName])
                 
-                start_unit_file(unit_report_name,jobNameDotted)
+                
                 if tc_percent != "N/A":
-                    write_testcase(jobNameSlashed, testcase_name, envName, testcase_name, tc_passed, tc_ratio, tc_percent)
+                    testcase_data += generateJunitTestCase(jobNameSlashed, testcase_name, envName, testcase_name, tc_passed, tc_ratio, tc_percent)
+                    
+                    if tc_ratio == "(100%)":
+                        passed += 1
+                    else:
+                        failed += 1
+
             else:
                 if tc_percent != "N/A":
-                    write_testcase(jobNameSlashed, testcase_name, envName, testcase_name, tc_passed, tc_ratio, tc_percent)
+                    testcase_data += generateJunitTestCase(jobNameSlashed, testcase_name, envName, testcase_name, tc_passed, tc_ratio, tc_percent)
                    
     if firstEnvFound:
-        end_unit_file()
+        write_tc_data(unit_report_name, jobNameDotted, passed, failed, error)
 
 def genQATestResults(mp):
-    callStr = VECTORCAST_DIR + "manage -p " + mp + " --system-tests-status"
+    callStr = "manage -p " + mp + " --system-tests-status"
     p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     

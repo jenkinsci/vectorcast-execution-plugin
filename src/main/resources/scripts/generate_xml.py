@@ -24,6 +24,7 @@
 import os
 import datetime
 import cgi
+import glob
 from vector.apps.DataAPI.api import Api
 from vector.apps.DataAPI.cover_api import CoverApi
 from vector.apps.ReportBuilder.custom_report import fmt_percent
@@ -31,6 +32,7 @@ from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
 from vector.apps.DataAPI.models import TestCase
 from vector.apps.ReportBuilder.custom_report import CustomReport
+
 
 #
 # This class generates the XML (xUnit based) report for dynamic tests and
@@ -40,7 +42,8 @@ from vector.apps.ReportBuilder.custom_report import CustomReport
 #
 class GenerateXml(object):
 
-    def __init__(self, build_dir, env, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False):
+    def __init__(self, build_dir, env, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, useJunit = True):
+        self.usingJunit = useJunit
         self.build_dir = build_dir
         self.env = env
         self.cover_report_name = cover_report_name
@@ -65,6 +68,7 @@ class GenerateXml(object):
                 sections=[ "TESTCASE_SECTIONS"],  
                 testcase_sections=["EXECUTION_RESULTS"])
             data = open("execution_results.txt","r").read()
+            os.remove("execution_results.txt")
 
             results = data.split("Start of Test Case")
 
@@ -185,9 +189,10 @@ class GenerateXml(object):
         for tc in self.api.TestCase.all():
             if tc.kind == TestCase.KINDS['init']:
                 self.write_testcase(tc, "<<INIT>>", "<<INIT>>")
+                
 
 #
-# Generate the xUnit XML file
+# Find the test case file
 #
     def generate_unit(self):
         if isinstance(self.api, CoverApi):
@@ -211,6 +216,7 @@ class GenerateXml(object):
                                     if not tc.for_compound_only:
                                         self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
             self.end_unit_file()
+                
         except AttributeError as e:
             print e
             pass
@@ -219,17 +225,88 @@ class GenerateXml(object):
 #
     def start_unit_file(self):
         if self.verbose:
-            print "Writing unit xml file: {}".format(self.unit_report_name)
+            print "  Writing testcase xml file:        {}".format(self.unit_report_name)
+
         self.fh = open(self.unit_report_name, "w")
-        self.fh.write('<testsuites xmlns="http://check.sourceforge.net/ns">\n')
-        self.fh.write('    <datetime>%s</datetime>\n' % self.get_timestamp())
-        self.fh.write('    <suite>\n')
-        self.fh.write('        <title>%s</title>\n' % self.jobNameDotted)
+        if not self.usingJunit:
+            self.fh.write('<testsuites xmlns="http://check.sourceforge.net/ns">\n')
+            self.fh.write('    <datetime>%s</datetime>\n' % self.get_timestamp())
+            self.fh.write('    <suite>\n')
+            self.fh.write('        <title>%s</title>\n' % self.jobNameDotted)
+        else:
+            errors = 0
+            failed = 0
+            success = 0
+            
+            # total up all the errors and failures
+            for unit in self.api.Unit.all():
+                if unit.is_uut:
+                    for func in unit.functions:
+                        if not func.is_non_testable_stub:
+                            for tc in func.testcases:
+                                if not tc.is_csv_map:
+                                    if not tc.for_compound_only:
+                                        if tc.execution_status == "EXEC_SUCCESS_PASS" or tc.execution_status == "EXEC_SUCCESS_NONE":
+                                            success += 1
+                                        elif tc.execution_status == "EXEC_SUCCESS_FAIL":
+                                            failed += 1
+                                        else:
+                                            errors += 1
+                    
+            self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+            self.fh.write("<testsuites>\n")
+            self.fh.write(" 	<testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
+                (errors,success+failed+errors, failed, self.env))
+#
+# Internal - write a testcase to the jUnit XML file
+#
+            
+    def write_testcase_jUnit(self, tc, unit_name, func_name):
+        testCasePassString =" 		<testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
+        testCaseFailString ="""
+                <testcase name="%s" classname="%s" time="0">
+                    <failure type="failure" message="FAIL: %s"/>
+                </testcase>
+        """
+        
+        unit_name = cgi.escape(unit_name)
+        func_name = cgi.escape(func_name)
+        tc_name = cgi.escape(tc.name)
+        
+        unit_subp = unit_name + "." + func_name
+       
+        summary = tc.history.summary
+        exp_total = summary.expected_total
+        exp_pass = exp_total - summary.expected_fail
+        if self.api.environment.get_option("VCAST_OLD_STYLE_MANAGEMENT_REPORT"):
+            exp_pass += summary.control_flow_total - summary.control_flow_fail
+            exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
+            
+        if tc.passed:
+            status = "PASS"
+        else:
+            status = "FAIL"
+            
+        try:
+            if exp_pass == 0 and exp_total == 0:
+                msg = "{} Execution Report:\n {}".format(status, self.resultsDict[tc.name])
+            else:
+                msg = "{} {} / {} See Execution Report:\n {}".format(status, exp_pass, exp_total, self.resultsDict[tc.name])
+        except:
+            print "Can't find " + tc.name + " in "
+            print self.resultsDict
+            msg = status
+            
+        if tc.passed:
+            self.fh.write(testCasePassString % (tc_name, unit_subp))
+        else:   
+            self.fh.write(testCaseFailString % (tc_name, unit_subp, msg))
+
         
 #
 # Internal - write a testcase to the xUnit XML file
 #
-    def write_testcase(self, tc, unit_name, func_name):
+    def write_testcase_xUnit(self, tc, unit_name, func_name):
         unit_name = cgi.escape(unit_name)
         func_name = cgi.escape(func_name)
         tc_name = cgi.escape(tc.name)
@@ -264,18 +341,33 @@ class GenerateXml(object):
             
         self.fh.write('            <message>%s</message>\n' % msg)
         self.fh.write('        </test>\n')
+        
+#
+# Internal - write a testcase to the xUnit or jUnit XML file
+#
+    def write_testcase(self, tc, unit_name, func_name):
+    
+        if not self.usingJunit:
+            self.write_testcase_xUnit(tc, unit_name, func_name)
+        else:
+            self.write_testcase_jUnit(tc, unit_name, func_name)
 
 #
-# Internal - write the end of the xUnit XML file and close it
+# Internal - write the end of the xUnit or jUnit XML file and close it
 #
     def end_unit_file(self):
-        self.fh.write('    </suite>\n')
-        self.fh.write('    <duration>1</duration>\n\n')
-        self.fh.write('</testsuites>\n')
+        if not self.usingJunit:
+            self.fh.write('    </suite>\n')
+            self.fh.write('    <duration>1</duration>\n\n')
+            self.fh.write('</testsuites>\n')
+            self.fh.close()
+        else:
+            self.fh.write("   </testsuite>\n")
+            self.fh.write("</testsuites>\n")
         self.fh.close()
 
 #
-# Generate the XML 'Emma' coverage data
+# Generate the XML Modified 'Emma' coverage data
 #
     def generate_cover(self):
         self.num_functions = 0
@@ -393,7 +485,7 @@ class GenerateXml(object):
 #
     def start_cov_file(self):
         if self.verbose:
-            print "Writing coverage xml file: {}".format(self.cover_report_name)
+            print "  Writing coverage xml file:        {}".format(self.cover_report_name)
         self.fh = open(self.cover_report_name, "w")
         self.fh.write('<!-- VectorCAST/Jenkins Integration, Generated %s -->\n' % self.get_timestamp())
         self.fh.write('<report>\n')
