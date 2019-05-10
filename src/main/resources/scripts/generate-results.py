@@ -318,12 +318,27 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
     # cleaning up old builds
     for path in ["xml_data","management","execution"]:
-        try:
-            shutil.rmtree(path)
-        except:
-            pass
-        os.mkdir(path)
+        # if the path exists, try to delete it
+        if os.path.isdir(path):
+            try:
+                shutil.rmtree(path)
+            except:
+                # if there was an error removing the directory...delete all the files
+                print "Error removing directory: " + path
+                for file in glob.glob(path + "/*.*"):
+                    try:
+                        os.remove(file);
+                    except:
+                        print "Error removing file after failed to remove directory: " + path + "/" + file
+                pass
                 
+        # we should either have an empty directory or no directory
+        if not os.path.isdir(path):
+            try:
+                os.mkdir(path)
+            except:
+                print "Error creating directory: " + path
+            
     for file in glob.glob("*.csv"):
         try:
             os.remove(file);
