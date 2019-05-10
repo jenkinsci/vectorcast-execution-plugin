@@ -77,6 +77,8 @@ class GenerateXml(object):
             for idx,result in enumerate(results[1:]):
                 tcName = result.split("\n")[0].split("\"")[1]
                 self.resultsDict[tcName] = "  Start of Test Case" + cgi.escape(result)
+                self.resultsDict[tcName] = self.resultsDict[tcName].replace("\"","")
+                self.resultsDict[tcName] = self.resultsDict[tcName].replace("\n","&#xA;")
         else:
             self.api = None
             if verbose: 
@@ -273,7 +275,7 @@ class GenerateXml(object):
         func_name = cgi.escape(func_name)
         tc_name = cgi.escape(tc.name)
         
-        unit_subp = unit_name + "." + func_name
+        unit_subp = self.env + "." + unit_name + "." + func_name
        
         summary = tc.history.summary
         exp_total = summary.expected_total
@@ -297,6 +299,8 @@ class GenerateXml(object):
             print self.resultsDict
             msg = status
             
+        #msg = cgi.escape(msg)
+        
         if tc.passed:
             self.fh.write(testCasePassString % (tc_name, unit_subp))
         else:   

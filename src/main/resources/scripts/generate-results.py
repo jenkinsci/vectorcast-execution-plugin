@@ -59,8 +59,41 @@ vectorcast_install_dir = next(vcast_dirs, os.environ.get("VECTORCAST_DIR", ""))
 #
 # Internal - jUnit works best with one overall file for all test results
 #
-def writeJunitCombineTestResults(env):
-    f=open("xml_data/test_results_"+env+"_combined.xml","w")
+def writeJunitFinalCombinedTestResults(manageProjectName):
+    fname = manageProjectName
+        
+    f=open("xml_data/test_results_"+fname+"_combined_final.xml","w")
+    f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+    f.write("<testsuites>\n")
+
+    for testResults in glob.glob('xml_data/test_results*.xml'):
+        if  "combined_final" in testResults:
+            continue
+        data = open(testResults,"r").readlines()[2:-1]
+        os.rename(testResults, testResults + "__saved")
+        wrData =  "".join(data)
+        f.write(wrData)
+     
+    f.write("\n</testsuites>\n")
+    f.close()
+
+
+#
+# Internal - jUnit works best with one overall file for all test results
+#
+def writeJunitCombinedTestResults(manageProjectName,orig_level,envName):
+    fname = manageProjectName
+    if orig_level:
+        level = orig_level.split("/")
+        if len(level) == 2:
+            # Level does not include source and platform
+            jobName = level[0] + "_" + level[1].rstrip()
+        else:
+            # Level includes source and platform
+            jobName = level[2] + "_" + level[3].rstrip()
+        fname = manageProjectName + "_" + jobName + "_" + envName
+        
+    f=open("xml_data/test_results_"+fname+"_combined.xml","w")
     f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
     f.write("<testsuites>\n")
 
@@ -68,7 +101,7 @@ def writeJunitCombineTestResults(env):
         if  "combined" in testResults:
             continue
         data = open(testResults,"r").readlines()[2:-1]
-        #os.remove(testResults)
+        os.remove(testResults)
         wrData =  "".join(data)
         f.write(wrData)
      
@@ -265,6 +298,9 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
     if timing:
         print "Start: " + str(time.time())
+        
+    saved_level = level
+    saved_envName = envName
     
     # make sure the project exists
     if not os.path.isfile(FullManageProjectName) and not os.path.isfile(FullManageProjectName + ".vcm"):
@@ -456,7 +492,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if junit:   
         if verbose:
 		    print "Writing combined test data for JUnit"
-        writeJunitCombineTestResults(manageProjectName)
+        writeJunitCombinedTestResults(manageProjectName,saved_level,saved_envName)
 
     if timing:
         print "Complete: " + str(time.time())
@@ -474,8 +510,13 @@ if __name__ == '__main__':
     parser.add_argument('--timing',   help='Display timing information for report generation', action="store_true")
     parser.add_argument('--junit',   help='Output test resutls in junit format', action="store_true")
     parser.add_argument('--api',   help='Unused', type=int)
+    parser.add_argument('--final',   help='Write Final JUnit Test Results file',  action="store_true")
 
     args = parser.parse_args()
+    
+    if args.final:
+        writeJunitFinalCombinedTestResults(os.path.basename(args.ManageProject))
+        sys.exit(0)
 
     tcmr2csv.useLocalCsv = True
 
