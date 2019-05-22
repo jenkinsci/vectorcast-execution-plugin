@@ -254,7 +254,7 @@ def fixup_ccs(report_name):
     """ + data[data.index("</style>")+8:]
     
     #fix up style directive because of Content Security Policy violation
-    newData = newData.replace("<div class='event bs-callout' style=\"position: relative\" -->","<div class='event bs-callout relative'>")
+    newData = newData.replace("<div class='event bs-callout' style=\"position: relative\">","<div class='event bs-callout relative'>")
     
     #fixup the inline VectorCAST image because of Content Security Policy violation
     regex_str = r"<img alt=\"Vector\".*"
