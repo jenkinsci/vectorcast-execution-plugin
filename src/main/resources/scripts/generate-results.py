@@ -246,19 +246,27 @@ def genDataApiReports(entry, jUnit):
 def fixup_ccs(report_name):
 
     data = open(report_name,"r").read()
-    build_url=os.environ['BUILD_URL']
  
+    #fix up inline CSS because of Content Security Policy violation
     newData = data[: data.index("<style>")-1] +  """
     <link rel="stylesheet" href="normalize.css">
     <link rel="stylesheet" href="default-style.css">
     """ + data[data.index("</style>")+8:]
     
-    data = open(report_name,"w").write(newData)
+    #fix up style directive because of Content Security Policy violation
+    newData = newData.replace("<div class='event bs-callout' style=\"position: relative\" -->","<div class='event bs-callout relative'>")
     
-    ccs_home = os.path.join(os.getenv("VECTORCAST_DIR") , "python/vector/apps/ReportBuilder/css/")
+    #fixup the inline VectorCAST image because of Content Security Policy violation
+    regex_str = r"<img alt=\"Vector\".*"
+    newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
     
-    shutil.copy(ccs_home+"normalize.css", "management/normalize.css")
-    shutil.copy(ccs_home+"default-style.css", "management/default-style.css")
+    open(report_name,"w").write(newData)
+    
+    vc_scripts = os.getenv("WORKSPACE")+"/vc_scripts/"
+    
+    shutil.copy(vc_scripts+"normalize.css", "management/normalize.css")
+    shutil.copy(vc_scripts+"default-style.css", "management/default-style.css")
+    shutil.copy(vc_scripts+"vectorcast.png", "management/vectorcast.png")
 
 def generateCoverReport(path, env, level ):
 

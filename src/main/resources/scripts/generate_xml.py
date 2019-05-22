@@ -192,10 +192,6 @@ class GenerateXml(object):
             return
             
         try:
-            if "BUILD_URL" in os.environ:
-                self.build_url = os.getenv('BUILD_URL') + "artifact/execution/" + self.jenkins_link + ".html#ExecutionResults_"
-            else:
-                self.build_url = "undefined"
             self.start_unit_file()
             self.add_compound_tests()
             self.add_init_tests()
