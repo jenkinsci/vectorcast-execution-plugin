@@ -12,7 +12,7 @@
   <name>VectorCAST Execution</name>
   <description>Run VectorCAST manage jobs from Jenkins</description>
   <artifactId>vectorcast-execution</artifactId>
-  <version>0.46</version>
+  <version>0.47-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/VectorCAST+Execution+Plugin</url>
 
@@ -57,7 +57,7 @@ mean multi-part forms (i.e. form with file input like the multi-job create)
     <connection>scm:git:ssh://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
-    <tag>vectorcast-execution-0.46</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <repositories>
