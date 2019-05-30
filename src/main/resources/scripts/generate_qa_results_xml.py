@@ -1,12 +1,11 @@
 import datetime
 import cgi
 import sys, subprocess, os
+global saved_compiler, saved_testsuite, saved_envname
 
-global compiler, testsuite, envName  , fh
-
-compiler = ""
-testsuite = ""
-envName = ""
+saved_compiler = ""
+saved_testsuite = ""
+saved_envname = ""
 
 # Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
 # We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
@@ -22,41 +21,38 @@ def get_timestamp():
         hour -= 12
     return dt.strftime('%d %b %Y  @HR@:%M:%S %p').upper().replace('@HR@', str(hour))
 
-def writeJunitHeader(junitfile, failed, total):
+def writeJunitHeader(currentEnv, junitfile, failed, total, unit_report_name):
     
-    global envName
-
     junitfile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-    junitfile.write("<testsuites>\n")
+    junitfile.write("<testsuites>\n   <!--" + unit_report_name + "-->")
                     
-    junitfile.write(" 	<testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
-        (0, total, failed, envName))
+    junitfile.write("  <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
+        (0, total, failed, currentEnv))
 
 def writeJunitData(junitfile,all_tc_data):
     junitfile.write(all_tc_data)
     
 def writeJunitFooter(junitfile):
-    junitfile.write("   </testsuite>\n")
+    junitfile.write("  </testsuite>\n")
     junitfile.write("</testsuites>\n")
 
-def write_tc_data(unit_report_name, jobNameDotted, passed, failed, error):
+def write_tc_data(currentEnv, unit_report_name, jobNameDotted, passed, failed, error, testcase_data):
+
     fh = open("xml_data/" + unit_report_name, "w")
 
-    writeJunitHeader(fh, failed, failed+passed)
+    writeJunitHeader(currentEnv, fh, failed, failed+passed, unit_report_name)
     writeJunitData(fh, testcase_data)
     writeJunitFooter(fh)
     fh.close()
 
-def generateJunitTestCase(unit, subp, tc_name, passFail):
-    testCasePassString =" 		<testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
-    testCaseFailString ="""
-            <testcase name="%s" classname="%s" time="0">
-                <failure type="failure" message="FAIL: %s"/>
-            </testcase>
+def generateJunitTestCase(jobname, tc_name, passFail):
+    testCasePassString ="    <testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
+    testCaseFailString ="""    <testcase name="%s" classname="%s" time="0">
+      <failure type="failure" message="FAIL: %s"/>
+    </testcase>
     """
     
-    unit = cgi.escape(unit)
-    subp = cgi.escape(subp)
+    jobname = cgi.escape(jobname)
     tc_name = cgi.escape(tc_name)
     
     if 'PASS' in passFail:
@@ -67,7 +63,7 @@ def generateJunitTestCase(unit, subp, tc_name, passFail):
     if 'ABNORMAL' in passFail:
         print "Abnormal Termination on Environment\n"
 
-    unit_subp = unit + "." + subp
+    unit_subp = jobname
    
     if 'PASS' in passFail:
         tc_data = (testCasePassString % (tc_name, unit_subp)) 
@@ -96,7 +92,7 @@ def getTestCaseData(line):
     return testcase_name, ratio, percent
     
 def processDataLine(line):
-    global compiler, testsuite, envName  
+    global saved_compiler, saved_testsuite, saved_envname
     line = line.rstrip()
     if line[2] != " ":
         compiler, x, testsuite, x, envName = line.split()[0:5]
@@ -104,8 +100,16 @@ def processDataLine(line):
         # get test name
         testcase_name, ratio, percent = getTestCaseData(" ".join(line.split()[6:]))
         
-    else:
+        saved_compiler  = compiler
+        saved_testsuite = testsuite 
+        saved_envname   = envName
+
+    else:        
         testcase_name, ratio, percent = getTestCaseData(line)
+        
+    compiler = saved_compiler
+    testsuite = saved_testsuite
+    envName = saved_envname
         
     if percent != "N/A" and percent != "(100%)":
         pass_fail = False
@@ -113,7 +117,7 @@ def processDataLine(line):
         pass_fail = True
         
         
-    return testcase_name, ratio, percent, pass_fail
+    return compiler, testsuite, envName, testcase_name, ratio, percent, pass_fail
 
 def processSystemTestResultsData(lines):
     foundData = False
@@ -122,6 +126,7 @@ def processSystemTestResultsData(lines):
     firstEnvFound = False
     
     testcase_data = ""
+    passFail = ""
     passed = 0
     failed = 0
     error = 0
@@ -139,15 +144,16 @@ def processSystemTestResultsData(lines):
                 oneMore = False
                 
         else:
-            testcase_name, tc_ratio, tc_percent, tc_passed = processDataLine(line)
+            compiler, testsuite, envName, testcase_name, tc_ratio, tc_percent, tc_passed = processDataLine(line)
             
             # new files
             if oldEnvName != envName:
                 if firstEnvFound:
-                    write_tc_data(unit_report_name, jobNameDotted, passed, failed, error)
+                    write_tc_data(oldEnvName, unit_report_name, jobNameDotted, passed, failed, error, testcase_data)
                     
                     # reset summary
                     testcase_data = ""
+                    passFail = ""
                     passed        = 0
                     failed        = 0
                     error         = 0
@@ -155,33 +161,39 @@ def processSystemTestResultsData(lines):
                     firstEnvFound = True;
                 oldEnvName = envName
                     
+                compiler = compiler.replace(".","").replace(" ", "")
+                
                 unit_report_name = "_".join(["test_results",envName,compiler, testsuite]) + ".xml"
                 jobNameDotted = ".".join([compiler, testsuite, envName])
-                jobNameSlashed = "/".join([compiler, testsuite, envName])
                 
-                
-                if tc_percent != "N/A":
-                    testcase_data += generateJunitTestCase(jobNameSlashed, testcase_name, envName, testcase_name, tc_passed, tc_ratio, tc_percent)
-                    
-                    if tc_ratio == "(100%)":
-                        passed += 1
-                    else:
-                        failed += 1
-
-            else:
-                if tc_percent != "N/A":
-                    testcase_data += generateJunitTestCase(jobNameSlashed, testcase_name, envName, testcase_name, tc_passed, tc_ratio, tc_percent)
+            if tc_percent != "N/A":
+                if tc_percent == "(100%)":
+                    passFail = "PASS"
+                    passed += 1
+                else:
+                    passFail = tc_ratio + " " + tc_percent 
+                    failed += 1
+                testcase_data += generateJunitTestCase(jobNameDotted, testcase_name, passFail)
                    
     if firstEnvFound:
-        write_tc_data(unit_report_name, jobNameDotted, passed, failed, error)
+        write_tc_data(oldEnvName, unit_report_name, jobNameDotted, passed, failed, error, testcase_data)
+        
+def saveQATestStatus(mp):
+    callStr = "manage -p " + mp + " --system-tests-status=" + os.path.basename(mp)[:-4] + "_system_tests_status.html"
+    p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
 
 def genQATestResults(mp):
+    print "   Processing QA test results for " + mp
     callStr = "manage -p " + mp + " --system-tests-status"
     p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
-    
+    if err:
+        print out, err
     processSystemTestResultsData(out.split("\n"))
     
+    saveQATestStatus(mp)
+        
 if __name__ == '__main__':
     genQATestResults(sys.argv[1])
 

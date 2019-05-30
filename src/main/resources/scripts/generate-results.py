@@ -217,7 +217,7 @@ def genDataApiReports(entry, jUnit):
         xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + env + "_" + level + ".xml"
 
         xml_file = GenerateXml(entry["build_dir"],
-                               entry["env"],
+                               entry["env"],entry["compiler"],entry["testsuite"],
                                xmlCoverReportName,
                                jenkins_name,
                                xmlUnitReportName,
@@ -242,6 +242,31 @@ def genDataApiReports(entry, jUnit):
         print r_error
         
     return xml_file
+    
+def fixup_ccs(report_name):
+
+    data = open(report_name,"r").read()
+ 
+    #fix up inline CSS because of Content Security Policy violation
+    newData = data[: data.index("<style>")-1] +  """
+    <link rel="stylesheet" href="normalize.css">
+    <link rel="stylesheet" href="default-style.css">
+    """ + data[data.index("</style>")+8:]
+    
+    #fix up style directive because of Content Security Policy violation
+    newData = newData.replace("<div class='event bs-callout' style=\"position: relative\">","<div class='event bs-callout relative'>")
+    
+    #fixup the inline VectorCAST image because of Content Security Policy violation
+    regex_str = r"<img alt=\"Vector\".*"
+    newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
+    
+    open(report_name,"w").write(newData)
+    
+    vc_scripts = os.getenv("WORKSPACE")+"/vc_scripts/"
+    
+    shutil.copy(vc_scripts+"normalize.css", "management/normalize.css")
+    shutil.copy(vc_scripts+"default-style.css", "management/default-style.css")
+    shutil.copy(vc_scripts+"vectorcast.png", "management/vectorcast.png")
 
 def generateCoverReport(path, env, level ):
 
@@ -254,6 +279,8 @@ def generateCoverReport(path, env, level ):
 
     CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
     
+    fixup_ccs(report_name)
+    
 def generateUTReport(path, env, level): 
     from vector.apps.ReportBuilder.custom_report import CustomReport
     from vector.apps.DataAPI.api import Api
@@ -263,7 +290,8 @@ def generateUTReport(path, env, level):
 
     CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "MCDC_TABLES", "OVERALL_RESULTS", "METRICS", "USER_CODE", "TESTCASE_SECTIONS", "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"], testcase_sections=["FULL_TEST_CASE_CONFIG_DATA", "TEST_CASE_DATA", "EXECUTION_RESULTS"])
     
-    
+    fixup_ccs(report_name)
+   
 def generateIndividualReports(entry, envName):
         
     global verbose
@@ -286,7 +314,7 @@ def generateIndividualReports(entry, envName):
 def useNewAPI(manageEnvs, level, envName, jUnit):
         
     for currentEnv in manageEnvs:
-        if envName == None or manageEnvs[currentEnv]["env"] == envName:
+        if envName == None or manageEnvs[currentEnv]["env"].upper() == envName.upper():
             genDataApiReports(manageEnvs[currentEnv], jUnit)
             generateIndividualReports(manageEnvs[currentEnv], envName)
     
@@ -500,13 +528,13 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
             shutil.move(file[0], file[1])
             
-    generate_qa_results_xml.genQATestResults(FullManageProjectName)
     if timing:
         print "QA Results reports: " + str(time.time())
             
     if junit:   
         if verbose:
 		    print "Writing combined test data for JUnit"
+        generate_qa_results_xml.genQATestResults(FullManageProjectName)
         writeJunitCombinedTestResults(manageProjectName,saved_level,saved_envName)
 
     if timing:
@@ -530,6 +558,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     if args.final:
+        generate_qa_results_xml.genQATestResults(args.ManageProject)
         writeJunitFinalCombinedTestResults(os.path.basename(args.ManageProject))
         sys.exit(0)
 

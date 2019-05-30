@@ -40,12 +40,18 @@ from vector.apps.ReportBuilder.custom_report import CustomReport
 #
 # In both cases these are for a single environment
 #
+
+def dummy(*args, **kwargs):
+    return None
+
 class GenerateXml(object):
 
-    def __init__(self, build_dir, env, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, useJunit = True):
+    def __init__(self, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, useJunit = True):
         self.usingJunit = useJunit
         self.build_dir = build_dir
         self.env = env
+        self.compiler = compiler
+        self.testsuite = testsuite
         self.cover_report_name = cover_report_name
         self.unit_report_name = unit_report_name
         self.jenkins_name = jenkins_name
@@ -62,28 +68,12 @@ class GenerateXml(object):
             self.using_cover = False
             self.api = Api(unit_path)
             
-            # get the execution report info for all TCs
-            CustomReport.report_from_api(self.api, report_type="Demo", formats=["TEXT"], 
-                output_file="execution_results.txt", 
-                sections=[ "TESTCASE_SECTIONS"],  
-                testcase_sections=["EXECUTION_RESULTS"])
-            data = open("execution_results.txt","r").read()
-            os.remove("execution_results.txt")
-
-            results = data.split("Start of Test Case")
-
-            self.resultsDict = {}
-
-            for idx,result in enumerate(results[1:]):
-                tcName = result.split("\n")[0].split("\"")[1]
-                self.resultsDict[tcName] = "  Start of Test Case" + cgi.escape(result)
-                self.resultsDict[tcName] = self.resultsDict[tcName].replace("\"","")
-                self.resultsDict[tcName] = self.resultsDict[tcName].replace("\n","&#xA;")
         else:
             self.api = None
             if verbose: 
                 print "Error: Could not determine project type for {}/{}".format(build_dir, env)
-
+                        
+        self.api.commit = dummy
 #
 # Internal - calculate coverage value
 #
@@ -202,10 +192,6 @@ class GenerateXml(object):
             return
             
         try:
-            if "BUILD_URL" in os.environ:
-                self.build_url = os.getenv('BUILD_URL') + "artifact/execution/" + self.jenkins_link + ".html#ExecutionResults_"
-            else:
-                self.build_url = "undefined"
             self.start_unit_file()
             self.add_compound_tests()
             self.add_init_tests()
@@ -274,8 +260,13 @@ class GenerateXml(object):
         unit_name = cgi.escape(unit_name)
         func_name = cgi.escape(func_name)
         tc_name = cgi.escape(tc.name)
+        compiler = cgi.escape(self.compiler).replace(".","")
+        testsuite = cgi.escape(self.testsuite).replace(".","")
+        envName = cgi.escape(self.env).replace(".","")
         
         unit_subp = self.env + "." + unit_name + "." + func_name
+        
+        classname = compiler + "." + testsuite + "." + envName
        
         summary = tc.history.summary
         exp_total = summary.expected_total
@@ -285,32 +276,34 @@ class GenerateXml(object):
             exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
             
         if tc.passed:
-            status = "PASS"
+            self.fh.write(testCasePassString % (tc_name, classname))
         else:
             status = "FAIL"
+
+            self.api.report(
+                testcases=[tc],
+                single_testcase=True,
+                report_type="Demo",
+                formats=["TEXT"], 
+                output_file="execution_results.txt", 
+                sections=[ "TESTCASE_SECTIONS"],  
+                testcase_sections=["EXECUTION_RESULTS"])
+                
+            result = open("execution_results.txt","r").read()    
+            result = cgi.escape(result)
+            result = result.replace("\"","")
+            result = result.replace("\n","&#xA;")
             
-        try:
-            if exp_pass == 0 and exp_total == 0:
-                msg = "{} Execution Report:\n {}".format(status, self.resultsDict[tc.name])
-            else:
-                msg = "{} {} / {} See Execution Report:\n {}".format(status, exp_pass, exp_total, self.resultsDict[tc.name])
-        except:
-            print "Can't find " + tc.name + " in "
-            print self.resultsDict
-            msg = status
-            
-        #msg = cgi.escape(msg)
+            msg = "{} {} / {}  Execution Report:\n {}".format(status, exp_pass, exp_total, result)
         
-        if tc.passed:
-            self.fh.write(testCasePassString % (tc_name, unit_subp))
-        else:   
-            self.fh.write(testCaseFailString % (tc_name, unit_subp, msg))
+            self.fh.write(testCaseFailString % (tc_name, classname, msg))
 
         
 #
 # Internal - write a testcase to the xUnit XML file
 #
     def write_testcase_xUnit(self, tc, unit_name, func_name):
+
         unit_name = cgi.escape(unit_name)
         func_name = cgi.escape(func_name)
         tc_name = cgi.escape(tc.name)
@@ -328,20 +321,24 @@ class GenerateXml(object):
         if self.api.environment.get_option("VCAST_OLD_STYLE_MANAGEMENT_REPORT"):
             exp_pass += summary.control_flow_total - summary.control_flow_fail
             exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
-        if tc.passed:
-            status = "PASS"
-        else:
-            status = "FAIL"
             
-        try:
-            if exp_pass == 0 and exp_total == 0:
-                msg = "{} Execution Report:\n {}".format(status, self.resultsDict[tc.name])
-            else:
-                msg = "{} {} / {} See Execution Report:\n {}".format(status, exp_pass, exp_total, self.resultsDict[tc.name])
-        except:
-            print "Can't find " + tc.name + " in "
-            print self.resultsDict
-            msg = status
+        if tc.passed:
+            msg = "PASS"
+        else:
+            self.api.report(
+                testcases=[tc],
+                single_testcase=True,
+                report_type="Demo",
+                formats=["TEXT"], 
+                output_file="execution_results.txt", 
+                sections=[ "TESTCASE_SECTIONS"],  
+                testcase_sections=["EXECUTION_RESULTS"])
+                
+            result = open("execution_results.txt","r").read()    
+            result = cgi.escape(result)
+            result = result.replace("\"","")
+            result = result.replace("\n","&#xA;")
+            msg = "FAIL {} / {}  Execution Report:\n {}".format(exp_pass, exp_total, result)
             
         self.fh.write('            <message>%s</message>\n' % msg)
         self.fh.write('        </test>\n')
