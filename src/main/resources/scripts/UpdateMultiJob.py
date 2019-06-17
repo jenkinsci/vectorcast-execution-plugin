@@ -62,7 +62,7 @@ class VcJob:
                 print "Update request completed"
         else:
             print "Failed to update job: %s" % rslt.status_code
-            print rslt.text
+            print rslt.text.encode('utf-8', 'ignore').decode('utf-8')
             sys.exit(-1)
 
 if __name__ == "__main__":
