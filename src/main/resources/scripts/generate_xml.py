@@ -72,7 +72,8 @@ class GenerateXml(object):
             self.api = None
             if verbose: 
                 print "Error: Could not determine project type for {}/{}".format(build_dir, env)
-                        
+            return
+            
         self.api.commit = dummy
 #
 # Internal - calculate coverage value
