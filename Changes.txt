@@ -1,3 +1,7 @@
+18 Jun 2019 (0.47)
+* Fix for disabled environments
+* Fix for printing non UTF-8 compliant failure code
+
 30 May 2019 (0.46)
 * Updates for using external CSS/images
 
