@@ -551,7 +551,7 @@ class GenerateXml(object):
             self.fh.write('          <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % unit["complexity"])
 
             for func in unit["functions"]:
-                self.fh.write('          <subprogram name="%s">\n' % cgi.escape(func["func"].name))
+                self.fh.write('          <subprogram name="%s">\n' % cgi.escape(func["func"].display_name))
                 if func["coverage"]["statement"]:
                     self.fh.write('            <coverage type="statement, %%" value="%s"/>\n' % func["coverage"]["statement"])
                 if func["coverage"]["branch"]:
