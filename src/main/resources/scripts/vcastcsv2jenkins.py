@@ -159,10 +159,6 @@ def writeXunitTestCase(xunitFile, unit, subp, tc_name, passFail):
     global testCaseCount
     testCaseCount += 1
     
-    unit = cgi.escape(unit)
-    subp = cgi.escape(subp)
-    tc_name = cgi.escape(tc_name)
-
     tc_name = '.'.join([unit, subp, tc_name])
 
     if 'PASS' in passFail:
@@ -226,10 +222,6 @@ def writeJunitTestCase(junitfile,  unit, subp, tc_name, passFail):
     """
     testCaseCount += 1
     
-    unit = cgi.escape(unit)
-    subp = cgi.escape(subp)
-    tc_name = cgi.escape(tc_name)
-    
     if 'PASS' in passFail:
         successFailure = 'success'
     else:
@@ -281,7 +273,7 @@ def runCsv2JenkinsTestResults(csvFilename, junit):
             data[UNIT_NAME_COL] = escape(data[UNIT_NAME_COL])
             data[SUBPROG_COL] = escape(data[SUBPROG_COL])
             data[TEST_CASE_COL] = escape(data[TEST_CASE_COL])
-            writeXunitTestCase(xunitfile, data[UNIT_NAME_COL],data[SUBPROG_COL],data[TEST_CASE_COL],data[TC_STATUS_COL])
+            writeXunitTestCase(xunitfile, data[UNIT_NAME_COL],data[SUBPROG_COL].replace("%2C",","),data[TEST_CASE_COL].replace("%2C",","),data[TC_STATUS_COL])
 
         writeXunitFooter(xunitfile)
 
@@ -554,7 +546,7 @@ def writeEmmaData(emmafile,data):
     for row in data:
         unit_found = True
         row[UNIT_NAME_COL] = escape(row[UNIT_NAME_COL])
-        row[SUBPROG_COL] = escape(row[SUBPROG_COL])
+        row[SUBPROG_COL] = escape(row[SUBPROG_COL].replace("%2C",","))
         row[TEST_CASE_COL] = escape(row[TEST_CASE_COL])
 
         # if we have a different unit name -- bump up the unit count
