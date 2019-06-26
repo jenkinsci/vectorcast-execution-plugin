@@ -245,7 +245,7 @@ class GenerateXml(object):
             self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
             self.fh.write("<testsuites>\n")
             self.fh.write(" 	<testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
-                (errors,success+failed+errors, failed, self.env))
+                (errors,success+failed+errors, failed, cgi.escape(self.env)))
 #
 # Internal - write a testcase to the jUnit XML file
 #
@@ -514,7 +514,7 @@ class GenerateXml(object):
         self.fh.write('      <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
         self.fh.write('\n')
 
-        self.fh.write('      <environment name="%s">\n' % self.jenkins_name)
+        self.fh.write('      <environment name="%s">\n' % cgi.escape(self.jenkins_name))
         if self.coverage["statement"]:
             self.fh.write('        <coverage type="statement, %%" value="%s"/>\n' % self.coverage["statement"])
         if self.coverage["branch"]:
@@ -535,7 +535,7 @@ class GenerateXml(object):
 #
     def write_cov_units(self):
         for unit in self.units:
-            self.fh.write('        <unit name="%s">\n' % unit["unit"].name)
+            self.fh.write('        <unit name="%s">\n' % cgi.escape(unit["unit"].name))
             if unit["coverage"]["statement"]:
                 self.fh.write('          <coverage type="statement, %%" value="%s"/>\n' % unit["coverage"]["statement"])
             if unit["coverage"]["branch"]:
@@ -551,7 +551,7 @@ class GenerateXml(object):
             self.fh.write('          <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % unit["complexity"])
 
             for func in unit["functions"]:
-                self.fh.write('          <subprogram name="%s">\n' % func["func"].name)
+                self.fh.write('          <subprogram name="%s">\n' % cgi.escape(func["func"].name))
                 if func["coverage"]["statement"]:
                     self.fh.write('            <coverage type="statement, %%" value="%s"/>\n' % func["coverage"]["statement"])
                 if func["coverage"]["branch"]:
