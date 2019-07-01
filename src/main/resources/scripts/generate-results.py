@@ -277,21 +277,36 @@ def generateCoverReport(path, env, level ):
     
     report_name = "management/" + env + "_" + level + ".html"
 
-    CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
-    
-    fixup_ccs(report_name)
-    
+    try:
+        CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
+        
+        fixup_ccs(report_name)
+    except:
+        print "Problem generating custom report for " + report_name + "."
+        
 def generateUTReport(path, env, level): 
+    global verbose
+    
     from vector.apps.ReportBuilder.custom_report import CustomReport
     from vector.apps.DataAPI.api import Api
     api=Api(path)
 
     report_name = "management/" + env + "_" + level + ".html"
 
-    CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "MCDC_TABLES", "OVERALL_RESULTS", "METRICS", "USER_CODE", "TESTCASE_SECTIONS", "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"], testcase_sections=["FULL_TEST_CASE_CONFIG_DATA", "TEST_CASE_DATA", "EXECUTION_RESULTS"])
-    
+    try:
+        CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "MCDC_TABLES", "OVERALL_RESULTS", "METRICS", "USER_CODE", "TESTCASE_SECTIONS", "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"], testcase_sections=["FULL_TEST_CASE_CONFIG_DATA", "TEST_CASE_DATA", "EXECUTION_RESULTS"])
+
+    except:
+        try:
+            if verbose:
+                print "Problem generating Overall Results Section...removing"
+                
+            CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "MCDC_TABLES", "METRICS", "USER_CODE", "TESTCASE_SECTIONS", "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"], testcase_sections=["FULL_TEST_CASE_CONFIG_DATA", "TEST_CASE_DATA", "EXECUTION_RESULTS"])
+        except:
+            print "Problem generating custom report for " + report_name + "."
+
     fixup_ccs(report_name)
-   
+
 def generateIndividualReports(entry, envName):
         
     global verbose
