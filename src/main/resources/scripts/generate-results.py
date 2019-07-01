@@ -180,9 +180,9 @@ def getManageEnvs(FullManageProjectName):
             if build_dir == "":
                 continue
             build_dir_number = build_dir.split("/")[-1]
-            level = compiler + "/" + testsuite + "/" + env_name.upper()
+            level = compiler + "/" + testsuite + "/" + env_name # env_name.upper()
             entry = {}
-            entry["env"] = env_name.upper()
+            entry["env"] = env_name #env_name.upper()
             entry["compiler"] = compiler
             entry["testsuite"] = testsuite
             entry["build_dir"] = build_dir
