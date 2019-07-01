@@ -1,3 +1,7 @@
+26 Jun 2019 (0.48)
+* Update to get complete display name for C++ functions
+* Update to fix characters that need escaping in XML attributes
+
 18 Jun 2019 (0.47)
 * Fix for disabled environments
 * Fix for printing non UTF-8 compliant failure code
