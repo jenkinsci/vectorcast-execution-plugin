@@ -237,9 +237,9 @@ def genDataApiReports(entry, jUnit):
         else:
             print "   Skipping environment: " + jobNameDotted
             
-    except RuntimeError as r_error:
-        print "ERROR: failed to generate XML reports using vpython and the Data API"
-        print r_error
+    except Exception as e:
+        print "ERROR: failed to generate XML reports using vpython and the Data API for ", jenkins_name, "in directory", entry["build_dir"]
+        print e
         
     return xml_file
     
