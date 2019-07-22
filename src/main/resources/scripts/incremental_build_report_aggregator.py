@@ -102,7 +102,7 @@ Environments Affected
     f = open("CombinedReport.txt","w")
     f.write(header + outStr + totalStr)
     f.close()
-	
+
 def parse_html_files():
 
     report_file_list = []
@@ -111,7 +111,10 @@ def parse_html_files():
         if "_rebuild.html" in file[-38:]:
             report_file_list.append(file)
 
-    main_soup = BeautifulSoup(open(report_file_list[0]),features="lxml")
+    try:
+        main_soup = BeautifulSoup(open(report_file_list[0]),features="lxml")
+    except:
+        main_soup = BeautifulSoup(open(report_file_list[0]))
     preserved_count = 0
     executed_count = 0
     total_count = 0
@@ -124,7 +127,10 @@ def parse_html_files():
     
     insert_idx = 2
     for file in report_file_list[1:]:
-        soup = BeautifulSoup(open(file),features="lxml")
+        try:
+            soup = BeautifulSoup(open(file),features="lxml")
+        except:
+            soup = BeautifulSoup(open(file))
         row_list = soup.table.table.tr.find_next_siblings()
         count_list = row_list[-1].td.find_next_siblings()
         for item in row_list[:-1]:

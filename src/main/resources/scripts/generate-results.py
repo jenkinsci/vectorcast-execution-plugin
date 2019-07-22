@@ -67,16 +67,15 @@ def writeJunitFinalCombinedTestResults(manageProjectName):
     f.write("<testsuites>\n")
 
     for testResults in glob.glob('xml_data/test_results*.xml'):
-        if  "combined_final" in testResults:
+        if "combined_final" in testResults:
             continue
         data = open(testResults,"r").readlines()[2:-1]
         os.rename(testResults, testResults + "__saved")
-        wrData =  "".join(data)
+        wrData = "".join(data)
         f.write(wrData)
      
     f.write("\n</testsuites>\n")
     f.close()
-
 
 #
 # Internal - jUnit works best with one overall file for all test results
@@ -206,7 +205,9 @@ def genDataApiReports(entry, jUnit):
         from generate_xml import GenerateXml
 
         # Compiler/TestSuite 
-        
+        print "******************************************************"
+        print "RMK: entry = {}".format(entry)
+        print "******************************************************"
         env = entry["env"]
         level = entry["compiler"] + "_" + entry["testsuite"]
         
@@ -233,7 +234,7 @@ def genDataApiReports(entry, jUnit):
 
             if verbose:
                 print "  Generate Jenkins coverage report: {}".format(xmlCoverReportName)
-            xml_file.generate_cover()  
+            xml_file.generate_cover()
         else:
             print "   Skipping environment: " + jobNameDotted
             
@@ -243,10 +244,16 @@ def genDataApiReports(entry, jUnit):
         
     return xml_file
     
-def fixup_ccs(report_name):
-
+def fixup_css(report_name):
+    # Needed for VC19 and VC19 SP1.
+    # From VC19 SP2 onwards a new option VCAST_RPTS_SELF_CONTAINED is used instead
     data = open(report_name,"r").read()
  
+    # When using new option, there will be an <img src="vector_log.png"/> in the
+    # generated HTML. If present, no need to do anything else.
+    if '"vector_logo.png"' in data:
+        return
+
     #fix up inline CSS because of Content Security Policy violation
     newData = data[: data.index("<style>")-1] +  """
     <link rel="stylesheet" href="normalize.css">
@@ -280,7 +287,7 @@ def generateCoverReport(path, env, level ):
     try:
         CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
         
-        fixup_ccs(report_name)
+        fixup_css(report_name)
     except Exception as e:
         print "   *Problem generating custom report for " + env + ": "
         print e
@@ -289,9 +296,12 @@ def generateUTReport(path, env, level):
     global verbose
     
     from vector.apps.ReportBuilder.custom_report import CustomReport
-    from vector.apps.DataAPI.api import Api
+    try:
+        from vector.apps.DataAPI.unit_test_api import UnitTestApi
+    except:
+        from vector.apps.DataAPI.api import Api as UnitTestApi
 
-    api=Api(path)
+    api=UnitTestApi(path)
 
     report_name = "management/" + env + "_" + level + ".html"
 
@@ -303,17 +313,15 @@ def generateUTReport(path, env, level):
     CustomReport._post_init = new_init
     try:
         CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "MCDC_TABLES", "OVERALL_RESULTS", "METRICS", "USER_CODE", "TESTCASE_SECTIONS", "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"], testcase_sections=["FULL_TEST_CASE_CONFIG_DATA", "TEST_CASE_DATA", "EXECUTION_RESULTS"])
-        fixup_ccs(report_name)
+        fixup_css(report_name)
 
     except Exception as e:
         print "   *Problem generating custom report for " + env + "."
         print e
 
-
 def generateIndividualReports(entry, envName):
-        
     global verbose
-            
+
     output = ""
     env = entry["env"]
     build_dir = entry["build_dir"]
@@ -322,21 +330,21 @@ def generateIndividualReports(entry, envName):
     if envName == None or envName == env:
         cov_path = os.path.join(build_dir,env + '.vcp')
         unit_path = os.path.join(build_dir,env + '.vce')
-        
+
         if os.path.exists(cov_path):
             generateCoverReport(cov_path, env, level)
-            
+
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
-    
+
 def useNewAPI(manageEnvs, level, envName, jUnit):
         
     for currentEnv in manageEnvs:
         if envName == None or manageEnvs[currentEnv]["env"].upper() == envName.upper():
             genDataApiReports(manageEnvs[currentEnv], jUnit)
             generateIndividualReports(manageEnvs[currentEnv], envName)
-    
-    
+
+
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
@@ -397,7 +405,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     
     ### Using new data API - 2019 and beyond
     if timing:
-	    print "Cleanup: " + str(time.time())
+        print "Cleanup: " + str(time.time())
     if useNewReport:
 
         try:
@@ -410,7 +418,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             print "Get Info: " + str(time.time())
         useNewAPI(manageEnvs, level, envName, jUnit)
         if timing:
-		    print "XML and Individual reports: " + str(time.time())
+            print "XML and Individual reports: " + str(time.time())
 
     ### NOT Using new data API        
     else:
@@ -551,7 +559,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             
     if junit:   
         if verbose:
-		    print "Writing combined test data for JUnit"
+            print "Writing combined test data for JUnit"
         generate_qa_results_xml.genQATestResults(FullManageProjectName)
         writeJunitCombinedTestResults(manageProjectName,saved_level,saved_envName)
 
@@ -602,7 +610,10 @@ if __name__ == '__main__':
     else:
         junit = False
 
+    # Used for pre VC19
     os.environ['VCAST_RPTS_PRETTY_PRINT_HTML'] = 'FALSE'
+    # Used for VC19 SP2 onwards
+    os.environ['VCAST_RPTS_SELF_CONTAINED'] = 'FALSE'
 
     buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, junit)
 
