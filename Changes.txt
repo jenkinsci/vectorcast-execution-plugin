@@ -1,3 +1,6 @@
+11 Jul 2019 (0.50)
+* Update exeception handling when using DataAPI
+
 1 Jul 2019 (0.49)
 * Updates for VectorCAST 2019 SP1
 
