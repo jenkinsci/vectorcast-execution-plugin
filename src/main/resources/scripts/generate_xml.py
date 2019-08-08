@@ -259,7 +259,7 @@ class GenerateXml(object):
         """
         
         unit_name = cgi.escape(unit_name)
-        func_name = cgi.escape(func_name)
+        func_name = cgi.escape(func_name).replace("\"","&quot;")
         tc_name = cgi.escape(tc.name)
         compiler = cgi.escape(self.compiler).replace(".","")
         testsuite = cgi.escape(self.testsuite).replace(".","")
@@ -306,7 +306,7 @@ class GenerateXml(object):
     def write_testcase_xUnit(self, tc, unit_name, func_name):
 
         unit_name = cgi.escape(unit_name)
-        func_name = cgi.escape(func_name)
+        func_name = cgi.escape(func_name).replace("\"","&quot;")
         tc_name = cgi.escape(tc.name)
         if tc.passed:
             self.fh.write('        <test result="success">\n')
@@ -552,9 +552,11 @@ class GenerateXml(object):
 
             for func in unit["functions"]:
                 if self.using_cover:
-                    self.fh.write('          <subprogram name="%s">\n' % cgi.escape(func["func"].name))
+                    func_name = cgi.escape(func["func"].name).replace("\"","&quot;")
+                    self.fh.write('          <subprogram name="%s">\n' % func_name)
                 else:
-                    self.fh.write('          <subprogram name="%s">\n' % cgi.escape(func["func"].display_name))
+                    func_name = cgi.escape(func["func"].display_name).replace("\"","&quot;")
+                    self.fh.write('          <subprogram name="%s">\n' % func_name)
                 if func["coverage"]["statement"]:
                     self.fh.write('            <coverage type="statement, %%" value="%s"/>\n' % func["coverage"]["statement"])
                 if func["coverage"]["branch"]:
