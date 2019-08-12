@@ -37,7 +37,7 @@ class ManageWait():
         self.verbose = verbose
         self.command_line = command_line
 
-    def exec_manage(self, silent = False):
+    def exec_manage(self, silent=False):
         # Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
         # We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
         exe_env = os.environ.copy()
@@ -54,34 +54,48 @@ class ManageWait():
         while 1:
             loop_count += 1
             p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, env=exe_env)
-            (out_mgt, out_mgt2) = p.communicate()
-
-            output += "\n" + out_mgt.rstrip()
-            # No point checking error code - errors are not propagated from
-            # clicast to manage
-            if "Licensed number of users already reached" in out_mgt:
+            if not silent:
+                print("Manage started")
+            license_outage = False
+            edited_license_outage_msg = ""
+            actual_license_outage_msg = ""
+            while True:
+                out_mgt = p.stdout.readline().rstrip()
+                if len(out_mgt) == 0 and p.poll() is not None:
+                    break
+                if len(out_mgt) > 0 :
+ 
+                    if "Licensed number of users already reached" in out_mgt or "License server system does not support this feature" in out_mgt:
+                        license_outage = True
+                        # Change FLEXlm Error to FLEXlm Err.. to avoid Groovy script from
+                        # marking retry attempts as overall job failure
+                        actual_license_outage_msg = out_mgt
+                        out_mgt = out_mgt.replace("FLEXlm Error", "FLEXlm Err..")
+                        edited_license_outage_msg = out_mgt
+                    if not silent:
+                        print (out_mgt)
+                    output += ( out_mgt + "\n" )
+ 
+            if not silent:
+                print("Manage has finished")
+                
+            # manage finished. Was there a license outage?
+            if license_outage == True :
                 if loop_count < self.wait_loops:
-                    # Change FLEXlm Error to FLEXlm Err.. to avoid Groovy script from
-                    # marking retry attempts as overall job failure
-                    out_mgt = out_mgt.replace("FLEXlm Error", "FLEXlm Err..")
-                    print out_mgt
+                    print ("Edited license outage message : " + edited_license_outage_msg )
                     msg = "Warning: Failed to obtain a license, sleeping %ds and then re-trying, attempt %d of %d" % (self.wait_time, loop_count+1, self.wait_loops)
-                    print msg
-                    output += "\n" + msg
+                    print (msg)
                     time.sleep(self.wait_time)
                 else:
-                    print out_mgt
+                    # send the unedited error to stdout for the post build groovy to mark a failure
+                    print ("Original license outage message : " + actual_license_outage_msg )
                     msg = "ERROR: Failed to obtain a license after %d attempts, terminating" % self.wait_loops
-                    print msg
-                    output += "\n" + msg
-                    sys.exit(-1)
-            else:
-                if not silent:
-                    print out_mgt
-                break;
-
-        return output
-
+                    print (msg)
+                    sys.exit(-1) # we could equally well break here 
+            else :
+                break #leave outer while loop
+        return output # checked in generate-results.py
+ 
 ## main
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
