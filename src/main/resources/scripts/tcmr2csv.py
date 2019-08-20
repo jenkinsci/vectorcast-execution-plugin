@@ -484,6 +484,8 @@ def procCombinedCoverageResults(HtmlReportName,table):
                 elif "Function" in child.string:
                     if "Coverage" in child.string:
                         columnTitles.append("function")
+                    elif "Functions" in child.string:
+                        columnTitles.append("function")
                     elif "Calls" in child.string:
                         columnTitles.append("functioncall")
                 
