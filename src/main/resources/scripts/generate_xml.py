@@ -98,6 +98,7 @@ class GenerateXml(object):
         entry["basispath"] = None
         entry["function"] = None
         entry["functioncall"] = None
+        
         if self.has_function_coverage:
             if is_unit:
                 (total_funcs, funcs_covered) = unit_or_func.cover_data.functions_covered
@@ -109,6 +110,7 @@ class GenerateXml(object):
                     entry["function"] = '0% (0 / 1)'
         if self.has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
+            
         if cov_type == "MC/DC":
             entry["branch"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
             if not self.simplified_mcdc:
@@ -375,9 +377,10 @@ class GenerateXml(object):
         self.num_functions = 0
 
         self.simplified_mcdc = self.api.environment.get_option("VCAST_SIMPLIFIED_CONDITION_COVERAGE")
-        self.has_function_coverage = self.api.environment.get_option("VCAST_DISPLAY_FUNCTION_COVERAGE")
+                
         self.units = []
         self.has_call_coverage = False
+        self.has_function_coverage = False
         self.grand_total_complexity = 0
 
         self.grand_total_max_covered_branches = 0
@@ -411,8 +414,21 @@ class GenerateXml(object):
                 continue
             if self.using_cover:
                 cov_type = cover_file.coverage_type_text
-            if cover_file.has_call_coverage:
-                self.has_call_coverage = True
+                
+            try:
+                if cover_file.coverage_type in (COVERAGE_TYPE_TYPE_T.FUNCTION_FUNCTION_CALL, COVERAGE_TYPE_TYPE_T.FUNCTION_COVERAGE):
+                    self.has_function_coverage = True
+            except Exception as e:
+                self.has_function_coverage = self.api.environment.get_option("VCAST_DISPLAY_FUNCTION_COVERAGE")
+            
+            # 2019 SP1 and above until Sam changes it again :P
+            try:
+                if cover_file.coverage_type == COVERAGE_TYPE_TYPE_T.FUNCTION_FUNCTION_CALL:
+                    self.has_call_coverage = True
+            except:
+                if cover_file.has_call_coverage: 
+                    self.has_call_coverage = True
+                    
             entry = {}
             entry["unit"] = unit
             entry["functions"] = []
