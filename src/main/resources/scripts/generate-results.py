@@ -201,6 +201,8 @@ def delete_file(filename):
         os.remove(filename)
         
 def genDataApiReports(entry, jUnit):
+    xml_file = ""
+    
     try:
         from generate_xml import GenerateXml
 
@@ -239,8 +241,10 @@ def genDataApiReports(entry, jUnit):
             print "   Skipping environment: " + jobNameDotted
             
     except Exception as e:
-        print "ERROR: failed to generate XML reports using vpython and the Data API for ", jenkins_name, "in directory", entry["build_dir"]
+        print "ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"]
         print e
+        import traceback
+        traceback.print_exc()
         
     return xml_file
     

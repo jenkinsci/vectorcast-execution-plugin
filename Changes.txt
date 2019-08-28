@@ -3,6 +3,9 @@
 * Add support for using Manage API to generate XML reports if available
 * Correct variable expression on Linux platforms
 
+8 Aug 219 (0.51)
+* Updates for scripts not handling Ada operator "+" for xml results file
+
 11 Jul 2019 (0.50)
 * Update exeception handling when using DataAPI
 

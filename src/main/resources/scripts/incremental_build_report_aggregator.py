@@ -24,6 +24,7 @@
 import argparse
 import os
 import sys
+import shutil
 
 # This script takes Manage Incremental Rebuild Reports and combines them
 #     into one comprehensive report.
@@ -103,6 +104,13 @@ Environments Affected
     f.write(header + outStr + totalStr)
     f.close()
 
+    # moving rebuild reports down in to a sub directory
+    if not os.path.exists("rebuild_reports"):
+        os.mkdir("rebuild_reports")
+    for file in report_file_list[1:]:
+        if os.path.exists(file):
+          shutil.move(file, "rebuild_reports/"+file)
+
 def parse_html_files():
 
     report_file_list = []
@@ -152,9 +160,17 @@ def parse_html_files():
     main_soup.table.table.tr.find_next_siblings()[-1].td.find_next_siblings()[2].string.replace_with(str(executed_count))
     main_soup.table.table.tr.find_next_siblings()[-1].td.find_next_siblings()[3].string.replace_with(str(total_count))
 
+    # moving rebuild reports down in to a sub directory
     f = open("CombinedReport.html","w")
     f.write(main_soup.prettify(formatter="html"))
     f.close()
+    
+    # moving rebuild reports down in to a sub directory
+    if not os.path.exists("rebuild_reports"):
+        os.mkdir("rebuild_reports")
+    for file in report_file_list[1:]:
+        if os.path.exists(file):
+          shutil.move(file, "rebuild_reports/"+file)
 
 if __name__ == "__main__":
 
