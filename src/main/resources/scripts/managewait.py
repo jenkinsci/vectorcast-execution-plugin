@@ -38,7 +38,7 @@ class ManageWait():
         self.command_line = command_line
 
     def exec_manage(self, silent=False):
-        callStr = os.environ.get('VECTORCAST_DIR') + "manage " + self.command_line
+        callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
         output = ''
         if self.verbose:
             output += "\nVerbose: %s" % callStr
