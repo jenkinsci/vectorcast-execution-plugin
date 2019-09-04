@@ -206,10 +206,7 @@ def genDataApiReports(entry, jUnit):
     try:
         from generate_xml import GenerateXml
 
-        # Compiler/TestSuite 
-        print "******************************************************"
-        print "RMK: entry = {}".format(entry)
-        print "******************************************************"
+        # Compiler/TestSuite
         env = entry["env"]
         level = entry["compiler"] + "_" + entry["testsuite"]
         
