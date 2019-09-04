@@ -1,3 +1,7 @@
+4 Sept 2019 (0.56)
+* Finished rolling back changes introduced in 0.43 and 0.44. They will
+  eventually be back though
+
 4 Sept 2019 (0.55)
 * Add support for new VCAST_RPTS_SELF_CONTAINED option added in VC19 SP2
 * Add support for using Manage API to generate XML reports if available
