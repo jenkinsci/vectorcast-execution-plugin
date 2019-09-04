@@ -24,6 +24,7 @@
 import argparse
 import os
 import sys
+import shutil
 
 # This script takes Manage Incremental Rebuild Reports and combines them
 #     into one comprehensive report.
@@ -102,7 +103,14 @@ Environments Affected
     f = open("CombinedReport.txt","w")
     f.write(header + outStr + totalStr)
     f.close()
-	
+
+    # moving rebuild reports down in to a sub directory
+    if not os.path.exists("rebuild_reports"):
+        os.mkdir("rebuild_reports")
+    for file in report_file_list[1:]:
+        if os.path.exists(file):
+          shutil.move(file, "rebuild_reports/"+file)
+
 def parse_html_files():
 
     report_file_list = []
@@ -111,7 +119,10 @@ def parse_html_files():
         if "_rebuild.html" in file[-38:]:
             report_file_list.append(file)
 
-    main_soup = BeautifulSoup(open(report_file_list[0]))
+    try:
+        main_soup = BeautifulSoup(open(report_file_list[0]),features="lxml")
+    except:
+        main_soup = BeautifulSoup(open(report_file_list[0]))
     preserved_count = 0
     executed_count = 0
     total_count = 0
@@ -124,7 +135,10 @@ def parse_html_files():
     
     insert_idx = 2
     for file in report_file_list[1:]:
-        soup = BeautifulSoup(open(file))
+        try:
+            soup = BeautifulSoup(open(file),features="lxml")
+        except:
+            soup = BeautifulSoup(open(file))
         row_list = soup.table.table.tr.find_next_siblings()
         count_list = row_list[-1].td.find_next_siblings()
         for item in row_list[:-1]:
@@ -146,9 +160,17 @@ def parse_html_files():
     main_soup.table.table.tr.find_next_siblings()[-1].td.find_next_siblings()[2].string.replace_with(str(executed_count))
     main_soup.table.table.tr.find_next_siblings()[-1].td.find_next_siblings()[3].string.replace_with(str(total_count))
 
+    # moving rebuild reports down in to a sub directory
     f = open("CombinedReport.html","w")
     f.write(main_soup.prettify(formatter="html"))
     f.close()
+    
+    # moving rebuild reports down in to a sub directory
+    if not os.path.exists("rebuild_reports"):
+        os.mkdir("rebuild_reports")
+    for file in report_file_list[1:]:
+        if os.path.exists(file):
+          shutil.move(file, "rebuild_reports/"+file)
 
 if __name__ == "__main__":
 

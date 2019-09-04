@@ -12,7 +12,7 @@
   <name>VectorCAST Execution</name>
   <description>Run VectorCAST manage jobs from Jenkins</description>
   <artifactId>vectorcast-execution</artifactId>
-  <version>0.39-SNAPSHOT</version>
+  <version>0.56-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/VectorCAST+Execution+Plugin</url>
 

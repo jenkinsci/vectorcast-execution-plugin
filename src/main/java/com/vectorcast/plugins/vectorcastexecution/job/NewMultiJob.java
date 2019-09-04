@@ -300,8 +300,8 @@ public class NewMultiJob extends BaseJob {
             CopyArtifact copyArtifact = new CopyArtifact(name);
             copyArtifact.setOptional(true);
             copyArtifact.setFilter("**/*_rebuild*," +
-                                   "execution/*.html, " +
-                                   "management/*.html, " +
+                                   "execution/**, " +
+                                   "management/**, " +
                                    "xml_data/**" +
                                    tarFile);
             copyArtifact.setFingerprintArtifacts(false);
@@ -314,7 +314,7 @@ public class NewMultiJob extends BaseJob {
         // Post-build actions if doing reporting
         if (getOptionUseReporting()) {
             addArchiveArtifacts(getTopProject());
-            addXunit(getTopProject());
+            addJunit(getTopProject());
             addVCCoverage(getTopProject());
             addGroovyScriptMultiJob();
         }
@@ -356,8 +356,10 @@ getEnvironmentSetupWin() + "\n";
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\getTotals.py\" @PROJECT_BASE@_full_report.txt\n";
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\" \"@PROJECT@\"\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\getTotals.py\" @PROJECT_BASE@_full_report.txt\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" @PROJECT_BASE@ --final\n" +
+"\n";
         }
         win +=
 getEnvironmentTeardownWin() + "\n";
@@ -379,8 +381,9 @@ getEnvironmentSetupUnix() + "\n";
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\"\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\" \"@PROJECT@\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/getTotals.py\" @PROJECT_BASE@_full_report.txt\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" @PROJECT_BASE@ --final\n" +
 "\n";
         }
         unix +=
@@ -457,7 +460,8 @@ getEnvironmentTeardownUnix() + "\n";
             if (getOptionUseReporting()) {
                 addReportingCommands(p, detail, baseName);
                 addArchiveArtifacts(p);
-                addXunit(p);
+                //addXunit(p);
+                addJunit(p);
                 addVCCoverage(p);
                 addPostReportingGroovy(p);
                 // RMK : TODO - fixup/combine groovy
@@ -496,7 +500,7 @@ getEnvironmentTeardownUnix() + "\n";
 "    buildFailed = true\n" +
 "    manager.addBadge(\"error.gif\", \"Environment Creation Failed\")\n" +
 "}\n" +
-"if (manager.logContains(\".*FLEXlm Error.*\"))\n" +
+"if (manager.logContains(\".*FLEXlm Error.*\") || manager.logContains(\".*ERROR: Failed to obtain a license.*\"))\n" +
 "{\n" +
 "    manager.createSummary(\"error.gif\").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
 "    buildFailed = true\n" +
@@ -526,7 +530,7 @@ getEnvironmentTeardownUnix() + "\n";
 "    buildFailed = true\n" +
 "    manager.addBadge(\"error.gif\", \"Preprocess Error\")\n" +
 "}\n" +
-"if (manager.logContains(\".*Value Line Error - Command Ignored.*\"))\n" +
+"if (manager.logContains(\".*Value Line Error - Command Ignored.*\") || manager.logContains(\".*(E) @LINE:.*\"))\n" +
 "{\n" +
 "    manager.createSummary(\"warning.gif\").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
 "    buildUnstable = true\n" +
@@ -568,7 +572,7 @@ getEnvironmentTeardownUnix() + "\n";
         
         String win =
 getEnvironmentSetupWin() + "\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
 getEnvironmentTeardownWin() + "\n" +
 "";
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
@@ -577,7 +581,7 @@ getEnvironmentTeardownWin() + "\n" +
         
         String unix =
 getEnvironmentSetupUnix() + "\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + "  \"@PROJECT@\" --level @LEVEL@ -e @ENV@ " + noGenExecReport + "\n" +
 getEnvironmentTeardownUnix() + "\n" +
 "";
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
@@ -689,7 +693,7 @@ getEnvironmentTeardownUnix() + "\n" +
 "    buildFailed = true\n" +
 "    manager.addBadge(\"error.gif\", \"Environment Creation Failed\")\n" +
 "}\n" +
-"if (manager.logContains(\".*FLEXlm Error.*\"))\n" +
+"if (manager.logContains(\".*FLEXlm Error.*\") || manager.logContains(\".*ERROR: Failed to obtain a license.*\"))\n" +
 "{\n" +
 "    manager.createSummary(\"error.gif\").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
 "    buildFailed = true\n" +
@@ -719,7 +723,7 @@ getEnvironmentTeardownUnix() + "\n" +
 "    buildFailed = true\n" +
 "    manager.addBadge(\"error.gif\", \"Preprocess Error\")\n" +
 "}\n" +
-"if (manager.logContains(\".*Value Line Error - Command Ignored.*\"))\n" +
+"if (manager.logContains(\".*Value Line Error - Command Ignored.*\") || manager.logContains(\".*(E) @LINE:.*\"))\n" +
 "{\n" +
 "    manager.createSummary(\"warning.gif\").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
 "    buildUnstable = true\n" +

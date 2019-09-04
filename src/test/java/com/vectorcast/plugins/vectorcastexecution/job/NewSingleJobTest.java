@@ -42,8 +42,9 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.scriptsecurity.scripts.Language;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.jenkinsci.plugins.scriptsecurity.scripts.languages.GroovyLanguage;
-import org.jenkinsci.plugins.xunit.XUnitPublisher;
-import org.jenkinsci.plugins.xunit.types.CheckType;
+//import org.jenkinsci.plugins.xunit.XUnitPublisher;
+//import org.jenkinsci.plugins.xunit.types.CheckType;
+import hudson.tasks.junit.JUnitResultArchiver;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -144,16 +145,10 @@ public class NewSingleJobTest extends TestCase {
                             "xml_data/**",
                             archiver.getArtifacts());
         Assert.assertFalse(archiver.getAllowEmptyArchive());
-        // Publisher 1- XUnitPublisher
-        Assert.assertTrue(publisherList.get(1) instanceof XUnitPublisher);
-        XUnitPublisher xUnit = (XUnitPublisher)publisherList.get(1);
-        Assert.assertTrue(xUnit.getTypes()[0] instanceof CheckType);
-        CheckType checkType = (CheckType)xUnit.getTypes()[0];
-        Assert.assertEquals("**/test_results_*.xml", checkType.getPattern());
-        Assert.assertTrue(checkType.isSkipNoTestFiles());
-        Assert.assertTrue(checkType.isDeleteOutputFiles());
-        Assert.assertFalse(checkType.isFailIfNotNew());
-        Assert.assertTrue(checkType.isStopProcessingIfError());
+        // Publisher 1- JUnitResultArchiver
+        Assert.assertTrue(publisherList.get(1) instanceof JUnitResultArchiver);
+        JUnitResultArchiver jUnit = (JUnitResultArchiver)publisherList.get(1);
+        Assert.assertEquals("**/test_results_*.xml", jUnit.getTestResults());
         // Publisher 2 - VectorCASTPublisher
         Assert.assertTrue(publisherList.get(2) instanceof VectorCASTPublisher);
         VectorCASTPublisher vcPublisher = (VectorCASTPublisher)publisherList.get(2);

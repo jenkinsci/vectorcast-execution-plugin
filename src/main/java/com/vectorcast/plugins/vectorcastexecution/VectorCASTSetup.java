@@ -494,6 +494,21 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 }
             }
         }
+        
+        // clean up old xml_data files
+        
+        logger.log(Level.INFO, "Cleaning up old xml_data files");
+        File[] files = new File(workspace + "/xml_data/").listFiles();
+        if (files != null)
+        {
+            for (File file : files) 
+            {
+                if (file.isFile()) 
+                {
+                    file.delete();
+                }
+            }
+        }
     }
     @Override
     public DescriptorImpl getDescriptor() {
@@ -526,4 +541,5 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             return Messages.VectorCASTSetup_DisplayName();
         }
     }
+    private static final Logger logger = Logger.getLogger(VectorCASTSetup.class.getName());
 }

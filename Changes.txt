@@ -1,3 +1,69 @@
+4 Sept 2019 (0.55)
+* Add support for new VCAST_RPTS_SELF_CONTAINED option added in VC19 SP2
+* Add support for using Manage API to generate XML reports if available
+* Correct variable expression on Linux platforms
+* Updated scripts to handle compound only in compound case
+
+28 Aug 2019 (0.54)
+* Updates for F+FC coverage and updating database pathing
+
+20 Aug 2019 (0.53)
+* Updates for changed to aggregate coverage report metrics heading change
+
+13 Aug 2019 (0.52)
+* Additional debug logging
+
+8 Aug 2019 (0.51)
+* Updates for scripts not handling Ada operator "+" for xml results file
+
+11 Jul 2019 (0.50)
+* Update exeception handling when using DataAPI
+
+1 Jul 2019 (0.49)
+* Updates for VectorCAST 2019 SP1
+
+26 Jun 2019 (0.48)
+* Update to get complete display name for C++ functions
+* Update to fix characters that need escaping in XML attributes
+
+18 Jun 2019 (0.47)
+* Fix for disabled environments
+* Fix for printing non UTF-8 compliant failure code
+
+30 May 2019 (0.46)
+* Updates for using external CSS/images
+
+10 May 2019 (0.45)
+* Change use of xUnit to jUnit
+
+1 May 2019 (0.44)
+* Added better legacy support for VectorCAST installations that do not have
+  their executables on the system PATH.
+
+26 Apr 2019 (0.43)
+* Removed all uses of the environment variable VECTORCAST_DIR. From now on it
+  is assumed that VectorCAST executables are on the system PATH. Legacy support
+  is still maintained for older versions of VectorCAST.
+* Additional cleaning up of old files
+
+25 Apr 2010 (0.42)
+* Updates for corner cases, verbose out issue, and cleaning up previous build's
+  files
+* Problem when function coverage enabled, but not function call
+* Function coverage format incorrect in XML causing plugin to throw an error
+* Added catch for additional licensing errors
+* Added catch for all (E) Line: errors in the console log
+
+12 Apr 2019 (0.41)
+* Fix for function and basis path coverage with VectorCAST 2019
+
+10 Apr 2019 (0.40)
+* Update to fix auto job updates (where path to Manage project was being
+  removed)
+
+19 Mar 2019 (0.39)
+* Update to make the management report be generated for a cover project
+
 23 Jan 2019 (0.38)
 * Fix for spurious newline characters in report title in XML for Jenkins with
   VectorCAST 2019

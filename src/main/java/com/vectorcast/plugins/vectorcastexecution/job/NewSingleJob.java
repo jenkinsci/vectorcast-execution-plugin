@@ -92,13 +92,13 @@ getExecutePreambleWin() +
         if (getOptionUseReporting()) {
             win +=
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + "\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + "\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=\\\"@PROJECT_BASE@_full_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status > \\\"@PROJECT_BASE@_full_report.txt\\\"\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\"\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\" \"@PROJECT@\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\getTotals.py\" \"@PROJECT_BASE@_full_report.txt\"\n";
         }
         win += getEnvironmentTeardownWin() + "\n";
@@ -116,13 +116,13 @@ getExecutePreambleUnix() +
         if (getOptionUseReporting()) {
             unix +=
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + "\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + "\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=\\\"@PROJECT_BASE@_full_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status > \\\"@PROJECT_BASE@_full_report.txt\\\"\"\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\"\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/gen-combined-cov.py\" \"@PROJECT_BASE@_aggregate_report.html\" \"@PROJECT@\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/getTotals.py\" \"@PROJECT_BASE@_full_report.txt\"\n";
         }
         unix += getEnvironmentTeardownUnix() + "\n";
@@ -175,7 +175,7 @@ getExecutePreambleUnix() +
 "    buildFailed = true\n" +
 "    manager.addBadge(\"error.gif\", \"Error with Test Case Management Report of at least one Environment\")\n" +
 "}\n" +
-"if (manager.logContains(\".*FLEXlm Error.*\"))\n" +
+"if (manager.logContains(\".*FLEXlm Error.*\") || manager.logContains(\".*ERROR: Failed to obtain a license.*\"))\n" +
 "{\n" +
 "    manager.createSummary(\"error.gif\").appendText(\"FLEXlm Error\", false, false, false, \"red\")\n" +
 "    buildFailed = true\n" +
@@ -205,7 +205,7 @@ getExecutePreambleUnix() +
 "    buildFailed = true\n" +
 "    manager.addBadge(\"error.gif\", \"Preprocess Error\")\n" +
 "}\n" +
-"if (manager.logContains(\".*Value Line Error - Command Ignored.*\"))\n" +
+"if (manager.logContains(\".*Value Line Error - Command Ignored.*\") || manager.logContains(\".*(E) @LINE:.*\"))\n" +
 "{\n" +
 "    manager.createSummary(\"warning.gif\").appendText(\"Test Case Import Error\", false, false, false, \"red\")\n" +
 "    buildUnstable = true\n" +
@@ -296,7 +296,7 @@ getExecutePreambleUnix() +
         // Post-build actions - only is using reporting
         if (getOptionUseReporting()) {
             addArchiveArtifacts(getTopProject());
-            addXunit(getTopProject());
+            addJunit(getTopProject());
             addVCCoverage(getTopProject());
             addGroovyScriptSingleJob();
         }

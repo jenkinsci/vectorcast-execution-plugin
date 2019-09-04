@@ -40,12 +40,13 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FilenameUtils;
 import org.jenkinsci.lib.dtkit.type.TestType;
-import org.jenkinsci.plugins.xunit.XUnitPublisher;
-import org.jenkinsci.plugins.xunit.threshold.XUnitThreshold;
-import org.jenkinsci.plugins.xunit.types.CheckType;
+//import org.jenkinsci.plugins.xunit.XUnitPublisher;
+//import org.jenkinsci.plugins.xunit.threshold.XUnitThreshold;
+//import org.jenkinsci.plugins.xunit.types.CheckType;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import hudson.tasks.junit.JUnitResultArchiver;
 /**
  * Base job management - create/delete/update
  */
@@ -527,16 +528,13 @@ abstract public class BaseJob {
         project.getPublishersList().add(archiver);
     }
     /**
-     * Add XUnit rules step
+     * Add JUnit rules step
      * @param project project to add step to
      */
-    protected void addXunit(Project project) {
-        XUnitThreshold[] thresholds = new XUnitThreshold[0];
-        CheckType checkType = new CheckType("**/test_results_*.xml", /*skipNoTestFiles*/true, /*failIfNotNew*/false, /*deleteOpFiles*/true, /*StopProcIfErrot*/true);
-        TestType[] testTypes = new TestType[1];
-        testTypes[0] = checkType;
-        XUnitPublisher xunit = new XUnitPublisher(testTypes, thresholds, 1, "3000");
-        project.getPublishersList().add(xunit);
+
+    protected void addJunit(Project project) {
+        JUnitResultArchiver junit = new JUnitResultArchiver("**/test_results_*.xml");
+        project.getPublishersList().add(junit);
     }
     /**
      * Add VectorCAST coverage reporting step

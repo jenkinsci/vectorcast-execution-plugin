@@ -24,6 +24,7 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
 import hudson.Launcher;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
@@ -39,8 +40,11 @@ import hudson.tasks.Shell;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.StringJoiner;
 
 /**
  * This class allows a command script to be specified for both Linux and Windows
@@ -56,7 +60,15 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * @return windows command
      */
     public final String getWinCommand() {
-        return winCommand;
+        //
+        // Older builds of VectorCAST do not assume VectorCAST executables are on the the system PATH.
+        // They used an environment variable called VECTORCAST_DIR, we will add that to our PATH.
+        //
+        //
+        return "setlocal\n"
+               + "set PATH=%PATH%;%VECTORCAST_DIR%\n"
+               + winCommand
+               + "\nendlocal";
     }
 
     /**
@@ -64,7 +76,13 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * @return unix command
      */
     public final String getUnixCommand() {
-        return unixCommand;
+        //
+        // Older builds of VectorCAST do not assume VectorCAST executables are on the the system PATH.
+        // They used an environment variable called VECTORCAST_DIR, we will add that to our PATH.
+        //
+        //
+        return "PATH=\"${PATH:+\"$PATH:\"}$VECTORCAST_DIR\"\n"
+               + unixCommand;
     }
     
     /**
@@ -80,7 +98,6 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
     
     @Override
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
-        //
         // Windows check and run batch command
         //
         // Get the windows batch command and run it if this node is Windows
@@ -151,4 +168,6 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
             return Messages.VectorCASTCommand_DisplayName();
         }
     }
+
 }
+

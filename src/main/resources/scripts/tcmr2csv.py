@@ -82,9 +82,7 @@ def getCsvName(HtmlReportName,level,reportType):
     
     (root, ext) = os.path.splitext(os.path.basename(HtmlReportName))
     
-    if jobName:
-        jobName = jobName + "_"
-    else:
+    if not jobName:
         jobName = root
 
     CsvFileName = reportType + jobName + ".csv"
@@ -485,6 +483,8 @@ def procCombinedCoverageResults(HtmlReportName,table):
                     columnTitles.append("basispath")
                 elif "Function" in child.string:
                     if "Coverage" in child.string:
+                        columnTitles.append("function")
+                    elif "Functions" in child.string:
                         columnTitles.append("function")
                     elif "Calls" in child.string:
                         columnTitles.append("functioncall")
