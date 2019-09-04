@@ -1,3 +1,8 @@
+?? (??)
+* Add support for new VCAST_RPTS_SELF_CONTAINED option added in VC19 SP2
+* Add support for using Manage API to generate XML reports if available
+* Correct variable expression on Linux platforms
+
 8 Aug 219 (0.51)
 * Updates for scripts not handling Ada operator "+" for xml results file
 

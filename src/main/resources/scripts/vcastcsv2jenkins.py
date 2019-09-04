@@ -207,14 +207,14 @@ def writeJunitHeader(junitfile,dataArray):
         elif not 'PASS' in data[TC_STATUS_COL]:
             failed += 1
             
-    junitfile.write(" 	<testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
+    junitfile.write("   <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
         (errors,len(dataArray), failed, envName))
  
 def writeJunitTestCase(junitfile,  unit, subp, tc_name, passFail):
     global jobNamePrefix
     global testCaseCount
     
-    testCasePassString =" 		<testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
+    testCasePassString ="        <testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
     testCaseFailString ="""
             <testcase name="%s" classname="%s" time="0">
                 <failure type="failure" message="FAIL: %s"/>
