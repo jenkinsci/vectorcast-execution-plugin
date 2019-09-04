@@ -175,7 +175,8 @@ class GenerateXml(object):
     def add_compound_tests(self):
         for tc in self.api.TestCase.all():
             if tc.kind == TestCase.KINDS['compound']:
-                self.write_testcase(tc, "<<COMPOUND>>", "<<COMPOUND>>")
+                if not tc.for_compound_only:
+                    self.write_testcase(tc, "<<COMPOUND>>", "<<COMPOUND>>")
 
 #
 # Internal - add any intialisation tests to the unit report
@@ -183,9 +184,9 @@ class GenerateXml(object):
     def add_init_tests(self):
         for tc in self.api.TestCase.all():
             if tc.kind == TestCase.KINDS['init']:
-                self.write_testcase(tc, "<<INIT>>", "<<INIT>>")
+                if not tc.for_compound_only:
+                    self.write_testcase(tc, "<<INIT>>", "<<INIT>>")
                 
-
 #
 # Find the test case file
 #
