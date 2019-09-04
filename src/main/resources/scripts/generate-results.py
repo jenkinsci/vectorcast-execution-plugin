@@ -49,13 +49,6 @@ global wait_loops
 
 verbose = False
 
-# Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
-# We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
-has_exe = lambda p, x : os.access(os.path.join(p, x), os.X_OK)
-has_vcast_exe = lambda p : has_exe(p, 'manage') or has_exe(p, 'manage.exe')
-vcast_dirs = (path for path in os.environ["PATH"].split(os.pathsep) if has_vcast_exe(path))
-vectorcast_install_dir = next(vcast_dirs, os.environ.get("VECTORCAST_DIR", ""))
-
 #
 # Internal - jUnit works best with one overall file for all test results
 #
@@ -123,7 +116,7 @@ def checkUseNewReportsAndAPI():
             print "Reports forced to be old/legacy, so use them"
         return False
     # Look for existence of file that only exists in distribution with the new reports
-    check_file = os.path.join(vectorcast_install_dir,
+    check_file = os.path.join(os.environ.get('VECTORCAST_DIR'),
                              "python",
                              "vector",
                              "apps",
@@ -159,7 +152,8 @@ def readManageVersion(ManageFile):
 def getManageEnvs(FullManageProjectName):
     manageEnvs = {}
 
-    callStr = "manage --project " + FullManageProjectName + " --build-directory-name"
+    cmd_prefix = os.environ.get('VECTORCAST_DIR') + os.sep
+    callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --build-directory-name"
     out_mgt = runManageWithWait(callStr, silent=True)
     if verbose:
         print out_mgt
@@ -429,14 +423,16 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
         print "Generating Test Case Management Reports"
 
+        cmd_prefix = os.environ.get('VECTORCAST_DIR') + os.sep
+
         # release locks and create all Test Case Management Report
-        callStr = "manage --project " + FullManageProjectName + " --force --release-locks"
+        callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --force --release-locks"
         out_mgt = runManageWithWait(callStr)
 
         if level and envName:
-            callStr = "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom management"
+            callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom management"
         else:
-            callStr = "manage --project " + FullManageProjectName + " --clicast-args report custom management"
+            callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --clicast-args report custom management"
         print callStr
 
         # capture the output of the manage call
@@ -456,9 +452,9 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         if generate_individual_reports:
             print "Generating Execution Reports"
             if level and envName:
-                callStr = "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom actual"
+                callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom actual"
             else:
-                callStr = "manage --project " + FullManageProjectName + " --clicast-args report custom actual"
+                callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --clicast-args report custom actual"
 
             print callStr
 

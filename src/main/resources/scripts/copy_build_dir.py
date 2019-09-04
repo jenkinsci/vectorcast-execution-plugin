@@ -121,11 +121,8 @@ if __name__ == '__main__':
     else:
         nocase = ""
 
-    exe_env = os.environ.copy()
-    if 'VECTORCAST_DIR' in os.environ:
-        exe_env['PATH'] = os.pathsep.join([os.environ.get('PATH', ''), exe_env['VECTORCAST_DIR']])
-
-    p = subprocess.Popen("manage --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,shell=True,stdout=subprocess.PIPE, env=exe_env)
+    manageCMD = os.path.join(os.environ.get('VECTORCAST_DIR'), "manage")
+    p = subprocess.Popen(manageCMD + "--project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,shell=True,stdout=subprocess.PIPE)
     out, err = p.communicate()
     list = out.split(os.linesep)
     build_dir = ''

@@ -60,15 +60,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * @return windows command
      */
     public final String getWinCommand() {
-        //
-        // Older builds of VectorCAST do not assume VectorCAST executables are on the the system PATH.
-        // They used an environment variable called VECTORCAST_DIR, we will add that to our PATH.
-        //
-        //
-        return "setlocal\n"
-               + "set PATH=%PATH%;%VECTORCAST_DIR%\n"
-               + winCommand
-               + "\nendlocal";
+        return winCommand;
     }
 
     /**
@@ -76,13 +68,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * @return unix command
      */
     public final String getUnixCommand() {
-        //
-        // Older builds of VectorCAST do not assume VectorCAST executables are on the the system PATH.
-        // They used an environment variable called VECTORCAST_DIR, we will add that to our PATH.
-        //
-        //
-        return "PATH=\"${PATH:+\"$PATH:\"}$VECTORCAST_DIR\"\n"
-               + unixCommand;
+        return unixCommand;
     }
     
     /**
