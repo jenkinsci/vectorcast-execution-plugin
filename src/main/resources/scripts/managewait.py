@@ -38,13 +38,7 @@ class ManageWait():
         self.command_line = command_line
 
     def exec_manage(self, silent=False):
-        # Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
-        # We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
-        exe_env = os.environ.copy()
-        if 'VECTORCAST_DIR' in os.environ:
-            exe_env['PATH'] = os.pathsep.join([os.environ.get('PATH', ''), exe_env['VECTORCAST_DIR']])
-
-        callStr = "manage " + self.command_line
+        callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
         output = ''
         if self.verbose:
             output += "\nVerbose: %s" % callStr
@@ -53,7 +47,7 @@ class ManageWait():
         loop_count = 0
         while 1:
             loop_count += 1
-            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, env=exe_env)
+            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
             if not silent:
                 print("Manage started")
             license_outage = False
