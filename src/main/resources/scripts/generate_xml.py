@@ -468,7 +468,7 @@ class GenerateXml(BaseGenerateXml):
             self.fh.write(testCasePassString % (tc_name, classname))
         else:
             status = "FAIL"
-
+            
             self.api.report(
                 testcases=[tc],
                 single_testcase=True,
@@ -479,6 +479,7 @@ class GenerateXml(BaseGenerateXml):
                 testcase_sections=["EXECUTION_RESULTS"])
 
             result = open("execution_results.txt","r").read()
+            os.remove("execution_results.txt")
             result = cgi.escape(result)
             result = result.replace("\"","")
             result = result.replace("\n","&#xA;")

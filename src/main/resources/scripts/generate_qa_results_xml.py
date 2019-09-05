@@ -7,13 +7,6 @@ saved_compiler = ""
 saved_testsuite = ""
 saved_envname = ""
 
-# Versions of VectorCAST prior to 2019 relied on the environment variable VECTORCAST_DIR.
-# We will use that variable as a fall back if the VectorCAST executables aren't on the system path.
-has_exe = lambda p, x : os.access(os.path.join(p, x), os.X_OK)
-has_vcast_exe = lambda p : has_exe(p, 'manage') or has_exe(p, 'manage.exe')
-vcast_dirs = (path for path in os.environ["PATH"].split(os.pathsep) if has_vcast_exe(path))
-vectorcast_install_dir = next(vcast_dirs, os.environ.get("VECTORCAST_DIR", ""))
-
 def get_timestamp():
     dt = datetime.datetime.now()
     hour = dt.hour
@@ -179,13 +172,13 @@ def processSystemTestResultsData(lines):
         write_tc_data(oldEnvName, unit_report_name, jobNameDotted, passed, failed, error, testcase_data)
         
 def saveQATestStatus(mp):
-    callStr = "manage -p " + mp + " --system-tests-status=" + os.path.basename(mp)[:-4] + "_system_tests_status.html"
+    callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status=" + os.path.basename(mp)[:-4] + "_system_tests_status.html"
     p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
 
 def genQATestResults(mp):
     print "   Processing QA test results for " + mp
-    callStr = "manage -p " + mp + " --system-tests-status"
+    callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status"
     p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     if err:

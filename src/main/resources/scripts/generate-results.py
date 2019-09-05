@@ -335,9 +335,11 @@ def generateIndividualReports(entry, envName):
 def useNewAPI(manageEnvs, level, envName, jUnit):
         
     for currentEnv in manageEnvs:
-        if envName == None or manageEnvs[currentEnv]["env"].upper() == envName.upper():
-            genDataApiReports(manageEnvs[currentEnv], jUnit)
-            generateIndividualReports(manageEnvs[currentEnv], envName)
+        if envName == None or manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
+            env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
+            if env_level.upper() == level.upper():
+                genDataApiReports(manageEnvs[currentEnv], jUnit)
+                generateIndividualReports(manageEnvs[currentEnv], envName)
 
 
 # build the Test Case Management Report for Manage Project
