@@ -1,4 +1,7 @@
-4 Sept 2019 (0.56)
+6 Sept 2019 (0.57)
+* Updates for duplicate results in multijob
+ 
+5 Sept 2019 (0.56)
 * Finished rolling back changes introduced in 0.43 and 0.44. They will
   eventually be back though
 
