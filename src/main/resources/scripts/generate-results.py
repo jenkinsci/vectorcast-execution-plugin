@@ -160,15 +160,15 @@ def getManageEnvs(FullManageProjectName):
         
     for line in out_mgt.split('\n'):
         if "Compiler:" in line:
-            compiler = line.split(":")[-1].strip()
+            compiler = line.split(":",1)[-1].strip()
         elif "Testsuite ID:" in line:
             pass
         elif "TestSuite:" in line:
-            testsuite = line.split(":")[-1].strip()
+            testsuite = line.split(":",1)[-1].strip()
         elif "Environment:" in line:
-            env_name = line.split(":")[-1].strip()
+            env_name = line.split(":",1)[-1].strip()
         elif "Build Directory:" in line:
-            build_dir = line.split(":")[-1].strip()
+            build_dir = line.split(":",1)[-1].strip()
             #rare case where there's a problem with the environment
             if build_dir == "":
                 continue
@@ -182,6 +182,8 @@ def getManageEnvs(FullManageProjectName):
             entry["build_dir_number"] = build_dir_number
             manageEnvs[level] = entry
             
+            if verbose:
+                print entry
                 
         elif "Log Directory:" in line:
             pass
@@ -335,8 +337,13 @@ def generateIndividualReports(entry, envName):
 def useNewAPI(manageEnvs, level, envName, jUnit):
         
     for currentEnv in manageEnvs:
-        if envName == None or manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
+        if envName == None:
+            genDataApiReports(manageEnvs[currentEnv], jUnit)
+            generateIndividualReports(manageEnvs[currentEnv], envName)
+            
+        elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
+            
             if env_level.upper() == level.upper():
                 genDataApiReports(manageEnvs[currentEnv], jUnit)
                 generateIndividualReports(manageEnvs[currentEnv], envName)

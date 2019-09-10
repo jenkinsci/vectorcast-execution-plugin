@@ -41,7 +41,7 @@ class ManageWait():
         callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
         output = ''
         if self.verbose:
-            output += "\nVerbose: %s" % callStr
+            output += "\nVerbose: %s\n" % callStr
 
         # capture the output of the manage call
         loop_count = 0
