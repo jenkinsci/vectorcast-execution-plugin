@@ -35,16 +35,16 @@ def make_relative(path, workspace):
     path = path.replace("\\","/")
 
     # if the paths match
-    if path.startswith(workspace):
+    if path.lower().startswith(workspace.lower()):
         path = path[len(workspace)+1:]
         
     # if the paths match except for first character (d:\ changed to j:\)
-    elif path[1:].startswith(workspace[1:]):
+    elif path.lower()[1:].startswith(workspace.lower()[1:]):
         path = path[len(workspace)+1:]
         
     elif "workspace" in path:
         # if paths are different, find the workspace in the jenkins path
-        workspaceIndex = path.find("workspace")
+        workspaceIndex = path.lower().find("workspace")
         
         path = path[workspaceIndex:].split("/",2)[2]
         
@@ -122,7 +122,7 @@ if __name__ == '__main__':
         nocase = ""
 
     manageCMD = os.path.join(os.environ.get('VECTORCAST_DIR'), "manage")
-    p = subprocess.Popen(manageCMD + "--project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,shell=True,stdout=subprocess.PIPE)
+    p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,shell=True,stdout=subprocess.PIPE)
     out, err = p.communicate()
     list = out.split(os.linesep)
     build_dir = ''
