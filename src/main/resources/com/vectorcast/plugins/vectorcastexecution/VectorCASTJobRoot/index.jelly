@@ -43,6 +43,14 @@
           <div style="color:gray; text-decoration:none;">
             <j:out value="${%VCJob.Control.Multi.Description}"/>
           </div>
+        </t:summary> -->
+      
+        <t:summary icon="${it.iconFileName}"
+                   href="pipeline-job" iconOnly="true">
+          <div class="link"><a href="${href}">${%VCJob.Control.Pipeline.Title}</a></div>
+          <div style="color:gray; text-decoration:none;">
+            <j:out value="${%VCJob.Control.Pipeline.Description}"/>
+          </div>
         </t:summary>
 
         <t:summary icon="${it.iconFileName}"

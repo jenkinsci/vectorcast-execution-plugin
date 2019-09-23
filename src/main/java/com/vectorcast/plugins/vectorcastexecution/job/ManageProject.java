@@ -23,8 +23,12 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -42,14 +46,15 @@ import org.xml.sax.SAXException;
 /**
  * Manage project
  */
-public class ManageProject {
+public class ManageProject implements Serializable {
+	private static final long serialVersionUID = 8542753258937072910L;
     /** Manage file */
     private String manageFile;
     /** Groups */
     private List<Group> groups;
-    /** Sources - only valid if version of Manage file < 17 */
+    /** Sources - only valid if version of Manage file lt 17 */
     private List<Source> sources;
-    /** Compilers - only valid if version of Manage file >= 17 */
+    /** Compilers - only valid if version of Manage file gt= 17 */
     private List<Compiler> compilers;
     /** Jobs */
     private List<MultiJobDetail> jobs;
@@ -78,6 +83,20 @@ public class ManageProject {
         compilers = new ArrayList<>();
         jobs = new ArrayList<>();
     }
+    /**
+     * When calling from the pipeline only the path is passed, need to read 
+     * in contents of the file to use the parseFromPipeline() method.
+     * @throws IOException  exception 
+     * @throws InvalidProjectFileException  exception 
+     */
+    public void parseFromPipeline() throws IOException, InvalidProjectFileException {
+
+        String content = new String (Files.readAllBytes(Paths.get(manageFile)));
+        manageFile = content;
+        parse();
+    }
+    
+    
     /**
      * Parse the project file
      * @throws IOException exception
@@ -129,7 +148,7 @@ public class ManageProject {
             Logger.getLogger(NewSingleJob.class.getName()).log(Level.SEVERE, null, ex);
             throw new InvalidProjectFileException();
         } catch (SAXException ex) {
-//            Logger.getLogger(NewSingleJob.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(NewSingleJob.class.getName()).log(Level.SEVERE, null, ex);
             throw new InvalidProjectFileException();
         }
         if (SourceCollectionFound) {
@@ -183,12 +202,14 @@ public class ManageProject {
             this.name = name;
         }
     }
-    private class Environment extends BaseElement {
+    private class Environment extends BaseElement implements Serializable {
+		private static final long serialVersionUID = 3034737707481469634L;
         public Environment(String name) {
             super(name);
         }
     }
-    private class Compiler extends BaseElement {
+    private class Compiler extends BaseElement implements Serializable {
+		private static final long serialVersionUID = 1589398746960619492L;
         private List<TestSuite> testsuites;
         public Compiler() {
             super(null);
@@ -216,7 +237,8 @@ public class ManageProject {
             }
         }
     }
-    private class Group extends BaseElement {
+    private class Group extends BaseElement implements Serializable {
+		private static final long serialVersionUID = -3853981706915279144L;
         private List<Environment> envs;
         public Group(String name) {
             super(name);
@@ -239,7 +261,8 @@ public class ManageProject {
             }
         }
     }
-    private class Platform extends BaseElement {
+    private class Platform extends BaseElement implements Serializable {
+		private static final long serialVersionUID = -4654058958485216364L;
         private List<Compiler> compilers;
         public Platform(String name) {
             super(name);
@@ -261,7 +284,8 @@ public class ManageProject {
             }
         }
     }
-    private class Source extends BaseElement {
+    private class Source extends BaseElement implements Serializable {
+		private static final long serialVersionUID = 5593732464142577808L;
         private List<Platform> platforms;
         public Source(String name) {
             super(name);
@@ -282,7 +306,8 @@ public class ManageProject {
             }
         }
     }
-    private class TestSuite extends BaseElement {
+    private class TestSuite extends BaseElement implements Serializable {
+		private static final long serialVersionUID = -5423816322247056526L;
         List<Group> groups;
         public TestSuite(String name) {
             super(name);

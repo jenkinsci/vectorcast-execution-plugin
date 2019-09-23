@@ -497,7 +497,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         
         // clean up old xml_data files
         
-        logger.log(Level.INFO, "Cleaning up old xml_data files");
+        // logger.log(Level.INFO, "Cleaning up old xml_data files");
         File[] files = new File(workspace + "/xml_data/").listFiles();
         if (files != null)
         {
@@ -542,4 +542,29 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         }
     }
     private static final Logger logger = Logger.getLogger(VectorCASTSetup.class.getName());
+    
+    @Override
+    public String toString() {
+    	
+    	String string = "\nVectorCASTSetup: \n"
+    			+ "\t environmentSetupUnix: " + environmentSetupUnix +  "\n"
+    			+ "\t executePreambleWin: " + executePreambleWin +  "\n"
+    			+ "\t executePreambleUnix: " + executePreambleUnix +  "\n"
+    			+ "\t environmentTeardownWin: " + environmentTeardownWin +  "\n"
+    			+ "\t environmentTeardownUnix: " + environmentTeardownUnix +  "\n"
+    			+ "\t optionUseReporting: " + optionUseReporting +  "\n"
+    			+ "\t optionErrorLevel: " + optionErrorLevel +  "\n"
+    			+ "\t optionHtmlBuildDesc: " + optionHtmlBuildDesc +  "\n"
+    			+ "\t optionHtmlBuildDesc: " + optionHtmlBuildDesc +  "\n"
+    			+ "\t optionExecutionReport: " + optionExecutionReport +  "\n"
+    			+ "\t optionClean: " + optionClean +  "\n"
+    			+ "\t usingSCM: " + usingSCM +  "\n"
+    			+ "\t scm: " + scm +  "\n"
+    			+ "\t waitLoops: " + waitLoops +  "\n"
+    			+ "\t waitTime: " + waitTime +  "\n"
+    			+ "\t manageProjectName: " + manageProjectName +  "\n"
+    			+ "\t jobName: " + jobName +  "\n"
+    			+ "\t nodeLabel: " + nodeLabel +  "\n";
+    	return string;
+    }
 }

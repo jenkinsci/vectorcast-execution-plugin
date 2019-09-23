@@ -23,10 +23,13 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import java.io.Serializable;
+
 /**
  * Details about a manage job
  */
-public class MultiJobDetail {
+public class MultiJobDetail implements Serializable {
+	private static final long serialVersionUID = 7631009764284716913L;
     /** Project name */
     private String projName;
     /** Level */
@@ -35,6 +38,8 @@ public class MultiJobDetail {
     private String environment;
     /** Compiler */
     private String compiler;
+    
+    private String testSuite;
     /**
      * Constructor
      * @param source source
@@ -52,6 +57,7 @@ public class MultiJobDetail {
         }
         this.environment = environment;
         this.compiler = compiler;
+        this.testSuite = testSuite;
     }
     /**
      * Get compiler
@@ -80,5 +86,22 @@ public class MultiJobDetail {
      */
     public String getEnvironment() {
         return environment;
+    }
+    
+    public String getTestSuite() {
+    	return testSuite;
+    }
+    
+    @Override
+    public String toString() {
+         
+         String asString = "MultiJobDetail: \n\n"
+        		 + "\t Project Name: " + projName + "\n"
+        		 + "\t Level: " + level + "\n" 
+        		 + "\t Environment: " + environment  + "\n"
+        		 + "\t Compiler: " + compiler + "\n"
+        		 + "\t TestSuite: " + testSuite + "\n";
+         
+         return asString;
     }
 }

@@ -40,9 +40,6 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FilenameUtils;
 import org.jenkinsci.lib.dtkit.type.TestType;
-//import org.jenkinsci.plugins.xunit.XUnitPublisher;
-//import org.jenkinsci.plugins.xunit.threshold.XUnitThreshold;
-//import org.jenkinsci.plugins.xunit.types.CheckType;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -99,6 +96,8 @@ abstract public class BaseJob {
     private String jobName;
     /** Node label */
     private String nodeLabel;
+    /** Workspace location */
+    private String sharedLoc;
     /**
      * Constructor
      * @param request request object
@@ -145,6 +144,7 @@ abstract public class BaseJob {
             
             jobName = json.optString("jobName", null);
             nodeLabel = json.optString("nodeLabel", "");
+            sharedLoc = json.optString("workspace", "");
         }
     }
     /**
@@ -391,6 +391,15 @@ abstract public class BaseJob {
     protected String getNodeLabel() {
         return nodeLabel;
     }
+
+    /**
+     * Get workspace
+     * @return node label
+     */
+    protected String getWorkspace() {
+        return this.sharedLoc;
+    }
+
     /**
      * Get request
      * @return request
@@ -422,6 +431,7 @@ abstract public class BaseJob {
             project.getBuildWrappersList().add(cleanup);
         }
     }
+
     /**
      * Create the job(s)
      * @param update true/false

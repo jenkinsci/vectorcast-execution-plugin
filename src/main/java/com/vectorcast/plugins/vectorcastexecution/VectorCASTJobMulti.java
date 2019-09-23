@@ -26,6 +26,7 @@ package com.vectorcast.plugins.vectorcastexecution;
 import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewMultiJob;
+
 import hudson.Extension;
 import hudson.model.Descriptor;
 import java.io.IOException;
@@ -94,6 +95,6 @@ public class VectorCASTJobMulti extends JobBase {
             return new HttpRedirect("exists");
         } catch (InvalidProjectFileException ex) {
             return new HttpRedirect("invalid");
-        }
+        } 
     }
 }
