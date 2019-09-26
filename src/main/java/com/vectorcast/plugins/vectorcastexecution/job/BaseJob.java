@@ -96,8 +96,7 @@ abstract public class BaseJob {
     private String jobName;
     /** Node label */
     private String nodeLabel;
-    /** Workspace location */
-    private String sharedLoc;
+    
     /**
      * Constructor
      * @param request request object
@@ -144,7 +143,7 @@ abstract public class BaseJob {
             
             jobName = json.optString("jobName", null);
             nodeLabel = json.optString("nodeLabel", "");
-            sharedLoc = json.optString("workspace", "");
+            
         }
     }
     /**
@@ -392,13 +391,6 @@ abstract public class BaseJob {
         return nodeLabel;
     }
 
-    /**
-     * Get workspace
-     * @return node label
-     */
-    protected String getWorkspace() {
-        return this.sharedLoc;
-    }
 
     /**
      * Get request

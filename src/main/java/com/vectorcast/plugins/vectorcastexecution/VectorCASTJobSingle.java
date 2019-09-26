@@ -46,8 +46,10 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class VectorCASTJobSingle extends JobBase {
     /** Job already exists exception */
     private JobAlreadyExistsException exception;
+    
     /** Project name */
     private String projectName;
+    
     /**
      * Get the project name
      * @return project name

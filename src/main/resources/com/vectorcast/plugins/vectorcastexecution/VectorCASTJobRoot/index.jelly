@@ -36,15 +36,7 @@
             <j:out value="${%VCJob.Control.Single.Description}"/>
           </div>
         </t:summary>
-      
-        <t:summary icon="${it.iconFileName}"
-                   href="multi-job" iconOnly="true">
-          <div class="link"><a href="${href}">${%VCJob.Control.Multi.Title}</a></div>
-          <div style="color:gray; text-decoration:none;">
-            <j:out value="${%VCJob.Control.Multi.Description}"/>
-          </div>
-        </t:summary> -->
-      
+        
         <t:summary icon="${it.iconFileName}"
                    href="pipeline-job" iconOnly="true">
           <div class="link"><a href="${href}">${%VCJob.Control.Pipeline.Title}</a></div>
@@ -53,11 +45,33 @@
           </div>
         </t:summary>
 
+       </table>
+       
+      <h3>${%VCJob.Deprecated.Title}</h3>
+      <p>${%VCJob.Deprecated.Description}</p>
+
+      <table>
+        <t:summary icon="${it.iconFileName}"
+                   href="multi-job" iconOnly="true">
+          <div class="link"><a href="${href}">${%VCJob.Control.Multi.Title}</a></div>
+          <div style="color:gray; text-decoration:none;">
+            <j:out value="${%VCJob.Control.Multi.Description}"/>
+          </div>
+        </t:summary>
+      
         <t:summary icon="${it.iconFileName}"
                    href="job-update" iconOnly="true">
           <div class="link"><a href="${href}">${%VCJob.Control.Update.Title}</a></div>
           <div style="color:gray; text-decoration:none;">
             <j:out value="${%VCJob.Control.Update.Description}"/>
+          </div>
+        </t:summary>
+
+        <t:summary icon="${it.iconFileName}"
+                   href="job-auto-update" iconOnly="true">
+          <div class="link"><a href="${href}">${%VCJob.Control.AutoUpdate.Title}</a></div>
+          <div style="color:gray; text-decoration:none;">
+            <j:out value="${%VCJob.Control.AutoUpdate.Description}"/>
           </div>
         </t:summary>
 
@@ -69,18 +83,6 @@
           </div>
         </t:summary>
 
-      </table>
-      
-      <h3>${%VCJob.ExtraOptions.Title}</h3>
-      <table>
-
-          <t:summary icon="${it.iconFileName}"
-                   href="job-auto-update" iconOnly="true">
-          <div class="link"><a href="${href}">${%VCJob.Control.AutoUpdate.Title}</a></div>
-          <div style="color:gray; text-decoration:none;">
-            <j:out value="${%VCJob.Control.AutoUpdate.Description}"/>
-          </div>
-        </t:summary>
 
       </table>
       

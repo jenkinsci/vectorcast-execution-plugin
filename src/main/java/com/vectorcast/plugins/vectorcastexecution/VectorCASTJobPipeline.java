@@ -26,6 +26,7 @@ package com.vectorcast.plugins.vectorcastexecution;
 // import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
+import com.vectorcast.plugins.vectorcastexecution.job.ScmConflictException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewPipelineJob;
 import com.vectorcast.plugins.vectorcastexecution.job.PipelineNotSupportedException;
 
@@ -49,6 +50,13 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class VectorCASTJobPipeline extends JobBase {
     /** Job exists exception */
     private JobAlreadyExistsException exception;
+
+    /** Job exists exception */
+    private ScmConflictException scmException;
+    
+	/** project name */
+	private String projectName;
+
     /** Pipeline job object */
     private NewPipelineJob job;
     /**
@@ -59,11 +67,25 @@ public class VectorCASTJobPipeline extends JobBase {
         return job;
     }
     /**
+     * Get the project name
+     * @return project name
+     */
+    public String getProjectName() {
+        return projectName;
+    }
+    /**
      * Get the job already exists exception
      * @return job already exists exception
      */
     public JobAlreadyExistsException getException() {
         return exception;
+    }
+    /**
+     * Get the job already scm conflict exception
+     * @return job already scm conflict exception
+     */
+    public ScmConflictException getScmException() {
+        return scmException;
     }
     /**
      * URL for creating pipeline job
@@ -90,10 +112,15 @@ public class VectorCASTJobPipeline extends JobBase {
     public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
         try {
             // Create Pipeline job
-            job = new NewPipelineJob(request, response, false);
+            job = new NewPipelineJob(request, response);
             job.create(false);
+            projectName = job.getProjectName();
+        	Logger.getLogger(VectorCASTJobPipeline.class.getName()).log(Level.SEVERE, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
             return new HttpRedirect("created");
-        } catch (JobAlreadyExistsException ex) {
+        } catch (ScmConflictException ex) {
+            scmException = ex;
+            return new HttpRedirect("conflict");
+        }catch (JobAlreadyExistsException ex) {
             exception = ex;
             return new HttpRedirect("exists");
         } catch (InvalidProjectFileException ex) {

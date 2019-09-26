@@ -50,7 +50,7 @@ def make_relative(path, workspace):
         
     else:
         print "  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace
-        # something went wildy wrong -- raise an exception
+        # something went wildly wrong -- raise an exception
         # raise Exception ("Problem updating database path to remove workspace:\n\n   PATH: " + path + "\n   WORKSPACE: " + workspace)
     
     return path

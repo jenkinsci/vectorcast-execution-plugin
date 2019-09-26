@@ -36,17 +36,26 @@
       <f:form name="create" action="create" method="post">
         <h1>${%VCJob.Control.Title}</h1>
         <p>${%VCJob.Control.Description}</p>
+        
+        
         <f:section title="${%VCJob.Control.Project}">
           <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}"
-                   help="/plugin/vectorcast-execution/help-projectPathPipe.html">
+                   help="/plugin/vectorcast-execution/help-projectPath.html">
             <f:textbox name="manageProjectName" size="50" required="true" />
           </f:entry>
         </f:section>
+        
         <vc:retry></vc:retry>
         <vc:jobOptionsDefault></vc:jobOptionsDefault>
-        <vc:scripts></vc:scripts>
-        <vc:options></vc:options>
-        <vc:scm></vc:scm>
+        <vc:pipelineScripts></vc:pipelineScripts>
+
+        <f:section title="${%VCJob.Control.SCMCheckoutLine}">
+          <f:entry title="${%VCJob.Control.SCMCheckoutLine.snippet.title}" description="${%VCJob.Control.SCMCheckoutLine.snippet.description}"
+                   help="/plugin/vectorcast-execution/help-scmSnippet.html">
+            <f:textarea name="scmSnippet" class="fixed-width" required="false" />
+          </f:entry>
+        </f:section>        
+        
         <f:section>
           <f:block>
             <input type="submit" value="${%VCJob.Control.Submit}" />

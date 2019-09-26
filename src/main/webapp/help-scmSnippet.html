@@ -23,15 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <div>
-    These commands will be executed before VectorCAST/Manage is run. They might define environment variables or call batch files to setup the environment.
-    <br/>For Windows example
-    <pre>
-    call "%VS100COMNTOOLS%\vcvars32.bat"
-    set PATH=%PATH%;x:\tools\bin
-    </pre>
-    <br/>For Linux/Unix example
-    <pre>
-    source /build/setup.sh
-    set PATH=$PATH%:/opt/tools/bin
-    </pre>
+    This is the Jenkins Pipeline Snippet for your specific SCM. 
+    You can go to your Jenkins server's Snippet Generator page to generate the snippet:
+    
+    <a href="/pipeline-syntax" target="_blank"> Snippet Generator </a>
+    <p> Select "Check out" from Sample Step and fill in your details.</p>
+    <p> Then select the Generate Pipeline Snippet button and copy/paste your  </p>
+    <p> SCM snippet above </p>
 </div>
