@@ -83,6 +83,7 @@ public class NewSingleJob extends BaseJob {
         String win = 
 getEnvironmentSetupWin() + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
+"set VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --status\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --force --release-locks\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
@@ -108,6 +109,7 @@ getExecutePreambleWin() +
         String unix = 
 getEnvironmentSetupUnix() + "\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
+"export VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --status \"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --force --release-locks \"\n" +
 getExecutePreambleUnix() +
