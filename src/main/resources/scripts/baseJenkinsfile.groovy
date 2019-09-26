@@ -29,7 +29,7 @@ VC_FailurePhrases = ["py did not execute correctly",
                   "Abnormal Termination on Environment",
                   "not recognized as an internal or external command"]
                 
-VC_UnstablePhrases = ["Value Line Error - Command Ignored"]                
+VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang"]                
        
 // check log for errors
 
@@ -200,7 +200,6 @@ pipeline {
                             EnvList = EnvList + [trimmedString]
                         }
                     }
-                    println EnvList
                     
                     // down to here                                                                            ^^^
                     // -------------------------------------------------------------------------------------------                    
@@ -288,9 +287,7 @@ pipeline {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', 
                     message : "Failure while checking reports...Please see the console for more information") {
                     script {
-                            
-                        println "getting the log"
-                        
+                                                    
                         // get the console log - this requires running outside of the Groovy Sandbox
                         def logContent = Jenkins.getInstance()
                             .getItemByFullName(env.JOB_NAME)
@@ -304,15 +301,8 @@ pipeline {
                         
                         boolean failure = false
                         boolean unstable = false
-                        
-                        println "checking for errors"
-                        
-                        (foundKeywords, failure, unstable) = checkLogsForErrors(logContent)
-                        
-                        println "found keywords: " + foundKeywords
-                        println "failure = " + failure
-                        println "unstable = " + unstable
-                        
+                                                
+                        (foundKeywords, failure, unstable) = checkLogsForErrors(logContent)                        
                         
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly
