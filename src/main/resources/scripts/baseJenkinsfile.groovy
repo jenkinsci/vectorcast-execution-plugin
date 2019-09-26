@@ -29,7 +29,7 @@ VC_FailurePhrases = ["py did not execute correctly",
                   "Abnormal Termination on Environment",
                   "not recognized as an internal or external command"]
                 
-VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang"]                
+VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.lang.Exception"]                
        
 // check log for errors
 
@@ -302,7 +302,11 @@ pipeline {
                         boolean failure = false
                         boolean unstable = false
                                                 
-                        (foundKeywords, failure, unstable) = checkLogsForErrors(logContent)                        
+                        (foundKeywords, failure, unstable) = checkLogsForErrors(logContent) 
+
+                        if (foundKeywords.endsWith(",")) {
+                            foundKeywords = foundKeywords[0..-2]
+                        }
                         
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly

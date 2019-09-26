@@ -401,7 +401,6 @@ public class NewPipelineJob extends BaseJob {
             "def scmStep () { " + pipelineSCM + " }\n" + 
             "VC_usingSCM = " + String.valueOf(pipelineSCM.length() != 0) + "\n" + 
             "VC_sharedArtifactDirectory = \"\"\"" + sharedArtifactDirectory + "\"\"\"\n" +  
-            "VC_usingSharedArtifactDirectory = " + String.valueOf(sharedArtifactDirectory.length() != 0) + "\n" + 
             "VC_Agent_Label = '" + nodeLabel + "'\n" +  
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
