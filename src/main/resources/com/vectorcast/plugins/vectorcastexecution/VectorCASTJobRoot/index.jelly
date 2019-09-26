@@ -45,6 +45,14 @@
           </div>
         </t:summary>
 
+        <t:summary icon="${it.iconFileName}"
+                   href="delete-jobs" iconOnly="true">
+          <div class="link"><a href="${href}">${%VCJob.Control.Delete.Title}</a></div>
+          <div style="color:gray; text-decoration:none;">
+            <j:out value="${%VCJob.Control.Delete.Description}"/>
+          </div>
+        </t:summary>
+
        </table>
        
       <h3>${%VCJob.Deprecated.Title}</h3>
@@ -72,14 +80,6 @@
           <div class="link"><a href="${href}">${%VCJob.Control.AutoUpdate.Title}</a></div>
           <div style="color:gray; text-decoration:none;">
             <j:out value="${%VCJob.Control.AutoUpdate.Description}"/>
-          </div>
-        </t:summary>
-
-        <t:summary icon="${it.iconFileName}"
-                   href="delete-jobs" iconOnly="true">
-          <div class="link"><a href="${href}">${%VCJob.Control.Delete.Title}</a></div>
-          <div style="color:gray; text-decoration:none;">
-            <j:out value="${%VCJob.Control.Delete.Description}"/>
           </div>
         </t:summary>
 

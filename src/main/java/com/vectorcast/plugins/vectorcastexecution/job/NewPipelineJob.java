@@ -403,6 +403,8 @@ public class NewPipelineJob extends BaseJob {
             "VC_sharedArtifactDirectory = \"\"\"" + sharedArtifactDirectory + "\"\"\"\n" +  
             "VC_usingSharedArtifactDirectory = " + String.valueOf(sharedArtifactDirectory.length() != 0) + "\n" + 
             "VC_Agent_Label = '" + nodeLabel + "'\n" +  
+            "VC_waitTime = '"  + getWaitTime() + "'\n" +  
+            "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
             "\n" +  
             "\n" +  
             "/* DEBUG JSON REPSONSE: \n" + debugJSON + "\n*/"+
