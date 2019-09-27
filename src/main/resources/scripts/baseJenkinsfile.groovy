@@ -126,7 +126,7 @@ def transformIntoStep(inputString) {
                 
                 runCommands(cmds)
 
-                if (VC_usingSCM && !VC_usingSharedArtifactDirectory) {
+                if (VC_usingSCM && !VC_sharedArtifactDirectory.length() != 0) {
                     runCommands("""$VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py    ${VC_Manage_Project}  ${compiler}/${test_suite} ${env.JOB_NAME}_${compiler}_${test_suite}_${environment} ${environment}""" )
                 }
 
@@ -242,7 +242,7 @@ pipeline {
                     def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
 
                     // run a script to extract stashed files and process data into xml reports
-                    if (VC_usingSCM && !VC_usingSharedArtifactDirectory) {
+                    if (VC_usingSCM && !VC_sharedArtifactDirectory.length() != 0) {
                         runCommands("""$VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py""" )
                     }
                     cmds =  """
