@@ -1,4 +1,4 @@
-? Sept 2019 (0.60)
+2 Oct 2019 (0.60)
 * Update support for Manage API and VCAST_RPTS_SELF_CONTAINED
 
 13 Sept 2019 (0.59)
