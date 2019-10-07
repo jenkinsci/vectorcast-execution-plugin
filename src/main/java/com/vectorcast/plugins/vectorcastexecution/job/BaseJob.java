@@ -96,7 +96,6 @@ abstract public class BaseJob {
     private String jobName;
     /** Node label */
     private String nodeLabel;
-    
     /**
      * Constructor
      * @param request request object
@@ -143,7 +142,6 @@ abstract public class BaseJob {
             
             jobName = json.optString("jobName", null);
             nodeLabel = json.optString("nodeLabel", "");
-            
         }
     }
     /**
@@ -390,8 +388,6 @@ abstract public class BaseJob {
     protected String getNodeLabel() {
         return nodeLabel;
     }
-
-
     /**
      * Get request
      * @return request
@@ -423,7 +419,6 @@ abstract public class BaseJob {
             project.getBuildWrappersList().add(cleanup);
         }
     }
-
     /**
      * Create the job(s)
      * @param update true/false

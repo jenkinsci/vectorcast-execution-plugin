@@ -69,8 +69,17 @@ def runCommands(cmds) {
 
     // if its Linux run the sh command and save the stdout for analysis
     if (isUnix()) {
+        cmds = """
+            export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
+            export VCAST_RPTS_SELF_CONTAINED=FALSE
+            """ + cmds
+
         log = sh  label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
     } else {
+        cmds = """
+            set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
+            set VCAST_RPTS_SELF_CONTAINED=FALSE
+            """ + cmds
         log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
     }
     

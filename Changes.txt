@@ -1,3 +1,12 @@
+2 Oct 2019 (0.60)
+* Update support for Manage API and VCAST_RPTS_SELF_CONTAINED
+
+13 Sept 2019 (0.59)
+* Update for VECTORCAST_DIR rollback
+
+11 Sept 2019 (0.58)
+* Update for different drive than workspace
+
 6 Sept 2019 (0.57)
 * Updates for duplicate results in multijob
  

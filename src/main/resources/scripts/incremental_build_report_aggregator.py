@@ -25,6 +25,7 @@ import argparse
 import os
 import sys
 import shutil
+from io import open
 
 # This script takes Manage Incremental Rebuild Reports and combines them
 #     into one comprehensive report.
@@ -126,12 +127,24 @@ def parse_html_files():
     preserved_count = 0
     executed_count = 0
     total_count = 0
-    main_row_list = main_soup.table.table.tr.find_next_siblings()
-    main_count_list = main_row_list[-1].td.find_next_siblings()
+    if main_soup.find(id="report-title"):
+        main_manage_api_report = True
+        # New Manage reports have div with id=report-title
+        # Want second table (skip config data section)
+        main_row_list = main_soup.find_all('table')[1].tr.find_next_siblings()
+        main_count_list = main_row_list[-1].th.find_next_siblings()
+    else:
+        main_manage_api_report = False
+        main_row_list = main_soup.table.table.tr.find_next_siblings()
+        main_count_list = main_row_list[-1].td.find_next_siblings()
+
     preserved_count = preserved_count + int(main_count_list[1].get_text())
     executed_count = executed_count + int(main_count_list[2].get_text())
     total_count = total_count + int(main_count_list[3].get_text())
-    build_success, build_total = [int(s.strip()) for s in main_count_list[0].get_text().strip().split('(')[-1][:-1].split('/')]
+    if main_manage_api_report:
+        build_success, build_total = [int(s.strip()) for s in main_count_list[0].get_text().strip().split('(')[0][:-1].split('/')]
+    else:
+        build_success, build_total = [int(s.strip()) for s in main_count_list[0].get_text().strip().split('(')[-1][:-1].split('/')]
     
     insert_idx = 2
     for file in report_file_list[1:]:
@@ -139,15 +152,29 @@ def parse_html_files():
             soup = BeautifulSoup(open(file),features="lxml")
         except:
             soup = BeautifulSoup(open(file))
-        row_list = soup.table.table.tr.find_next_siblings()
-        count_list = row_list[-1].td.find_next_siblings()
+        if soup.find(id="report-title"):
+            manage_api_report = True
+            # New Manage reports have div with id=report-title
+            # Want second table (skip config data section)
+            row_list = soup.find_all('table')[1].tr.find_next_siblings()
+            count_list = row_list[-1].th.find_next_siblings()
+        else:
+            manage_api_report = False
+            row_list = soup.table.table.tr.find_next_siblings()
+            count_list = row_list[-1].td.find_next_siblings()
         for item in row_list[:-1]:
-            main_soup.table.table.insert(insert_idx,item)
+            if manage_api_report:
+                main_soup.find_all('table')[1].insert(insert_idx,item)
+            else:
+                main_soup.table.table.insert(insert_idx,item)
             insert_idx = insert_idx + 1
         preserved_count = preserved_count + int(count_list[1].get_text())
         executed_count = executed_count + int(count_list[2].get_text())
         total_count = total_count + int(count_list[3].get_text())
-        build_totals = [int(s.strip()) for s in count_list[0].get_text().strip().split('(')[-1][:-1].split('/')]
+        if manage_api_report:
+            build_totals = [int(s.strip()) for s in count_list[0].get_text().strip().split('(')[0][:-1].split('/')]
+        else:
+            build_totals = [int(s.strip()) for s in count_list[0].get_text().strip().split('(')[-1][:-1].split('/')]
         build_success = build_success + build_totals[0]
         build_total = build_total + build_totals[1]
 
@@ -155,13 +182,21 @@ def parse_html_files():
         percentage = build_success * 100 / build_total
     except:
         percentage = 0
-    main_soup.table.table.tr.find_next_siblings()[-1].td.find_next_siblings()[0].string.replace_with(str(percentage) + "% (" + str(build_success) + " / " + str(build_total) + ")")
-    main_soup.table.table.tr.find_next_siblings()[-1].td.find_next_siblings()[1].string.replace_with(str(preserved_count))
-    main_soup.table.table.tr.find_next_siblings()[-1].td.find_next_siblings()[2].string.replace_with(str(executed_count))
-    main_soup.table.table.tr.find_next_siblings()[-1].td.find_next_siblings()[3].string.replace_with(str(total_count))
+    if main_manage_api_report:
+        main_row_list = main_soup.find_all('table')[1].tr.find_next_siblings()
+        main_count_list = main_row_list[-1].th.find_next_siblings()
+        main_count_list[0].string.replace_with(str(build_success) + " / " + str(build_total) + " (" + str(percentage) + "%)" )
+    else:
+        main_row_list = main_soup.table.table.tr.find_next_siblings()
+        main_count_list = main_row_list[-1].td.find_next_siblings()
+        main_count_list[0].string.replace_with(str(percentage) + "% (" + str(build_success) + " / " + str(build_total) + ")")
+
+    main_count_list[1].string.replace_with(str(preserved_count))
+    main_count_list[2].string.replace_with(str(executed_count))
+    main_count_list[3].string.replace_with(str(total_count))
 
     # moving rebuild reports down in to a sub directory
-    f = open("CombinedReport.html","w")
+    f = open("CombinedReport.html","w", encoding="utf-8")
     f.write(main_soup.prettify(formatter="html"))
     f.close()
     

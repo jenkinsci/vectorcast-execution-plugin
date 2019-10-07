@@ -26,7 +26,6 @@ package com.vectorcast.plugins.vectorcastexecution;
 import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
-
 import hudson.Extension;
 import hudson.model.Descriptor;
 import java.io.IOException;
@@ -46,10 +45,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class VectorCASTJobSingle extends JobBase {
     /** Job already exists exception */
     private JobAlreadyExistsException exception;
-    
     /** Project name */
     private String projectName;
-    
     /**
      * Get the project name
      * @return project name
@@ -99,7 +96,7 @@ public class VectorCASTJobSingle extends JobBase {
         } catch (InvalidProjectFileException ex) {
             // Can't happen for the single job
             Logger.getLogger(VectorCASTJobSingle.class.getName()).log(Level.SEVERE, null, ex);
-            return new HttpRedirect("invalid");
+            return new HttpRedirect("exists");
         }
     }
 }

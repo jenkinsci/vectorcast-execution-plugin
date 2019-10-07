@@ -497,7 +497,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         
         // clean up old xml_data files
         
-        // logger.log(Level.INFO, "Cleaning up old xml_data files");
+        logger.log(Level.INFO, "Cleaning up old xml_data files");
         File[] files = new File(workspace + "/xml_data/").listFiles();
         if (files != null)
         {

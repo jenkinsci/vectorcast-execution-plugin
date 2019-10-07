@@ -124,7 +124,8 @@ public class VectorCASTJobPipeline extends JobBase {
             exception = ex;
             return new HttpRedirect("exists");
         } catch (InvalidProjectFileException ex) {
-            return new HttpRedirect("invalid");
+			// cannot happen on pipeline job as we don't read the project
+            return new HttpRedirect("exists");
         } catch (PipelineNotSupportedException ex) {
         	Logger.getLogger(VectorCASTJobPipeline.class.getName()).log(Level.SEVERE, null, ex);
         	return new HttpRedirect("unsupported");

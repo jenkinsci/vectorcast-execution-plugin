@@ -278,12 +278,12 @@ def generateCoverReport(path, env, level ):
     from vector.apps.DataAPI.cover_api import CoverApi
 
     api=CoverApi(path)
-    
+
     report_name = "management/" + env + "_" + level + ".html"
 
     try:
         CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
-        
+
         fixup_css(report_name)
     except Exception as e:
         print "   *Problem generating custom report for " + env + ": "
@@ -291,7 +291,7 @@ def generateCoverReport(path, env, level ):
 
 def generateUTReport(path, env, level): 
     global verbose
-    
+
     from vector.apps.ReportBuilder.custom_report import CustomReport
     try:
         from vector.apps.DataAPI.unit_test_api import UnitTestApi
@@ -319,7 +319,6 @@ def generateUTReport(path, env, level):
 def generateIndividualReports(entry, envName):
     global verbose
 
-    output = ""
     env = entry["env"]
     build_dir = entry["build_dir"]
     level = entry["compiler"] + "_" + entry["testsuite"]

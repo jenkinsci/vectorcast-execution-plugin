@@ -343,6 +343,7 @@ public class NewMultiJob extends BaseJob {
 
         String win =
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
+"set VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
 getEnvironmentSetupWin() + "\n";
         if (isUsingSCM()) {
             win +=
@@ -368,6 +369,7 @@ getEnvironmentTeardownWin() + "\n";
 
         String unix =
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
+"export VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
 getEnvironmentSetupUnix() + "\n";
         if (isUsingSCM()) {
             unix +=
@@ -612,6 +614,7 @@ getEnvironmentTeardownUnix() + "\n" +
 
         String win =
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
+"set VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
 getEnvironmentSetupWin() + "\n";
         win +=
 getExecutePreambleWin() +
@@ -634,6 +637,7 @@ getEnvironmentTeardownWin() + "\n" +
         
         String unix = 
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
+"export VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
 getEnvironmentSetupUnix() + "\n";
         unix +=
 getExecutePreambleUnix() +
