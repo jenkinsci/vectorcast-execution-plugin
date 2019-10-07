@@ -661,7 +661,14 @@ class GenerateXml(BaseGenerateXml):
             self.units.sort(key=lambda x: (x.coverage_type, x.unit_index))
         else:
             self.units = self.api.Unit.all()
-        cov_type = self.api.environment.coverage_type_text
+            
+        # unbuilt (re: Error) Ada environments causing a crash
+        try:
+            cov_type = self.api.environment.coverage_type_text
+        except Exception as e:
+            print "Couldn't access coverage information...skipping.  Check console for environment build/execution errors"
+            return
+            
         self._generate_cover(cov_type)
 
         self.start_cov_file_environment()

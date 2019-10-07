@@ -40,9 +40,6 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FilenameUtils;
 import org.jenkinsci.lib.dtkit.type.TestType;
-//import org.jenkinsci.plugins.xunit.XUnitPublisher;
-//import org.jenkinsci.plugins.xunit.threshold.XUnitThreshold;
-//import org.jenkinsci.plugins.xunit.types.CheckType;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
