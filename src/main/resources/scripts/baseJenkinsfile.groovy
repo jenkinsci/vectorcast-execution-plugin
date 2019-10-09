@@ -139,7 +139,9 @@ def transformIntoStep(inputString) {
                     runCommands("""$VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py    ${VC_Manage_Project}  ${compiler}/${test_suite} ${env.JOB_NAME}_${compiler}_${test_suite}_${environment} ${environment}""" )
                 }
 
-                stash includes: '**/*_rebuild*,execution/*.html, management/*.html, xml_data/**, *_build.tar', name: stashName as String
+                // no cleanup - possible CBT
+                // use individual names
+                stash includes: "**/${compiler}_${test_suite}_${environment}_rebuild.html, **/*.css, **/*.png, execution/*.html, management/*${compiler}_${test_suite}_${environment}*, xml_data/*${compiler}_${test_suite}_${environment}*, ${env.JOB_NAME}_${compiler}_${test_suite}_${environment}_build.tar", name: stashName as String
             }
         }
     }
@@ -285,8 +287,10 @@ pipeline {
 
                 // Save all the html, xml, and txt files
                 archiveArtifacts '*.html'
-                archiveArtifacts '*/*.html'
-                archiveArtifacts '*/*.xml'
+                archiveArtifacts '**/*.html'
+                archiveArtifacts '**/*.xml'
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.css'
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.png'
                 archiveArtifacts '*.txt'
             }
         }

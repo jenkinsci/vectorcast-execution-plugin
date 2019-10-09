@@ -209,8 +209,8 @@ def genDataApiReports(entry, jUnit):
         jobNameDotted = '.'.join([entry["compiler"], entry["testsuite"], entry["env"]])
         jenkins_name = level + "_" + env
         jenkins_link = env + "_" + level
-        xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + env + "_" + level + ".xml"
-        xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + env + "_" + level + ".xml"
+        xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + level + "_" + env + ".xml"
+        xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + level + "_" + env + ".xml"
 
         xml_file = GenerateXml(entry["build_dir"],
                                entry["env"],entry["compiler"],entry["testsuite"],
@@ -279,7 +279,7 @@ def generateCoverReport(path, env, level ):
 
     api=CoverApi(path)
 
-    report_name = "management/" + env + "_" + level + ".html"
+    report_name = "management/" + level + "_" + env + ".html"
 
     try:
         CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
@@ -300,7 +300,7 @@ def generateUTReport(path, env, level):
 
     api=UnitTestApi(path)
 
-    report_name = "management/" + env + "_" + level + ".html"
+    report_name = "management/" + level + "_" + env + ".html"
 
     # custom report patch for SP1 problem - should be fixed in future release      
     old_init = CustomReport._post_init
@@ -542,9 +542,9 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                     vcastcsv2jenkins.run  (test = testResultName, coverage = coverageResultsName, useExecRpt=generate_individual_reports, version=version, junit=junit)
 
                     if envName:
-                        adjustedReportName = "management" + os.sep + envName + "_" + jobName + ".html"
+                        adjustedReportName = "management" + os.sep + jobName + "_" + envName + ".html"
                     else:
-                        adjustedReportName = "management" + os.sep + env + "_" + jobName + ".html"
+                        adjustedReportName = "management" + os.sep + jobName + "_" + env + ".html"
 
                 # Create a list for later to copy the files over
                 copyList.append([reportName,adjustedReportName])

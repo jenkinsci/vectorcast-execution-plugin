@@ -75,10 +75,10 @@ def getCsvName(HtmlReportName,level,reportType):
     envName = os.path.basename(HtmlReportName)[:-23]
     if len(level) == 2:
         # Level does not include source and platform
-        jobName = envName + "_" + level[0] + "_" + level[1].rstrip()
+        jobName =   level[0] + "_" + level[1].rstrip() + "_" + envName
     else:
         # Level includes source and platform
-        jobName = envName + "_" + level[2] + "_" + level[3].rstrip()
+        jobName = level[2] + "_" + level[3].rstrip() + "_" + envName
     
     (root, ext) = os.path.splitext(os.path.basename(HtmlReportName))
     

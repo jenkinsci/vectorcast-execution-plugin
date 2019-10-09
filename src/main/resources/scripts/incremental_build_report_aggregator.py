@@ -111,6 +111,13 @@ Environments Affected
     for file in report_file_list[1:]:
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
+        
+    # copy the CCS and PNG files for manage rebuild reports...if available
+    import glob        
+    for file in glob.glob("*.ccs"):
+        shutil.copy(file, "rebuild_reports/"+file)
+    for file in glob.glob("*.png"):
+        shutil.copy(file, "rebuild_reports/"+file)
 
 def parse_html_files():
 
