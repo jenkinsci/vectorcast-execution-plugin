@@ -112,9 +112,9 @@ Environments Affected
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
         
-    # copy the CCS and PNG files for manage rebuild reports...if available
+    # copy the CSS and PNG files for manage rebuild reports...if available
     import glob        
-    for file in glob.glob("*.ccs"):
+    for file in glob.glob("*.css"):
         shutil.copy(file, "rebuild_reports/"+file)
     for file in glob.glob("*.png"):
         shutil.copy(file, "rebuild_reports/"+file)
