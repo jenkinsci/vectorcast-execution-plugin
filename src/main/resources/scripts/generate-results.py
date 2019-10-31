@@ -41,7 +41,17 @@ import tcmr2csv
 import vcastcsv2jenkins
 from managewait import ManageWait
 import generate_qa_results_xml
+from parse_console_for_cbt import ParseConsoleForCBT
 
+try:
+    from vector.apps.ReportBuilder.custom_report import CustomReport
+    try:
+        from vector.apps.DataAPI.unit_test_api import UnitTestApi
+    except:
+        from vector.apps.DataAPI.api import Api as UnitTestApi
+except:
+    pass
+    
 #global variables
 global verbose
 global wait_time
@@ -196,7 +206,7 @@ def delete_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
         
-def genDataApiReports(entry, jUnit):
+def genDataApiReports(entry, jUnit, cbtDict):
     xml_file = ""
     
     try:
@@ -220,7 +230,8 @@ def genDataApiReports(entry, jUnit):
                                jenkins_link,
                                jobNameDotted, 
                                verbose, 
-                               jUnit)
+                               jUnit,
+                               cbtDict)
                                
         if xml_file.api != None:
             if verbose:
@@ -292,22 +303,11 @@ def generateCoverReport(path, env, level ):
 def generateUTReport(path, env, level): 
     global verbose
 
-    from vector.apps.ReportBuilder.custom_report import CustomReport
-    try:
-        from vector.apps.DataAPI.unit_test_api import UnitTestApi
-    except:
-        from vector.apps.DataAPI.api import Api as UnitTestApi
 
     api=UnitTestApi(path)
 
     report_name = "management/" + level + "_" + env + ".html"
 
-    # custom report patch for SP1 problem - should be fixed in future release      
-    old_init = CustomReport._post_init
-    def new_init(self):
-        old_init(self)
-        self.context['report']['use_all_testcases'] = True
-    CustomReport._post_init = new_init
     try:
         CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "MCDC_TABLES", "OVERALL_RESULTS", "METRICS", "USER_CODE", "TESTCASE_SECTIONS", "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"], testcase_sections=["FULL_TEST_CASE_CONFIG_DATA", "TEST_CASE_DATA", "EXECUTION_RESULTS"])
         fixup_css(report_name)
@@ -333,25 +333,25 @@ def generateIndividualReports(entry, envName):
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
 
-def useNewAPI(manageEnvs, level, envName, jUnit):
+def useNewAPI(manageEnvs, level, envName, jUnit, cbtDict):
         
     for currentEnv in manageEnvs:
         if envName == None:
-            genDataApiReports(manageEnvs[currentEnv], jUnit)
+            genDataApiReports(manageEnvs[currentEnv], jUnit, cbtDict)
             generateIndividualReports(manageEnvs[currentEnv], envName)
             
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
             if env_level.upper() == level.upper():
-                genDataApiReports(manageEnvs[currentEnv], jUnit)
+                genDataApiReports(manageEnvs[currentEnv], jUnit, cbtDict)
                 generateIndividualReports(manageEnvs[currentEnv], envName)
 
 
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
-def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, jUnit = True):
+def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, jUnit = True, cbtDict = None):
 
     if timing:
         print "Start: " + str(time.time())
@@ -419,7 +419,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         if timing:
             print "Using DataAPI for reporting"
             print "Get Info: " + str(time.time())
-        useNewAPI(manageEnvs, level, envName, jUnit)
+        useNewAPI(manageEnvs, level, envName, jUnit, cbtDict)
         if timing:
             print "XML and Individual reports: " + str(time.time())
 
@@ -585,6 +585,7 @@ if __name__ == '__main__':
     parser.add_argument('--junit',   help='Output test resutls in junit format', action="store_true")
     parser.add_argument('--api',   help='Unused', type=int)
     parser.add_argument('--final',   help='Write Final JUnit Test Results file',  action="store_true")
+    parser.add_argument('--buildlog',   help='Build Log for CBT Statitics')
 
     args = parser.parse_args()
     
@@ -592,7 +593,17 @@ if __name__ == '__main__':
         generate_qa_results_xml.genQATestResults(args.ManageProject)
         writeJunitFinalCombinedTestResults(os.path.basename(args.ManageProject))
         sys.exit(0)
-
+    try:
+        if "19.sp1" in open(os.path.join(os.environ['VECTORCAST_DIR'],"DATA/tools_version.txt").read):
+            # custom report patch for SP1 problem - should be fixed in future release      
+            old_init = CustomReport._post_init
+            def new_init(self):
+                old_init(self)
+                self.context['report']['use_all_testcases'] = True
+            CustomReport._post_init = new_init
+    except:
+        pass
+    
     tcmr2csv.useLocalCsv = True
 
     if args.verbose:
@@ -614,11 +625,20 @@ if __name__ == '__main__':
         junit = True
     else:
         junit = False
+        
+    if args.buildlog:
+        buildLogData = open(args.buildlog,"r").readlines()
+        cbt = ParseConsoleForCBT()
+        cbtDict = cbt.parse(buildLogData)
+        
+    else:
+        buildLogData = None
+
 
     # Used for pre VC19
     os.environ['VCAST_RPTS_PRETTY_PRINT_HTML'] = 'FALSE'
     # Used for VC19 SP2 onwards
     os.environ['VCAST_RPTS_SELF_CONTAINED'] = 'FALSE'
 
-    buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, junit)
+    buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, junit, cbtDict)
 

@@ -323,9 +323,11 @@ class GenerateManageXml(BaseGenerateXml):
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, useJunit = True):
+    def __init__(self, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, useJunit = True, cbtDict= None):
         super(GenerateXml, self).__init__(cover_report_name, verbose)
 
+        self.cbtDict = cbtDict
+        self.hashCode = build_dir.split("/")[-1]            
         self.usingJunit = useJunit
         self.build_dir = build_dir
         self.env = env
@@ -439,13 +441,42 @@ class GenerateXml(BaseGenerateXml):
 # Internal - write a testcase to the jUnit XML file
 #
     def write_testcase_jUnit(self, tc, unit_name, func_name):
-        testCasePassString ="        <testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
-        testCaseFailString ="""
-                <testcase name="%s" classname="%s" time="0">
-                    <failure type="failure" message="FAIL: %s"/>
-                </testcase>
-        """
+        import sys, traceback, pprint
+        tcSkipped = False
+        try:
+            compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
+            searchName = unit_name + "/" + func_name + "/" + tc.name
+            if tc.kind == TestCase.KINDS['compound']:
+                if tc.name not in compoundTests:
+                    tcSkipped = True
+                    if self.verbose: print "skipping ", self.hashCode, searchName, tc.passed
+                    
+            elif tc.kind == TestCase.KINDS['init']:
+                if tc.name not in initTests:
+                    tcSkipped = True
+                    if self.verbose: print "skipping ", self.hashCode, searchName, tc.passed
+            else:    
+                if searchName not in simpleTestcases:
+                    tcSkipped = True
+                    if self.verbose: print "skipping ", self.hashCode, searchName, tc.passed
+        except KeyError:
+            searchName = unit_name + "/" + func_name + "/" + tc.name
+            if self.verbose: print "skipping ", self.hashCode, searchName, tc.passed
+            tcSkipped = True
+        except Exception as e: 
+            pprint.pprint (self.cbtDict, width = 132)
+            traceback.print_exc()
+            sys.exit()
 
+        
+        testcaseString ="""
+        <testcase name="%s" classname="%s" time="0">
+            %s
+            <system-out>
+%s                     
+            </system-out>
+        </testcase>
+"""
         unit_name = cgi.escape(unit_name)
         func_name = cgi.escape(func_name).replace("\"","&quot;")
         tc_name = cgi.escape(tc.name)
@@ -464,29 +495,35 @@ class GenerateXml(BaseGenerateXml):
             exp_pass += summary.control_flow_total - summary.control_flow_fail
             exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
 
-        if tc.passed:
-            self.fh.write(testCasePassString % (tc_name, classname))
-        else:
+        self.api.report(
+            testcases=[tc],
+            single_testcase=True,
+            report_type="Demo",
+            formats=["TEXT"],
+            output_file="execution_results.txt",
+            sections=[ "TESTCASE_SECTIONS"],
+            testcase_sections=["EXECUTION_RESULTS"])
+
+        result = open("execution_results.txt","r").read()
+        os.remove("execution_results.txt")
+        result = cgi.escape(result)
+        result = result.replace("\"","")
+        result = result.replace("\n","&#xA;")
+
+        # Failure takes priprity  
+        if not tc.passed:
             status = "FAIL"
-            
-            self.api.report(
-                testcases=[tc],
-                single_testcase=True,
-                report_type="Demo",
-                formats=["TEXT"],
-                output_file="execution_results.txt",
-                sections=[ "TESTCASE_SECTIONS"],
-                testcase_sections=["EXECUTION_RESULTS"])
+            if tcSkipped: status += " - Skipped by CBT"
+            extraStatus = "\n            <failure type=\"failure\"/>\n"
+        elif tcSkipped:
+            status = "Skipped for CBT.  Last execution data shown."
+            extraStatus = "\n            <skipped/>\n"
+        else:
+            status = "PASS"
+            extraStatus = ""
 
-            result = open("execution_results.txt","r").read()
-            os.remove("execution_results.txt")
-            result = cgi.escape(result)
-            result = result.replace("\"","")
-            result = result.replace("\n","&#xA;")
-
-            msg = "{} {} / {}  Execution Report:\n {}".format(status, exp_pass, exp_total, result)
-
-            self.fh.write(testCaseFailString % (tc_name, classname, msg))
+        msg = "{} {} / {}  Execution Report:\n {}".format(status, exp_pass, exp_total, result)
+        self.fh.write(testcaseString % (tc_name, classname, extraStatus, msg))
 
 #
 # Internal - write a testcase to the xUnit XML file
