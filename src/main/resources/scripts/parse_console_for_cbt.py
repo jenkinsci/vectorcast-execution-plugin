@@ -3,7 +3,7 @@ from pprint import pprint
 import sys
 
 compoundTestIndex = 0
-InitTestIndex = 1
+initTestIndex = 1
 simpleTestIndex = 2
 
 

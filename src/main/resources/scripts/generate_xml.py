@@ -512,17 +512,19 @@ class GenerateXml(BaseGenerateXml):
 
         # Failure takes priprity  
         if not tc.passed:
-            status = "FAIL"
-            if tcSkipped: status += " - Skipped by CBT"
+            if tcSkipped: 
+                status = "Skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nFAIL"
+            else:
+                status = "FAIL"
             extraStatus = "\n            <failure type=\"failure\"/>\n"
         elif tcSkipped:
-            status = "Skipped for CBT.  Last execution data shown."
+            status = "Skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nPASS"
             extraStatus = "\n            <skipped/>\n"
         else:
             status = "PASS"
             extraStatus = ""
 
-        msg = "{} {} / {}  Execution Report:\n {}".format(status, exp_pass, exp_total, result)
+        msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
         self.fh.write(testcaseString % (tc_name, classname, extraStatus, msg))
 
 #
