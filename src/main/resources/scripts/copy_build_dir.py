@@ -49,7 +49,7 @@ def make_relative(path, workspace):
         path = path[workspaceIndex:].split("/",2)[2]
         
     else:
-        print "  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace
+        print("  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace)
         # something went wildly wrong -- raise an exception
         # raise Exception ("Problem updating database path to remove workspace:\n\n   PATH: " + path + "\n   WORKSPACE: " + workspace)
     
@@ -73,7 +73,7 @@ def addFile(tf, file):
 def addConvertCoverFile(tf, file, workspace, nocase):
     global build_dir
     
-    print "Updating cover.db"
+    print("Updating cover.db")
     fullpath = build_dir + os.path.sep + file
     bakpath = fullpath + '.bk'
     if os.path.isfile(fullpath):
@@ -94,7 +94,7 @@ def addConvertCoverFile(tf, file, workspace, nocase):
 
 def addConvertMasterFile(tf, file, workspace, nocase):
     global build_dir
-    print "Updating master.db"
+    print("Updating master.db")
     fullpath = build_dir + os.path.sep + file
     bakpath = fullpath + '.bk'
     if os.path.isfile(fullpath):

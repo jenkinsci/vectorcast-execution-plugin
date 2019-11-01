@@ -37,12 +37,12 @@ verbose = True
 
 def generate_from_html():
     tcmr2csv.useLocalCsv = True
-    print "Generating Combined Coverage from " + sys.argv[1]
+    print("Generating Combined Coverage from " + sys.argv[1])
     tcmr2csv.runCombinedCov(sys.argv[1])
 
 def generate_with_api():
     from generate_xml import GenerateManageXml
-    print "Use Data API to generate combined coverage XML file..."
+    print("Use Data API to generate combined coverage XML file...")
     xml_coverage_name = "xml_data/coverage_results_top-level.xml"
     manage_path = sys.argv[2]
     if os.path.isdir(manage_path):
@@ -52,7 +52,7 @@ def generate_with_api():
                            verbose, 
                            manage_path)
     if verbose:
-        print "  Generate Jenkins coverage report: {}".format(xml_coverage_name)
+        print("  Generate Jenkins coverage report: {}".format(xml_coverage_name))
     xml_file.generate_cover()
 
 
@@ -68,12 +68,12 @@ try:
         from generate_xml import GenerateManageXml
         # Using new Manage report, use Data API to generate XML
         if len(sys.argv) <= 2:
-            print ""
-            print "*******************************************************"
-            print "*** Error - Jenkins job needs to be re-generated. Second argument missing from call to gen-combined-cov.py"
-            print "*** - no coverage_results_top-level.xml generated"
-            print "*******************************************************"
-            print ""
+            print("")
+            print("*******************************************************")
+            print("*** Error - Jenkins job needs to be re-generated. Second argument missing from call to gen-combined-cov.py")
+            print("*** - no coverage_results_top-level.xml generated")
+            print("*******************************************************")
+            print("")
             sys.exit(1)
         else:
             using_api = True

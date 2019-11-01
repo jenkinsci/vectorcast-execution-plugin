@@ -76,13 +76,13 @@ class ManageWait():
             # manage finished. Was there a license outage?
             if license_outage == True :
                 if loop_count < self.wait_loops:
-                    print ("Edited license outage message : " + edited_license_outage_msg )
+                    print(("Edited license outage message : " + edited_license_outage_msg ))
                     msg = "Warning: Failed to obtain a license, sleeping %ds and then re-trying, attempt %d of %d" % (self.wait_time, loop_count+1, self.wait_loops)
                     print (msg)
                     time.sleep(self.wait_time)
                 else:
                     # send the unedited error to stdout for the post build groovy to mark a failure
-                    print ("Original license outage message : " + actual_license_outage_msg )
+                    print(("Original license outage message : " + actual_license_outage_msg ))
                     msg = "ERROR: Failed to obtain a license after %d attempts, terminating" % self.wait_loops
                     print (msg)
                     sys.exit(-1) # we could equally well break here 

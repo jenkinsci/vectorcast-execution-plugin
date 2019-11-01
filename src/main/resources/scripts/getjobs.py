@@ -27,7 +27,7 @@ def printEnvironmentInfo(ManageProjectName):
                 
             env_name = str.split()[0]
                 
-            print compiler , testsuite , env_name
+            print(compiler , testsuite , env_name)
 
 if __name__ == "__main__":
     printEnvironmentInfo(sys.argv[1])

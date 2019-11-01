@@ -61,7 +61,7 @@ Environments Affected
     full_file_list = os.listdir(".")
     for file in full_file_list:
         if "_rebuild.txt" in file[-37:]:
-            print file
+            print(file)
             report_file_list.append(file)
 
 
@@ -74,7 +74,7 @@ Environments Affected
     outStr = ""
 
     for file in report_file_list:
-        print "processing file: " + file
+        print("processing file: " + file)
         sepCount = 0
         f = open(file,"r")
         lines = f.readlines()

@@ -221,7 +221,7 @@ def procCoverageResults(HtmlReportName,table, level):
     except AttributeError:
         csv_file.write("No Coverage Found\n")
         csv_file.close()
-        print "No Coverage Found"
+        print("No Coverage Found")
         if os.path.isfile(CsvFileName):
             os.remove(CsvFileName)
         return None
@@ -251,7 +251,7 @@ def procCoverageResults(HtmlReportName,table, level):
                 
             idx += 1
     except AttributeError as e:
-        print "Error with Test Case Management Report: " + HtmlReportName
+        print("Error with Test Case Management Report: " + HtmlReportName)
         csv_file.write("Error with Test Case Management Report:\n")
         csv_file.close()
         if os.path.isfile(CsvFileName):
@@ -452,7 +452,7 @@ def procCombinedCoverageResults(HtmlReportName,table):
         else:
             dataTable = tableSoup.tr.next_sibling.next_sibling.tr        
     except AttributeError:
-        print "No Coverage Found"
+        print("No Coverage Found")
         return None
         
     titleStr = ""
@@ -491,7 +491,7 @@ def procCombinedCoverageResults(HtmlReportName,table):
                 
             idx += 1
     except AttributeError as e:
-        print "Error with Report: " + HtmlReportName
+        print("Error with Report: " + HtmlReportName)
         return None
 
     # navigate to Table's 3rd <tr> tag then to the <tr> tag inside that

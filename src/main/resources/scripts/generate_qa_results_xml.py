@@ -54,7 +54,7 @@ def generateJunitTestCase(jobname, tc_name, passFail):
         successFailure = 'failure'    
 
     if 'ABNORMAL' in passFail:
-        print "Abnormal Termination on Environment\n"
+        print("Abnormal Termination on Environment\n")
 
     unit_subp = jobname
    
@@ -177,12 +177,12 @@ def saveQATestStatus(mp):
     out, err = p.communicate()
 
 def genQATestResults(mp):
-    print "   Processing QA test results for " + mp
+    print("   Processing QA test results for " + mp)
     callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status"
     p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     if err:
-        print out, err
+        print(out, err)
     processSystemTestResultsData(out.split("\n"))
     
     saveQATestStatus(mp)

@@ -16,7 +16,8 @@ VC_Use_Threshold = true
 // ===============================================================
 
 
-VC_FailurePhrases = ["py did not execute correctly", 
+VC_FailurePhrases = ["No valid edition(s) available",
+                  "py did not execute correctly", 
                   "Traceback (most recent call last)",
                   "Failed to acquire lock on environment",
                   "Environment Creation Failed",
@@ -31,8 +32,23 @@ VC_FailurePhrases = ["py did not execute correctly",
                 
 VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.lang.Exception"]                
        
-// check log for errors
+// Return the current console log
+def getConsoleLog() {
+    return Jenkins.getInstance().getItemByFullName(env.JOB_NAME).getBuildByNumber(Integer.parseInt(env.BUILD_NUMBER)).logFile.text
+}       
 
+// setup the manage project to have preset options
+def setupManageProject() {
+    cmds = """                    
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py" --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_sharedArtifactDirectory} --status"  
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py" --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --force --release-locks"
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py" --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
+     """
+
+    runCommands(cmds)
+}
+
+// check log for errors
 def checkLogsForErrors(log) {
 
     def boolean failure = false;
@@ -67,28 +83,39 @@ def runCommands(cmds) {
     def boolean unstable = false;
     def foundKeywords = ""
 
-    // if its Linux run the sh command and save the stdout for analysis
+    println "Start Commands: " + cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR")
+     
+     // if its Linux run the sh command and save the stdout for analysis
     if (isUnix()) {
         cmds = """
+            ${VC_EnvSetup}            
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_RPTS_SELF_CONTAINED=FALSE
             """ + cmds
 
-        log = sh  label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
+        log = sh  label: 'Running VectorCAST Commands', returnStdout: true, script: cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR")
     } else {
         cmds = """
+            @echo off
+            ${VC_EnvSetup}
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
             """ + cmds
-        log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
+        log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%")
     }
     
-    println log        
+    println "Done Commands: " + log        
    
+    println "Checking logs for failure"
+    
     (foundKeywords, failure, unstable) = checkLogsForErrors(log)
     if (failure) {
         throw new Exception ("Error in VectorCAST Commands: " + foundKeywords)
     }
+    
+    println "Done Checking"
+    
+    return log
 }
 
 // transform environment data, a line at a time, into an execution node 
@@ -109,12 +136,19 @@ def transformIntoStep(inputString) {
         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
             node ( compiler as String ){
             
+                println "Starting Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
+            
                 // call any SCM step if needed
                 scmStep()
                 
                 // Run the setup step to copy over the scripts
                 step([$class: 'VectorCASTSetup'])
-                
+
+                if (VC_usingSCM) {
+                    // set options for each manage project pulled out out of SCM
+                    setupManageProject()
+                }
+
                 // get the manage projects full name and base name
                 def mpFullName = VC_Manage_Project.split("/")[-1]
                 def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
@@ -123,25 +157,30 @@ def transformIntoStep(inputString) {
                 cmds =  """
                     ${VC_EnvSetup}
                     
-                    $VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_sharedArtifactDirectory} --status"
-                    $VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
-                    $VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --force --release-locks"
-                    ${VC_Build_Preamble} $VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"      --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --level ${compiler}/${test_suite} -e ${environment} --build-execute --incremental --output ${compiler}_${test_suite}_${environment}_rebuild.html"
-                    $VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --level ${compiler}/${test_suite} -e ${environment} --junit
+                    ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"      --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --level ${compiler}/${test_suite} -e ${environment} --build-execute --incremental --output ${compiler}_${test_suite}_${environment}_rebuild.html"
                     
                     ${VC_EnvTeardown}
 
                 """
                 
                 runCommands(cmds)
+                
+                if (VC_sharedArtifactDirectory.length() == 0) {
+                    writeFile file: "build.log", text: getConsoleLog()
 
-                if (VC_usingSCM && !VC_sharedArtifactDirectory.length() != 0) {
-                    runCommands("""$VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py    ${VC_Manage_Project}  ${compiler}/${test_suite} ${env.JOB_NAME}_${compiler}_${test_suite}_${environment} ${environment}""" )
+                    runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --level ${compiler}/${test_suite} -e ${environment} --junit --buildlog build.log""")
+
+                    if (VC_usingSCM) {
+                        runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py    ${VC_Manage_Project}  ${compiler}/${test_suite} ${env.JOB_NAME}_${compiler}_${test_suite}_${environment} ${environment}""" )
+                    }
                 }
 
                 // no cleanup - possible CBT
                 // use individual names
                 stash includes: "**/${compiler}_${test_suite}_${environment}_rebuild.html, **/*.css, **/*.png, execution/*.html, management/*${compiler}_${test_suite}_${environment}*, xml_data/*${compiler}_${test_suite}_${environment}*, ${env.JOB_NAME}_${compiler}_${test_suite}_${environment}_build.tar", name: stashName as String
+                
+                println "Finished Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
+
             }
         }
     }
@@ -194,12 +233,7 @@ pipeline {
                     def EnvData = ""
                     
                     // Run a script to determine the compiler test_suite and environment
-                    if (isUnix()) {
-                        EnvData = sh label: 'GettingEnviromentInfo', returnStdout: true, script: """$VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project}"""
-                    }
-                    else {
-                        EnvData = bat label: 'GettingEnviromentInfo', returnStdout: true, script: """$VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project}"""
-                    }
+                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project}""" )
                     
                     // for a groovy list that is stored in a global variable EnvList to be use later in multiple places
                     def lines = EnvData.split('\n')
@@ -222,6 +256,8 @@ pipeline {
         stage('Build-Execute Stage') {
             steps {
                 script {
+                    setupManageProject()
+                    
                     jobs = stepsForParallel(EnvList)
                     parallel jobs
                 }
@@ -252,22 +288,31 @@ pipeline {
                     def mpFullName = VC_Manage_Project.split("/")[-1]
                     def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
 
-                    // run a script to extract stashed files and process data into xml reports
-                    if (VC_usingSCM && !VC_sharedArtifactDirectory.length() != 0) {
-                        runCommands("""$VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py""" )
+                    // if we are using SCM and not using a shared artifact directory...
+                    if (VC_usingSCM && VC_sharedArtifactDirectory.length() == 0) {
+                        // run a script to extract stashed files and process data into xml reports                        
+                        runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py""" )
+                        
+                    // else if we are using a shared artifact directory
+                    } else if (VC_sharedArtifactDirectory.length() != 0) {
+                    
+                        writeFile file: "build.log", text: getConsoleLog()
+
+                        // run the metrics at the end
+                        runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog build.log""")
                     }
                     cmds =  """
                         set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
                          
-                        $VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py --rptfmt HTML
-                        $VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --full-status=${mpName}_full_report.html"
-                        $VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --full-status > ${mpName}_full_report.txt"
-                        $VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=aggregate   --output=${mpName}_aggregate_report.html"
-                        $VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=metrics     --output=${mpName}_metrics_report.html"
-                        $VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=environment --output=${mpName}_environment_report.html"
-                        $VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/gen-combined-cov.py ${mpName}_aggregate_report.html
-                        $VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getTotals.py ${mpName}_full_report.txt
-                        $VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --final
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py --rptfmt HTML
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --full-status=${mpName}_full_report.html"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --full-status > ${mpName}_full_report.txt"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=aggregate   --output=${mpName}_aggregate_report.html"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=metrics     --output=${mpName}_metrics_report.html"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=environment --output=${mpName}_environment_report.html"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/gen-combined-cov.py ${mpName}_aggregate_report.html
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getTotals.py ${mpName}_full_report.txt
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --final
                     """
                     
                     runCommands(cmds)
@@ -302,11 +347,7 @@ pipeline {
                     script {
                                                     
                         // get the console log - this requires running outside of the Groovy Sandbox
-                        def logContent = Jenkins.getInstance()
-                            .getItemByFullName(env.JOB_NAME)
-                            .getBuildByNumber(
-                                Integer.parseInt(env.BUILD_NUMBER))
-                            .logFile.text
+                        def logContent = getConsoleLog()
                             
                         def foundKeywords = ""
                         def mpFullName = VC_Manage_Project.split("/")[-1]

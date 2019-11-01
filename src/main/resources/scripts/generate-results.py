@@ -123,7 +123,7 @@ def checkUseNewReportsAndAPI():
     if os.environ.get("VCAST_REPORT_ENGINE", "") == "LEGACY":
         # Using legacy reporting with new reports - fall back to parsing html report
         if verbose:
-            print "Reports forced to be old/legacy, so use them"
+            print("Reports forced to be old/legacy, so use them")
         return False
     # Look for existence of file that only exists in distribution with the new reports
     check_file = os.path.join(os.environ.get('VECTORCAST_DIR'),
@@ -135,11 +135,11 @@ def checkUseNewReportsAndAPI():
                              "full_report.pyc")
     if os.path.isfile(check_file):
         if verbose:
-            print "Using VectorCAST with new style reporting. Use Data API for Jenkins reports."
+            print("Using VectorCAST with new style reporting. Use Data API for Jenkins reports.")
         return True
     else:
         if verbose:
-            print "Using VectorCAST without new style reporting. Use VectorCAST reports for Jenkins reports."
+            print("Using VectorCAST without new style reporting. Use VectorCAST reports for Jenkins reports.")
         return False
 
 # Read the Manage project file to determine its version
@@ -154,8 +154,8 @@ def readManageVersion(ManageFile):
                 version = int(re.findall(r'\d+', line)[0])
                 break
     if verbose:
-        print "Version of Manage project file = %d" % version
-        print "(Levels change in version 17 (*maybe) and above)"
+        print("Version of Manage project file = %d" % version)
+        print("(Levels change in version 17 (*maybe) and above)")
     return version
 
 # Call manage to get the mapping of Envs to Directory etc.
@@ -166,7 +166,7 @@ def getManageEnvs(FullManageProjectName):
     callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --build-directory-name"
     out_mgt = runManageWithWait(callStr, silent=True)
     if verbose:
-        print out_mgt
+        print(out_mgt)
         
     for line in out_mgt.split('\n'):
         if "Compiler:" in line:
@@ -193,7 +193,7 @@ def getManageEnvs(FullManageProjectName):
             manageEnvs[level] = entry
             
             if verbose:
-                print entry
+                print(entry)
                 
         elif "Log Directory:" in line:
             pass
@@ -235,18 +235,18 @@ def genDataApiReports(entry, jUnit, cbtDict):
                                
         if xml_file.api != None:
             if verbose:
-                print "  Generate Jenkins testcase report: {}".format(xmlUnitReportName)
+                print("  Generate Jenkins testcase report: {}".format(xmlUnitReportName))
             xml_file.generate_unit()
 
             if verbose:
-                print "  Generate Jenkins coverage report: {}".format(xmlCoverReportName)
+                print("  Generate Jenkins coverage report: {}".format(xmlCoverReportName))
             xml_file.generate_cover()
         else:
-            print "   Skipping environment: " + jobNameDotted
+            print("   Skipping environment: " + jobNameDotted)
             
     except Exception as e:
-        print "ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"]
-        print e
+        print("ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"])
+        print(e)
         import traceback
         traceback.print_exc()
         
@@ -297,8 +297,8 @@ def generateCoverReport(path, env, level ):
 
         fixup_css(report_name)
     except Exception as e:
-        print "   *Problem generating custom report for " + env + ": "
-        print e
+        print("   *Problem generating custom report for " + env + ": ")
+        print(e)
 
 def generateUTReport(path, env, level): 
     global verbose
@@ -313,8 +313,8 @@ def generateUTReport(path, env, level):
         fixup_css(report_name)
 
     except Exception as e:
-        print "   *Problem generating custom report for " + env + "."
-        print e
+        print("   *Problem generating custom report for " + env + ".")
+        print(e)
 
 def generateIndividualReports(entry, envName):
     global verbose
@@ -354,7 +354,7 @@ def useNewAPI(manageEnvs, level, envName, jUnit, cbtDict):
 def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, jUnit = True, cbtDict = None):
 
     if timing:
-        print "Start: " + str(time.time())
+        print("Start: " + str(time.time()))
         
     saved_level = level
     saved_envName = envName
@@ -371,7 +371,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     manageEnvs = {}
 
     if timing:
-        print "Version Check: " + str(time.time())
+        print("Version Check: " + str(time.time()))
 
     # cleaning up old builds
     for path in ["xml_data","management","execution"]:
@@ -381,12 +381,12 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 shutil.rmtree(path)
             except:
                 # if there was an error removing the directory...delete all the files
-                print "Error removing directory: " + path
+                print("Error removing directory: " + path)
                 for file in glob.glob(path + "/*.*"):
                     try:
                         os.remove(file);
                     except:
-                        print "Error removing file after failed to remove directory: " + path + "/" + file
+                        print("Error removing file after failed to remove directory: " + path + "/" + file)
                 pass
                 
         # we should either have an empty directory or no directory
@@ -394,21 +394,21 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             try:
                 os.mkdir(path)
             except:
-                print "Error creating directory: " + path
+                print("Error creating directory: " + path)
             
     for file in glob.glob("*.csv"):
         try:
             os.remove(file);
             if verbose:
-                print "Removing file: " + file
+                print("Removing file: " + file)
         except Exception as e:
-            print "Error removing " + file
-            print e
+            print("Error removing " + file)
+            print(e)
     
     
     ### Using new data API - 2019 and beyond
     if timing:
-        print "Cleanup: " + str(time.time())
+        print("Cleanup: " + str(time.time()))
     if useNewReport:
 
         try:
@@ -417,11 +417,11 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             pass
         manageEnvs = getManageEnvs(FullManageProjectName)
         if timing:
-            print "Using DataAPI for reporting"
-            print "Get Info: " + str(time.time())
+            print("Using DataAPI for reporting")
+            print("Get Info: " + str(time.time()))
         useNewAPI(manageEnvs, level, envName, jUnit, cbtDict)
         if timing:
-            print "XML and Individual reports: " + str(time.time())
+            print("XML and Individual reports: " + str(time.time()))
 
     ### NOT Using new data API        
     else:
@@ -429,7 +429,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         # parse out the manage project name
         tcmr2csv.manageProjectName = manageProjectName
 
-        print "Generating Test Case Management Reports"
+        print("Generating Test Case Management Reports")
 
         cmd_prefix = os.environ.get('VECTORCAST_DIR') + os.sep
 
@@ -441,7 +441,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom management"
         else:
             callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --clicast-args report custom management"
-        print callStr
+        print(callStr)
 
         # capture the output of the manage call
         out_mgt = runManageWithWait(callStr)
@@ -453,18 +453,18 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             missing = True
         if missing:
             callStr = callStr.replace("report custom","cover report")
-            print callStr
+            print(callStr)
             out_mgt2 = runManageWithWait(callStr)
             out_mgt = out_mgt +  "\n" + out_mgt2
 
         if generate_individual_reports:
-            print "Generating Execution Reports"
+            print("Generating Execution Reports")
             if level and envName:
                 callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --level " + level + " --environment " + envName + " --clicast-args report custom actual"
             else:
                 callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --clicast-args report custom actual"
 
-            print callStr
+            print(callStr)
 
             out_exe = runManageWithWait(callStr)
             out = out_mgt + "\n" + out_exe
@@ -472,7 +472,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             out = out_mgt
 
         if verbose:
-            print out
+            print(out)
 
         # save the output of the manage command for debug purposes
         outFile = open("build.log", "w")
@@ -483,8 +483,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         level = ""
 
         if timing:
-            print "Using report scraping for metrics"
-            print "Individual report generation: " + str(time.time())
+            print("Using report scraping for metrics")
+            print("Individual report generation: " + str(time.time()))
         if not os.path.exists("management"):
             os.mkdir("management")
 
@@ -524,7 +524,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
                 # setup to save the execution report
                 if 'execution_results_report' in reportName:
-                    print "Processing Execution Report: " + reportName
+                    print("Processing Execution Report: " + reportName)
 
                     if envName:
                         adjustedReportName = "execution" + os.sep + envName + "_" + jobName + ".html"
@@ -534,7 +534,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 # setup to save the management report
                 if 'management_report' in reportName:
 
-                    print "Processing Test Case Management Report: " + reportName
+                    print("Processing Test Case Management Report: " + reportName)
                     
                     # Create the test_results_ and coverage_results_ csv files
                     testResultName, coverageResultsName = tcmr2csv.run(reportName, level, version)
@@ -555,21 +555,21 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         for file in copyList:
 
             if verbose:
-                print "moving %s -> %s" % (file[0], file[1])
+                print("moving %s -> %s" % (file[0], file[1]))
 
             shutil.move(file[0], file[1])
             
     if timing:
-        print "QA Results reports: " + str(time.time())
+        print("QA Results reports: " + str(time.time()))
             
     if junit:   
         if verbose:
-            print "Writing combined test data for JUnit"
+            print("Writing combined test data for JUnit")
         generate_qa_results_xml.genQATestResults(FullManageProjectName)
         writeJunitCombinedTestResults(manageProjectName,saved_level,saved_envName)
 
     if timing:
-        print "Complete: " + str(time.time())
+        print("Complete: " + str(time.time()))
         
 if __name__ == '__main__':
 

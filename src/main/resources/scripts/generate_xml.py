@@ -161,7 +161,7 @@ class BaseGenerateXml(object):
 #
     def start_cov_file(self):
         if self.verbose:
-            print "  Writing coverage xml file:        {}".format(self.cover_report_name)
+            print("  Writing coverage xml file:        {}".format(self.cover_report_name))
         self.fh = open(self.cover_report_name, "w")
         self.fh.write('<!-- VectorCAST/Jenkins Integration, Generated %s -->\n' % self.get_timestamp())
         self.fh.write('<report>\n')
@@ -350,7 +350,7 @@ class GenerateXml(BaseGenerateXml):
         else:
             self.api = None
             if verbose:
-                print "Error: Could not determine project type for {}/{}".format(build_dir, env)
+                print("Error: Could not determine project type for {}/{}".format(build_dir, env))
             return
 
         self.api.commit = dummy
@@ -378,7 +378,7 @@ class GenerateXml(BaseGenerateXml):
 #
     def generate_unit(self):
         if isinstance(self.api, CoverApi):
-            print "   Skipping test results for QA project " + os.path.join(self.build_dir,self.env)
+            print("   Skipping test results for QA project " + os.path.join(self.build_dir,self.env))
             return
 
         try:
@@ -396,7 +396,7 @@ class GenerateXml(BaseGenerateXml):
             self.end_unit_file()
 
         except AttributeError as e:
-            print e
+            print(e)
             pass
 
 #
@@ -404,7 +404,7 @@ class GenerateXml(BaseGenerateXml):
 #
     def start_unit_file(self):
         if self.verbose:
-            print "  Writing testcase xml file:        {}".format(self.unit_report_name)
+            print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
         self.fh = open(self.unit_report_name, "w")
         if not self.usingJunit:
@@ -449,19 +449,19 @@ class GenerateXml(BaseGenerateXml):
             if tc.kind == TestCase.KINDS['compound']:
                 if tc.name not in compoundTests:
                     tcSkipped = True
-                    if self.verbose: print "skipping ", self.hashCode, searchName, tc.passed
+                    if self.verbose: print("skipping ", self.hashCode, searchName, tc.passed)
                     
             elif tc.kind == TestCase.KINDS['init']:
                 if tc.name not in initTests:
                     tcSkipped = True
-                    if self.verbose: print "skipping ", self.hashCode, searchName, tc.passed
+                    if self.verbose: print("skipping ", self.hashCode, searchName, tc.passed)
             else:    
                 if searchName not in simpleTestcases:
                     tcSkipped = True
-                    if self.verbose: print "skipping ", self.hashCode, searchName, tc.passed
+                    if self.verbose: print("skipping ", self.hashCode, searchName, tc.passed)
         except KeyError:
             searchName = unit_name + "/" + func_name + "/" + tc.name
-            if self.verbose: print "skipping ", self.hashCode, searchName, tc.passed
+            if self.verbose: print("skipping ", self.hashCode, searchName, tc.passed)
             tcSkipped = True
         except Exception as e: 
             pprint.pprint (self.cbtDict, width = 132)
@@ -505,10 +505,7 @@ class GenerateXml(BaseGenerateXml):
             testcase_sections=["EXECUTION_RESULTS"])
 
         result = open("execution_results.txt","r").read()
-        os.remove("execution_results.txt")
-        result = cgi.escape(result)
-        result = result.replace("\"","")
-        result = result.replace("\n","&#xA;")
+        os.remove("execution_results.txt")     
 
         # Failure takes priprity  
         if not tc.passed:
@@ -525,6 +522,11 @@ class GenerateXml(BaseGenerateXml):
             extraStatus = ""
 
         msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
+        
+        msg = cgi.escape(msg)
+        msg = msg.replace("\"","")
+        msg = msg.replace("\n","&#xA;")
+        
         self.fh.write(testcaseString % (tc_name, classname, extraStatus, msg))
 
 #
@@ -705,7 +707,7 @@ class GenerateXml(BaseGenerateXml):
         try:
             cov_type = self.api.environment.coverage_type_text
         except Exception as e:
-            print "Couldn't access coverage information...skipping.  Check console for environment build/execution errors"
+            print("Couldn't access coverage information...skipping.  Check console for environment build/execution errors")
             return
             
         self._generate_cover(cov_type)

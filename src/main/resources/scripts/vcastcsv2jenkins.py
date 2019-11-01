@@ -167,8 +167,8 @@ def writeXunitTestCase(xunitFile, unit, subp, tc_name, passFail):
         successFailure = 'failure'
     if gUseExecRpt:
         if None is os.environ.get('BUILD_URL'):
-            print "ERROR: Jenkins environment variable BUILD_URL not set\n"
-            print "       Check Jenkins configuration - JENKINS_URL is probably not set\n"
+            print("ERROR: Jenkins environment variable BUILD_URL not set\n")
+            print("       Check Jenkins configuration - JENKINS_URL is probably not set\n")
             exec_link = "undefined"
         else:
             exec_link = os.getenv('BUILD_URL') + "artifact/execution/" + envName + "_" + jobName + ".html#section" + str(1+testCaseCount*2)
@@ -176,7 +176,7 @@ def writeXunitTestCase(xunitFile, unit, subp, tc_name, passFail):
         passFail += additional_msg
 
     if 'ABNORMAL' in passFail:
-        print "Abnormal Termination on Environment\n"
+        print("Abnormal Termination on Environment\n")
 
     unit_subp = unit + "." + subp
 
@@ -228,7 +228,7 @@ def writeJunitTestCase(junitfile,  unit, subp, tc_name, passFail):
         successFailure = 'failure'    
 
     if 'ABNORMAL' in passFail:
-        print "Abnormal Termination on Environment\n"
+        print("Abnormal Termination on Environment\n")
 
     unit_subp = unit + "." + subp
    
@@ -502,7 +502,8 @@ def writeEmmaStatSummary(emmafile,data):
   </stats>
 """)
 
-def writeEmmaSummaryData(emmafile,indent,(statement,branch,pair,path,byAnalysis,function,functionCall,complexity)):
+def writeEmmaSummaryData(emmafile,indent, xxx_todo_changeme):
+    (statement,branch,pair,path,byAnalysis,function,functionCall,complexity) = xxx_todo_changeme
     global stIndex,brIndex,pairIndex,pathIndex,baIndex,fncIndex,fncCallIndex,VgIndex
 
     myStr = " " * indent + "<coverage type=\"%s, %%\" value=\"%d%% (%d / %d)\"/>\n"
@@ -611,7 +612,7 @@ def writeBlankCCFile():
 </data>
 </report>""")
     f.close()
-    print "Generating a blank coverage report\n"
+    print("Generating a blank coverage report\n")
 
 def run(test = "",coverage="", useExecRpt = True, version=14, junit = True):
 
@@ -643,7 +644,7 @@ def run(test = "",coverage="", useExecRpt = True, version=14, junit = True):
             pass
                 
     if os.path.isfile("xml_data/coverage_results_blank.xml") and len(glob.glob("xml_data/*.xml")) > 1:
-        print "Removing xml_data/coverage_results_blank.xml..."
+        print("Removing xml_data/coverage_results_blank.xml...")
         os.remove("xml_data/coverage_results_blank.xml")
 
 if __name__ == '__main__':
@@ -668,4 +669,4 @@ if __name__ == '__main__':
         
     run(args.test,args.coverage,use_exec_rpt, junit)
 
-    print "done"
+    print("done")

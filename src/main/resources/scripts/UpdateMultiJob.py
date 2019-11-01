@@ -27,9 +27,9 @@ class VcJob:
                 self.crumb_headers = dict()
                 self.crumb_headers[crumb.text.split(":")[0]] = crumb.text.split(":")[1]
                 if self.verbose:
-                    print "Got crumb: %s" % crumb.text
+                    print("Got crumb: %s" % crumb.text)
             else:
-                print "Failed to get crumb: %s" % crumb.text
+                print("Failed to get crumb: %s" % crumb.text)
                 sys.exit(-1)
 
     def update_multi(self, proj_name, proj_file):
@@ -45,8 +45,8 @@ class VcJob:
         # form element 'json'
         jsondata = {'json': json.dumps(payload)}
         if self.verbose:
-            print "Using url '%s'" % self.update_job
-            print "Update job '%s'" % proj_name
+            print("Using url '%s'" % self.update_job)
+            print("Update job '%s'" % proj_name)
         if self.user:
             rslt = requests.post(self.update_job,
                                  data=jsondata,
@@ -59,10 +59,10 @@ class VcJob:
                                  files=files)
         if rslt.status_code == 200:
             if self.verbose:
-                print "Update request completed"
+                print("Update request completed")
         else:
-            print "Failed to update job: %s" % rslt.status_code
-            print rslt.text.encode('utf-8', 'ignore').decode('utf-8')
+            print("Failed to update job: %s" % rslt.status_code)
+            print(rslt.text.encode('utf-8', 'ignore').decode('utf-8'))
             sys.exit(-1)
 
 if __name__ == "__main__":
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.verbose:
-        print args
+        print(args)
         verbose = True
         
     if args.url is None:
