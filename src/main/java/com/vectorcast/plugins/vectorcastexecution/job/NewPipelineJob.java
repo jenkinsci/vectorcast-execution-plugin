@@ -120,7 +120,7 @@ public class NewPipelineJob extends BaseJob {
 			nodeLabel = "master";
         }
 
-        sharedArtifactDirectory = json.optString("shared_artifact_dir",null);
+        sharedArtifactDirectory = json.optString("sharedArtifactDir",null);
         pipelineSCM = json.optString("scmSnippet","").trim();
         
         // remove the win/linux options since there's no platform any more 
