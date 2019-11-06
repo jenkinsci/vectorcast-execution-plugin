@@ -128,7 +128,7 @@ public class NewPipelineJob extends BaseJob {
         executePreamble = json.optString("executePreamble", null);
         environmentTeardown = json.optString("environmentTeardown", null);
         
-        if (sharedArtifactDirectory != null) {
+        if (sharedArtifactDirectory.length() != 0) {
             sharedArtifactDirectory = "--workspace="+sharedArtifactDirectory.replace("\\","/");
         } else {
             sharedArtifactDirectory = "";
