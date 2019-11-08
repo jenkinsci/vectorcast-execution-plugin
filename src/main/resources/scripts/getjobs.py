@@ -21,9 +21,6 @@ def printEnvironmentInfo(ManageProjectName):
         elif re.match("^    [^\s]",str) is not None:
             testsuite = str.split()[0]
         elif re.match("^      [^\s]",str) is not None and not str.startswith("      Disabled Environment"):
-        
-            if  "Compiler_Template_Not_Used" in compiler:
-                continue
                 
             env_name = str.split()[0]
                 

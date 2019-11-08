@@ -632,7 +632,7 @@ if __name__ == '__main__':
         cbtDict = cbt.parse(buildLogData)
         
     else:
-        buildLogData = None
+        cbtDict = None
 
 
     # Used for pre VC19
