@@ -39,7 +39,8 @@ def getConsoleLog() {
 
 // setup the manage project to have preset options
 def setupManageProject() {
-    cmds = """                    
+    cmds = """        
+        _RM *_rebuild.html
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py" --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_sharedArtifactDirectory} --status"  
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py" --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --force --release-locks"
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py" --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
@@ -82,26 +83,28 @@ def runCommands(cmds) {
     def boolean failure = false;
     def boolean unstable = false;
     def foundKeywords = ""
+    def localCmds = """"""
 
-    println "Start Commands: " + cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR")
+    println "Start Commands: " + cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","Deleting ")
      
      // if its Linux run the sh command and save the stdout for analysis
     if (isUnix()) {
-        cmds = """
+        localCmds = """
             ${VC_EnvSetup}            
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_RPTS_SELF_CONTAINED=FALSE
-            """ + cmds
-
-        log = sh  label: 'Running VectorCAST Commands', returnStdout: true, script: cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR")
+            """
+        sh label: 'Running VectorCAST Setup Commands', script: localCmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR")
+        log = sh label: 'Running VectorCAST Commands', returnStdout: true, script: cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
     } else {
-        cmds = """
+        localCmds = """
             @echo off
             ${VC_EnvSetup}
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
-            """ + cmds
-        log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%")
+            """
+        bat label: 'Running VectorCAST Setup Commands', script: localCmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%")
+        log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
     }
     
     println "Done Commands: " + log        

@@ -441,34 +441,11 @@ class GenerateXml(BaseGenerateXml):
 # Internal - write a testcase to the jUnit XML file
 #
     def write_testcase_jUnit(self, tc, unit_name, func_name):
-        import sys, traceback, pprint
-        tcSkipped = False
-        try:
-            compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
-            searchName = unit_name + "/" + func_name + "/" + tc.name
-            if tc.kind == TestCase.KINDS['compound']:
-                if tc.name not in compoundTests:
-                    tcSkipped = True
-                    if self.verbose: print("skipping ", self.hashCode, searchName, tc.passed)
-                    
-            elif tc.kind == TestCase.KINDS['init']:
-                if tc.name not in initTests:
-                    tcSkipped = True
-                    if self.verbose: print("skipping ", self.hashCode, searchName, tc.passed)
-            else:    
-                if searchName not in simpleTestcases:
-                    tcSkipped = True
-                    if self.verbose: print("skipping ", self.hashCode, searchName, tc.passed)
-        except KeyError:
-            searchName = unit_name + "/" + func_name + "/" + tc.name
-            if self.verbose: print("skipping ", self.hashCode, searchName, tc.passed)
-            tcSkipped = True
-        except Exception as e: 
-            pprint.pprint (self.cbtDict, width = 132)
-            traceback.print_exc()
-            sys.exit()
+        tcSkipped = self.cbtDict and self.__was_test_case_skipped(
+            self.cbtDict,
+            tc,
+            "/".join([unit_name, func_name, tc.name]))
 
-        
         testcaseString ="""
         <testcase name="%s" classname="%s" time="0">
             %s
@@ -715,3 +692,28 @@ class GenerateXml(BaseGenerateXml):
         self.start_cov_file_environment()
         self.write_cov_units()
         self.end_cov_file_environment()
+
+    def __was_test_case_skipped(self, cbtDict, tc, searchName):
+        import sys, traceback, pprint
+        try:
+            compoundTests, initTests,  simpleTestcases = cbtDict[self.hashCode]
+            if tc.kind == TestCase.KINDS['compound'] and tc.name in compoundTests:
+                return False
+            elif tc.kind == TestCase.KINDS['init'] and tc.name in initTests:
+                return False
+            elif searchName in simpleTestcases:
+                return False
+            else:
+                self.__print_test_case_was_skipped(searchName, tc.passed)
+                return True
+        except KeyError:
+            self.__print_test_case_was_skipped(searchName, tc.passed)
+            return True
+        except Exception as e: 
+            pprint.pprint (cbtDict, width = 132)
+            traceback.print_exc()
+            sys.exit()
+
+    def __print_test_case_was_skipped(self, searchName, passed):
+        if self.verbose:
+            print("skipping ", self.hashCode, searchName, passed)
