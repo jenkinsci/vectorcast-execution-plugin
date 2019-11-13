@@ -1,0 +1,122 @@
+COMMAND: C:\VCAST\2019sp2\clicast.exe -e TUTORIAL_C environment re_build
+DIRECTORY: C:/Users/vaprti/vector/github/vectorcast-execution-plugin-tms-pipeline/src/test/resources/tutorial_c
+TIME: 2019-11-12 22:09:25
+TEST SUITE: VectorCAST_MinGW_C/TestSuite
+-----------------------------Process Environment------------------------------
+---------------------------End Process Environment----------------------------
+VectorCAST   Copyright (C) 1993 - 2019
+**Version 19.sp2 (09/10/19)
+    Processing options file c:\Users\vaprti\vector\github\vectorcast-execution-plugin-tms-pipeline\src\test\resources\tutorial_c\CCAST_.CFG
+    Opening Environment
+    Opening Parameter/Global File
+    Opening Types File
+    Environment is Open
+    Building Environment Script file
+    Building Test Case Script
+    Test Case Script Created
+    Building environment from script
+    **Environment Builder Version 19.sp2 (09/10/19)
+        Processing options file c:\Users\vaprti\vector\github\vectorcast-execution-plugin-tms-pipeline\src\test\resources\tutorial_c\CCAST_.CFG
+        Reading environment script "c:\Users\vaprti\vector\github\vectorcast-execution-plugin-tms-pipeline\src\test\resources\tutorial_c\\VCAST_REBUILD_TEMP.env"
+        Initializing search list
+        Creating the Environment Directory
+        Creating Environment "TUTORIAL_C"
+        Unit 8 (not-stubbed): User Defined Globals
+           Parsing 
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656536067_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656536150_Command
+        Command Returned Exit Code: 0
+           Initializing parse data
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656536401_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656536710_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656536777_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656536844_Command
+        Command Returned Exit Code: 0
+           Generating harness code
+           Saving unit data
+        Parsing manager
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656537066_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656537130_Command
+        Command Returned Exit Code: 0
+        Unit 9 (stub-by-function): manager
+           Loading stored IL
+           Initializing parse data
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656537355_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656537565_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656537640_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656537714_Command
+        Command Returned Exit Code: 0
+           Generating harness code
+           Saving unit data
+        Compiling file VECTORCAST_IO
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656538044_Command
+        Command Returned Exit Code: 0
+        Compiling file User Defined Globals
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656538202_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656538351_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656538463_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656538569_Command
+        Command Returned Exit Code: 0
+        Compiling file Data File Number 1
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656538688_Command
+        Command Returned Exit Code: 0
+        Compiling file Data File Number 2
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656538980_Command
+        Command Returned Exit Code: 0
+        Compiling file Driver
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656539167_Command
+        Command Returned Exit Code: 0
+        Compiling file User Defined Package
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656539307_Command
+        Command Returned Exit Code: 0
+        Setting Up Statement Coverage
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656539449_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656539527_Command
+        Command Returned Exit Code: 0
+        Instrumenting file manager
+        Compiling file manager
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656539818_Command
+        Command Returned Exit Code: 0
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656539986_Command
+        Command Returned Exit Code: 0
+        Compiling file Data File Number 1
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656542390_Command
+        Command Returned Exit Code: 0
+        Linking Instrumented Harness
+        Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656542629_Command
+        Command Returned Exit Code: 0
+        Coverage Initialized
+        Writing VectorCAST Database Files to Disk
+        Environment built Successfully
+    Environment Closed
+    Processing options file c:/Users/vaprti/vector/github/vectorcast-execution-plugin-tms-pipeline/src/test/resources/tutorial_c/\CCAST_.CFG
+    Opening Environment
+    Determining Size/Range Information
+    Opening Parameter/Global File
+    Opening Types File
+    Running Test with command: c:\Users\vaprti\vector\github\vectorcast-execution-plugin-tms-pipeline\src\test\resources\tutorial_c\TUTORIAL_C\UUT_INST.EXE
+    Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656542861_Command
+    Command Returned Exit Code: 0
+    Building Master Min Mid Max data.
+    Opening Parameter/Global File
+    Opening Types File
+    Processing Script File
+    Test Script Maintenance Started
+    Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656543070_Command
+    Command Returned Exit Code: 0
+    Test Script Maintenance Complete (0)
+    Translated 0 script lines
+    Processing script line 100
+    Script Processing Completed

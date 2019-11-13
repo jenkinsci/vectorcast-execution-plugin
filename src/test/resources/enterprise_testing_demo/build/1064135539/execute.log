@@ -1,0 +1,33 @@
+COMMAND: C:\VCAST\2019sp2\clicast.exe -e TUTORIAL_C -l C execute batch --update_coverage_data
+DIRECTORY: C:/Users/vaprti/vector/github/vectorcast-execution-plugin-tms-pipeline/src/test/resources/tutorial_c
+TIME: 2019-11-12 22:09:33
+TEST SUITE: VectorCAST_MinGW_C/TestSuite
+-----------------------------Process Environment------------------------------
+---------------------------End Process Environment----------------------------
+VectorCAST   Copyright (C) 1993 - 2019
+**Version 19.sp2 (09/10/19)
+    Processing options file c:\Users\vaprti\vector\github\vectorcast-execution-plugin-tms-pipeline\src\test\resources\tutorial_c\CCAST_.CFG
+    Opening Environment
+    Opening Parameter/Global File
+    Opening Types File
+    Environment is Open
+    Running all manager.Place_Order test cases
+    Running: PLACE_ORDER.001
+    Preparing Test Data
+    Running Test Case
+    Running Test with command: c:\Users\vaprti\vector\github\vectorcast-execution-plugin-tms-pipeline\src\test\resources\tutorial_c\TUTORIAL_C\UUT_INST.EXE
+    Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656544128_Command
+    Command Returned Exit Code: 0
+    Processing Execution Data
+    Updating Coverage Data
+    Test Execution Complete
+    Running: PLACE_ORDER.002
+    Preparing Test Data
+    Running Test Case
+    Running Test with command: c:\Users\vaprti\vector\github\vectorcast-execution-plugin-tms-pipeline\src\test\resources\tutorial_c\TUTORIAL_C\UUT_INST.EXE
+    Running Command: C:/Users/vaprti\.vcastProcessMonitorLogs\1656544215_Command
+    Command Returned Exit Code: 0
+    Processing Execution Data
+    Updating Coverage Data
+    Test Execution Complete
+    Completed Batch Execution processing

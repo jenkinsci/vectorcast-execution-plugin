@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="27">
+  <config>
+    <saved-logs>5</saved-logs>
+    <build-directory-naming-strategy>COMPRESSED</build-directory-naming-strategy>
+  </config>
+  <project-id>1573613330</project-id>
+  <factor-config-options>0</factor-config-options>
+  <environment name="TUTORIAL_C" type="UNIT">
+    <language>1</language>
+    <is-monitored>1</is-monitored>
+    <config>
+      <original-environment-directory>tutorial_c</original-environment-directory>
+    </config>
+  </environment>
+  <group name="Group">
+    <environment name="TUTORIAL_C"/>
+  </group>
+  <compiler>
+    <compiler>
+      <name>VectorCAST_MinGW_C</name>
+    </compiler>
+    <testsuite name="TestSuite">
+      <group name="Group"/>
+    </testsuite>
+  </compiler>
+</project>

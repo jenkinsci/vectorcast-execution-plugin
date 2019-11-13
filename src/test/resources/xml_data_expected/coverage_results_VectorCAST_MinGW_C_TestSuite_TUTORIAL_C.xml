@@ -1,0 +1,49 @@
+<!-- VectorCAST/Jenkins Integration, Generated 12 NOV 2019  12:15:50 PM -->
+<report>
+  <version value="3"/>
+  <stats>
+    <environments value="1"/>
+    <units value="1"/>
+    <subprograms value="6"/>
+  </stats>
+  <data>
+    <all name="all environments">
+      <coverage type="statement, %" value="26% (12 / 45)"/>
+      <coverage type="complexity, %" value="0% (16 / 0)"/>
+
+      <environment name="VectorCAST_MinGW_C_TestSuite_TUTORIAL_C">
+        <coverage type="statement, %" value="26% (12 / 45)"/>
+        <coverage type="complexity, %" value="0% (16 / 0)"/>
+
+        <unit name="manager">
+          <coverage type="statement, %" value="26% (12 / 45)"/>
+          <coverage type="complexity, %" value="0% (16 / 0)"/>
+          <subprogram name="Add_Included_Dessert">
+            <coverage type="statement, %" value="50% (2 / 4)"/>
+            <coverage type="complexity, %" value="0% (3 / 0)"/>
+          </subprogram>
+          <subprogram name="Place_Order">
+            <coverage type="statement, %" value="58% (10 / 17)"/>
+            <coverage type="complexity, %" value="0% (5 / 0)"/>
+          </subprogram>
+          <subprogram name="Clear_Table">
+            <coverage type="statement, %" value="0% (0 / 12)"/>
+            <coverage type="complexity, %" value="0% (2 / 0)"/>
+          </subprogram>
+          <subprogram name="Get_Check_Total">
+            <coverage type="statement, %" value="0% (0 / 2)"/>
+            <coverage type="complexity, %" value="0% (1 / 0)"/>
+          </subprogram>
+          <subprogram name="Add_Party_To_Waiting_List">
+            <coverage type="statement, %" value="0% (0 / 7)"/>
+            <coverage type="complexity, %" value="0% (3 / 0)"/>
+          </subprogram>
+          <subprogram name="Get_Next_Party_To_Be_Seated">
+            <coverage type="statement, %" value="0% (0 / 3)"/>
+            <coverage type="complexity, %" value="0% (2 / 0)"/>
+          </subprogram>
+        </unit>
+      </environment>
+    </all>
+  </data>
+</report>
