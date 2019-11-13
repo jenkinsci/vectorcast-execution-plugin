@@ -1,0 +1,68 @@
+******************
+***Compiling File: I0000009.cpp
+In file included from S0000009.cpp:65:0,
+                 from I0000009.cpp:2:
+manager_exp_inst_driver.c: In function 'void VCAST_TI_9_7(char*)':
+manager_exp_inst_driver.c:1524:74: warning: 'sizeof' on array function parameter 'vcast_param' will return size of 'char*' [-Wsizeof-array-argument]
+             VCAST_TI_STRING ( (char**)&vcast_param, sizeof ( vcast_param ), 1,VCAST_TI_9_7_upper);
+                                                                          ^
+manager_exp_inst_driver.c:1503:40: note: declared here
+ void VCAST_TI_9_7 ( char vcast_param[10] )
+                                        ^
+******************
+***Compiling File: B0000002.cpp
+B0000002.cpp: In function 'void vCAST_INITIALIZE_SBF_TABLE()':
+B0000002.cpp:1335:40: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+   VC_F = vectorcast_fopen(fileName, "r");
+                                        ^
+B0000002.cpp: In function 'void vCAST_INITIALIZE_RANGE_VALUES()':
+B0000002.cpp:1387:40: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+   VC_F = vectorcast_fopen(fileName, "r");
+                                        ^
+B0000002.cpp: In function 'void vCAST_SET_HISTORY(int, int)':
+B0000002.cpp:1491:49: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+    vCAST_SET_HISTORY_FLAGS ( VC_U, VC_S, "", "" );
+                                                 ^
+B0000002.cpp:1491:49: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+B0000002.cpp: In function 'void vCAST_OPEN_HARNOPTS_FILE()':
+B0000002.cpp:1641:60: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+    if( (VCAST_optsfd = vectorcast_fopen("HARNOPTS.DAT", "r")) == -1)
+                                                            ^
+B0000002.cpp:1641:60: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+B0000002.cpp: In function 'void vCAST_OPEN_TESTORDR_FILE()':
+B0000002.cpp:1677:59: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+    vCAST_ORDER_FILE = vectorcast_fopen("TESTORDR.DAT", "r");
+                                                           ^
+B0000002.cpp:1677:59: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+B0000002.cpp: In function 'void vCAST_READ_COMMAND_DATA_FOR_ONE_PARAM(int, int, int)':
+B0000002.cpp:1754:48: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+    CMD_FILE = vectorcast_fopen(VC_FILENAME, "r");
+                                                ^
+B0000002.cpp: In function 'void vCAST_READ_COMMAND_DATA(int, int, int, vCAST_boolean, vCAST_boolean)':
+B0000002.cpp:1840:51: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+    CMD_FILE = vectorcast_fopen ( VC_FILENAME, "r" );
+                                                   ^
+B0000002.cpp: In function 'void vCAST_READ_COMMAND_DATA_FOR_USER_GLOBALS()':
+B0000002.cpp:2003:48: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+    CMD_FILE = vectorcast_fopen(VC_FILENAME, "r");
+                                                ^
+B0000002.cpp: In function 'void vCAST_OPEN_E0_FILE()':
+B0000002.cpp:2046:55: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+   vCAST_E0_FILE = vectorcast_fopen ( VC_FILENAME, "r" );
+                                                       ^
+B0000002.cpp: In function 'void vCAST_CREATE_EVENT_FILE()':
+B0000002.cpp:2054:50: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+       vcast_get_filename(VCAST_ASCIIRES_DAT), "w");
+                                                  ^
+B0000002.cpp: In function 'void vCAST_CREATE_INST_FILE()':
+B0000002.cpp:2072:53: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+          vcast_get_filename(VCAST_TESTINSS_DAT), "a");
+                                                     ^
+B0000002.cpp: In function 'void vCAST_CREATE_HIST_FILE()':
+B0000002.cpp:2090:53: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+          vcast_get_filename(VCAST_THISTORY_DAT), "w");
+                                                     ^
+B0000002.cpp: In function 'void vCAST_RE_OPEN_HIST_FILE()':
+B0000002.cpp:2117:53: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+          vcast_get_filename(VCAST_THISTORY_DAT), "a");
+                                                     ^

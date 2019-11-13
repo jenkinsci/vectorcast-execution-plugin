@@ -1,0 +1,22 @@
+******************
+***Compiling File: B0000009.ADA
+splitting I0000009.ADA into:
+   vcast_types_9.ads
+   manager.adb
+******************
+***Compiling File: W0000009.ADA
+splitting W0000009.ADA into:
+   manager-vcast_data_interface.adb
+******************
+***Compiling File: B0000004.ADA
+splitting B0000004.ADA into:
+   user_code_adacast.adb
+   manager-vcast_data_interface-value_user_code.adb
+   manager-vcast_data_interface-expected_user_code.adb
+   manager-vcast_data_interface-user_code_initialize.adb
+   manager-vcast_data_interface-user_code_capture.adb
+   manager-vcast_data_interface-user_code_one_shot_init.adb
+   manager-vcast_data_interface-user_code_one_shot_term.adb
+   manager-vcast_data_interface-stub_processing.adb
+   manager-vcast_data_interface-beginning_of_stub_processing.adb
+   manager-vcast_data_interface-user_code_initialize_parameters.adb

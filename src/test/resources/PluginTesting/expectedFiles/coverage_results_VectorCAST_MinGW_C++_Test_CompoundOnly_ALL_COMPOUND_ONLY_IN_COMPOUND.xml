@@ -1,0 +1,63 @@
+<!-- VectorCAST/Jenkins Integration, Generated 12 NOV 2019  11:08:02 PM -->
+<report>
+  <version value="3"/>
+  <stats>
+    <environments value="1"/>
+    <units value="1"/>
+    <subprograms value="7"/>
+  </stats>
+  <data>
+    <all name="all environments">
+      <coverage type="statement, %" value="32% (15 / 46)"/>
+      <coverage type="branch, %" value="25% (6 / 24)"/>
+      <coverage type="complexity, %" value="0% (17 / 0)"/>
+
+      <environment name="VectorCAST_MinGW_C++_Test_CompoundOnly_ALL_COMPOUND_ONLY_IN_COMPOUND">
+        <coverage type="statement, %" value="32% (15 / 46)"/>
+        <coverage type="branch, %" value="25% (6 / 24)"/>
+        <coverage type="complexity, %" value="0% (17 / 0)"/>
+
+        <unit name="manager">
+          <coverage type="statement, %" value="32% (15 / 46)"/>
+          <coverage type="branch, %" value="25% (6 / 24)"/>
+          <coverage type="complexity, %" value="0% (17 / 0)"/>
+          <subprogram name="(cl)Manager::Manager">
+            <coverage type="statement, %" value="0% (0 / 2)"/>
+            <coverage type="branch, %" value="0% (0 / 1)"/>
+            <coverage type="complexity, %" value="0% (1 / 0)"/>
+          </subprogram>
+          <subprogram name="(cl)Manager::AddIncludedDessert">
+            <coverage type="statement, %" value="50% (3 / 6)"/>
+            <coverage type="branch, %" value="57% (4 / 7)"/>
+            <coverage type="complexity, %" value="0% (4 / 0)"/>
+          </subprogram>
+          <subprogram name="(cl)Manager::PlaceOrder">
+            <coverage type="statement, %" value="52% (12 / 23)"/>
+            <coverage type="branch, %" value="33% (2 / 6)"/>
+            <coverage type="complexity, %" value="0% (5 / 0)"/>
+          </subprogram>
+          <subprogram name="(cl)Manager::ClearTable">
+            <coverage type="statement, %" value="0% (0 / 1)"/>
+            <coverage type="branch, %" value="0% (0 / 1)"/>
+            <coverage type="complexity, %" value="0% (1 / 0)"/>
+          </subprogram>
+          <subprogram name="(cl)Manager::GetCheckTotal">
+            <coverage type="statement, %" value="0% (0 / 4)"/>
+            <coverage type="branch, %" value="0% (0 / 1)"/>
+            <coverage type="complexity, %" value="0% (1 / 0)"/>
+          </subprogram>
+          <subprogram name="(cl)Manager::AddPartyToWaitingList">
+            <coverage type="statement, %" value="0% (0 / 7)"/>
+            <coverage type="branch, %" value="0% (0 / 5)"/>
+            <coverage type="complexity, %" value="0% (3 / 0)"/>
+          </subprogram>
+          <subprogram name="(cl)Manager::GetNextPartyToBeSeated">
+            <coverage type="statement, %" value="0% (0 / 3)"/>
+            <coverage type="branch, %" value="0% (0 / 3)"/>
+            <coverage type="complexity, %" value="0% (2 / 0)"/>
+          </subprogram>
+        </unit>
+      </environment>
+    </all>
+  </data>
+</report>

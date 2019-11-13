@@ -1,0 +1,79 @@
+               #include "C:/Users/vaprti/vector/sandbox/large_vcm/regression/release/Tutorial/cpp/cpptypes.h"
+               #include "C:/Users/vaprti/vector/sandbox/large_vcm/regression/release/Tutorial/cpp/database.h"
+               #include "C:/Users/vaprti/vector/sandbox/large_vcm/regression/release/Tutorial/cpp/manager.h"
+1 1              Manager::Manager(){
+1 0              WaitingListSize = 0;
+                 WaitingListIndex = 0;
+               }
+               /* This function will add a free dessert to specific orders based on the
+                  entree, salad, and beverage choice */
+2 0              void Manager::AddIncludedDessert(OrderType* Order)
+               {
+                 if(!Order)
+                   return;
+                 if(Order->Entree == Steak &&
+                    Order->Salad == Caesar &&
+                    Order->Beverage == MixedDrink) {
+                   Order->Dessert = Pies;
+                 } else if(Order->Entree == Lobster &&
+                           Order->Salad == Green &&
+                           Order->Beverage == Wine) {
+                   Order->Dessert = Cake;
+                 }
+               }
+3 0              void Manager::PlaceOrder(unsigned int Table, unsigned int Seat, OrderType Order)
+               {
+                 TableDataType TableData;
+3 1              Data.DeleteTableRecord(&TableData);
+3 2              Data.GetTableRecord(Table, &TableData);
+                 TableData.IsOccupied = true;
+                 TableData.NumberInParty++;
+                 TableData.Order[Seat] = Order;
+                 /* Add a free dessert in some case */
+3 3              AddIncludedDessert(&TableData.Order[Seat]);
+                 switch(Order.Entree) {
+                   case Steak :
+                     TableData.CheckTotal += 14;
+                     break;
+                   case Chicken :
+                     TableData.CheckTotal += 10;
+                     break;
+                   case Lobster :
+                     TableData.CheckTotal += 18;
+                     break;
+                   case Pasta :
+                     TableData.CheckTotal += 12;
+                     break;
+                   default :
+                     break;
+                 }
+3 4              Data.UpdateTableRecord(Table, &TableData);
+               }
+4 0              void Manager::ClearTable(unsigned int Table)
+               {
+4 1              Data.DeleteRecord(Table);
+               }
+5 0              int Manager::GetCheckTotal(unsigned int Table)
+               {
+                 TableDataType TableData;
+5 1              Data.DeleteTableRecord(&TableData);
+5 2              Data.GetTableRecord(Table, &TableData);
+                 return TableData.CheckTotal;
+               }
+6 0              void Manager::AddPartyToWaitingList(char* Name)
+               {
+                 int i = 0;
+                 if(WaitingListSize > 9)
+                   WaitingListSize = 0;
+                 while(Name && *Name) {
+                   WaitingList[WaitingListSize][i++] = *Name;
+                   Name++;
+                 }
+                 WaitingList[WaitingListSize++][i] = 0;
+               }
+7 0              char* Manager::GetNextPartyToBeSeated()
+               {
+                 if(WaitingListIndex > 9)
+                   WaitingListIndex = 0;
+                 return WaitingList[WaitingListIndex++];
+               }

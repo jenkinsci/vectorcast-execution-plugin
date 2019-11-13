@@ -1,0 +1,2 @@
+******************
+*** Link command: gnatlink  -g   -o UUT_INST.EXE uut_interface_adacast.ali 

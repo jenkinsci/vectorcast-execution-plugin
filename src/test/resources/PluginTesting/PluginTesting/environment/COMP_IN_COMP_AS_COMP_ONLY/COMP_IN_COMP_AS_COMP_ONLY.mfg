@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manage-config-options version="7">
+  <config>
+    <key>COVERAGE_TYPE</key>
+    <value>STATEMENT+BRANCH</value>
+  </config>
+</manage-config-options>

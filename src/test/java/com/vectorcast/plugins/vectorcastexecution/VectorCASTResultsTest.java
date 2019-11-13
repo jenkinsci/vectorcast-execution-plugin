@@ -124,24 +124,42 @@ public class VectorCASTResultsTest {
             FilePath destScriptDir = new FilePath(workspace_fp, destination);
             processDir(scriptDir, "./", destScriptDir);
         } catch (IOException  e) {
+            // printStackTrace method 
+            // prints line numbers + call stack 
+            e.printStackTrace(); 
+              
+            // Prints what exception has been thrown 
+            System.out.println(e); 
         } catch (InterruptedException  e) {
-        }
+             // printStackTrace method 
+            // prints line numbers + call stack 
+            e.printStackTrace(); 
+              
+            // Prints what exception has been thrown 
+            System.out.println(e); 
+       }
     }
                 
     private Boolean compareCoverageFiles() {
         Boolean retVal = false;
         try {
-            List<String> lines = Files.readAllLines(Paths.get("coverage_results_VectorCAST_MinGW_C_TestSuite_TUTORIAL_C.xml"));
+            List<String> lines = Files.readAllLines(Paths.get("xml_data/coverage_results_VectorCAST_MinGW_C_TestSuite_TUTORIAL_C.xml"));
             lines.remove(0);
             String actual = String.join("\n", lines);
 
-            if (coverageResultsFile ==  actual) {
+            if (coverageResultsFile.equals(actual)) {
                 retVal = true;
             } else {
-                System.out.println ("Expected: " + coverageResultsFile);
-                System.out.println ("Dctual  : " + actual);
+                System.out.println ("Expected\n" + coverageResultsFile);
+                System.out.println ("Actual\n" + actual);
             }
         } catch (IOException  e) {
+            // printStackTrace method 
+            // prints line numbers + call stack 
+            e.printStackTrace(); 
+              
+            // Prints what exception has been thrown 
+            System.out.println(e); 
         }         
         return retVal;
     }
@@ -149,16 +167,22 @@ public class VectorCASTResultsTest {
     private Boolean compareTestResultsFiles() { 
         Boolean retVal = false;
         try {
-            List<String> lines = Files.readAllLines(Paths.get("target/xml_data/test_results_enterprise_testing_demo_combined_final.xml"));
+            List<String> lines = Files.readAllLines(Paths.get("xml_data/test_results_enterprise_testing_demo.vcm_combined_final.xml"));
             String actual = String.join("\n", lines); ;
 
-            if (testResultsFile ==  actual) {
+            if (testResultsFile.equals(actual)) {
                 retVal = true;
             } else {
-                System.out.println ("Expected: " + testResultsFile);
-                System.out.println ("Dctual  : " + actual);
+                System.out.println ("Expected\n" + testResultsFile);
+                System.out.println ("Actual\n" + actual);
             }
         } catch (IOException  e) {
+            // printStackTrace method 
+            // prints line numbers + call stack 
+            e.printStackTrace(); 
+              
+            // Prints what exception has been thrown 
+            System.out.println(e); 
         }         
         return retVal;
     }
@@ -174,8 +198,8 @@ public class VectorCASTResultsTest {
         if (env.containsKey("VECTORCAST_DIR")) {
             
             String VCD = env.get("VECTORCAST_DIR");
-            String genResult      = VCD + "/vpython vc_scripts/generate-results.py --junit target/test-classes/enterprise_testing_demo.vcm";
-            String genResultFinal = VCD + "/vpython vc_scripts/generate-results.py --junit target/test-classes/enterprise_testing_demo.vcm --final";
+            String genResult      = VCD + "/vpython vc_scripts/generate-results.py --junit target/test-classes/enterprise_testing_demo/enterprise_testing_demo.vcm";
+            String genResultFinal = VCD + "/vpython vc_scripts/generate-results.py --junit target/test-classes/enterprise_testing_demo/enterprise_testing_demo.vcm --final";
 
             copyScripts("target/classes/scripts","vc_scripts");
 
@@ -220,8 +244,7 @@ public class VectorCASTResultsTest {
 "   </testsuite>\n"+
 "\n"+
 "\n"+
-"</testsuites>\n"+
-"\n";
+"</testsuites>";
     
     private static final String coverageResultsFile =
 // ignore first line "<!-- VectorCAST/Jenkins Integration, Generated 12 NOV 2019  12:15:50 PM -->\n"+
@@ -272,6 +295,6 @@ public class VectorCASTResultsTest {
 "      </environment>\n"+
 "    </all>\n"+
 "  </data>\n"+
-"</report>\n";
+"</report>";
     
 }

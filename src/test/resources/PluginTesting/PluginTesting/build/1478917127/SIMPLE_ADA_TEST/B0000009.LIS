@@ -1,0 +1,167 @@
+
+               with  DATABASE;
+               with  TYPES; use TYPES;
+               package  body MANAGER is
+
+                   MAX_NAME_LENGTH : constant := 20;
+                   subtype WAITING_LIST_NAME_TYPE is string(1..MAX_NAME_LENGTH);
+                   type WAITING_LIST_TYPE;
+                   type WAITING_LIST_TYPE_PTR is access WAITING_LIST_TYPE;
+                   type WAITING_LIST_TYPE is
+                      record
+                         NAME : WAITING_LIST_NAME_TYPE := ( others => ' ' );
+                         NEXT : WAITING_LIST_TYPE_PTR := null;
+                      end record;
+                   WAITING_LIST : WAITING_LIST_TYPE_PTR := null;
+               procedure  PLACE_ORDER (
+                      TABLE : in     TYPES.TABLE_INDEX_TYPE;
+                      SEAT  : in     TYPES.SEAT_INDEX_TYPE;
+                      ORDER : in out TYPES.ORDER_TYPE) is
+
+
+                   TABLE_DATA : TYPES.TABLE_DATA_TYPE;
+
+                   begin
+
+1 1                   DATABASE.GET_TABLE_RECORD (
+                         TABLE => TABLE,
+                         DATA  => TABLE_DATA);
+
+1 2                   TABLE_DATA.IS_OCCUPIED := true;
+1 3                   TABLE_DATA.NUMBER_IN_PARTY := TABLE_DATA.NUMBER_IN_PARTY + 1;
+1 4                   TABLE_DATA.ORDER (SEAT) := ORDER;
+
+1 5                   ADD_INCLUDED_DESSERT ( TABLE_DATA.ORDER(SEAT) );
+
+1 6                   case ORDER.ENTREE is
+                      when TYPES.NO_ORDER =>
+1 7                      null;
+                      when TYPES.STEAK =>
+1 8                      TABLE_DATA.CHECK_TOTAL := TABLE_DATA.CHECK_TOTAL + 14;
+                      when TYPES.CHICKEN =>
+1 9                      TABLE_DATA.CHECK_TOTAL := TABLE_DATA.CHECK_TOTAL + 10;
+                      when TYPES.LOBSTER =>
+1 10                     TABLE_DATA.CHECK_TOTAL := TABLE_DATA.CHECK_TOTAL + 18;
+                      when TYPES.PASTA =>
+1 11                     TABLE_DATA.CHECK_TOTAL := TABLE_DATA.CHECK_TOTAL + 12;
+                      end case;
+
+1 12                  DATABASE.UPDATE_TABLE_RECORD (
+                         TABLE => TABLE,
+                         DATA  => TABLE_DATA);
+               end  PLACE_ORDER;
+               procedure  ADD_INCLUDED_DESSERT ( ORDER : in out TYPES.ORDER_TYPE ) is
+
+                   begin
+2 1                   if ORDER.ENTREE   = STEAK and
+                         ORDER.SALAD    = CAESAR and
+                         ORDER.BEVERAGE = MIXED_DRINK
+                      then
+2 2                      ORDER.DESSERT := PIE;
+                      elsif ORDER.ENTREE   = LOBSTER and
+                            ORDER.SALAD    = GREEN and
+                            ORDER.BEVERAGE = WINE
+                      then
+2 3                      ORDER.DESSERT := CAKE;
+                      end if;
+               end  ADD_INCLUDED_DESSERT;
+               procedure  CLEAR_TABLE (
+                      TABLE : in     TYPES.TABLE_INDEX_TYPE) is
+
+
+                   TABLE_DATA : TYPES.TABLE_DATA_TYPE;
+                   NULL_ORDER : TYPES.ORDER_TYPE :=
+                      (SOUP      => TYPES.NO_ORDER,
+                       SALAD     => TYPES.NO_ORDER,
+                       ENTREE    => TYPES.NO_ORDER,
+                       DESSERT   => TYPES.NO_ORDER,
+                       BEVERAGE  => TYPES.NO_ORDER);
+
+                   begin
+
+3 1                   DATABASE.GET_TABLE_RECORD (
+                         TABLE => TABLE,
+                         DATA  => TABLE_DATA);
+
+3 2                   TABLE_DATA.IS_OCCUPIED := false;
+3 3                   TABLE_DATA.NUMBER_IN_PARTY := 1;
+3 4                   for SEAT in TYPES.SEAT_INDEX_TYPE loop
+3 5                      TABLE_DATA.ORDER (SEAT) := NULL_ORDER;
+                      end loop;
+3 6                   TABLE_DATA.CHECK_TOTAL := 0;
+
+3 7                   DATABASE.UPDATE_TABLE_RECORD (
+                         TABLE => TABLE,
+                         DATA  => TABLE_DATA);
+               end  CLEAR_TABLE;
+               function  GET_CHECK_TOTAL (TABLE : TYPES.TABLE_INDEX_TYPE)
+                      return integer is
+
+
+                   TABLE_DATA : TYPES.TABLE_DATA_TYPE;
+
+                   begin
+
+4 1                   DATABASE.GET_TABLE_RECORD (
+                         TABLE => TABLE,
+                         DATA  => TABLE_DATA);
+
+4 2                   return TABLE_DATA.CHECK_TOTAL;
+               end  GET_CHECK_TOTAL;
+               procedure  ADD_PARTY_TO_WAITING_LIST ( NAME : in     string ) is
+
+                      TO_ADD : WAITING_LIST_TYPE_PTR := new WAITING_LIST_TYPE;
+                   begin
+5 1                   if NAME'length > MAX_NAME_LENGTH then
+5 2                      TO_ADD.NAME := NAME(NAME'first..NAME'first+MAX_NAME_LENGTH-1);
+                      else
+5 3                      TO_ADD.NAME(1..NAME'length) := NAME;
+                      end if;
+5 4                   TO_ADD.NEXT := WAITING_LIST;
+5 5                   WAITING_LIST := TO_ADD;
+               end  ADD_PARTY_TO_WAITING_LIST;
+               function  GET_NEXT_PARTY_TO_BE_SEATED return string is
+
+                      PTR : WAITING_LIST_TYPE_PTR := WAITING_LIST;
+                      RET : WAITING_LIST_NAME_TYPE := ( others => ' ' );
+                   begin
+6 1                   if PTR = null then
+6 2                      null;
+                      elsif PTR.NEXT = null then
+6 3                      RET := PTR.NAME;
+6 4                      WAITING_LIST := null;
+                      else
+6 5                      while PTR.NEXT.NEXT /= null loop
+6 6                         PTR := PTR.NEXT;
+                         end loop;
+6 7                      RET := PTR.NEXT.NAME;
+6 8                      PTR.NEXT := null;
+                      end if;
+6 9                   for IDX in reverse 1 .. RET'length loop
+6 10                     if RET(IDX) /= ' ' then
+6 11                        return RET(1..IDX);
+                         end if;
+                      end loop;
+6 12                  return "";
+               end  GET_NEXT_PARTY_TO_BE_SEATED;
+               function  "-" (X : in integer; Y : in integer)
+                      return integer is
+
+                   begin
+7 1                 if X > 0 then
+7 2                   return X;
+                    else
+7 3                   return Y;
+                    end if;
+               end  "-";
+               function  "&" (X : in integer; Y : in integer)
+                      return integer is
+
+                   begin
+8 1                 if X > 0 then
+8 2                   return X;
+                    else
+8 3                   return Y;
+                    end if;
+               end  "&";
+               end  MANAGER;
