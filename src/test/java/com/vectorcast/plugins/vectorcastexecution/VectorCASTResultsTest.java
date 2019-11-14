@@ -143,7 +143,7 @@ public class VectorCASTResultsTest {
     private Boolean compareCoverageFiles() {
         Boolean retVal = false;
         try {
-            List<String> lines = Files.readAllLines(Paths.get("xml_data/coverage_results_VectorCAST_MinGW_C_TestSuite_TUTORIAL_C.xml"));
+            List<String> lines = Files.readAllLines(Paths.get("target/test-classes/xml_data/coverage_results_VectorCAST_MinGW_C_TestSuite_TUTORIAL_C.xml"));
             lines.remove(0);
             String actual = String.join("\n", lines);
 
@@ -167,10 +167,10 @@ public class VectorCASTResultsTest {
     private Boolean compareTestResultsFiles() { 
         Boolean retVal = false;
         try {
-            List<String> lines = Files.readAllLines(Paths.get("xml_data/test_results_enterprise_testing_demo.vcm_combined_final.xml"));
+            List<String> lines = Files.readAllLines(Paths.get("target/test-classes/xml_data/test_results_enterprise_testing_demo.vcm_combined_final.xml"));
             String actual = String.join("\n", lines); ;
 
-            if (testResultsFile.equals(actual)) {
+            if (testResultsFile.equals(actual) || testResultsSkippedFile.equals(actual) ) {
                 retVal = true;
             } else {
                 System.out.println ("Expected\n" + testResultsFile);
@@ -244,6 +244,33 @@ public class VectorCASTResultsTest {
 "   </testsuite>\n"+
 "\n"+
 "\n"+
+"</testsuites>";
+    
+    private static final String testResultsSkippedFile = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<testsuites>\n" +
+"    <testsuite errors=\"0\" tests=\"2\" failures=\"0\" name=\"TUTORIAL_C\" id=\"1\">\n" +
+"\n" +
+"        <testcase name=\"PLACE_ORDER.001\" classname=\"VectorCAST_MinGW_C.TestSuite.TUTORIAL_C\" time=\"0\">\n" +
+"            \n" +
+"            <skipped/>\n" +
+"\n" +
+"            <system-out>\n" +
+"Skipped by VectorCAST Change Based Testing.  Last execution data shown.&#xA;&#xA;PASS 4 / 4  &#xA;&#xA;Execution Report:&#xA; Start of Test Case:   PLACE_ORDER.001&#xA;&#xA;----------------------------------------------------------------------&#xA;-----                          Event 1                           -----&#xA;----------------------------------------------------------------------&#xA;   Calling UUT: manager.c&#xA;     Subprogram: Place_Order&#xA;       Table =&gt; 2&#xA;       Seat =&gt; 0&#xA;       Order&#xA;         Soup =&gt; ONION&#xA;         Salad =&gt; CAESAR&#xA;         Entree =&gt; STEAK&#xA;         Beverage =&gt; MIXED_DRINK&#xA;&#xA;&#xA;----------------------------------------------------------------------&#xA;-----                          Event 2                           -----&#xA;----------------------------------------------------------------------&#xA;   Stub called: manager.c&#xA;     Subprogram: Get_Table_Record&#xA;       return&#xA;         Number_In_Party =&gt; 0&#xA;         Check_Total =&gt; 0&#xA;&#xA;&#xA;----------------------------------------------------------------------&#xA;-----                          Event 3                           -----&#xA;----------------------------------------------------------------------&#xA;   Stub called: manager.c&#xA;     Subprogram: Update_Table_Record&#xA;       Data&#xA;         Is_Occupied =&gt; v_true                                 &lt;match&gt;&#xA;         Number_In_Party =&gt; 1                                  &lt;match&gt;&#xA;         Order&#xA;           [0] &#xA;             Dessert =&gt; PIE                                    &lt;match&gt;&#xA;         Check_Total =&gt; 14                                     &lt;match&gt;&#xA;&#xA;&#xA;----------------------------------------------------------------------&#xA;-----                          Event 4                           -----&#xA;----------------------------------------------------------------------&#xA;   Returned from UUT: manager.c&#xA;     Subprogram: Place_Order&#xA;       Table =&gt; 2&#xA;       Seat =&gt; 0&#xA;       Order&#xA;         Soup =&gt; ONION&#xA;         Salad =&gt; CAESAR&#xA;         Entree =&gt; STEAK&#xA;         Beverage =&gt; MIXED_DRINK&#xA;&#xA;&#xA;   UUT Returned control to Driver ...&#xA;&#xA;End of Test Case&#xA;&#xA;&#xA;&#xA;Expected Results matched 100%                         ( 4 / 4 )   PASS&#xA;Test Status                                                       PASS&#xA;&#xA;                     \n" +
+"            </system-out>\n" +
+"        </testcase>\n" +
+"\n" +
+"        <testcase name=\"PLACE_ORDER.002\" classname=\"VectorCAST_MinGW_C.TestSuite.TUTORIAL_C\" time=\"0\">\n" +
+"            \n" +
+"            <skipped/>\n" +
+"\n" +
+"            <system-out>\n" +
+"Skipped by VectorCAST Change Based Testing.  Last execution data shown.&#xA;&#xA;PASS 4 / 4  &#xA;&#xA;Execution Report:&#xA; Start of Test Case:   PLACE_ORDER.002&#xA;&#xA;----------------------------------------------------------------------&#xA;-----                          Event 1                           -----&#xA;----------------------------------------------------------------------&#xA;   Calling UUT: manager.c&#xA;     Subprogram: Place_Order&#xA;       Table =&gt; 2&#xA;       Seat =&gt; 0&#xA;       Order&#xA;         Soup =&gt; ONION&#xA;         Salad =&gt; CAESAR&#xA;         Entree =&gt; STEAK&#xA;         Beverage =&gt; MIXED_DRINK&#xA;&#xA;&#xA;----------------------------------------------------------------------&#xA;-----                          Event 2                           -----&#xA;----------------------------------------------------------------------&#xA;   Stub called: manager.c&#xA;     Subprogram: Get_Table_Record&#xA;       return&#xA;         Number_In_Party =&gt; 0&#xA;         Check_Total =&gt; 0&#xA;&#xA;&#xA;----------------------------------------------------------------------&#xA;-----                          Event 3                           -----&#xA;----------------------------------------------------------------------&#xA;   Stub called: manager.c&#xA;     Subprogram: Add_Included_Dessert&#xA;       Order&#xA;         [0] &#xA;           Dessert =&gt; NO_DESSERT&#xA;&#xA;&#xA;----------------------------------------------------------------------&#xA;-----                          Event 4                           -----&#xA;----------------------------------------------------------------------&#xA;   Stub called: manager.c&#xA;     Subprogram: Update_Table_Record&#xA;       Data&#xA;         Is_Occupied =&gt; v_true                                 &lt;match&gt;&#xA;         Number_In_Party =&gt; 1                                  &lt;match&gt;&#xA;         Order&#xA;           [0] &#xA;             Dessert =&gt; CAKE                                   &lt;match&gt;&#xA;         Check_Total =&gt; 14                                     &lt;match&gt;&#xA;&#xA;&#xA;----------------------------------------------------------------------&#xA;-----                          Event 5                           -----&#xA;----------------------------------------------------------------------&#xA;   Returned from UUT: manager.c&#xA;     Subprogram: Place_Order&#xA;       Table =&gt; 2&#xA;       Seat =&gt; 0&#xA;       Order&#xA;         Soup =&gt; ONION&#xA;         Salad =&gt; CAESAR&#xA;         Entree =&gt; STEAK&#xA;         Beverage =&gt; MIXED_DRINK&#xA;&#xA;&#xA;   UUT Returned control to Driver ...&#xA;&#xA;End of Test Case&#xA;&#xA;&#xA;&#xA;Expected Results matched 100%                         ( 4 / 4 )   PASS&#xA;Test Status                                                       PASS&#xA;&#xA;                     \n" +
+"            </system-out>\n" +
+"        </testcase>\n" +
+"   </testsuite>\n" +
+"\n" +
+"\n" +
 "</testsuites>";
     
     private static final String coverageResultsFile =
