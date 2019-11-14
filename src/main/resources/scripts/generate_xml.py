@@ -442,8 +442,15 @@ class GenerateXml(BaseGenerateXml):
 #
     def write_testcase_jUnit(self, tc, unit_name, func_name):
     
-        if self.cbtDict:
+        # If cbtDict is None, no build log was passed in...don't mark anything as skipped 
+        if self.cbtDict == None:
+            tcSkipped = False 
+            
+        # else there is something check , if the length of cbtDict is greater than zero
+        elif len(self.cbtDict) > 0:
             tcSkipped = self.was_test_case_skipped(tc,"/".join([unit_name, func_name, tc.name]))
+            
+        # finally - there was something to check, but it was empty
         else:
             tcSkipped = True
 
