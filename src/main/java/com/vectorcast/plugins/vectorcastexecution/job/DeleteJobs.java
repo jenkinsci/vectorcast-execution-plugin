@@ -73,23 +73,28 @@ public class DeleteJobs extends BaseJob {
         String projName = getBaseName() + ".vcast_manage";
         String singleName = projName + ".singlejob";
         String multiName = projName + ".multijob";
-        String pipelineName = projName + ".pipeline";
+        String pipelineName = getBaseName() + ".vcast.pipeline";
         String updateMultiName = projName + ".updatemultijob";
         // New, job / VectorCASTSetup job matching
+
         List<Item> jobs = getInstance().getAllItems();
         for (Item job : jobs) {
-            if (job instanceof Project) {
+            
+            if (job.getFullName().equalsIgnoreCase(pipelineName)) {
+                jobsToDelete.add(job.getFullName());
+            } else if (job instanceof Project) {
                 Project project = (Project)job;
                 for (Object builder : project.getBuilders()) {
+                            
                     if (builder instanceof VectorCASTSetup) {
                         VectorCASTSetup vcSetup = (VectorCASTSetup)builder;
                         if (vcSetup.getManageProjectName() != null && 
                             vcSetup.getManageProjectName().isEmpty()) {
+
                             // Old project - use string comparison of name
                             if (job.getFullName().startsWith(baseName) ||
                                 job.getFullName().equals(singleName) ||
                                 job.getFullName().equals(multiName) ||
-                                job.getFullName().equals(pipelineName) ||
                                 job.getFullName().equals(updateMultiName)) {
                                 jobsToDelete.add(job.getFullName());
                             }

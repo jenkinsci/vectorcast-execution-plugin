@@ -46,7 +46,7 @@ public class VectorCASTResultsTest {
         try {
             
             System.out.println("Command: " + command);
-            //command = "set WORKSPACE=%cd% && " + command;
+            command = "cmd /c \"set WORKSPACE=%cd% && cd target/test-classes && " + command + "\"";
             
             System.out.println("starting command");
             Process p = Runtime.getRuntime().exec(command);            
@@ -195,13 +195,13 @@ public class VectorCASTResultsTest {
         
         Map<String, String> env = System.getenv();
 
-        if (env.containsKey("VECTORCAST_DIR")) {
+        if (env.containsKey("VECTORCAST_DIR")) { // && env.containsKey("WORKSPACE")) {
             
             String VCD = env.get("VECTORCAST_DIR");
-            String genResult      = VCD + "/vpython vc_scripts/generate-results.py --junit target/test-classes/enterprise_testing_demo/enterprise_testing_demo.vcm";
-            String genResultFinal = VCD + "/vpython vc_scripts/generate-results.py --junit target/test-classes/enterprise_testing_demo/enterprise_testing_demo.vcm --final";
+            String genResult      = VCD + "/vpython vc_scripts/generate-results.py --junit enterprise_testing_demo/enterprise_testing_demo.vcm";
+            String genResultFinal = VCD + "/vpython vc_scripts/generate-results.py --junit enterprise_testing_demo/enterprise_testing_demo.vcm --final";
 
-            copyScripts("target/classes/scripts","vc_scripts");
+            copyScripts("target/classes/scripts","target/test-classes/vc_scripts");
 
             vpythonTracebackError = runCommand(genResult);
             vpythonTracebackError = vpythonTracebackError || runCommand(genResultFinal);

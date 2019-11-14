@@ -1,2 +1,0 @@
-******************
-*** Link command: g++ -g -oUUT_INTE.EXE  B0000001.o B0000002.o S0000003.o B0000008.o B0000004.o  B0000007.o  B1_switch.o  B4_switch.o  S3_switch.o    S0000009.o 

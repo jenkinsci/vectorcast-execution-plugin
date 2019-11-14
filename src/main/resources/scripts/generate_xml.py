@@ -441,10 +441,11 @@ class GenerateXml(BaseGenerateXml):
 # Internal - write a testcase to the jUnit XML file
 #
     def write_testcase_jUnit(self, tc, unit_name, func_name):
-        tcSkipped = self.cbtDict and self.__was_test_case_skipped(
-            self.cbtDict,
-            tc,
-            "/".join([unit_name, func_name, tc.name]))
+    
+        if self.cbtDict:
+            tcSkipped = self.was_test_case_skipped(tc,"/".join([unit_name, func_name, tc.name]))
+        else:
+            tcSkipped = True
 
         testcaseString ="""
         <testcase name="%s" classname="%s" time="0">
@@ -693,10 +694,10 @@ class GenerateXml(BaseGenerateXml):
         self.write_cov_units()
         self.end_cov_file_environment()
 
-    def __was_test_case_skipped(self, cbtDict, tc, searchName):
+    def was_test_case_skipped(self, tc, searchName):
         import sys, traceback, pprint
         try:
-            compoundTests, initTests,  simpleTestcases = cbtDict[self.hashCode]
+            compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
             if tc.kind == TestCase.KINDS['compound'] and tc.name in compoundTests:
                 return False
             elif tc.kind == TestCase.KINDS['init'] and tc.name in initTests:
@@ -710,7 +711,7 @@ class GenerateXml(BaseGenerateXml):
             self.__print_test_case_was_skipped(searchName, tc.passed)
             return True
         except Exception as e: 
-            pprint.pprint (cbtDict, width = 132)
+            pprint.pprint (self.cbtDict, width = 132)
             traceback.print_exc()
             sys.exit()
 

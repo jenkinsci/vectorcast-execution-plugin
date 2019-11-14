@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<manage-config-options version="7">
-  <config>
-    <key>MANAGE_PARENT_LIB</key>
-    <value>Ada</value>
-  </config>
-</manage-config-options>
