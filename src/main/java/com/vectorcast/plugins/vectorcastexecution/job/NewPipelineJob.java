@@ -376,13 +376,13 @@ public class NewPipelineJob extends BaseJob {
 
 		// Doing once per MultiJobDetail similar to MultiJob plugin
         if ((executePreamble != null) && (!executePreamble.isEmpty())) {
-            preamble = executePreamble.replace("\\","/");
+            preamble = executePreamble.replace("\\","/").replace("\"","\\\"");
         }
         if ((environmentSetup != null) && (!environmentSetup.isEmpty())) {
-            setup = environmentSetup.replace("\\","/");
+            setup = environmentSetup.replace("\\","/").replace("\"","\\\"");
         }
         if ((environmentTeardown != null) && (!environmentTeardown.isEmpty())) {
-            teardown = environmentTeardown.replace("\\","/");
+            teardown = environmentTeardown.replace("\\","/").replace("\"","\\\"");
         }
         
         String topOfJenkinsfile = "// ===============================================================\n" + 
