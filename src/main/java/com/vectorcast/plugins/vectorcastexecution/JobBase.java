@@ -95,6 +95,7 @@ public abstract class JobBase implements ExtensionPoint, Action, Describable<Job
             return (JobBaseDescriptor) instance.getDescriptorOrDie(getClass());
         }
     }
+
     /**
      * Returns all the registered {@link JobBase}s.
      * @return all extensions based on JobBase

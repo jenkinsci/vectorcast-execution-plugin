@@ -26,11 +26,10 @@ package com.vectorcast.plugins.vectorcastexecution.job;
 import com.vectorcast.plugins.vectorcastcoverage.VectorCASTPublisher;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
-import hudson.ExtensionList;
 import hudson.model.Descriptor;
-import hudson.model.FreeStyleProject;
-import hudson.model.RootAction;
+import hudson.model.Item;
 import hudson.plugins.ws_cleanup.PreBuildCleanup;
+import hudson.security.Permission;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
@@ -39,23 +38,17 @@ import hudson.util.DescribableList;
 import jenkins.model.Jenkins;
 import junit.framework.TestCase;
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.scriptsecurity.scripts.Language;
-import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
-import org.jenkinsci.plugins.scriptsecurity.scripts.languages.GroovyLanguage;
-//import org.jenkinsci.plugins.xunit.XUnitPublisher;
-//import org.jenkinsci.plugins.xunit.types.CheckType;
 import hudson.tasks.junit.JUnitResultArchiver;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -63,50 +56,21 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Jenkins.class)
 public class NewSingleJobTest extends TestCase {
-    @Mock
-    private Jenkins mockJenkins;
-    @Mock
-    private FreeStyleProject project;
-    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList;
-    private DescribableList<Builder,Descriptor<Builder>> bldrsList;
-    private DescribableList<Publisher,Descriptor<Publisher>> publisherList;
-    @Mock
-    private ScriptApproval scriptApproval;
-    @Mock
-    private ExtensionList<RootAction> rootActionList;
-    @Mock
-    private ExtensionList<Language> langList;
-    
-    private static final String PROJECTNAME = "project.vcast.single";
-    
-    @Before
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
 
-        mockStatic(Jenkins.class);
-        when(Jenkins.getInstance()).thenReturn(mockJenkins);
-        
-        when(mockJenkins.createProject(FreeStyleProject.class, PROJECTNAME)).thenReturn(project);
-        when(mockJenkins.getExtensionList(RootAction.class)).thenReturn(rootActionList);
-        when(mockJenkins.getExtensionList(Language.class)).thenReturn(langList);
-        
-        GroovyLanguage groovy = new GroovyLanguage();
-        when(langList.get(GroovyLanguage.class)).thenReturn(groovy);
-        
-        bldWrappersList = new DescribableList(project);
-        when(project.getBuildWrappersList()).thenReturn(bldWrappersList);
-        bldrsList = new DescribableList<>(project);
-        when(project.getBuildersList()).thenReturn(bldrsList);
-        publisherList = new DescribableList<>(project);
-        when(project.getPublishersList()).thenReturn(publisherList);
-        
-        when(rootActionList.get(ScriptApproval.class)).thenReturn(scriptApproval);
-        mockStatic(ScriptApproval.class);
-        when(ScriptApproval.get()).thenReturn(scriptApproval);
-    }
+    private static final String PROJECTNAME = "project.vcast.single";
 
     @Test
     public void testBasic() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        MockAuthorizationStrategy mockStrategy = new MockAuthorizationStrategy();
+        mockStrategy.grant(Jenkins.READ).everywhere().to("devel");
+        for (Permission p : Item.PERMISSIONS.getPermissions()) {
+            mockStrategy.grant(p).everywhere().to("devel");
+        }
+        r.jenkins.setAuthorizationStrategy(mockStrategy);
+
         StaplerRequest request = Mockito.mock(StaplerRequest.class);
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
         JSONObject jsonForm = new JSONObject();
@@ -119,21 +83,23 @@ public class NewSingleJobTest extends TestCase {
         job.create(false);
         Assert.assertEquals(PROJECTNAME, job.getProjectName());
         Assert.assertTrue(job.getTopProject() != null);
-        Assert.assertEquals(project, job.getTopProject());
 
         // Check build wrappers...
+        DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList = job.getTopProject().getBuildWrappersList();
         Assert.assertEquals(1, bldWrappersList.size());
         BuildWrapper wrapper = bldWrappersList.get(0);
         Assert.assertTrue(wrapper instanceof PreBuildCleanup);
         PreBuildCleanup cleanup = (PreBuildCleanup)wrapper;
         Assert.assertTrue(cleanup.getDeleteDirs());
-        
+
         // Check build actions...
+        DescribableList<Builder,Descriptor<Builder>> bldrsList = job.getTopProject().getBuildersList();
         Assert.assertEquals(2, bldrsList.size());
         Assert.assertTrue(bldrsList.get(0) instanceof VectorCASTSetup);
         Assert.assertTrue(bldrsList.get(1) instanceof VectorCASTCommand);
-        
+
         // Check publishers...
+        DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
         Assert.assertEquals(4, publisherList.size());
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);

@@ -35,15 +35,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Iterator;
 
-import javax.servlet.ServletException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.io.IOUtils;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -58,14 +54,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import java.net.URLDecoder;
-import java.util.Enumeration;
-import hudson.FilePath;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 

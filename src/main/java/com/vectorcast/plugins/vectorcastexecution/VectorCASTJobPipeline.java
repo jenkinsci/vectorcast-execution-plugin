@@ -33,7 +33,6 @@ import com.vectorcast.plugins.vectorcastexecution.job.PipelineNotSupportedExcept
 import hudson.Extension;
 import hudson.model.Descriptor;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;

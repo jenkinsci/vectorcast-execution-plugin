@@ -24,7 +24,6 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
-import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
@@ -33,7 +32,6 @@ import hudson.model.labels.LabelAtom;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;

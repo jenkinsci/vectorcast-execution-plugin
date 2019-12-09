@@ -24,7 +24,6 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
 import hudson.Launcher;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
@@ -40,11 +39,8 @@ import hudson.tasks.Shell;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.StringJoiner;
 
 /**
  * This class allows a command script to be specified for both Linux and Windows

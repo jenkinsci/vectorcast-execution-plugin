@@ -28,12 +28,12 @@ import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.vectorcast.plugins.vectorcastcoverage.VectorCASTPublisher;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
-import hudson.ExtensionList;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
-import hudson.model.RootAction;
+import hudson.model.Item;
 import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.plugins.ws_cleanup.PreBuildCleanup;
+import hudson.security.Permission;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
@@ -43,23 +43,19 @@ import jenkins.model.Jenkins;
 import junit.framework.TestCase;
 import net.sf.json.JSONObject;
 import org.apache.commons.fileupload.FileItem;
-import org.jenkinsci.plugins.scriptsecurity.scripts.Language;
-import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
-import org.jenkinsci.plugins.scriptsecurity.scripts.languages.GroovyLanguage;
-//import org.jenkinsci.plugins.xunit.XUnitPublisher;
-//import org.jenkinsci.plugins.xunit.types.CheckType;
 import hudson.tasks.junit.JUnitResultArchiver;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -67,35 +63,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Jenkins.class)
 public class NewMultiJobTest extends TestCase {
-    @Mock
-    private Jenkins mockJenkins;
-    @Mock
-    private MultiJobProject project;
-    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList;
-    private DescribableList<Builder,Descriptor<Builder>> bldrsList;
-    private DescribableList<Publisher,Descriptor<Publisher>> publisherList;
-    
-    @Mock
-    private FreeStyleProject project1;
-    private static final String PROJECT1 = "project_VectorCAST_MinGW_C++_TestSuite_ORDER";
-    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList1;
-    private DescribableList<Builder,Descriptor<Builder>> bldrsList1;
-    private DescribableList<Publisher,Descriptor<Publisher>> publisherList1;
-    @Mock
-    private FreeStyleProject project2;
-    private static final String PROJECT2 = "project_VectorCAST_MinGW_C_TestSuite_ORDER";
-    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList2;
-    private DescribableList<Builder,Descriptor<Builder>> bldrsList2;
-    private DescribableList<Publisher,Descriptor<Publisher>> publisherList2;
-
-    @Mock
-    private ScriptApproval scriptApproval;
-    @Mock
-    private ExtensionList<RootAction> rootActionList;
-    @Mock
-    private ExtensionList<Language> langList;
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
     
     private static final String PROJECTNAME = "project.vcast.multi";
+    private static final String PROJECT1 = "project_VectorCAST_MinGW_C++_TestSuite_ORDER";
+    private static final String PROJECT2 = "project_VectorCAST_MinGW_C_TestSuite_ORDER";
+    
     private static final String PROJECTFILE14 = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<project version=\"14\">\n" +
@@ -274,46 +248,14 @@ public class NewMultiJobTest extends TestCase {
 "</project>";
     
     @Before
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-
-        mockStatic(Jenkins.class);
-        when(Jenkins.getInstance()).thenReturn(mockJenkins);
-        
-        when(mockJenkins.createProject(MultiJobProject.class, PROJECTNAME)).thenReturn(project);
-        when(mockJenkins.createProject(FreeStyleProject.class, PROJECT1)).thenReturn(project1);
-        when(mockJenkins.createProject(FreeStyleProject.class, PROJECT2)).thenReturn(project2);
-
-        when(mockJenkins.getExtensionList(RootAction.class)).thenReturn(rootActionList);
-        when(mockJenkins.getExtensionList(Language.class)).thenReturn(langList);
-        
-        GroovyLanguage groovy = new GroovyLanguage();
-        when(langList.get(GroovyLanguage.class)).thenReturn(groovy);
-        
-        bldWrappersList = new DescribableList(project);
-        when(project.getBuildWrappersList()).thenReturn(bldWrappersList);
-        bldWrappersList1 = new DescribableList(project1);
-        when(project1.getBuildWrappersList()).thenReturn(bldWrappersList1);
-        bldWrappersList2 = new DescribableList(project2);
-        when(project2.getBuildWrappersList()).thenReturn(bldWrappersList2);
-
-        bldrsList = new DescribableList<>(project);
-        when(project.getBuildersList()).thenReturn(bldrsList);
-        bldrsList1 = new DescribableList<>(project1);
-        when(project1.getBuildersList()).thenReturn(bldrsList1);
-        bldrsList2 = new DescribableList<>(project2);
-        when(project2.getBuildersList()).thenReturn(bldrsList2);
-
-        publisherList = new DescribableList<>(project);
-        when(project.getPublishersList()).thenReturn(publisherList);
-        publisherList1 = new DescribableList<>(project1);
-        when(project1.getPublishersList()).thenReturn(publisherList1);
-        publisherList2 = new DescribableList<>(project2);
-        when(project2.getPublishersList()).thenReturn(publisherList2);
-        
-        when(rootActionList.get(ScriptApproval.class)).thenReturn(scriptApproval);
-        mockStatic(ScriptApproval.class);
-        when(ScriptApproval.get()).thenReturn(scriptApproval);
+    @Override    public void setUp() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        MockAuthorizationStrategy mockStrategy = new MockAuthorizationStrategy();
+        mockStrategy.grant(Jenkins.READ).everywhere().to("devel");
+        for (Permission p : Item.PERMISSIONS.getPermissions()) {
+            mockStrategy.grant(p).everywhere().to("devel");
+        }
+        r.jenkins.setAuthorizationStrategy(mockStrategy);
     }
 
     public void basicCommon(String projectFile) throws Exception {
@@ -332,9 +274,9 @@ public class NewMultiJobTest extends TestCase {
         Assert.assertEquals("project", job.getBaseName());
         job.create(false);
         Assert.assertTrue(job.getTopProject() != null);
-        Assert.assertEquals(project, job.getTopProject());
 
         // Check build wrappers - main project...
+        DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList = job.getTopProject().getBuildWrappersList();
         Assert.assertEquals(1, bldWrappersList.size());
         BuildWrapper wrapper = bldWrappersList.get(0);
         Assert.assertTrue(wrapper instanceof PreBuildCleanup);
@@ -342,6 +284,7 @@ public class NewMultiJobTest extends TestCase {
         Assert.assertTrue(cleanup.getDeleteDirs());
         
         // Check build actions - main project...
+        DescribableList<Builder,Descriptor<Builder>> bldrsList = job.getTopProject().getBuildersList();
         Assert.assertEquals(5, bldrsList.size());
         Assert.assertTrue(bldrsList.get(0) instanceof VectorCASTSetup);
         Assert.assertTrue(bldrsList.get(1) instanceof MultiJobBuilder);
@@ -350,19 +293,32 @@ public class NewMultiJobTest extends TestCase {
         Assert.assertTrue(bldrsList.get(4) instanceof VectorCASTCommand);
         
         // Check publishers - main project...
+        DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
         checkPublishers(publisherList);
         
         // Now check the additional build/report projects
-        
-        // Build/execute - project 1
-        checkBuildExecuteSteps3(bldrsList1);
 
-        checkPublishers(publisherList1);
+        MultiJobProject project = (MultiJobProject)job.getTopProject();
+        List<FreeStyleProject> projects = project.getParent().getAllItems(FreeStyleProject.class);
+        Assert.assertEquals(2, projects.size());
+        FreeStyleProject project1 = ((FreeStyleProject)projects.toArray()[0]);
+        Assert.assertEquals(PROJECT1, project1.getName());
+        FreeStyleProject project2 = ((FreeStyleProject)projects.toArray()[1]);
+        Assert.assertEquals(PROJECT2, project2.getName());
+
+        // Build/execute - project 1
+        bldrsList = project1.getBuildersList();
+        checkBuildExecuteSteps3(bldrsList);
+
+        publisherList = project1.getPublishersList();
+        checkPublishers(publisherList);
 
         // Build/execute - project 2
-        checkBuildExecuteSteps3(bldrsList2);
+        bldrsList = project2.getBuildersList();
+        checkBuildExecuteSteps3(bldrsList);
 
-        checkPublishers(publisherList2);
+        publisherList = project2.getPublishersList();
+        checkPublishers(publisherList);
     }
 
     @Test
@@ -401,13 +357,14 @@ public class NewMultiJobTest extends TestCase {
         Assert.assertEquals("project", job.getBaseName());
         job.create(false);
         Assert.assertTrue(job.getTopProject() != null);
-        Assert.assertEquals(project, job.getTopProject());
 
         // Check build wrappers - main project...
+        DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList = job.getTopProject().getBuildWrappersList();
         Assert.assertEquals(0, bldWrappersList.size());
         // No cleanup
         
         // Check build actions - main project...
+        DescribableList<Builder,Descriptor<Builder>> bldrsList = job.getTopProject().getBuildersList();
         Assert.assertEquals(5, bldrsList.size());
         Assert.assertTrue(bldrsList.get(0) instanceof VectorCASTSetup);
         Assert.assertTrue(bldrsList.get(1) instanceof MultiJobBuilder);
@@ -416,21 +373,34 @@ public class NewMultiJobTest extends TestCase {
         Assert.assertTrue(bldrsList.get(4) instanceof VectorCASTCommand);
         
         // Check publishers - main project...
+        DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
         Assert.assertEquals(0, publisherList.size());
         
         // Now check the additional build/report projects
+
+        MultiJobProject project = (MultiJobProject)job.getTopProject();
+        List<FreeStyleProject> projects = project.getParent().getAllItems(FreeStyleProject.class);
+        Assert.assertEquals(2, projects.size());
+        FreeStyleProject project1 = ((FreeStyleProject)projects.toArray()[0]);
+        Assert.assertEquals(PROJECT1, project1.getName());
+        FreeStyleProject project2 = ((FreeStyleProject)projects.toArray()[1]);
+        Assert.assertEquals(PROJECT2, project2.getName());
         
         // Build/execute - project 1
-        checkBuildExecuteSteps2(bldrsList1);
+        bldrsList = project1.getBuildersList();
+        checkBuildExecuteSteps2(bldrsList);
 
-        Assert.assertEquals(1, publisherList1.size());
-        Assert.assertTrue(publisherList1.get(0) instanceof GroovyPostbuildRecorder);
+        publisherList = project1.getPublishersList();
+        Assert.assertEquals(1, publisherList.size());
+        Assert.assertTrue(publisherList.get(0) instanceof GroovyPostbuildRecorder);
 
         // Build/execute - project 2
-        checkBuildExecuteSteps2(bldrsList2);
+        bldrsList = project2.getBuildersList();
+        checkBuildExecuteSteps2(bldrsList);
 
-        Assert.assertEquals(1, publisherList2.size());
-        Assert.assertTrue(publisherList2.get(0) instanceof GroovyPostbuildRecorder);
+        publisherList = project2.getPublishersList();
+        Assert.assertEquals(1, publisherList.size());
+        Assert.assertTrue(publisherList.get(0) instanceof GroovyPostbuildRecorder);
     }
     
     private void checkBuildExecuteSteps3(DescribableList<Builder,Descriptor<Builder>> list) {

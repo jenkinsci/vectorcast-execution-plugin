@@ -34,12 +34,10 @@ import hudson.scm.SCM;
 import hudson.scm.SCMS;
 import hudson.tasks.ArtifactArchiver;
 import java.io.IOException;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FilenameUtils;
-import org.jenkinsci.lib.dtkit.type.TestType;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
