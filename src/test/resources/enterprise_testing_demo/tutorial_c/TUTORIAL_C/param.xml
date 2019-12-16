@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<paramfile version="1">
+  <source_file index="1">
+    <path>C:/VCAST/2019sp3/examples/environments/enterprise_testing_demo/tutorial_c/TUTORIAL_C/S0000008.c</path>
+  </source_file>
+  <source_file index="2">
+    <path>C:/VCAST/2019sp3/tutorial/c/manager.c</path>
+  </source_file>
+  <unit name="USER_GLOBALS_VCAST" index="8" sbf="0" unit_description="Not Stubbed Unit">
+    <source_file index="1">
+      <path>C:/VCAST/2019sp3/examples/environments/enterprise_testing_demo/tutorial_c/TUTORIAL_C/S0000008.c</path>
+    </source_file>
+    <global name="VECTORCAST_INT1" index="1" typeid="800002"/>
+    <global name="VECTORCAST_INT2" index="2" typeid="800002"/>
+    <global name="VECTORCAST_INT3" index="3" typeid="800002"/>
+    <global name="VECTORCAST_FLT1" index="4" typeid="800003"/>
+    <global name="VECTORCAST_STR1" index="5" typeid="100001"/>
+    <global name="VECTORCAST_BUFFER" index="6" typeid="100002"/>
+  </unit>
+  <unit name="manager" index="9" sbf="1" unit_description="UUT">
+    <source_file index="2">
+      <path>C:/VCAST/2019sp3/tutorial/c/manager.c</path>
+    </source_file>
+    <global name="WaitingList" index="1" typeid="100004" c_static="1"/>
+    <global name="WaitingListSize" index="2" typeid="900003" c_static="1"/>
+    <global name="WaitingListIndex" index="3" typeid="900003" c_static="1"/>
+    <subprog name="Add_Included_Dessert" index="1" mangled="Add_Included_Dessert" parameterization="(struct order_type*)">
+      <param name="Order" index="1" typeid="900001"/>
+      <source_file index="2"/>
+      <sbf index="2"/>
+    </subprog>
+    <subprog name="Place_Order" index="2" mangled="Place_Order" parameterization="(table_index_type,seat_index_type,order_type)int">
+      <param name="Table" index="1" typeid="900016"/>
+      <param name="Seat" index="2" typeid="900016"/>
+      <param name="Order" index="3" typeid="900008"/>
+      <param name="return" index="4" typeid="900004"/>
+      <function unit="10" index="1"/>
+      <function unit="9" index="1"/>
+      <function unit="10" index="2"/>
+      <source_file index="2"/>
+      <sbf index="5"/>
+    </subprog>
+    <subprog name="Clear_Table" index="3" mangled="Clear_Table" parameterization="(table_index_type)int">
+      <param name="Table" index="1" typeid="900016"/>
+      <param name="return" index="2" typeid="900004"/>
+      <function unit="10" index="1"/>
+      <function unit="10" index="2"/>
+      <source_file index="2"/>
+      <sbf index="3"/>
+    </subprog>
+    <subprog name="Get_Check_Total" index="4" mangled="Get_Check_Total" parameterization="(table_index_type)FLOAT">
+      <param name="Table" index="1" typeid="900016"/>
+      <param name="return" index="2" typeid="900015"/>
+      <function unit="10" index="1"/>
+      <source_file index="2"/>
+      <sbf index="3"/>
+    </subprog>
+    <subprog name="Add_Party_To_Waiting_List" index="5" mangled="Add_Party_To_Waiting_List" parameterization="(char*)">
+      <param name="Name" index="1" typeid="900013"/>
+      <global index="2"/>
+      <global index="1"/>
+      <source_file index="2"/>
+      <sbf index="2"/>
+    </subprog>
+    <subprog name="Get_Next_Party_To_Be_Seated" index="6" mangled="Get_Next_Party_To_Be_Seated" parameterization="()char*">
+      <param name="return" index="1" typeid="900013"/>
+      <global index="3"/>
+      <global index="1"/>
+      <source_file index="2"/>
+      <sbf index="2"/>
+    </subprog>
+  </unit>
+  <unit name="uut_prototype_stubs" index="10" sbf="0" unit_description="Stubbed Unit">
+    <subprog name="Get_Table_Record" index="1" mangled="Get_Table_Record" parameterization="(table_index_type)struct table_data_type">
+      <param name="Table" index="1" typeid="900016"/>
+      <param name="return" index="2" typeid="900009"/>
+      <source_file index="2"/>
+    </subprog>
+    <subprog name="Update_Table_Record" index="2" mangled="Update_Table_Record" parameterization="(table_index_type,table_data_type)">
+      <param name="Table" index="1" typeid="900016"/>
+      <param name="Data" index="2" typeid="900009"/>
+      <source_file index="2"/>
+    </subprog>
+  </unit>
+  <environment_exceptions/>
+  <macro name="BEER" int="2"/>
+  <macro name="CAESAR" int="1"/>
+  <macro name="CAKE" int="1"/>
+  <macro name="CHICKEN" int="2"/>
+  <macro name="CHOWDER" int="2"/>
+  <macro name="COST_OF_CHICKEN" int="10"/>
+  <macro name="COST_OF_LOBSTER" int="18"/>
+  <macro name="COST_OF_PASTA" int="12"/>
+  <macro name="COST_OF_STEAK" int="14"/>
+  <macro name="FRUIT" int="3"/>
+  <macro name="GREEN" int="2"/>
+  <macro name="LOBSTER" int="3"/>
+  <macro name="MIXED_DRINK" int="3"/>
+  <macro name="NO_BEVERAGE" int="0"/>
+  <macro name="NO_DESSERT" int="0"/>
+  <macro name="NO_ENTREE" int="0"/>
+  <macro name="NO_SALAD" int="0"/>
+  <macro name="NO_SOUP" int="0"/>
+  <macro name="NUMBER_OF_TABLES" int="6"/>
+  <macro name="ONION" int="1"/>
+  <macro name="PASTA" int="4"/>
+  <macro name="PIE" int="2"/>
+  <macro name="SEATS_AT_ONE_TABLE" int="4"/>
+  <macro name="SODA" int="4"/>
+  <macro name="STEAK" int="1"/>
+  <macro name="WINE" int="1"/>
+  <macro name="v_false" int="0"/>
+  <macro name="v_true" int="1"/>
+</paramfile>

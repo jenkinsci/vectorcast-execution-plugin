@@ -1,0 +1,10 @@
+#ifndef VCAST_USER_GLOBALS_INCLUDED
+#define VCAST_USER_GLOBALS_INCLUDED
+#undef VCAST_USER_GLOBALS_EXTERN
+#define VCAST_USER_GLOBALS_EXTERN extern
+#undef USER_GLOBALS_EXTERN
+#define USER_GLOBALS_EXTERN 1 /* for backwards-compatibility */
+#include "S0000008.c"
+
+#undef VCAST_USER_GLOBALS_EXTERN
+#endif

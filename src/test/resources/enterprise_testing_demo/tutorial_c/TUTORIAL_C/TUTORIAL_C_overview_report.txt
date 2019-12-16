@@ -1,0 +1,20 @@
+--------------------------------------------------------------------------------
+Environment Overview
+--------------------------------------------------------------------------------
+
+
+
+
+  Environment Name:    TUTORIAL_C
+  Environment Status:  Normal
+  Environment Version: REVISION_2019_SUBPROGRAM_CHECKSUM
+  Environment Build Type: Full
+  Coverage Status:     Statement (enabled)
+  Language:            C
+  Compiler Name:       VectorCAST MinGW_C
+  White Box:           Yes
+  Search List:         $(VECTORCAST_DIR)\tutorial\c  (testable)
+  Units Under Test:    manager
+  Stub List:           uut_prototype_stubs
+  Stub None (Source Files): None
+

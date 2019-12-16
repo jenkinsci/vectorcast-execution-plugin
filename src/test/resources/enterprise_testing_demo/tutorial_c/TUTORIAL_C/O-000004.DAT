@@ -1,0 +1,4 @@
+0.10.2.2.1% 7 <<uut_prototype_stubs.Update_Table_Record.Data.Is_Occupied>>
+0.10.2.2.2% 8 <<uut_prototype_stubs.Update_Table_Record.Data.Number_In_Party>>
+0.10.2.2.5.1.3% 9 <<uut_prototype_stubs.Update_Table_Record.Data.Order[1].Entree>>
+0.10.2.2.6% 10 <<uut_prototype_stubs.Update_Table_Record.Data.Check_Total>>

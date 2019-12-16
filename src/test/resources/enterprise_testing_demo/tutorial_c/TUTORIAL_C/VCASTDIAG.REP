@@ -1,0 +1,258 @@
+
+###################################
+############# MISC ################
+###################################
+Tool version: 19.sp3 (11/13/19)
+Current directory: c:\VCAST\2019sp3\examples\environments\enterprise_testing_demo\tutorial_c\TUTORIAL_C
+Current directory is writable.
+
+--------------------------------------------------------------------------------
+Environment Overview
+--------------------------------------------------------------------------------
+  Environment Name:    TUTORIAL_C
+  Environment Status:  Normal
+  Environment Version: REVISION_2019_SUBPROGRAM_CHECKSUM
+  Environment Build Type: Full
+  Coverage Status:     Statement (enabled)
+  Language:            C
+  Compiler Name:       VectorCAST MinGW_C
+  White Box:           Yes
+  Search List:         $(VECTORCAST_DIR)\tutorial\c  (testable)
+  Units Under Test:    manager
+  Stub List:           uut_prototype_stubs
+  Stub None (Source Files): None
+###################################
+
+###################################
+### COMPILER/PREPROCESSOR/LINKER ##
+###################################
+Found preprocessor C:\VCAST\2019sp3\MinGW\bin\gcc.exe
+Found compiler C:\VCAST\2019sp3\MinGW\bin\gcc.exe
+###################################
+
+
+
+###################################
+############ ENV. VARS ############
+###################################
+ALLUSERSPROFILE=C:\ProgramData
+APPDATA=C:\Users\vaprti\AppData\Roaming
+CANoe_InstallDir=c:\Program Files\Vector CANoe 12.0\Exec64\
+CANoe_InstallDir64=c:\Program Files\Vector CANoe 12.0\Exec64\
+COMPORT=9
+COMPUTERNAME=VAPRTI5115NBJ
+ComSpec=C:\Windows\system32\cmd.exe
+CommonProgramFiles=C:\Program Files (x86)\Common Files
+CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+CommonProgramW6432=C:\Program Files\Common Files
+DriverData=C:\Windows\System32\Drivers\DriverData
+HOMEDRIVE=C:
+HOMEPATH=\Users\vaprti
+JAVA_HOME=C:\Program Files\Java\jdk1.8.0_211
+LM_APP_DISABLE_CACHE_READ=1
+LOCALAPPDATA=C:\Users\vaprti\AppData\Local
+LOGONSERVER=\\VISTRDC3
+NUMBER_OF_PROCESSORS=12
+NcpClntInstallPath=C:\Program Files\NCP\SecureClient
+OS=Windows_NT
+OneDrive=C:\Users\vaprti\OneDrive
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+PICO_DRIVER=C:\Program Files\Vector_CANoe_CANalyzer_Scope\Drivers
+PROCESSOR_ARCHITECTURE=x86
+PROCESSOR_ARCHITEW6432=AMD64
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 158 Stepping 10, GenuineIntel
+PROCESSOR_LEVEL=6
+PROCESSOR_REVISION=9e0a
+PROMPT=$P$G
+PSModulePath=C:\Program Files (x86)\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules;C:\Program Files\NWC Services\PSX7\Modules;C:\Program Files (x86)\AutoIt3\AutoItX
+PUBLIC=C:\Users\Public
+PWD=C:/VCAST/2019sp3/examples/environments/enterprise_testing_demo/tutorial_c
+PATH=C:\VCAST\2019sp3\MinGW\bin;C:\VCAST\2019sp3\MinGW\bin;C:\VCAST\2019sp3;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\ProgramData\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\PuTTY\;C:\Program Files\Git\cmd;C:\Vector\tools\java\bin;C:\Program Files (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files (x86)\Microsoft SDKs\TypeScript\1.0\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files\TortoiseGit\bin;C:\Users\vaprti\alias;C:\vector\tools\PRQA\PRQA-Framework-2.2.0\common\bin;C:\Users\vaprti\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Java\jdk1.8.0_211\bin;C:\Vector\tools\make\bin;;C:\VCAST\2019sp3
+ProgramData=C:\ProgramData
+ProgramFiles=C:\Program Files (x86)
+ProgramFiles(x86)=C:\Program Files (x86)
+ProgramW6432=C:\Program Files
+SESSIONNAME=Console
+SVN_SSH=a3701311b84bd278347b5b1bb69f1606_ssh -q --
+SystemDrive=C:
+SystemRoot=C:\Windows
+TEMP=D:\TEMP
+TMP=D:\TEMP
+TSK_OPTIONS_FILE_SW160800v6_2r2=c:\vector\tools\tasking\TriCore_v6.2r2\etc\licopt.txt
+UATDATA=C:\Windows\CCM\UATData\D9F8C395-CAB8-491d-B8AC-179A1FE1BE77
+USERDNSDOMAIN=VI.VECTOR.INT
+USERDOMAIN=VECTOR
+USERDOMAIN_ROAMINGPROFILE=VECTOR
+USERNAME=vaprti
+USERPROFILE=C:\Users\vaprti
+VECTORCAST_DIR=C:\VCAST\2019sp3
+VECTORCAST_SUB_PROCESS_VERBOSE=TRUE
+VECTOR_LICENSE_FILE=27000@vaprti5115nbj
+VS110COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\Tools\
+VS120COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\
+VS90COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\Tools\
+asl.log=Destination=file
+windir=C:\Windows
+VCAST_OBJECT_PATH=c:\\VCAST\\2019sp3\\examples\\environments\\enterprise_testing_demo\\tutorial_c\\TUTORIAL_C
+VCAST_OBJECT_FILES=B0000001.o B0000002.o S0000003.o B0000008.o B0000004.o  B0000007.o  B1_switch.o  B4_switch.o  S3_switch.o   I0000009.o
+
+###################################
+
+
+###################################
+######## MISSING BINARIES #########
+###################################
+none
+###################################
+
+
+###################################
+########## CONFIG FILES ###########
+###################################
+CCAST Options read from file:
+(exists) c:\VCAST\2019sp3\examples\environments\enterprise_testing_demo\tutorial_c\CCAST_.CFG (current dir)
+Contents of c:\VCAST\2019sp3\examples\environments\enterprise_testing_demo\tutorial_c\CCAST_.CFG:
+  ASM_FUNCS_BEHAVE_AS_INLINES: FALSE
+  ASSEMBLER_CMD: 
+  AUTO_INCLUDE: 
+  COMREADER_ENABLED: FALSE
+  C_ALT_COMPILE_CMD: 
+  C_ALT_EDG_FLAGS: 
+  C_ALT_PREPROCESS_CMD: 
+  C_COMPILER_CFG_SOURCE: BUILT_IN_TAG
+  C_COMPILER_FAMILY_NAME: 
+  C_COMPILER_HIERARCHY_STRING: VectorCAST MinGW_C
+  C_COMPILER_OUTPUT_FLAG: -o
+  C_COMPILER_PY_ARGS: 
+  C_COMPILER_TAG: BUILTIN_MINGW_63_C
+  C_COMPILER_VERSION_CMD: gcc --version
+  C_COMPILE_CMD: gcc -c -g
+  C_COMPILE_CMD_FLAG: -c
+  C_COMPILE_EXCLUDE_FLAGS: -o**
+  C_DEBUG_CMD: gdb
+  C_DEBUG_HELP_FILE: 
+  C_DEFINE_FLAG: -D
+  C_DEFINE_LIST: 
+  C_EDG_FLAGS: -w --gcc --gnu_version 60300 --mingw
+  C_EXECUTE_CMD: 
+  C_EXEC_HELP_FILE: 
+  C_INCLUDE_FLAG: -I
+  C_LINKER_VERSION_CMD: ld --version
+  C_LINK_CMD: gcc -g
+  C_LINK_OPTIONS: 
+  C_OBJECT_EXT: .o
+  C_OUTPUT_FLAG: -o
+  C_PREPROCESS_CMD: gcc -E -C
+  C_PREPROCESS_FILE: 
+  EXECUTABLE_EXTENSION: 
+  MAX_VARY_RANGE: 20
+  PRECOMPILE_CMD: 
+  PRECOMPILE_EXT: 
+  SBF_LOC_MEMBER_IN_NSP: DECL_NAMESPACE
+  SBF_LOC_MEMBER_OUTSIDE_NSP: DECL_NAMESPACE
+  SBF_LOC_NONMEMBER_IN_NSP: DECL_NAMESPACE
+  SBF_LOC_NONMEMBER_OUTSIDE_NSP: DECL_NAMESPACE
+  SOURCE_EXTENSION: .c
+  SUBSTITUTE_CODE_FOR_C_FILE: FALSE
+  VCAST_ALT_WB_METHOD: FALSE
+  VCAST_ASSEMBLY_FILE_EXTENSIONS: s
+  VCAST_ASSIGN_WITHOUT_COPY_CTOR: TRUE
+  VCAST_AUTO_CLEAR_TEST_USER_CODE: FALSE
+  VCAST_AVOID_COMMA_OPERATOR: FALSE
+  VCAST_BUFFER_OUTPUT: FALSE
+  VCAST_COLLAPSE_STD_HEADERS: COLLAPSE_SYSTEM_HEADERS
+  VCAST_COMMAND_LINE_DEBUGGER: TRUE
+  VCAST_COMPILER_SUPPORTS_CPP_CASTS: FALSE
+  VCAST_COVERAGE_FOR_AGGREGATE_INIT: TRUE
+  VCAST_C_FILE_EXTENSIONS: c
+  VCAST_DISABLE_CPP_EXCEPTIONS: FALSE
+  VCAST_DISABLE_STD_STRING_DETECTION: FALSE
+  VCAST_DISABLE_STD_WSTRING_DETECTION: TRUE
+  VCAST_DISABLE_TI_BITFIELD: FALSE
+  VCAST_DISABLE_TI_STRING: FALSE
+  VCAST_DUMP_BUFFER: FALSE
+  VCAST_ENVIRONMENT_FILES: 
+  VCAST_ESCAPE_LINE_DIRECTIVES: FALSE
+  VCAST_EXECUTE_WITH_STDIO: FALSE
+  VCAST_EXECUTE_WITH_STDOUT: FALSE
+  VCAST_FAR_STDIN_DATA: FALSE
+  VCAST_FILE_INDEX: FALSE
+  VCAST_FILE_PREFIX: 
+  VCAST_FORCE_ELAB_TYPE_SPEC: TRUE
+  VCAST_FORCE_NO_USERGLOBALS: FALSE
+  VCAST_GH_INTEX_CMD: 
+  VCAST_GH_INT_FILE: 
+  VCAST_HAS_LONGLONG: TRUE
+  VCAST_INST_FILE_MAX_LINES: 0
+  VCAST_MAIN: FALSE
+  VCAST_MAX_COVERED_SUBPROGRAMS: 1000
+  VCAST_MAX_HEAP_SIZE: 1000
+  VCAST_MAX_MCDC_STATEMENTS: 1000
+  VCAST_MAX_STRING_LENGTH: 1000
+  VCAST_MICROSOFT_LONG_LONG: FALSE
+  VCAST_MINIMAL_TERMINATION: FALSE
+  VCAST_NO_EXIT: FALSE
+  VCAST_NO_FFLUSH: FALSE
+  VCAST_NO_FLOAT: FALSE
+  VCAST_NO_LIMITS: FALSE
+  VCAST_NO_LONG_DOUBLE: TRUE
+  VCAST_NO_MALLOC: FALSE
+  VCAST_NO_SETJMP: FALSE
+  VCAST_NO_SIGNAL: FALSE
+  VCAST_NO_STDIN: FALSE
+  VCAST_NO_STDLIB: FALSE
+  VCAST_NO_STD_FILES: FALSE
+  VCAST_OUTPUT_BUFFER_SIZE: 20000
+  VCAST_PREPEND_TO_PATH_DIRS: $(VECTORCAST_DIR)/MinGW/bin
+  VCAST_PREPROCESS_PREINCLUDE: 
+  VCAST_REMOVE_PREPROCESSOR_COMMENTS: TRUE
+  VCAST_STDIO: FALSE
+  VCAST_TYPEOF_OPERATOR: TRUE
+  VCAST_USE_COMPOUND_FOR_BATCH: FALSE
+  VCAST_USE_EDG_PREPROCESSOR: FALSE
+  VCAST_USE_STATIC_MEMORY: FALSE
+  VCAST_USE_STD_STRING: TRUE
+  VCAST_USE_VCPP: FALSE
+  VCAST_VXWORKS: FALSE
+  WHITEBOX: YES
+
+ADACAST Options read from file:
+( none ) c:\VCAST\2019sp3\examples\environments\enterprise_testing_demo\tutorial_c\ADACAST_.CFG (current dir)
+
+###################################
+
+
+###################################
+######## ENV. VAR. CONFIG #########
+###################################
+These config options are being set by environment vars:
+none
+
+These env. vars contain VCAST and could be affecting behavior:
+PWD=C:/VCAST/2019sp3/examples/environments/enterprise_testing_demo/tutorial_c
+PATH=C:\VCAST\2019sp3\MinGW\bin;C:\VCAST\2019sp3\MinGW\bin;C:\VCAST\2019sp3;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\ProgramData\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\PuTTY\;C:\Program Files\Git\cmd;C:\Vector\tools\java\bin;C:\Program Files (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files (x86)\Microsoft SDKs\TypeScript\1.0\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files\TortoiseGit\bin;C:\Users\vaprti\alias;C:\vector\tools\PRQA\PRQA-Framework-2.2.0\common\bin;C:\Users\vaprti\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Java\jdk1.8.0_211\bin;C:\Vector\tools\make\bin;;C:\VCAST\2019sp3
+VECTORCAST_DIR=C:\VCAST\2019sp3
+VCAST_OBJECT_PATH=c:\\VCAST\\2019sp3\\examples\\environments\\enterprise_testing_demo\\tutorial_c\\TUTORIAL_C
+VCAST_OBJECT_FILES=B0000001.o B0000002.o S0000003.o B0000008.o B0000004.o  B0000007.o  B1_switch.o  B4_switch.o  S3_switch.o   I0000009.o
+
+###################################
+
+###################################
+####### ENVIRONMENT SCRIPT ########
+###################################
+Contents of C:\VCAST\2019sp3\examples\environments\enterprise_testing_demo\tutorial_c\TUTORIAL_C.env:
+  ENVIRO.NEW
+  ENVIRO.NAME: TUTORIAL_C
+  ENVIRO.STUB_BY_FUNCTION: manager
+  ENVIRO.WHITE_BOX: YES
+  ENVIRO.COVERAGE_TYPE: STATEMENT
+  ENVIRO.LIBRARY_STUBS:
+  ENVIRO.STUB: ALL_BY_PROTOTYPE
+  ENVIRO.COMPILER: CC
+  ENVIRO.TYPE_HANDLED_DIRS_ALLOWED:
+  ENVIRO.SEARCH_LIST: $(VECTORCAST_DIR)/tutorial/c
+  ENVIRO.END
+
+###################################
+
+

@@ -1,0 +1,30 @@
+    Processing options file c:\VCAST\2019sp3\examples\environments\enterprise_testing_demo\tutorial_c\CCAST_.CFG
+    Reading environment script "C:/VCAST/2019sp3/examples/environments/enterprise_testing_demo/tutorial_c/TUTORIAL_C.env"
+    Initializing search list
+    Creating the Environment Directory
+    Creating Environment "TUTORIAL_C"
+    Unit 8 (not-stubbed): User Defined Globals
+       Parsing 
+       Initializing parse data
+       Generating harness code
+       Saving unit data
+    Parsing manager
+    Unit 9 (stub-by-function): manager
+       Loading stored IL
+       Initializing parse data
+       Generating harness code
+       Saving unit data
+    Compiling file VECTORCAST_IO
+    Compiling file User Defined Globals
+    Compiling file Data File Number 1
+    Compiling file Data File Number 2
+    Compiling file Driver
+    Compiling file User Defined Package
+    Setting Up Statement Coverage
+    Instrumenting file manager
+    Compiling file manager
+    Compiling file Data File Number 1
+    Linking Instrumented Harness
+    Coverage Initialized
+    Writing VectorCAST Database Files to Disk
+    Environment built Successfully

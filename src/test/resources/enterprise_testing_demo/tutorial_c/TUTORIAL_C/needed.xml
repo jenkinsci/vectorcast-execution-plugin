@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<env_info>
+  <needed_entities>
+    <unit id="9">
+      <function id="Get_Table_Record" name="Get_Table_Record" defined="0" const="0" file="1" return="table_data_type">
+        <parameters>
+          <parameter type="table_index_type" name="Table"/>
+        </parameters>
+      </function>
+      <function id="Update_Table_Record" name="Update_Table_Record" defined="0" const="0" file="1" return="">
+        <parameters>
+          <parameter type="table_index_type" name="Table"/>
+          <parameter type="table_data_type" name="Data"/>
+        </parameters>
+      </function>
+      <function id="Add_Included_Dessert" name="Add_Included_Dessert" defined="1" const="0" file="1" return="">
+        <parameters>
+          <parameter type="struct order_type*" name="Order"/>
+        </parameters>
+      </function>
+      <function id="Place_Order" name="Place_Order" defined="1" const="0" file="1" return="int">
+        <parameters>
+          <parameter type="table_index_type" name="Table"/>
+          <parameter type="seat_index_type" name="Seat"/>
+          <parameter type="order_type" name="Order"/>
+        </parameters>
+      </function>
+      <function id="Clear_Table" name="Clear_Table" defined="1" const="0" file="1" return="int">
+        <parameters>
+          <parameter type="table_index_type" name="Table"/>
+        </parameters>
+      </function>
+      <function id="Get_Check_Total" name="Get_Check_Total" defined="1" const="0" file="1" return="FLOAT">
+        <parameters>
+          <parameter type="table_index_type" name="Table"/>
+        </parameters>
+      </function>
+      <function id="Add_Party_To_Waiting_List" name="Add_Party_To_Waiting_List" defined="1" const="0" file="1" return="">
+        <parameters>
+          <parameter type="char*" name="Name"/>
+        </parameters>
+      </function>
+      <function id="Get_Next_Party_To_Be_Seated" name="Get_Next_Party_To_Be_Seated" defined="1" const="0" file="1" return="char*"/>
+    </unit>
+  </needed_entities>
+  <files>
+    <file id="1">C:/VCAST/2019sp3/tutorial/c/manager.c</file>
+  </files>
+</env_info>

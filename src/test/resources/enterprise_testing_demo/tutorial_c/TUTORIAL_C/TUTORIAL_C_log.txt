@@ -1,0 +1,21 @@
+--------------------------------------------------------------------------------
+Test Script Log
+--------------------------------------------------------------------------------
+(I) @LINE: 1
+    >>> Opening script file C:\Users\vaprti\vector\github\vectorcast-execution-plugin-tms-pipeline\src\test\resources\enterprise_testing_demo\tutorial_c\TUTORIAL_C.tst
+(I) @LINE: 24
+    >>> Processing Test Case: (MAP)CSV_MAP_EXAMPLE
+(S) @LINE: 40
+    >>> Processed Test Case: (MAP)CSV_MAP_EXAMPLE
+(I) @LINE: 46
+    >>> Processing Test Case: PLACE_ORDER.001
+(S) @LINE: 70
+    >>> Processed Test Case: PLACE_ORDER.001
+(I) @LINE: 76
+    >>> Processing Test Case: PLACE_ORDER.002
+(S) @LINE: 102
+    >>> Processed Test Case: PLACE_ORDER.002
+(S) @LINE: 102
+    >>> Script processing completed
+
+
