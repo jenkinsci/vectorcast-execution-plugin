@@ -60,10 +60,9 @@ Environments Affected
     report_file_list = []
     full_file_list = os.listdir(".")
     for file in full_file_list:
-        if "_rebuild.txt" in file[-37:]:
+        if "_rebuild.txt" in file:
             print(file)
             report_file_list.append(file)
-
 
     rebuild_count = 0
     rebuild_total = 0
@@ -108,7 +107,7 @@ Environments Affected
     # moving rebuild reports down in to a sub directory
     if not os.path.exists("rebuild_reports"):
         os.mkdir("rebuild_reports")
-    for file in report_file_list[1:]:
+    for file in report_file_list:
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
         
@@ -124,9 +123,13 @@ def parse_html_files():
     report_file_list = []
     full_file_list = os.listdir(".")
     for file in full_file_list:
-        if "_rebuild.html" in file[-38:]:
+        if "_rebuild.html" in file:
             report_file_list.append(file)
 
+    if len(report_file_list) == 0:
+        print "No incrementatal rebuild reports found in the workspace...skipping"
+        return
+        
     try:
         main_soup = BeautifulSoup(open(report_file_list[0]),features="lxml")
     except:
@@ -210,7 +213,7 @@ def parse_html_files():
     # moving rebuild reports down in to a sub directory
     if not os.path.exists("rebuild_reports"):
         os.mkdir("rebuild_reports")
-    for file in report_file_list[1:]:
+    for file in report_file_list:
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
 
