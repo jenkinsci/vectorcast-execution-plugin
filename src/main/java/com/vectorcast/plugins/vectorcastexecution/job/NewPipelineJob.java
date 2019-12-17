@@ -95,12 +95,10 @@ public class NewPipelineJob extends BaseJob {
 	 * @param response  response object
 	 * @throws ServletException exception
 	 * @throws IOException      exception
-	 * @throws PipelineNotSupportedException      exception
-	 * @throws UnsupportedOperationException      exception
 	 * @throws ScmConflictException      exception
 	 */
 	public NewPipelineJob(final StaplerRequest request, final StaplerResponse response)
-			throws ServletException, IOException, PipelineNotSupportedException, UnsupportedOperationException, ScmConflictException {
+			throws ServletException, IOException, ScmConflictException {
 		super(request, response, false);
 
 		JSONObject json = request.getSubmittedForm();
@@ -140,33 +138,7 @@ public class NewPipelineJob extends BaseJob {
         if (pipelineSCM.length() != 0 && absPath) {
             throw new ScmConflictException(pipelineSCM, MPName);
         }
-
-		// Get version of Jenkins to determine if pipelines are supported
-		Runtime rt = Runtime.getRuntime();
-		Process proc = rt.exec("java -jar jenkins.war --version");
-		BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-		int majorVersion = 0;
-
-		try {
-			majorVersion = Integer.parseInt(stdInput.readLine().substring(0, 1));
-		} catch (NumberFormatException e) {
-			// Prior to version 1.649, the version information contained text which
-			// will cause the parse to fail. This means this Jenkins install is too
-			// old to support pipeline jobs.
-			supported = false;
-		}
-		if (majorVersion < 2) {
-			supported = false;
-		} else {
-			supported = true;
-		}
-		// Pipeline is being created by the createProjectFromXML method in doCreate().
-		// This returns a TopLevelItem, not a Project, getTopProject() is null.
-		// Setting name and returning null.
-		if (!supported) {
-			throw new PipelineNotSupportedException();
-		}
-	}
+    }
 
 	/**
 	 * Get the name of the project

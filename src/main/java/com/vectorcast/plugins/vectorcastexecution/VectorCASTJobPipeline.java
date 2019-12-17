@@ -28,7 +28,6 @@ import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileExceptio
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.ScmConflictException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewPipelineJob;
-import com.vectorcast.plugins.vectorcastexecution.job.PipelineNotSupportedException;
 
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -125,9 +124,6 @@ public class VectorCASTJobPipeline extends JobBase {
         } catch (InvalidProjectFileException ex) {
 			// cannot happen on pipeline job as we don't read the project
             return new HttpRedirect("exists");
-        } catch (PipelineNotSupportedException ex) {
-        	Logger.getLogger(VectorCASTJobPipeline.class.getName()).log(Level.SEVERE, null, ex);
-        	return new HttpRedirect("unsupported");
         }
     }
 }
