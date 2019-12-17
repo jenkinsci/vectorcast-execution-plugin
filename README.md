@@ -134,7 +134,7 @@ The requirements for using this plugin with VectorCAST are
         Jenkins-\>Manage Jenkins-\>Configure System and define 'Jenkins
         URL' and save the settings
 
-## Updating Existing Multi-job
+## Updating Existing Multi-job (Depracated)
 
 An existing multi-job can be updated using the Update Multi-job setup
 manually, or by creating an auto-update multi-job Job. The auto-update
@@ -143,7 +143,7 @@ Jenkins configuration.
 
 ## Known Issues
 
-### Colours not showing in downloaded VectorCAST reports
+### Colors not showing in downloaded VectorCAST reports
 
 See [Configuring Content Security
 Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
@@ -156,19 +156,25 @@ malicious HTML/JS files in workspaces, `/userContent`, or archived
 artifacts."
 
 What this means is that the aggregate coverage report will show
-everything as black rather than red/green/amber coverage colours.
+everything as black rather than red/green/amber coverage colors.
 
 The link above gives details of how to configure Jenkins to relax its
 security.
 
 ### Junit publisher failing environment with no test cases
 
-Junit publisher will fail any environments published with no test
-results. If you have an environment with no test results, you will
-manually need to check the box "Do not fail the build on empty test
+For non-pipeline jobs, Junit publisher will fail any environments published 
+with no test results. If you have an environment with no test results, 
+you will manually need to check the box "Do not fail the build on empty test
 results" in the Publish Junit test result report configuration.
 
 ### Changelog
+
+### Version 0.61 (21 Dec 2019)
+
+- Updated support for Jenkins Pipeline 
+- Updated python scripts to work with VectorCAST 2019 SP3
+- Added fix for Ada environments not building properly
 
 ### Version 0.60 (2 Oct 2019)
 
