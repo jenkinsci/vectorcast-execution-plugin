@@ -1,12 +1,12 @@
 Create, delete and update Jobs for
-[VectorCAST](http://vector.com/vectorcast){.external-link}/Manage
+[VectorCAST](http://vector.com/vectorcast)/Manage
 projects.
 
 # Summary
 
 This plugin allows the user to create, delete and update Jobs to build
 and run
-[VectorCAST](http://vector.com/vectorcast){.external-link} projects.
+[VectorCAST](http://vector.com/vectorcast) projects.
 Coverage is displayed using the [VectorCAST Coverage
 Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
 
@@ -18,14 +18,12 @@ combine the results.
 
 This plugin adds a new top-level menu item to the Jenkins sidebar.
 
-![](docs/images/vc_menu_in_sidebar.png){.confluence-embedded-image
-.confluence-content-image-border}
+![](docs/images/vc_menu_in_sidebar.png)
 
 that provides job control for
-[VectorCAST](http://vector.com/vectorcast){.external-link}/Manage projects
+[VectorCAST](http://vector.com/vectorcast)/Manage projects
 
-![](docs/images/image2017-10-17_18_14_2.png){.confluence-embedded-image
-width="876"}
+![](docs/images/image2017-10-17_18_14_2.png)
 
 ## Job Types
 
@@ -40,8 +38,7 @@ There are 2 types of supported jobs and 1 depracated job type
 **Single** creates a single Jenkins job to build/execute and
 (optionally) report on all environments in a VectorCAST/Manage project.
 
-![](docs/images/single.png){.confluence-embedded-image
-.confluence-content-image-border}
+![](docs/images/single.png)
 
 ### Pipepline Job
 
@@ -49,8 +46,7 @@ There are 2 types of supported jobs and 1 depracated job type
 (optionally) report on all environments in a VectorCAST/Manage project
 in parallel.
 
-![](docs/images/pipeline_create.png){.confluence-embedded-image
-.confluence-content-image-border}
+![](docs/images/pipeline_create.png)
 
 There are 2 options for running tests
 - Use an SCM system (any that is supported by Jenkins)
@@ -81,8 +77,7 @@ individual Jenkins jobs created for each environment in the
 VectorCAST/Manage project. The options for a multi-job are the same as
 for single apart from supplying a copy of the Manage project.
 
-![](docs/images/image2017-10-25_17_3_35.png){.confluence-embedded-image
-.confluence-content-image-border width="827" height="896"}
+![](docs/images/image2017-10-25_17_3_35.png)
 
 Jenkins jobs normally build and run in independent workspaces. This is
 the case with this integration. However, there are 2 options for running
@@ -119,16 +114,14 @@ tests
 When using Multi Jobs, the jobs are created to run on specific nodes
 related to the compiler chosen for the environment. E.g.
 
-![](docs/images/restrict.png){.confluence-embedded-image
-.confluence-content-image-border}
+![](docs/images/restrict.png)
 
 Make sure to set the labels on the relevant Jenkins nodes. Manage
 Jenkins -\> Manage Nodes -\> configure appropriate node and set the
 ‘Labels’ field. In this example the labels have been set to
 GNU\_Native\_5.1\_C and GNU\_Native\_4.8\_C
 
-![](docs/images/restrict_node.png){.confluence-embedded-image
-.confluence-content-image-border}
+![](docs/images/restrict_node.png)
 
 ## Setup/Configuration
 
