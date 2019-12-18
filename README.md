@@ -1,5 +1,4 @@
 # Create, delete and update Jobs for [VectorCAST](http://www.vectorcast.com/)/Manage projects.
-===
 
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/vectorcast-execution.svg)](https://plugins.jenkins.io/vectorcast-execution)
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/i/vectorcast-execution.svg?color=blue)](https://plugins.jenkins.io/vectorcast-execution)
