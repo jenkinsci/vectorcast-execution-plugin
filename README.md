@@ -78,7 +78,7 @@ trend chart:
 
 ![](docs/images/test_trends.png)
 
-and denoted as Skipped in the test results list"
+and denoted as _Skipped_ in the test results list
 
 ![](docs/images/test_results.png)
 
