@@ -1,3 +1,6 @@
+18 Dec 2019 (0.61)
+* Update to strip whitespace when generating QA XML file ready for VC 2020
+
 2 Oct 2019 (0.60)
 * Update support for Manage API and VCAST_RPTS_SELF_CONTAINED
 
