@@ -42,7 +42,7 @@ There are 2 types of supported jobs and 1 depracated job type
 
 ### Pipepline Job
 
-**Single** creates a Jenkins Pipeline job to build/execute and
+**Pipeline** creates a Jenkins Pipeline job to build/execute and
 (optionally) report on all environments in a VectorCAST/Manage project
 in parallel.
 
@@ -88,7 +88,7 @@ and denoted as _Skipped_ in the test results list
 **Multi-Job (Depracated)** creates a top-level Jenkins job to combine the results from
 individual Jenkins jobs created for each environment in the
 VectorCAST/Manage project. The options for a multi-job are the same as
-for single apart from supplying a copy of the Manage project.
+single apart from supplying a copy of the Manage project.
 
 ![](docs/images/image2017-10-25_17_3_35.png)
 
