@@ -69,6 +69,19 @@ Additionally, if a shared artifact directory is specified, VectorCAST/Manage
 will execute jobs independently, but have a central localation for storing
 the build artifacts.  This option can be used to accelerate testing by use
 of VectorCAST's Change Based Testing feature. 
+
+For Pipeline jobs, the plugin processes the build log to determine which
+tests have been skipped by VectorCAST's Change Based Testing feature.  Any
+test cases that had previously pass and were skipped on the current execution
+will be marked as skipped for JUnit and display as such in yellow on the test result
+trend chart:
+
+![](docs/images/test_trends.png)
+
+and denoted as Skipped in the test results list"
+
+![](docs/images/test_results.png)
+
         
 ### Multi-Job (Depracated)
 
@@ -161,12 +174,12 @@ everything as black rather than red/green/amber coverage colors.
 The link above gives details of how to configure Jenkins to relax its
 security.
 
-### Junit publisher failing environment with no test cases
+### JUnit publisher failing environment with no test cases
 
-For non-pipeline jobs, Junit publisher will fail any environments published 
+For non-pipeline jobs, JUnit publisher will fail any environments published 
 with no test results. If you have an environment with no test results, 
 you will manually need to check the box "Do not fail the build on empty test
-results" in the Publish Junit test result report configuration.
+results" in the Publish JUnit test result report configuration.
 
 ### Changelog
 
