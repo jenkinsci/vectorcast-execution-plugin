@@ -126,6 +126,7 @@ def processSystemTestResultsData(lines):
 
     ## get the summary
     for line in lines:
+        line = line.strip()
         if line == "":
             continue
         if not foundData:
