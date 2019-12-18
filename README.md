@@ -1,6 +1,11 @@
-Create, delete and update Jobs for
-[VectorCAST](http://www.vectorcast.com/){.external-link}/Manage
-projects.
+# Create, delete and update Jobs for [VectorCAST](http://www.vectorcast.com/){.external-link}/Manage projects.
+===
+
+image:https://img.shields.io/jenkins/plugin/v/vectorcast-execution.svg[link="https://plugins.jenkins.io/vectorcast-execution"]
+image:https://img.shields.io/jenkins/plugin/i/vectorcast-execution.svg?color=blue[link="https://plugins.jenkins.io/vectorcast-execution"]
+
+<img src="src/main/webapp/icons/vector_favicon.png" width="192">
+
 
 # Summary
 
@@ -119,7 +124,7 @@ Jenkins configuration.
 
 ### Colours not showing in downloaded VectorCAST reports
 
-SeeÂ [Configuring Content Security
+See [Configuring Content Security
 Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
 
 "Jenkins 1.641 / Jenkins 1.625.3 introduce
