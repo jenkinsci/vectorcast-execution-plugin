@@ -46,7 +46,7 @@
         </f:section>
         
         <vc:retry></vc:retry>
-        <vc:jobOptionsDefault></vc:jobOptionsDefault>
+        <vc:jobOptionsPipeline></vc:jobOptionsPipeline>
         <vc:pipelineScripts></vc:pipelineScripts>
 
         <f:section title="${%VCJob.Control.SCMCheckoutLine}">

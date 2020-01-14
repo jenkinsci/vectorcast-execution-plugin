@@ -23,30 +23,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <div>
-    The Job Name is used for the Pipeline Jobs, Single job or the main Multi-job and is pre-pended
-    to the sub-jobs for a Multi-job.
-    <br/>
-    For example, for the Manage project Lua.vcm, the default names would be
-    <table>
-        <tr>
-            <td>Single job</td>
-            <td>&nbsp;</td>
-            <td>Lua.vcast.single</td>
-        </tr>
-        <tr>
-            <td>Pipeline job</td>
-            <td>&nbsp;</td>
-            <td>Lua.vcast.pipeline</td>
-        </tr>
-        <tr>
-            <td>Multi job (main project)</td>
-            <td>&nbsp;</td>
-            <td>Lua.vcast.multi</td>
-        </tr>
-        <tr>
-            <td>Multi job (sub projects)</td>
-            <td>&nbsp;</td>
-            <td>Lua_<i>&lt;Compiler&gt;_&lt;Environment&gt;</i> E.g. Lua_<i>VectorCAST_MinGW_C_TestSuite_LAPI</i></td>
-        </tr>
-    </table>
+    Commands to setup working environment before build and execute stage.  This may include environment variable
+    settings for compilers, tools, source paths, etc.
+    <br/>For Windows example
+    <pre>
+    set PATH=c:\SEGGER\j-link\bin;%PATH% 
+    set PLATFORM_SRC_BASE=.\platform\src
+    </pre>
+    <br/>For Unix/Linux example
+    <pre>
+    export PATH=/usr/local/open-ocd/bin:$PATH
+    export PLATFORM_SRC_BASE=./platform/src
+    </pre>
 </div>

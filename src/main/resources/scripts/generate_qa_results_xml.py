@@ -17,7 +17,7 @@ def get_timestamp():
 def writeJunitHeader(currentEnv, junitfile, failed, total, unit_report_name):
     
     junitfile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-    junitfile.write("<testsuites>\n   <!--" + unit_report_name + "-->")
+    junitfile.write("<testsuites>\n  <!--" + unit_report_name + "-->\n")
                     
     junitfile.write("  <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
         (0, total, failed, currentEnv))
@@ -166,7 +166,11 @@ def processSystemTestResultsData(lines):
                 else:
                     passFail = tc_ratio + " " + tc_percent 
                     failed += 1
-                testcase_data += generateJunitTestCase(jobNameDotted, testcase_name, passFail)
+            else:
+                passFail = "PASS"
+                passed += 1
+                
+            testcase_data += generateJunitTestCase(jobNameDotted, testcase_name, passFail)
                    
     if firstEnvFound:
         write_tc_data(oldEnvName, unit_report_name, jobNameDotted, passed, failed, error, testcase_data)
@@ -181,6 +185,7 @@ def genQATestResults(mp):
     callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status"
     p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
+        
     if err:
         print(out, err)
     processSystemTestResultsData(out.split("\n"))

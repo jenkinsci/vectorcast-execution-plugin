@@ -32,7 +32,7 @@
          xmlns:p="/lib/hudson/project">
     <f:section title="${%VCJob.Scripts}">
       <f:optionalBlock title="Environment Script Commands" checked="${instance.showWindows}" inline="true" 
-                       help="/plugin/vectorcast-execution/help-optWindows.html">
+                       help="/plugin/vectorcast-execution/help-optScriptCmds.html">
 
         <f:entry title="${%VCJob.Scripts.environment_setup.title}" description="${%VCJob.Scripts.environment_setup.description}"
                  help="/plugin/vectorcast-execution/help-optEnvSetup.html">
