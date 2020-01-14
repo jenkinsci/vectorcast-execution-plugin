@@ -70,10 +70,10 @@ def writeJunitFinalCombinedTestResults(manageProjectName):
     f.write("<testsuites>\n")
 
     for testResults in glob.glob('xml_data/test_results*.xml'):
+        if testResults.endswith("_combined_final.xml"):
+            continue
         if not testResults.endswith("_combined.xml"):
             os.remove(testResults)
-            continue
-        if testResults.endswith("_combined_final.xml"):
             continue
             
         data = open(testResults,"r").readlines()[2:-1]
