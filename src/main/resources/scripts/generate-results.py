@@ -569,7 +569,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if junit:   
         if verbose:
             print("Writing combined test data for JUnit")
-        generate_qa_results_xml.genQATestResults(FullManageProjectName)
+        generate_qa_results_xml.genQATestResults(FullManageProjectName, saved_level, saved_envName)
         writeJunitCombinedTestResults(manageProjectName,saved_level,saved_envName)
 
     if timing:
