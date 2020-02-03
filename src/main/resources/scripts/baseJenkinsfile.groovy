@@ -94,7 +94,7 @@ def runCommands(cmds) {
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_RPTS_SELF_CONTAINED=FALSE
             """
-        sh label: 'Running VectorCAST Setup Commands', script: localCmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR")
+        cmds = localCmds + cmds
         log = sh label: 'Running VectorCAST Commands', returnStdout: true, script: cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
     } else {
         localCmds = """
@@ -103,7 +103,7 @@ def runCommands(cmds) {
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
             """
-        bat label: 'Running VectorCAST Setup Commands', script: localCmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%")
+        cmds = localCmds + cmds
         log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
     }
     
