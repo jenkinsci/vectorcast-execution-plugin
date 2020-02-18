@@ -101,7 +101,6 @@ def runCommands(cmds, useLocalCmds = true) {
         
     } else {
         localCmds = """
-            @echo off
             ${VC_EnvSetup}
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
@@ -182,7 +181,7 @@ def transformIntoStep(inputString) {
 
                     runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --level ${compiler}/${test_suite} -e ${environment} --junit --buildlog build.log""")
 
-                    if (VC_usingSCM) {
+                    if (VC_usingSCM && !VC_useOneCheckoutDir) {
                         runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py    ${VC_Manage_Project}  ${compiler}/${test_suite} ${env.JOB_NAME}_${compiler}_${test_suite}_${environment} ${environment}""" )
                     }
                 }
@@ -319,12 +318,12 @@ pipeline {
                     def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
 
                     // if we are using SCM and not using a shared artifact directory...
-                    if (VC_usingSCM && VC_sharedArtifactDirectory.length() == 0) {
+                    if (VC_usingSCM && !VC_useOneCheckoutDir && VC_sharedArtifactDirectory.length() == 0) {
                         // run a script to extract stashed files and process data into xml reports                        
                         runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py""" )
                         
                     // else if we are using a shared artifact directory
-                    } else if (VC_sharedArtifactDirectory.length() != 0) {
+                    } else if (VC_useOneCheckoutDir || VC_sharedArtifactDirectory.length() != 0) {
                     
                         writeFile file: "build.log", text: getConsoleLog()
 
