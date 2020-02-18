@@ -80,6 +80,8 @@ public class NewPipelineJob extends BaseJob {
     
     private String pipelineSCM = "";
     
+    private boolean singleCheckout;
+    
     private String debugJSON;
 
     /** Environment setup script */
@@ -111,6 +113,7 @@ public class NewPipelineJob extends BaseJob {
 
         sharedArtifactDirectory = json.optString("sharedArtifactDir",null);
         pipelineSCM = json.optString("scmSnippet","").trim();
+        singleCheckout = json.optBoolean("singleCheckout", false);
         
         // remove the win/linux options since there's no platform any more 
         environmentSetup = json.optString("environmentSetup", null);
@@ -367,6 +370,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_Agent_Label = '" + nodeLabel + "'\n" +  
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
+            "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
             "\n" +  
             "\n" +  
             "/* DEBUG JSON REPSONSE: \n" + debugJSON + "\n*/"+

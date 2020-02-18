@@ -50,6 +50,10 @@
         <vc:pipelineScripts></vc:pipelineScripts>
 
         <f:section title="${%VCJob.Control.SCMCheckoutLine}">
+          <f:entry title="${%VCJob.Options.singleCheckout.title}" description="${%VCJob.Options.singleCheckout.description}"
+                    help="/plugin/vectorcast-execution/help-optsingleCheckout.html">
+            <f:checkbox name="singleCheckout" checked="${instance.singleCheckout}" default="false"/>
+          </f:entry>        
           <f:entry title="${%VCJob.Control.SCMCheckoutLine.snippet.title}" description="${%VCJob.Control.SCMCheckoutLine.snippet.description}"
                    help="/plugin/vectorcast-execution/help-scmSnippet.html">
             <f:textarea name="scmSnippet" class="fixed-width" required="false" />

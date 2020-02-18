@@ -79,23 +79,26 @@ def checkLogsForErrors(log) {
     return [foundKeywords, failure, unstable]
 }
 // run commands on Unix (Linux) or Windows
-def runCommands(cmds) {
+def runCommands(cmds, useLocalCmds = true) {
     def boolean failure = false;
     def boolean unstable = false;
     def foundKeywords = ""
     def localCmds = """"""
-
-    println "Start Commands: " + cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","Deleting ")
      
-     // if its Linux run the sh command and save the stdout for analysis
+    // if its Linux run the sh command and save the stdout for analysis
     if (isUnix()) {
         localCmds = """
-            ${VC_EnvSetup}            
+            ${VC_EnvSetup}
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_RPTS_SELF_CONTAINED=FALSE
             """
-        cmds = localCmds + cmds
-        log = sh label: 'Running VectorCAST Commands', returnStdout: true, script: cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
+        if (useLocalCmds) {
+            cmds = localCmds + cmds
+        }
+        cmds = cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
+        println "Running commands: " + cmds
+        log = sh label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
+        
     } else {
         localCmds = """
             @echo off
@@ -103,11 +106,15 @@ def runCommands(cmds) {
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
             """
-        cmds = localCmds + cmds
-        log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
+        if (useLocalCmds) {
+            cmds = localCmds + cmds
+        }
+        cmds = cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
+        println "Running commands: " + cmds
+        log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
     }
     
-    println "Done Commands: " + log        
+    println "Commands Output: " + log        
    
     println "Checking logs for failure"
     
@@ -142,7 +149,9 @@ def transformIntoStep(inputString) {
                 println "Starting Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
             
                 // call any SCM step if needed
-                scmStep()
+                if (!VC_useOneCheckoutDir) {
+                    scmStep()
+                }
                 
                 // Run the setup step to copy over the scripts
                 step([$class: 'VectorCASTSetup'])
@@ -218,15 +227,33 @@ pipeline {
                 }
             }
         }
-
+        
+        stage('Single-Checkout') {
+            steps {
+                script {
+                    if (VC_useOneCheckoutDir) {
+                        VC_OriginalWorkspace = "${env.WORKSPACE}"
+                        println "scmStep executed here: " + VC_OriginalWorkspace
+                        scmStep()
+                        print "Updating " + VC_Manage_Project + " to: " + VC_OriginalWorkspace + "/" + VC_Manage_Project
+                        VC_Manage_Project = VC_OriginalWorkspace + "/" + VC_Manage_Project
+                    }
+                    else {
+                        println "Not using Single Checkout"
+                    }
+                }
+            }
+        }
+        
         // This stage gets the information on the manage project from the full-status report
         // Parsing the output determines the level and environment name
         stage('Get-Environment-Info') {
             steps {
                 script {
-                    // Get the repo (should only need the .vcm file)
-                    // Grab the scripts
-                    scmStep()
+                    if (!VC_useOneCheckoutDir) {
+                        // Get the repo (should only need the .vcm file)
+                        scmStep()
+                    }
                     
                     // Run the setup step to copy over the scripts
                     step([$class: 'VectorCASTSetup'])
@@ -236,7 +263,7 @@ pipeline {
                     def EnvData = ""
                     
                     // Run a script to determine the compiler test_suite and environment
-                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project}""" )
+                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project}""", false )
                     
                     // for a groovy list that is stored in a global variable EnvList to be use later in multiple places
                     def lines = EnvData.split('\n')
