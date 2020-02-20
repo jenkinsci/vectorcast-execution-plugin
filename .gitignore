@@ -14,3 +14,4 @@ hs_err_pid*
 # maven build/work directories
 target/**
 work/**
+/src/main/resources/scripts/*.pyc
