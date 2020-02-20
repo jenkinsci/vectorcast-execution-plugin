@@ -27,11 +27,11 @@ that provides job control for
 
 ## Job Types
 
-There are 2 types of supported jobs and 1 depracated job type
+There are 2 types of supported jobs and 1 deprecated job type
 
 -   **Single Job**
 -   **Pipeline Job**
--   **Multi Job (Depracated)**
+-   **Multi Job (Deprecated)**
 
 ### Single Job
 
@@ -70,7 +70,7 @@ There are 2 options for running tests
         part of the Jenkins job
  
 Additionally, if a shared artifact directory is specified, VectorCAST/Manage
-will execute jobs independently, but have a central localation for storing
+will execute jobs independently, but have a central location for storing
 the build artifacts.  This option can be used to accelerate testing by use
 of VectorCAST's Change Based Testing feature. 
 
@@ -87,9 +87,9 @@ and denoted as _Skipped_ in the test results list
 ![](docs/images/test_results.png)
 
         
-### Multi-Job (Depracated)
+### Multi-Job (Deprecated)
 
-**Multi-Job (Depracated)** creates a top-level Jenkins job to combine the results from
+**Multi-Job (Deprecated)** creates a top-level Jenkins job to combine the results from
 individual Jenkins jobs created for each environment in the
 VectorCAST/Manage project. The options for a multi-job are the same as
 single apart from supplying a copy of the Manage project.
@@ -109,7 +109,7 @@ tests
         as relative to the root of the checkout
     -   Each job can optionally clean up the working directory. If the
         working directory is not cleaned, then the results from the
-        previous run allow VectorCAST/Manage to optimise the execution
+        previous run allow VectorCAST/Manage to optimize the execution
         phase based on any code changes
 -   Use a common, shared drive/directory
     -   In this case, the VectorCAST/Manage project should be specified
@@ -118,7 +118,7 @@ tests
         locking which cause SQLite, used by VectorCAST/Manage, problems
         that can result in corruption of the results. If this happens,
         you may need to use a different network drive/share or consider
-        using an SCM system. Using VectorCAST v2019 SP3 eliminates these 
+        using an SCM system. Using VectorCAST vc2019 SP3 eliminates these 
         errors
     -   Each job can optionally clean up the working directory which
         will have no effect on the VectorCAST/Manage project since it is
@@ -151,7 +151,7 @@ The requirements for using this plugin with VectorCAST are
         Jenkins-\>Manage Jenkins-\>Configure System and define 'Jenkins
         URL' and save the settings
 
-## Updating Existing Multi-job (Depracated)
+## Updating Existing Multi-job (Deprecated)
 
 An existing multi-job can be updated using the Update Multi-job setup
 manually, or by creating an auto-update multi-job Job. The auto-update
@@ -358,7 +358,7 @@ results" in the Publish JUnit test result report configuration.
 
 ### Version 0.28 (2 Nov 2017)
 
--   Correct regresssion with windows variable names being used in Unix
+-   Correct regression with windows variable names being used in Unix
     script
 
 ### Version 0.27 (2 Nov 2017)
@@ -372,7 +372,7 @@ results" in the Publish JUnit test result report configuration.
 -   Option to configure (at creation/update time) the node to run the
     single job or top-level multi-job on
 -   Allow license retries for single jobs
--   Update summaryt/detailed text written by the groovy scripts
+-   Update summary/detailed text written by the groovy scripts
 
 ### Version 0.25 (26 Oct 2017)
 
