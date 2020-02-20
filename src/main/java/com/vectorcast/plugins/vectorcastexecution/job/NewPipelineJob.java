@@ -111,7 +111,7 @@ public class NewPipelineJob extends BaseJob {
 			nodeLabel = "master";
         }
 
-        sharedArtifactDirectory = json.optString("sharedArtifactDir",null);
+        sharedArtifactDirectory = json.optString("sharedArtifactDir","");
         pipelineSCM = json.optString("scmSnippet","").trim();
         singleCheckout = json.optBoolean("singleCheckout", false);
         
@@ -122,8 +122,6 @@ public class NewPipelineJob extends BaseJob {
         
         if (sharedArtifactDirectory.length() != 0) {
             sharedArtifactDirectory = "--workspace="+sharedArtifactDirectory.replace("\\","/");
-        } else {
-            sharedArtifactDirectory = "";
         }
        
         /* absoulte path and SCM checkout of manage project conflicts with 
