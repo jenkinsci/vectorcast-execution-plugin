@@ -109,16 +109,7 @@ def runCommands(cmds, useLocalCmds = true) {
     }
     
     println "Commands Output: " + log        
-   
-    println "Checking logs for failure"
-    
-    (foundKeywords, failure, unstable) = checkLogsForErrors(log)
-    if (failure) {
-        throw new Exception ("Error in VectorCAST Commands: " + foundKeywords)
-    }
-    
-    println "Done Checking"
-    
+       
     return log
 }
 
@@ -171,8 +162,14 @@ def transformIntoStep(inputString) {
                 def buildLogText = ""
                 
                 buildLogText = runCommands(cmds)
+                    
+                def foundKeywords = ""
+                def boolean failure = false
+                def boolean unstable = false
+                                        
+                (foundKeywords, failure, unstable) = checkLogsForErrors(buildLogText) 
                 
-                if (VC_sharedArtifactDirectory.length() == 0) {
+                if (!failure && VC_sharedArtifactDirectory.length() == 0) {
                     writeFile file: "build.log", text: buildLogText
 
                     buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --level ${compiler}/${test_suite} -e ${environment} --junit --buildlog build.log""")
@@ -190,6 +187,11 @@ def transformIntoStep(inputString) {
                 
                 println "Finished Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
 
+                (foundKeywords, failure, unstable) = checkLogsForErrors(buildLogText) 
+                
+                if (failure) {
+                    throw new Exception ("Error in Commands: " + foundKeywords)
+                }
             }
         }
     }
@@ -298,8 +300,8 @@ pipeline {
                 step([$class: 'VectorCASTSetup'])
                 
                 script {
-                    def buildLogText = ""
-                
+                    def unstashedBuildLogText = ""
+                    
                     // unstash each of the files
                     EnvList.each {
                         (compiler, test_suite, environment) = it.split()
@@ -307,8 +309,8 @@ pipeline {
                         
                         try {
                             unstash stashName as String
-                            buildLogText += readFile '${compiler}_${test_suite}_${environment}_build.log'
-                            buildLogText += '\n'
+                            unstashedBuildLogText += readFile "${compiler}_${test_suite}_${environment}_build.log"
+                            unstashedBuildLogText += '\n'
                             
                         }
                         catch (Exception ex) {
@@ -319,6 +321,7 @@ pipeline {
                     // get the manage projects full name and base name
                     def mpFullName = VC_Manage_Project.split("/")[-1]
                     def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
+                    def buildLogText = ""
                     
                     // if we are using SCM and not using a shared artifact directory...
                     if (VC_usingSCM && !VC_useOneCheckoutDir && VC_sharedArtifactDirectory.length() == 0) {
@@ -328,10 +331,11 @@ pipeline {
                     // else if we are using a shared artifact directory
                     } else if (VC_useOneCheckoutDir || VC_sharedArtifactDirectory.length() != 0) {
                     
-                        writeFile file: "build.log", text: buildLogText
+                        // use unstashed build logs to get the skipped data
+                        writeFile file: "unstashed_build.log", text: unstashedBuildLogText
 
                         // run the metrics at the end
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog build.log""")
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build""")
                     }
                     cmds =  """
                         set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
@@ -349,7 +353,13 @@ pipeline {
                     
                     buildLogText += runCommands(cmds)
 
-                    writeFile file: "complete_build.log", text: buildLogText
+                    writeFile file: "complete_build.log", text: unstashedBuildLogText + buildLogText
+                    
+                    (foundKeywords, failure, unstable) = checkLogsForErrors(buildLogText) 
+                
+                    if (failure) {
+                        throw new Exception ("Error in Commands: " + foundKeywords)
+                    }
                 }
                 
                 // Send reports to the code coverage plugin
@@ -383,12 +393,12 @@ pipeline {
                         // get the console log - this requires running outside of the Groovy Sandbox
                         def logContent = readFile 'complete_build.log'
                             
-                        def foundKeywords = ""
                         def mpFullName = VC_Manage_Project.split("/")[-1]
                         def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
                         
-                        boolean failure = false
-                        boolean unstable = false
+                        def foundKeywords = ""
+                        def boolean failure = false
+                        def boolean unstable = false
                                                 
                         (foundKeywords, failure, unstable) = checkLogsForErrors(logContent) 
 
