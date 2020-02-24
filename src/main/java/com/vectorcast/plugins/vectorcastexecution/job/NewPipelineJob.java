@@ -209,9 +209,6 @@ public class NewPipelineJob extends BaseJob {
 			Node scriptNode = document.getElementsByTagName("script").item(0);
 			scriptNode.setTextContent(generateJenkinsfile());
 
-			// Node sandboxNode = document.getElementsByTagName("sandbox").item(0);
-			// sandboxNode.setTextContent("false");
-
 			// Write DOM object to the file
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
