@@ -30,16 +30,11 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   "Abnormal Termination on Environment",
                   "not recognized as an internal or external command"]
                 
-VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.lang.Exception"]                
-       
-// Return the current console log
-def getConsoleLog() {
-    return Jenkins.getInstance().getItemByFullName(env.JOB_NAME).getBuildByNumber(Integer.parseInt(env.BUILD_NUMBER)).logFile.text
-}       
+VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.lang.Exception"]                       
 
 // setup the manage project to have preset options
 def setupManageProject() {
-    cmds = """        
+    def cmds = """        
         _RM *_rebuild.html
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py" --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_sharedArtifactDirectory} --status"  
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py" --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --force --release-locks"
@@ -173,22 +168,25 @@ def transformIntoStep(inputString) {
                     ${VC_EnvTeardown}
 
                 """
+                def buildLogText = ""
                 
-                runCommands(cmds)
+                buildLogText = runCommands(cmds)
                 
                 if (VC_sharedArtifactDirectory.length() == 0) {
-                    writeFile file: "build.log", text: getConsoleLog()
+                    writeFile file: "build.log", text: buildLogText
 
-                    runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --level ${compiler}/${test_suite} -e ${environment} --junit --buildlog build.log""")
+                    buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --level ${compiler}/${test_suite} -e ${environment} --junit --buildlog build.log""")
 
                     if (VC_usingSCM && !VC_useOneCheckoutDir) {
-                        runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py    ${VC_Manage_Project}  ${compiler}/${test_suite} ${env.JOB_NAME}_${compiler}_${test_suite}_${environment} ${environment}""" )
+                        buildLogText = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py    ${VC_Manage_Project}  ${compiler}/${test_suite} ${env.JOB_NAME}_${compiler}_${test_suite}_${environment} ${environment}""" )
                     }
                 }
+                
+                writeFile file: "${compiler}_${test_suite}_${environment}_build.log", text: buildLogText
 
                 // no cleanup - possible CBT
                 // use individual names
-                stash includes: "**/${compiler}_${test_suite}_${environment}_rebuild.html, **/*.css, **/*.png, execution/*.html, management/*${compiler}_${test_suite}_${environment}*, xml_data/*${compiler}_${test_suite}_${environment}*, ${env.JOB_NAME}_${compiler}_${test_suite}_${environment}_build.tar", name: stashName as String
+                stash includes: "${compiler}_${test_suite}_${environment}_build.log, **/${compiler}_${test_suite}_${environment}_rebuild.html, **/*.css, **/*.png, execution/*.html, management/*${compiler}_${test_suite}_${environment}*, xml_data/*${compiler}_${test_suite}_${environment}*, ${env.JOB_NAME}_${compiler}_${test_suite}_${environment}_build.tar", name: stashName as String
                 
                 println "Finished Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
 
@@ -300,6 +298,8 @@ pipeline {
                 step([$class: 'VectorCASTSetup'])
                 
                 script {
+                    def buildLogText = ""
+                
                     // unstash each of the files
                     EnvList.each {
                         (compiler, test_suite, environment) = it.split()
@@ -307,6 +307,9 @@ pipeline {
                         
                         try {
                             unstash stashName as String
+                            buildLogText += readFile '${compiler}_${test_suite}_${environment}_build.log'
+                            buildLogText += '\n'
+                            
                         }
                         catch (Exception ex) {
                             println ex
@@ -316,19 +319,19 @@ pipeline {
                     // get the manage projects full name and base name
                     def mpFullName = VC_Manage_Project.split("/")[-1]
                     def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
-
+                    
                     // if we are using SCM and not using a shared artifact directory...
                     if (VC_usingSCM && !VC_useOneCheckoutDir && VC_sharedArtifactDirectory.length() == 0) {
                         // run a script to extract stashed files and process data into xml reports                        
-                        runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py""" )
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py""" )
                         
                     // else if we are using a shared artifact directory
                     } else if (VC_useOneCheckoutDir || VC_sharedArtifactDirectory.length() != 0) {
                     
-                        writeFile file: "build.log", text: getConsoleLog()
+                        writeFile file: "build.log", text: buildLogText
 
                         // run the metrics at the end
-                        runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog build.log""")
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog build.log""")
                     }
                     cmds =  """
                         set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
@@ -344,8 +347,9 @@ pipeline {
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --final
                     """
                     
-                    runCommands(cmds)
+                    buildLogText += runCommands(cmds)
 
+                    writeFile file: "complete_build.log", text: buildLogText
                 }
                 
                 // Send reports to the code coverage plugin
@@ -366,6 +370,7 @@ pipeline {
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.css'
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.png'
                 archiveArtifacts '*.txt'
+                archiveArtifacts 'complete_build.log'
             }
         }
         
@@ -376,7 +381,7 @@ pipeline {
                     script {
                                                     
                         // get the console log - this requires running outside of the Groovy Sandbox
-                        def logContent = getConsoleLog()
+                        def logContent = readFile 'complete_build.log'
                             
                         def foundKeywords = ""
                         def mpFullName = VC_Manage_Project.split("/")[-1]
@@ -390,32 +395,28 @@ pipeline {
                         if (foundKeywords.endsWith(",")) {
                             foundKeywords = foundKeywords[0..-2]
                         }
-                        
+
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly
                         if (foundKeywords.size() > 0) {
-                            currentBuild.description = "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords
+                            currentBuild.description = "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords + "\n"
                         }
                                             
                         // Make sure the build completed and we have two key reports
                         //   - CombinedReport.html (combined rebuild reports from all the environments)
                         //   - full status report from the manage project
                         if (fileExists('CombinedReport.html') && fileExists("${mpName}_full_report.html")) {
-                        
                             // If we have both of these, add them to the summary in the "normal" job view
                             // Blue ocean view doesn't have a summary
-                            manager.createSummary("monitor.png").appendText(readFile('CombinedReport.html') + "<br> " + readFile("${mpName}_full_report.html"), false)
+
+                            def summaryText = readFile('CombinedReport.html') + "<br> " + readFile("${mpName}_full_report.html")
+                            createSummary icon: "monitor.gif", text: summaryText
                             
                         } else {
-                        
-                            // If not, something went wrong
-                            // Make the build as unstable 
-                            currentBuild.description = currentBuild.description + "Files missing - can't complete summary"
+                            // If not, something went wrong... Make the build as unstable 
                             currentBuild.result = 'UNSTABLE'
-                            manager.createSummary("warning.gif").appendText("General Failure", false, false, false, "red")
-                            manager.buildUnstable()
-                            manager.build.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information"
-                            manager.addBadge("warning.gif", "General Error")
+                            createSummary icon: "warning.gif", text: "General Failure"
+                            currentBuild.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
                         }                     
 
                         if (unstable) {

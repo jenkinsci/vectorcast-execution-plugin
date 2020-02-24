@@ -209,8 +209,8 @@ public class NewPipelineJob extends BaseJob {
 			Node scriptNode = document.getElementsByTagName("script").item(0);
 			scriptNode.setTextContent(generateJenkinsfile());
 
-			Node sandboxNode = document.getElementsByTagName("sandbox").item(0);
-			sandboxNode.setTextContent("false");
+			// Node sandboxNode = document.getElementsByTagName("sandbox").item(0);
+			// sandboxNode.setTextContent("false");
 
 			// Write DOM object to the file
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -371,7 +371,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
             "\n" +  
             "\n" +  
-            "/* DEBUG JSON REPSONSE: \n" + debugJSON + "\n*/"+
+            "/* DEBUG JSON RESPONSE: \n" + debugJSON + "\n*/"+
             "\n" +  
             "\n" + 
             "";
