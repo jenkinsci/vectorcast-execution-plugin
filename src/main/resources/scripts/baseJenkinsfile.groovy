@@ -141,7 +141,7 @@ def transformIntoStep(inputString) {
                 // Run the setup step to copy over the scripts
                 step([$class: 'VectorCASTSetup'])
 
-                if (VC_usingSCM) {
+                if (VC_usingSCM && !VC_useOneCheckoutDir) {
                     // set options for each manage project pulled out out of SCM
                     setupManageProject()
                 }
@@ -335,7 +335,7 @@ pipeline {
                         writeFile file: "unstashed_build.log", text: unstashedBuildLogText
 
                         // run the metrics at the end
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build""")
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
                     }
                     cmds =  """
                         set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
