@@ -236,7 +236,16 @@ pipeline {
                         scmStep()
                         print "Updating " + VC_Manage_Project + " to: " + VC_OriginalWorkspace + "/" + VC_Manage_Project
                         VC_Manage_Project = VC_OriginalWorkspace + "/" + VC_Manage_Project
-                    }
+                        
+                        def origSetup = VC_EnvSetup
+                        if (isUnix()) {
+                            VC_EnvSetup = VC_EnvSetup.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
+                        } else {
+                            VC_OriginalWorkspace = VC_OriginalWorkspace.replace('\\','/')
+                            VC_EnvSetup = VC_EnvSetup.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                        }
+                        print "Updating " + origSetup + " \nto: " + VC_EnvSetup
+                        }
                     else {
                         println "Not using Single Checkout"
                     }
