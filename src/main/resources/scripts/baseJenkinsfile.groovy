@@ -355,7 +355,7 @@ pipeline {
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=aggregate   --output=${mpName}_aggregate_report.html"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=metrics     --output=${mpName}_metrics_report.html"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=environment --output=${mpName}_environment_report.html"
-                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/gen-combined-cov.py ${mpName}_aggregate_report.html
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/gen-combined-cov.py ${mpName}_aggregate_report.html "${VC_Manage_Project}"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getTotals.py ${mpName}_full_report.txt
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --final
                     """
