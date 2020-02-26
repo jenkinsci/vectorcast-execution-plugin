@@ -29,4 +29,9 @@ THE SOFTWARE.
     computer or have the main Pipeline Job's Workspace on a shared network drive.
     <br/><br/>
     This option is only recommended for use with VectorCAST version 2019 SP3 and above
+    <br/><br/>
+    NOTE: If you are using an environment setup script with a relative path, you need to prefix the script with the appropriate %WORKSPACE% or $WORKSPACE:
+    
+    <pre>source build/setup.sh</pre> should become <pre>source $WORKSPACE/build/setup.sh</pre>
+
 </div>
