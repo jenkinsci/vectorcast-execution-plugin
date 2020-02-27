@@ -346,9 +346,7 @@ pipeline {
                         // run the metrics at the end
                         buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project}  --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
                     }
-                    cmds =  """
-                        set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
-                         
+                    cmds =  """                         
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py --rptfmt HTML
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --full-status=${mpName}_full_report.html"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}/vc_scripts/managewait.py"                           --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --full-status > ${mpName}_full_report.txt"
