@@ -415,23 +415,17 @@ class GenerateXml(BaseGenerateXml):
         else:
             errors = 0
             failed = 0
-            success = 0
-
-            # total up all the errors and failures
-            for unit in self.api.Unit.all():
-                if unit.is_uut:
-                    for func in unit.functions:
-                        if not func.is_non_testable_stub:
-                            for tc in func.testcases:
-                                if not tc.is_csv_map:
-                                    if not tc.for_compound_only:
-                                        if tc.execution_status == "EXEC_SUCCESS_PASS" or tc.execution_status == "EXEC_SUCCESS_NONE":
-                                            success += 1
-                                        elif tc.execution_status == "EXEC_SUCCESS_FAIL":
-                                            failed += 1
-                                        else:
-                                            errors += 1
-
+            success = 0                                            
+            
+            for tc in self.api.TestCase.all():
+                if not tc.for_compound_only and not tc.is_csv_map:
+                    if not tc.passed:
+                        failed += 1
+                        if tc.execution_status != "EXEC_SUCCESS_FAIL ":
+                            errors += 1
+                    else:
+                        success += 1
+                        
             self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
             self.fh.write("<testsuites>\n")
             self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
@@ -492,7 +486,7 @@ class GenerateXml(BaseGenerateXml):
         result = open("execution_results.txt","r").read()
         os.remove("execution_results.txt")     
 
-        # Failure takes priprity  
+        # Failure takes priority  
         if not tc.passed:
             if tcSkipped: 
                 status = "Skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nFAIL"

@@ -64,7 +64,8 @@ verbose = False
 #
 def writeJunitFinalCombinedTestResults(manageProjectName):
     fname = manageProjectName
-        
+    totalFailed = 0
+    
     f=open("xml_data/test_results_"+fname+"_combined_final.xml","w")
     f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
     f.write("<testsuites>\n")
@@ -77,12 +78,17 @@ def writeJunitFinalCombinedTestResults(manageProjectName):
             continue
             
         data = open(testResults,"r").readlines()[2:-1]
+        for line in data:
+            if "<testsuite errors=" in line:
+                totalFailed += int(line.split("\"")[5])
         os.remove(testResults)
         wrData = "".join(data)
         f.write(wrData)
      
     f.write("\n</testsuites>\n")
     f.close()
+    
+    open("unit_test_fail_count.txt","w").write(str(totalFailed))
 
 #
 # Internal - jUnit works best with one overall file for all test results
