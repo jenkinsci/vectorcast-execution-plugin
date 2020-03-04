@@ -35,11 +35,11 @@ VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.
 // setup the manage project to have preset options
 def setupManageProject() {
     def cmds = """        
-_RM *_rebuild.html
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_sharedArtifactDirectory} --status"  
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --force --release-locks"
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
-"""
+        _RM *_rebuild.html
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_sharedArtifactDirectory} --status"  
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --force --release-locks"
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
+    """.stripIndent()
 
     runCommands(cmds)
 }
@@ -86,7 +86,7 @@ def runCommands(cmds, useLocalCmds = true) {
             ${VC_EnvSetup}
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_RPTS_SELF_CONTAINED=FALSE
-            """
+            """.stripIndent()
         if (useLocalCmds) {
             cmds = localCmds + cmds
         }
@@ -99,7 +99,7 @@ def runCommands(cmds, useLocalCmds = true) {
             ${VC_EnvSetup}
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
-            """
+            """.stripIndent()
         if (useLocalCmds) {
             cmds = localCmds + cmds
         }
@@ -152,10 +152,11 @@ def transformIntoStep(inputString) {
                 
                 // setup the commands for building, executing, and transferring information
                 cmds =  """
-${VC_EnvSetup}
-${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --level ${compiler}/${test_suite} -e ${environment} --build-execute --incremental --output ${compiler}_${test_suite}_${environment}_rebuild.html"
-${VC_EnvTeardown}
-"""
+                    ${VC_EnvSetup}
+                    ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --level ${compiler}/${test_suite} -e ${environment} --build-execute --incremental --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+                    ${VC_EnvTeardown}
+                """.stripIndent()
+                
                 def buildLogText = ""
                 
                 buildLogText = runCommands(cmds)
@@ -344,15 +345,13 @@ pipeline {
                         buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
                     }
                     cmds =  """                         
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py --rptfmt HTML
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --full-status=${mpName}_full_report.html"
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --full-status > ${mpName}_full_report.txt"
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=aggregate   --output=${mpName}_aggregate_report.html"
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=metrics     --output=${mpName}_metrics_report.html"
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=environment --output=${mpName}_environment_report.html"
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/gen-combined-cov.py ${mpName}_aggregate_report.html "${VC_Manage_Project}"
-_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --final
-                    """
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py --rptfmt HTML
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --full-status=${mpName}_full_report.html"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=aggregate   --output=${mpName}_aggregate_report.html"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=metrics     --output=${mpName}_metrics_report.html"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=environment --output=${mpName}_environment_report.html"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --final
+                    """.stripIndent()
                     
                     buildLogText += runCommands(cmds)
 
