@@ -316,19 +316,14 @@ def generateUTReport(path, env, level):
         return True
 
     api=UnitTestApi(path)
-
     report_name = "management/" + level + "_" + env + ".html"
-
     try:
-        #CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "MCDC_TABLES", "OVERALL_RESULTS", "METRICS", "USER_CODE", "TESTCASE_SECTIONS", "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"], testcase_sections=["FULL_TEST_CASE_CONFIG_DATA", "TEST_CASE_DATA", "EXECUTION_RESULTS"])
         api.commit = _dummy
         api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
         fixup_css(report_name)
-
     except Exception as e:
         print("   *Problem generating custom report for " + env + ".")
         traceback.print_exc()
-
 
 def generateIndividualReports(entry, envName):
     global verbose
