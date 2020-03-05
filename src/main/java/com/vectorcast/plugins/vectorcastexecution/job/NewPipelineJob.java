@@ -356,12 +356,12 @@ public class NewPipelineJob extends BaseJob {
             "// ===============================================================\n" +  
             "\n" +  
             "VC_Manage_Project     = \"" + this.getManageProjectName() + "\"\n" + 
-            "VC_EnvSetup        = \"\"\"" + setup + "\"\"\"\n" + 
+            "VC_EnvSetup        = '''" + setup + "'''\n" + 
             "VC_Build_Preamble  = \"" + preamble + "\"\n" + 
-            "VC_EnvTeardown     = \"\"\"" + teardown + "\"\"\"\n" + 
+            "VC_EnvTeardown     = '''" + teardown + "'''\n" + 
             "def scmStep () { " + pipelineSCM + " }\n" + 
             "VC_usingSCM = " + String.valueOf(pipelineSCM.length() != 0) + "\n" + 
-            "VC_sharedArtifactDirectory = \"\"\"" + sharedArtifactDirectory + "\"\"\"\n" +  
+            "VC_sharedArtifactDirectory = '''" + sharedArtifactDirectory + "'''\n" +  
             "VC_Agent_Label = '" + nodeLabel + "'\n" +  
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
