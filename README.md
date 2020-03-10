@@ -187,6 +187,10 @@ results" in the Publish JUnit test result report configuration.
 
 ### Changelog
 
+### Version 0.62 (10 March 2020)
+
+- Introduce pipeline job
+
 ### Version 0.61 (21 Dec 2019)
 
 - Updated support for Jenkins Pipeline 
