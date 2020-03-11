@@ -85,29 +85,27 @@ class BaseGenerateXml(object):
                     entry["function"] = '100% (1 / 1)'
                 else:
                     entry["function"] = '0% (0 / 1)'
+                    
         if self.has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
-
-        if cov_type == "MC/DC":
+            
+        if self.verbose:
+            print "Coverage Type:", cov_type
+            
+        if "MC/DC" in cov_type:
             entry["branch"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
             if not self.simplified_mcdc:
                 entry["mcdc"] = self.calc_cov_values(metrics.max_covered_mcdc_pairs, metrics.mcdc_pairs)
-        elif cov_type == "Basis Paths":
+        if "Basis Paths" in cov_type:
             (cov,total) = unit_or_func.basis_paths_coverage
             entry["basis_path"] = self.calc_cov_values(cov, total)
-        elif cov_type == "Statement+MC/DC":
+        if "Statement" in cov_type:
             entry["statement"] = self.calc_cov_values(metrics.max_covered_statements, metrics.statements)
-            entry["branch"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
-            if not self.simplified_mcdc:
-                entry["mcdc"] = self.calc_cov_values(metrics.max_covered_mcdc_pairs, metrics.mcdc_pairs)
-        elif cov_type == "Statement":
-            entry["statement"] = self.calc_cov_values(metrics.max_covered_statements, metrics.statements)
-        elif cov_type == "Statement+Branch":
-            entry["statement"] = self.calc_cov_values(metrics.max_covered_statements, metrics.statements)
+        if "Branch" in cov_type:
             entry["branch"] = self.calc_cov_values(metrics.max_covered_branches, metrics.branches)
-        elif cov_type == "Branch":
-            entry["branch"] = self.calc_cov_values(metrics.max_covered_branches, metrics.branches)
-
+        if "Function Call" in cov_type:
+            entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
+                        
         return entry
 
 #
@@ -121,28 +119,23 @@ class BaseGenerateXml(object):
         entry["basispath"] = None
         entry["function"] = None
         entry["functioncall"] = None
+        
         if self.has_function_coverage:
             entry["function"] = self.calc_cov_values(self.grand_total_max_covered_functions, self.grand_total_max_coverable_functions)
         if self.has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)
-        if cov_type == "MC/DC":
+        if "MC/DC" in cov_type:
             entry["branch"] = self.calc_cov_values(self.grand_total_max_mcdc_covered_branches, self.grand_total_mcdc_branches)
             if not self.simplified_mcdc:
                 entry["mcdc"] = self.calc_cov_values(self.grand_total_max_covered_mcdc_pairs, self.grand_total_mcdc_pairs)
-        elif cov_type == "Basis Paths":
+        if "Basis Paths" in cov_type:
             entry["basis_path"] = self.calc_cov_values(self.grand_total_cov_basis_path, self.grand_total_total_basis_path)
-        elif cov_type == "Statement+MC/DC":
+        if "Statement" in cov_type:
             entry["statement"] = self.calc_cov_values(self.grand_total_max_covered_statements, self.grand_total_statements)
-            entry["branch"] = self.calc_cov_values(self.grand_total_max_mcdc_covered_branches, self.grand_total_mcdc_branches)
-            if not self.simplified_mcdc:
-                entry["mcdc"] = self.calc_cov_values(self.grand_total_max_covered_mcdc_pairs, self.grand_total_mcdc_pairs)
-        elif cov_type == "Statement":
-            entry["statement"] = self.calc_cov_values(self.grand_total_max_covered_statements, self.grand_total_statements)
-        elif cov_type == "Statement+Branch":
-            entry["statement"] = self.calc_cov_values(self.grand_total_max_covered_statements, self.grand_total_statements)
+        if cov_type == "Branch":
             entry["branch"] = self.calc_cov_values(self.grand_total_max_covered_branches, self.grand_total_branches)
-        elif cov_type == "Branch":
-            entry["branch"] = self.calc_cov_values(self.grand_total_max_covered_branches, self.grand_total_branches)
+        if "Function Call" in cov_type:
+            entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)
 
         return entry
 
