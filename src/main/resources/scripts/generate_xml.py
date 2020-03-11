@@ -132,7 +132,7 @@ class BaseGenerateXml(object):
             entry["basis_path"] = self.calc_cov_values(self.grand_total_cov_basis_path, self.grand_total_total_basis_path)
         if "Statement" in cov_type:
             entry["statement"] = self.calc_cov_values(self.grand_total_max_covered_statements, self.grand_total_statements)
-        if cov_type == "Branch":
+        if "Branch" in cov_type:
             entry["branch"] = self.calc_cov_values(self.grand_total_max_covered_branches, self.grand_total_branches)
         if "Function Call" in cov_type:
             entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)
