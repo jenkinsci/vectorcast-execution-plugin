@@ -1,3 +1,6 @@
+20 March 2020 (0.62)
+* Introduce pipeline job
+
 18 Dec 2019 (0.61)
 * Update to strip whitespace when generating QA XML file ready for VC 2020
 

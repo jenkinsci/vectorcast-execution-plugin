@@ -84,6 +84,21 @@
     </dependencyManagement>
 
     <dependencies>
+      <dependency>
+	<groupId>org.jenkins-ci.plugins.workflow</groupId>
+	<artifactId>workflow-aggregator</artifactId>
+	<version>2.5</version>
+      </dependency>
+      <dependency>
+	<groupId>org.jenkinsci.plugins</groupId>
+	<artifactId>pipeline-model-api</artifactId>
+	<version>1.2</version>
+      </dependency>
+      <dependency>
+	<groupId>org.jenkins-ci.plugins.workflow</groupId>
+	<artifactId>workflow-job</artifactId>
+	<version>2.36</version>
+      </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -114,6 +129,12 @@
             <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
+	<dependency>
+	  <groupId>com.google.code.findbugs</groupId>
+	  <artifactId>jsr305</artifactId>
+	  <version>3.0.1</version>
+	  <scope>test</scope>
+	</dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
