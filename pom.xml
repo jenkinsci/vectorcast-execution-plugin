@@ -28,7 +28,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
+        <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
         <findbugs.failOnError>false</findbugs.failOnError>
         <!-- Minimum of 2.138.4 required for pipelines -->
         <jenkins.version>2.138.4</jenkins.version>
@@ -226,7 +226,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
-                <version>${findbugs-maven-plugin.version}</version>
+                <version>3.0.4</version>
                 <configuration>
                     <xmlOutput>true</xmlOutput>
                     <failOnError>${findbugs.failOnError}</failOnError>
