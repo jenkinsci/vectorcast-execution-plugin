@@ -91,7 +91,10 @@ class BaseGenerateXml(object):
             
         if self.verbose:
             print "Coverage Type:", cov_type
-            
+
+        if cov_type == None:
+            return entry
+
         if "MC/DC" in cov_type:
             entry["branch"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
             if not self.simplified_mcdc:
@@ -123,7 +126,9 @@ class BaseGenerateXml(object):
         if self.has_function_coverage:
             entry["function"] = self.calc_cov_values(self.grand_total_max_covered_functions, self.grand_total_max_coverable_functions)
         if self.has_call_coverage:
-            entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)
+            entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)           
+        if cov_type == None:
+            return entry
         if "MC/DC" in cov_type:
             entry["branch"] = self.calc_cov_values(self.grand_total_max_mcdc_covered_branches, self.grand_total_mcdc_branches)
             if not self.simplified_mcdc:
