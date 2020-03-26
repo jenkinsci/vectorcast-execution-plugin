@@ -36,15 +36,32 @@ import hudson.tasks.Builder;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.FileReader;
+import java.io.PrintStream;
+import java.io.IOException;
+import java.io.File;
+import java.util.List;
+import org.apache.commons.io.FileUtils;
+
+
 import java.net.URLDecoder;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.jar.Manifest;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * VectorCAST setup build action
@@ -429,6 +446,33 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             }
         }
     }
+    
+    public void printVersion(TaskListener listener, JarFile jFile) {
+        
+        String path = null;
+        
+
+        final PrintStream logger = listener.getLogger();
+        String Version = "Unknown";
+        
+		try {
+            path = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+            path = URLDecoder.decode(path, "utf-8");
+
+            File testPath = new File(path);
+            JarFile jarfile = new JarFile(testPath);
+            
+            Manifest manifest = jarfile.getManifest(); //jFile.getManifest();
+            
+            Attributes attrib = manifest.getMainAttributes();
+            Version = attrib.getValue("Plugin-Version");
+            
+        } catch (IOException e) {
+			e.printStackTrace();
+            logger.println("[VectorCAST Execution printVersion error]" + e);
+		}
+	    logger.println("[VectorCAST Execution Version]:  " + Version);
+    }
     /**
      * Perform the build step. Copy the scripts from the archive/directory to the workspace
      * @param build build
@@ -459,9 +503,12 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             if (testPath.isFile()) {
                 // Have jar file...
                 jFile = new JarFile(testPath);
+                printVersion(listener, jFile);
                 Enumeration<JarEntry> entries = jFile.entries();
+
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
+                    
                     if (entry.getName().startsWith("scripts")) {
                         String fileOrDir = entry.getName().substring(8); // length of scripts/
                         FilePath dest = new FilePath(destScriptDir, fileOrDir);

@@ -59,6 +59,11 @@ import java.util.logging.Level;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URLDecoder;
+import java.util.jar.Manifest;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.Attributes;
 
 
 /**
@@ -329,6 +334,38 @@ public class NewPipelineJob extends BaseJob {
 	 * @return script portion of pipeline job.
 	 * @throws IOException
 	 */
+    public String getVersion() {
+        
+        String path = null;
+        
+        String Version = "Unknown";
+        
+		try {
+            path = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+            path = URLDecoder.decode(path, "utf-8");
+
+            File testPath = new File(path);
+            JarFile jarfile = new JarFile(testPath);
+            
+            Manifest manifest = jarfile.getManifest(); //jFile.getManifest();
+            
+            Attributes attrib = manifest.getMainAttributes();
+            Version = attrib.getValue("Plugin-Version");
+            
+        } catch (IOException e) {
+			e.printStackTrace();
+ 		}
+        
+	    return Version;
+    }
+	/**
+	 * Generates the <script> portion of the config.xml which defines the pipeline.
+	 * for this pipeline job.
+	 * 
+	 * 
+	 * @return script portion of pipeline job.
+	 * @throws IOException
+	 */
      
     private String generateJenkinsfile() throws IOException {
 		String setup = "";
@@ -366,6 +403,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
+            "VC_createdWithVersion = '" + getVersion() + "'\n" +  
             "\n" +  
             "\n" +  
             "/* DEBUG JSON RESPONSE: \n" + debugJSON + "\n*/"+

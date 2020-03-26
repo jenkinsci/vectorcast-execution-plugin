@@ -141,6 +141,7 @@ def transformIntoStep(inputString) {
                 // Run the setup step to copy over the scripts
                 step([$class: 'VectorCASTSetup'])
 
+                
                 if (VC_usingSCM && !VC_useOneCheckoutDir) {
                     // set options for each manage project pulled out out of SCM
                     setupManageProject()
@@ -261,6 +262,8 @@ pipeline {
                         scmStep()
                     }
                     
+                    println "Created with VectorCAST Execution Version:  " + VC_createdWithVersion
+
                     // Run the setup step to copy over the scripts
                     step([$class: 'VectorCASTSetup'])
                     
