@@ -122,7 +122,7 @@ def transformIntoStep(inputString) {
     def (compiler, test_suite, environment) = inputString.split()
     
     // set the stashed file name for later
-    String stashName = "${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage"
+    String stashName = "${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage".replace("/","_") 
     
     // return the auto-generated node and job
     // node is based on compiler label
@@ -174,7 +174,8 @@ def transformIntoStep(inputString) {
                     buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --level ${compiler}/${test_suite} -e ${environment} --junit --buildlog build.log""")
 
                     if (VC_usingSCM && !VC_useOneCheckoutDir) {
-                        buildLogText = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} ${compiler}/${test_suite} ${env.JOB_NAME}_${compiler}_${test_suite}_${environment} ${environment}""" )
+                        def fixedJobName = "${env.JOB_NAME}".replace("/","_")
+                        buildLogText = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} ${compiler}/${test_suite} ${fixedJobName}_${compiler}_${test_suite}_${environment} ${environment}""" )
                     }
                 }
                 
@@ -182,7 +183,8 @@ def transformIntoStep(inputString) {
 
                 // no cleanup - possible CBT
                 // use individual names
-                stash includes: "${compiler}_${test_suite}_${environment}_build.log, **/${compiler}_${test_suite}_${environment}_rebuild.html, **/*.css, **/*.png, execution/*.html, management/*${compiler}_${test_suite}_${environment}*, xml_data/*${compiler}_${test_suite}_${environment}*, ${env.JOB_NAME}_${compiler}_${test_suite}_${environment}_build.tar", name: stashName as String
+                def fixedJobName = "${env.JOB_NAME}".replace("/","_") 
+                stash includes: "${compiler}_${test_suite}_${environment}_build.log, **/${compiler}_${test_suite}_${environment}_rebuild.html, **/*.css, **/*.png, execution/*.html, management/*${compiler}_${test_suite}_${environment}*, xml_data/*${compiler}_${test_suite}_${environment}*, ${fixedJobName}_${compiler}_${test_suite}_${environment}_build.tar", name: stashName as String
                 
                 println "Finished Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
 
@@ -315,7 +317,7 @@ pipeline {
                     // unstash each of the files
                     EnvList.each {
                         (compiler, test_suite, environment) = it.split()
-                        String stashName = "${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage"
+                        String stashName = "${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage".replace("/","_")
                         
                         try {
                             unstash stashName as String
