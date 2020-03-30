@@ -49,6 +49,12 @@
             <email>richard.keeble@vectorcast.com</email>
             <organization>Vector Software</organization>
         </developer>
+        <developer>
+            <id>nbelliot</id>
+            <name>Nicholas Elliot</name>
+            <email>nicholas.elliot@vector.com</email>
+            <organization>Vector Software</organization>
+        </developer>
     </developers>
 
     <scm>
