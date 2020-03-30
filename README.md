@@ -185,7 +185,11 @@ with no test results. If you have an environment with no test results,
 you will manually need to check the box "Do not fail the build on empty test
 results" in the Publish JUnit test result report configuration.
 
-### Changelog
+### Multi-branch Pipelines not supported
+
+The current pipeline implementation will not work in a multi-branch pipeline job.
+
+## Changelog
 
 ### Version 0.62 (10 March 2020)
 
