@@ -61,11 +61,6 @@ import java.util.logging.Level;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URLDecoder;
-import java.util.jar.Manifest;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.Attributes;
 
 
 /**
@@ -328,15 +323,6 @@ public class NewPipelineJob extends BaseJob {
 
         return result;
     }
-	/**
-	 * Generates the <script> portion of the config.xml which defines the pipeline.
-	 * for this pipeline job.
-	 * 
-	 * 
-	 * @return script portion of pipeline job.
-	 * @throws IOException
-	 */
-
 	/**
 	 * Generates the <script> portion of the config.xml which defines the pipeline.
 	 * for this pipeline job.

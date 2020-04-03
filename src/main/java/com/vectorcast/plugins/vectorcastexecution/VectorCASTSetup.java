@@ -38,32 +38,15 @@ import hudson.tasks.Builder;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.FileReader;
-import java.io.PrintStream;
-import java.io.IOException;
-import java.io.File;
-import java.util.List;
-import org.apache.commons.io.FileUtils;
-
-
 import java.net.URLDecoder;
 import java.util.Enumeration;
-import java.util.Map;
-import java.util.jar.Manifest;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 
 /**
  * VectorCAST setup build action
@@ -486,10 +469,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 jFile = new JarFile(testPath);
                 printVersion( listener.getLogger() );
                 Enumeration<JarEntry> entries = jFile.entries();
-
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
-                    
                     if (entry.getName().startsWith("scripts")) {
                         String fileOrDir = entry.getName().substring(8); // length of scripts/
                         FilePath dest = new FilePath(destScriptDir, fileOrDir);
