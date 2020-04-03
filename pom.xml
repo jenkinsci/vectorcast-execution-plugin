@@ -61,7 +61,7 @@
         <connection>scm:git:ssh://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
-        <tag>HEAD</tag>
+        <tag>vectorcast-execution-0.62</tag>
     </scm>
 
     <repositories>
@@ -190,6 +190,19 @@
 
     <build>
         <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-release-plugin</artifactId>
+              <version>3.0.0-M1</version>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-scm-plugin</artifactId>
+              <version>1.11.2</version>
+              <configuration>
+                <connectionType>connection</connectionType>
+              </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
