@@ -23,6 +23,8 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
+
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -446,33 +448,12 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             }
         }
     }
-    
-    public void printVersion(TaskListener listener, JarFile jFile) {
-        
-        String path = null;
-        
 
-        final PrintStream logger = listener.getLogger();
-        String Version = "Unknown";
-        
-		try {
-            path = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-            path = URLDecoder.decode(path, "utf-8");
-
-            File testPath = new File(path);
-            JarFile jarfile = new JarFile(testPath);
-            
-            Manifest manifest = jarfile.getManifest(); //jFile.getManifest();
-            
-            Attributes attrib = manifest.getMainAttributes();
-            Version = attrib.getValue("Plugin-Version");
-            
-        } catch (IOException e) {
-			e.printStackTrace();
-            logger.println("[VectorCAST Execution printVersion error]" + e);
-		}
-	    logger.println("[VectorCAST Execution Version]:  " + Version);
+    private void printVersion( PrintStream logger )
+    {
+	logger.println( "[VectorCAST Execution Version]: " + VcastUtils.getVersion().orElse( "Error - Could not determine version" ) );
     }
+
     /**
      * Perform the build step. Copy the scripts from the archive/directory to the workspace
      * @param build build
@@ -503,7 +484,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             if (testPath.isFile()) {
                 // Have jar file...
                 jFile = new JarFile(testPath);
-                printVersion(listener, jFile);
+                printVersion( listener.getLogger() );
                 Enumeration<JarEntry> entries = jFile.entries();
 
                 while (entries.hasMoreElements()) {

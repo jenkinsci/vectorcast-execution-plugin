@@ -23,6 +23,8 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
+
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import net.sf.json.JSONObject;
@@ -334,30 +336,7 @@ public class NewPipelineJob extends BaseJob {
 	 * @return script portion of pipeline job.
 	 * @throws IOException
 	 */
-    public String getVersion() {
-        
-        String path = null;
-        
-        String Version = "Unknown";
-        
-		try {
-            path = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-            path = URLDecoder.decode(path, "utf-8");
 
-            File testPath = new File(path);
-            JarFile jarfile = new JarFile(testPath);
-            
-            Manifest manifest = jarfile.getManifest(); //jFile.getManifest();
-            
-            Attributes attrib = manifest.getMainAttributes();
-            Version = attrib.getValue("Plugin-Version");
-            
-        } catch (IOException e) {
-			e.printStackTrace();
- 		}
-        
-	    return Version;
-    }
 	/**
 	 * Generates the <script> portion of the config.xml which defines the pipeline.
 	 * for this pipeline job.
@@ -403,7 +382,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
-            "VC_createdWithVersion = '" + getVersion() + "'\n" +  
+            "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
             "\n" +  
             "\n" +  
             "/* DEBUG JSON RESPONSE: \n" + debugJSON + "\n*/"+
