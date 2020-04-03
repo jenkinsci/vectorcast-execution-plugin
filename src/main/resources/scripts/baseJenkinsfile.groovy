@@ -268,7 +268,7 @@ pipeline {
                         scmStep()
                     }
                     
-                    println "Created with VectorCAST Execution Version:  " + VC_createdWithVersion
+                    println "Created with VectorCAST Execution Version: " + VC_createdWithVersion
 
                     // Run the setup step to copy over the scripts
                     step([$class: 'VectorCASTSetup'])
