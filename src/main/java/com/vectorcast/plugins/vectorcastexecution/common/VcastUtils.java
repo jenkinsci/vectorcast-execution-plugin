@@ -36,15 +36,15 @@ public class VcastUtils
     public static Optional< String > getVersion()
     {
         Optional< String > Version = Optional.empty();
-	try {
-	    File file = new File( URLDecoder.decode( Utils.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "utf-8" ) );
+        try {
+            File file = new File( URLDecoder.decode( Utils.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "utf-8" ) );
             JarFile jarfile = new JarFile( file );
             Version = Optional.ofNullable( jarfile.getManifest().getMainAttributes().getValue( "Plugin-Version" ) );
             
         } catch ( IOException e ) {
-	    e.printStackTrace();
-	}
+            e.printStackTrace();
+        }
 
-	return Version;
+        return Version;
     }    
 }
