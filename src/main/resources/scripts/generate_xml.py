@@ -21,6 +21,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+from __future__ import print_function
+
+from builtins import object
 import os
 import datetime
 import cgi
@@ -90,7 +94,7 @@ class BaseGenerateXml(object):
             entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
             
         if self.verbose:
-            print "Coverage Type:", cov_type
+            print("Coverage Type:", cov_type)
 
         if cov_type == None:
             return entry

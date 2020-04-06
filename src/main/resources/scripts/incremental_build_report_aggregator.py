@@ -21,6 +21,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+from __future__ import division
+from __future__ import print_function
+
 import argparse
 import os
 import sys
@@ -92,7 +96,7 @@ Environments Affected
                 outStr += line
 
     try:
-        percentage = rebuild_count * 100 / rebuild_total
+        percentage = rebuild_count * 100 //  rebuild_total
     except:
         percentage = 0
 
@@ -127,7 +131,7 @@ def parse_html_files():
             report_file_list.append(file)
 
     if len(report_file_list) == 0:
-        print "No incrementatal rebuild reports found in the workspace...skipping"
+        print("No incrementatal rebuild reports found in the workspace...skipping")
         return
         
     try:
@@ -189,7 +193,7 @@ def parse_html_files():
         build_total = build_total + build_totals[1]
 
     try:
-        percentage = build_success * 100 / build_total
+        percentage = build_success * 100 // build_total
     except:
         percentage = 0
     if main_manage_api_report:

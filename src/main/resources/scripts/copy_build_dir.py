@@ -21,6 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+from __future__ import print_function
+
 import os
 import fnmatch
 import sys
@@ -122,7 +124,10 @@ if __name__ == '__main__':
         nocase = ""
 
     manageCMD = os.path.join(os.environ.get('VECTORCAST_DIR'), "manage")
-    p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,shell=True,stdout=subprocess.PIPE)
+    p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,
+                         shell=True,
+                         stdout=subprocess.PIPE,
+                         universal_newlines=True)
     out, err = p.communicate()
     list = out.split(os.linesep)
     build_dir = ''

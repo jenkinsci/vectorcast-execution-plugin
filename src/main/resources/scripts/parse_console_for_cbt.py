@@ -1,4 +1,5 @@
 #parse_console.py
+from builtins import object
 from pprint import pprint
 import sys
 
@@ -7,7 +8,7 @@ initTestIndex = 1
 simpleTestIndex = 2
 
 
-class ParseConsoleForCBT():
+class ParseConsoleForCBT(object):
     def __init__(self):
         self.environmentDict = {}
 

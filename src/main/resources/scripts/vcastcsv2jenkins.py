@@ -23,6 +23,9 @@
 #
 #vcastcsv2jenkins.py
 
+from __future__ import division
+from __future__ import print_function
+
 import argparse
 import glob
 import os
@@ -101,7 +104,8 @@ def readCsvFile(csvFilename):
     global jobNamePrefix
     global jobNameDotted
 
-    csvfile = open(csvFilename, 'rb')
+    mode = 'r' if sys.version_info[0] >= 3 else 'rb'
+    csvfile = open(csvFilename, mode)
     csvList = csvfile.read().split('\n')
     csvfile.close()
     os.remove(csvFilename)
@@ -345,31 +349,31 @@ def countUnitSubp(data):
 
 def calulatePercentages(statement,branch,pair,path,byAnalysis,function,functionCall,complexity):
     try:
-        statement [PERCENT_INDEX] = 100 * statement [COVERED_INDEX] / statement[TOTAL_INDEX]
+        statement [PERCENT_INDEX] = 100 * statement [COVERED_INDEX] // statement[TOTAL_INDEX]
     except:
         pass
     try:
-        branch    [PERCENT_INDEX] = 100 * branch    [COVERED_INDEX] / branch[TOTAL_INDEX]
+        branch    [PERCENT_INDEX] = 100 * branch    [COVERED_INDEX] // branch[TOTAL_INDEX]
     except:
         pass
     try:
-        pair      [PERCENT_INDEX] = 100 * pair      [COVERED_INDEX] / pair[TOTAL_INDEX]
+        pair      [PERCENT_INDEX] = 100 * pair      [COVERED_INDEX] // pair[TOTAL_INDEX]
     except:
         pass
     try:
-        path      [PERCENT_INDEX] = 100 * path      [COVERED_INDEX] / path[TOTAL_INDEX]
+        path      [PERCENT_INDEX] = 100 * path      [COVERED_INDEX] // path[TOTAL_INDEX]
     except:
         pass
     try:
-        byAnalysis[PERCENT_INDEX] = 100 * byAnalysis[COVERED_INDEX] / byAnalysis[TOTAL_INDEX]
+        byAnalysis[PERCENT_INDEX] = 100 * byAnalysis[COVERED_INDEX] // byAnalysis[TOTAL_INDEX]
     except:
         pass
     try:
-        function[PERCENT_INDEX] = 100 * function[COVERED_INDEX] / function[TOTAL_INDEX]
+        function[PERCENT_INDEX] = 100 * function[COVERED_INDEX] // function[TOTAL_INDEX]
     except:
         pass
     try:
-        functionCall[PERCENT_INDEX] = 100 * functionCall[COVERED_INDEX] / functionCall[TOTAL_INDEX]
+        functionCall[PERCENT_INDEX] = 100 * functionCall[COVERED_INDEX] // functionCall[TOTAL_INDEX]
     except:
         pass
 

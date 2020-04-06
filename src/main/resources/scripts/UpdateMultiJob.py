@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import object
 import argparse
 import json
 import sys
@@ -10,7 +12,7 @@ python_path_updates += os.sep + "vpython-addons"
 sys.path.append(python_path_updates)
 import requests
 
-class VcJob:
+class VcJob(object):
 
     def __init__(self, base_url, username, password, verbose):
         self.jenkins_url = base_url

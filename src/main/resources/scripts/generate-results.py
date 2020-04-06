@@ -21,6 +21,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+from __future__ import print_function
+from __future__ import absolute_import
+
 import os
 import sys
 import argparse
@@ -38,11 +42,11 @@ sys.path.append(python_path_updates)
 python_path_updates += os.sep + "vpython-addons"
 sys.path.append(python_path_updates)
 
-import tcmr2csv
-import vcastcsv2jenkins
-from managewait import ManageWait
-import generate_qa_results_xml
-from parse_console_for_cbt import ParseConsoleForCBT
+from . import tcmr2csv
+from . import vcastcsv2jenkins
+from .managewait import ManageWait
+from . import generate_qa_results_xml
+from .parse_console_for_cbt import ParseConsoleForCBT
 
 try:
     from vector.apps.ReportBuilder.custom_report import CustomReport
@@ -221,7 +225,7 @@ def genDataApiReports(entry, jUnit, cbtDict):
     xml_file = ""
     
     try:
-        from generate_xml import GenerateXml
+        from .generate_xml import GenerateXml
 
         # Compiler/TestSuite
         env = entry["env"]

@@ -21,6 +21,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+from __future__ import print_function
+from __future__ import absolute_import
+
 import os
 import sys
 
@@ -31,7 +35,7 @@ sys.path.append(python_path_updates)
 python_path_updates += os.sep + "vpython-addons"
 sys.path.append(python_path_updates)
 
-import tcmr2csv
+from . import tcmr2csv
 
 verbose = True
 
@@ -41,7 +45,7 @@ def generate_from_html():
     tcmr2csv.runCombinedCov(sys.argv[1])
 
 def generate_with_api():
-    from generate_xml import GenerateManageXml
+    from .generate_xml import GenerateManageXml
     print("Use Data API to generate combined coverage XML file...")
     xml_coverage_name = "xml_data/coverage_results_top-level.xml"
     manage_path = sys.argv[2]
@@ -65,7 +69,7 @@ try:
     if "<!-- VectorCAST Report header -->" in data:
         # Test to see if this version of VectorCAST has the required API
         # ... It is loaded as a result of this import
-        from generate_xml import GenerateManageXml
+        from .generate_xml import GenerateManageXml
         # Using new Manage report, use Data API to generate XML
         if len(sys.argv) <= 2:
             print("")

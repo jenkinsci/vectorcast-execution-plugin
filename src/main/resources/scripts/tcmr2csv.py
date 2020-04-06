@@ -23,6 +23,8 @@
 #
 #tcmr2csv.py
 
+from __future__ import print_function
+
 import time
 import re
 import argparse
@@ -39,6 +41,7 @@ sys.path.append(python_path_updates)
 from bs4 import BeautifulSoup
 
 #global variables
+PY_MAJOR_VERSION = sys.version_info[0]
 global manageProjectName
 manageProjectName = ""
 global manageVersion
@@ -122,7 +125,10 @@ def procTestResults(HtmlReportName, table, level):
 
     dataTable = tableSoup.tr.next_sibling.tr
     for child in dataTable.children:
-        columnTitles.append(child.string.encode('ascii','ignore'))
+        child_string = child.string.encode('ascii','ignore')
+        if PY_MAJOR_VERSION >= 3:
+            child_string.decode('ascii', 'ignore')
+        columnTitles.append(child_string)
         
     # write the titles to the CSV file
     csv_file.write(columnTitles[UNIT_NAME_COL] + "," + columnTitles[SUBPROG_COL] + "," + columnTitles[TEST_CASE_COL] + "," + columnTitles[TC_STATUS_COL] + "\n")
@@ -143,7 +149,12 @@ def procTestResults(HtmlReportName, table, level):
     while dataEntry is not None:
       
         # grab the info inside each of the <td> tags
-        info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK) for child in dataEntry.children]
+        if PY_MAJOR_VERSION >= 3:
+            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK).decode('ascii')
+                    for child in dataEntry.children]
+        else:
+            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK)
+                    for child in dataEntry.children]
     
         # go to the next <td>
         dataEntry = dataEntry.next_sibling
@@ -233,20 +244,28 @@ def procCoverageResults(HtmlReportName,table, level):
     idx = 0
     
     try:
+        encoding, errors = 'ascii', 'ignore'
         # process the <td> tags
         for child in dataTable.children:
         
             # if we haven't found the complexity yet...
             if complexityIndex == -1:
                 # write out the information directly 
-                titleStr = titleStr + child.string.encode('ascii','ignore') + ","
+                if PY_MAJOR_VERSION >= 3:
+                    titleStr = (titleStr
+                                + child.string.encode(encoding, errors).decode(encoding, errors)
+                                + ",")
+                else:
+                    titleStr = titleStr + child.string.encode(encoding, errors) + ","
 
                 # check if this field is the complexity
                 if "Complexity" in child.string:
                     complexityIndex = idx
             else:
                 # otherwise write it out as Covered, Total, Percent
-                str = child.string.encode('ascii','ignore')
+                str = child.string.encode(encoding, errors)
+                if PY_MAJOR_VERSION >= 3:
+                    str.decode(encoding, errors)
                 titleStr = titleStr + str + " Covered," + str + " Total," + str + " Percent,"
                 
             idx += 1
@@ -279,7 +298,12 @@ def procCoverageResults(HtmlReportName,table, level):
     while dataEntry is not None:
     
         # grab the info inside each of the <td> tags
-        info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK) for child in dataEntry.children]
+        if PY_MAJOR_VERSION >= 3:
+            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK).decode('ascii')
+                    for child in dataEntry.children]
+        else:
+            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK)
+                    for child in dataEntry.children]
 
         # move to next <td> tag
         dataEntry = dataEntry.next_sibling
@@ -375,12 +399,12 @@ def run(HtmlReportName = "", jobName = "", version= 14):
             continue
             
         # if the title contains Testcase*Management in the title
-        if re.search("Testcase.*Management",title.encode('ascii')) is not None:
+        if re.search(b"Testcase.*Management",title.encode('ascii')) is not None:
             #print "   Processing Test Case Results from: " + os.path.basename(HtmlReportName)
             TestResultsName = procTestResults(HtmlReportName,table, jobName)
 
         # if the title contains Metrics in the title
-        if re.search("Metrics",title.encode('ascii')) is not None:
+        if re.search(b"Metrics",title.encode('ascii')) is not None:
             #print "   Processing Coverage Results from: " + os.path.basename(HtmlReportName)
             CoverageResultsName = procCoverageResults(HtmlReportName,table, jobName)
             
@@ -512,7 +536,12 @@ def procCombinedCoverageResults(HtmlReportName,table):
     while dataEntry is not None:
     
         # grab the info inside each of the <td> tags
-        info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK) for child in dataEntry.children]
+        if PY_MAJOR_VERSION >= 3:
+            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK).decode('ascii')
+                    for child in dataEntry.children]
+        else:
+            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK)
+                    for child in dataEntry.children]
 
         # move to next <td> tag
         dataEntry = dataEntry.next_sibling
@@ -553,7 +582,7 @@ def runCombinedCov(HtmlReportName = ""):
         if str(title) == "None":
             continue
         # if the title contains Metrics in the title
-        if re.search("Metrics",title.encode('ascii')) is not None:
+        if re.search(b"Metrics",title.encode('ascii')) is not None:
             #print "   Processing Coverage Results from: " + os.path.basename(HtmlReportName)
             procCombinedCoverageResults(HtmlReportName, table)
 
