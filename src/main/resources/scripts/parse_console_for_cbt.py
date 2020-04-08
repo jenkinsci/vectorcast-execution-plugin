@@ -1,5 +1,4 @@
 #parse_console.py
-from builtins import object
 from pprint import pprint
 import sys
 
