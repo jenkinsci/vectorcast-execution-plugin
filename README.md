@@ -56,7 +56,7 @@ There are 2 options for running tests
         results from all these individual machines/nodes
     -   In this case, the VectorCAST/Manage project should be specified
         as relative to the root of the checkout
-    - There is now an option for the user can choose to use the main Pipeline Job's Workspace as 
+    - There is now an option to use the main Pipeline Job's Workspace as 
         a dedicated single checkout directory.  This checkout directory must be available
         to all executors across all nodes either by having all executors running on the same
         computer or have the main Pipeline Job's Workspace on a shared network drive.
