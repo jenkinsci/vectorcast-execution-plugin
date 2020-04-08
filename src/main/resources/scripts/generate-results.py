@@ -635,7 +635,7 @@ if __name__ == '__main__':
     else:
         junit = False
         
-    if args.buildlog:
+    if args.buildlog and os.path.exists(args.buildlog):
         buildLogData = open(args.buildlog,"r").readlines()
         cbt = ParseConsoleForCBT()
         cbtDict = cbt.parse(buildLogData)

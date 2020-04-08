@@ -325,7 +325,7 @@ class GenerateXml(BaseGenerateXml):
         super(GenerateXml, self).__init__(cover_report_name, verbose)
 
         self.cbtDict = cbtDict
-        self.hashCode = build_dir.split("/")[-1]            
+        self.hashCode = build_dir.split("/")[-1].upper()
         self.usingJunit = useJunit
         self.build_dir = build_dir
         self.env = env
