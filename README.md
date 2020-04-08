@@ -191,6 +191,13 @@ The current pipeline implementation will not work in a multi-branch pipeline job
 
 ## Changelog
 
+### Version 0.63 (8 April 2020)
+
+- Support Multi-Branch Pipelines
+- Include plugin version in Pipeline Job Jenkins Script and console log
+- Check for illegal characters in Pipeline Job names
+- Update Single Jobs to use same reporting as Pipeline Jobs
+
 ### Version 0.62 (10 March 2020)
 
 - Introduce pipeline job
