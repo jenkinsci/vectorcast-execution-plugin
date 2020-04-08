@@ -37,7 +37,7 @@ public class VcastUtils
     {
         Optional< String > version = Optional.empty();
         try {
-            File file = new File( URLDecoder.decode( Utils.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "utf-8" ) );
+            File file = new File( URLDecoder.decode( VcastUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "utf-8" ) );
             JarFile jarfile = new JarFile( file );
             version = Optional.ofNullable( jarfile.getManifest().getMainAttributes().getValue( "Plugin-Version" ) );
             
