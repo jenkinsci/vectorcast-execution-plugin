@@ -38,6 +38,7 @@ from vector.apps.DataAPI.cover_api import CoverApi
 from vector.apps.ReportBuilder.custom_report import fmt_percent
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
+import hashlib 
 
 def dummy(*args, **kwargs):
     return None
@@ -472,17 +473,19 @@ class GenerateXml(BaseGenerateXml):
             exp_pass += summary.control_flow_total - summary.control_flow_fail
             exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
 
+        exec_rpt_name = hashlib.md5("execution_results." + classname + "." + unit_subp + "." + tc_name).hexdigest()
+                
         self.api.report(
             testcases=[tc],
             single_testcase=True,
             report_type="Demo",
             formats=["TEXT"],
-            output_file="execution_results.txt",
+            output_file=exec_rpt_name,
             sections=[ "TESTCASE_SECTIONS"],
             testcase_sections=["EXECUTION_RESULTS"])
 
-        result = open("execution_results.txt","r").read()
-        os.remove("execution_results.txt")     
+        result = open(exec_rpt_name,"r").read()
+        os.remove(exec_rpt_name)     
 
         # Failure takes priority  
         if not tc.passed:
@@ -532,20 +535,23 @@ class GenerateXml(BaseGenerateXml):
         if tc.passed:
             msg = "PASS"
         else:
+            exec_rpt_name = hashlib.md5("execution_results." + classname + "." + unit_subp + "." + tc_name).hexdigest()
+
             self.api.report(
                 testcases=[tc],
                 single_testcase=True,
                 report_type="Demo",
                 formats=["TEXT"],
-                output_file="execution_results.txt",
+                output_file=exec_rpt_name,
                 sections=[ "TESTCASE_SECTIONS"],
                 testcase_sections=["EXECUTION_RESULTS"])
 
-            result = open("execution_results.txt","r").read()
+            result = open(exec_rpt_name,"r").read()
             result = cgi.escape(result)
             result = result.replace("\"","")
             result = result.replace("\n","&#xA;")
             msg = "FAIL {} / {}  Execution Report:\n {}".format(exp_pass, exp_total, result)
+            os.remove(exec_rpt_name)     
 
         self.fh.write('            <message>%s</message>\n' % msg)
         self.fh.write('        </test>\n')
