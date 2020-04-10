@@ -35,9 +35,10 @@ import sys
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
-import get_vpython_addons
-python_path_updates += os.sep + get_vpython_addons.get_vpython_addons()
-sys.path.append(python_path_updates)
+# needed because vc18 vpython does not have bs4 package
+if sys.version_info[0] < 3:
+    python_path_updates += os.sep + 'vpython-addons'
+    sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
 
