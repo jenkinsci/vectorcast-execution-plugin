@@ -39,15 +39,15 @@ import traceback
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
-from .get_vpython_addons import get_vpython_addons
-python_path_updates += os.sep + get_vpython_addons()
+import get_vpython_addons
+python_path_updates += os.sep + get_vpython_addons.get_vpython_addons()
 sys.path.append(python_path_updates)
 
-from . import tcmr2csv
-from . import vcastcsv2jenkins
-from .managewait import ManageWait
-from . import generate_qa_results_xml
-from .parse_console_for_cbt import ParseConsoleForCBT
+import tcmr2csv
+import vcastcsv2jenkins
+from managewait import ManageWait
+import generate_qa_results_xml
+from parse_console_for_cbt import ParseConsoleForCBT
 
 try:
     from vector.apps.ReportBuilder.custom_report import CustomReport
@@ -226,7 +226,7 @@ def genDataApiReports(entry, jUnit, cbtDict):
     xml_file = ""
     
     try:
-        from .generate_xml import GenerateXml
+        from generate_xml import GenerateXml
 
         # Compiler/TestSuite
         env = entry["env"]

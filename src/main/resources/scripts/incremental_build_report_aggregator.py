@@ -38,8 +38,9 @@ from io import open
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
-from .get_vpython_addons import get_vpython_addons
-python_path_updates += os.sep + get_vpython_addons()
+
+import get_vpython_addons
+python_path_updates += os.sep + get_vpython_addons.get_vpython_addons()
 sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
