@@ -257,7 +257,8 @@ def genDataApiReports(entry, jUnit, cbtDict):
             
     except Exception as e:
         print("ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"])
-        traceback.print_exc()
+        if verbose:
+            traceback.print_exc()
         
     return xml_file
     
@@ -307,7 +308,8 @@ def generateCoverReport(path, env, level ):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ": ")
-        traceback.print_exc()
+        if verbose:
+            traceback.print_exc()
 
 def generateUTReport(path, env, level): 
     global verbose
@@ -323,7 +325,8 @@ def generateUTReport(path, env, level):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ".")
-        traceback.print_exc()
+        if verbose:
+            traceback.print_exc()
 
 def generateIndividualReports(entry, envName):
     global verbose
