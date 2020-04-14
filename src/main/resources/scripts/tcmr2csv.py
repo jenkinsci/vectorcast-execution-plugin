@@ -265,10 +265,10 @@ def procCoverageResults(HtmlReportName,table, level):
                     complexityIndex = idx
             else:
                 # otherwise write it out as Covered, Total, Percent
-                str = child.string.encode(encoding, errors)
+                childStr = child.string.encode(encoding, errors)
                 if PY_MAJOR_VERSION >= 3:
-                    str.decode(encoding, errors)
-                titleStr = titleStr + str + " Covered," + str + " Total," + str + " Percent,"
+                    childStr = childStr.decode(encoding, errors)
+                titleStr = titleStr + childStr + " Covered," + childStr + " Total," + childStr + " Percent,"
                 
             idx += 1
     except AttributeError as e:
