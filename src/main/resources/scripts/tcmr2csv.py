@@ -44,6 +44,7 @@ from bs4 import BeautifulSoup
 
 #global variables
 PY_MAJOR_VERSION = sys.version_info[0]
+encoding, errors = 'ascii', 'ignore'
 global manageProjectName
 manageProjectName = ""
 global manageVersion
@@ -113,7 +114,7 @@ def procTestResults(HtmlReportName, table, level):
     csv_file.write("HtmlFilename," + HtmlReportName + "\n")
 
     # setup BeautifulSoup processor for input table
-    tableSoup = BeautifulSoup(table.encode('ascii'),'html.parser')
+    tableSoup = BeautifulSoup(table.encode(encoding),'html.parser')
     
     # Get Column Titles 
     columnTitles = []
@@ -127,9 +128,9 @@ def procTestResults(HtmlReportName, table, level):
 
     dataTable = tableSoup.tr.next_sibling.tr
     for child in dataTable.children:
-        child_string = child.string.encode('ascii','ignore')
+        child_string = child.string.encode(encoding, errors)
         if PY_MAJOR_VERSION >= 3:
-            child_string.decode('ascii', 'ignore')
+            child_string = child_string.decode(encoding, errors)
         columnTitles.append(child_string)
         
     # write the titles to the CSV file
@@ -152,10 +153,10 @@ def procTestResults(HtmlReportName, table, level):
       
         # grab the info inside each of the <td> tags
         if PY_MAJOR_VERSION >= 3:
-            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK).decode('ascii')
+            info = [child.string.encode(encoding,'xmlcharrefreplace').decode(encoding).replace(NPBS,BLANK)
                     for child in dataEntry.children]
         else:
-            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK)
+            info = [child.string.encode(encoding,'xmlcharrefreplace').replace(NPBS,BLANK)
                     for child in dataEntry.children]
     
         # go to the next <td>
@@ -214,7 +215,7 @@ def procCoverageResults(HtmlReportName,table, level):
     csv_file.write("HtmlFilename," + HtmlReportName + "\n")
 
     # setup BeautifulSoup processor for input table
-    tableSoup = BeautifulSoup(table.encode('ascii'),'html.parser')
+    tableSoup = BeautifulSoup(table.encode(encoding),'html.parser')
 
     # Get Column Titles 
     columnTitles = []
@@ -246,7 +247,6 @@ def procCoverageResults(HtmlReportName,table, level):
     idx = 0
     
     try:
-        encoding, errors = 'ascii', 'ignore'
         # process the <td> tags
         for child in dataTable.children:
         
@@ -301,10 +301,10 @@ def procCoverageResults(HtmlReportName,table, level):
     
         # grab the info inside each of the <td> tags
         if PY_MAJOR_VERSION >= 3:
-            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK).decode('ascii')
+            info = [child.string.encode(encoding,'xmlcharrefreplace').decode(encoding).replace(NPBS,BLANK)
                     for child in dataEntry.children]
         else:
-            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK)
+            info = [child.string.encode(encoding,'xmlcharrefreplace').replace(NPBS,BLANK)
                     for child in dataEntry.children]
 
         # move to next <td> tag
@@ -401,12 +401,12 @@ def run(HtmlReportName = "", jobName = "", version= 14):
             continue
             
         # if the title contains Testcase*Management in the title
-        if re.search(b"Testcase.*Management",title.encode('ascii')) is not None:
+        if re.search(b"Testcase.*Management",title.encode(encoding)) is not None:
             #print "   Processing Test Case Results from: " + os.path.basename(HtmlReportName)
             TestResultsName = procTestResults(HtmlReportName,table, jobName)
 
         # if the title contains Metrics in the title
-        if re.search(b"Metrics",title.encode('ascii')) is not None:
+        if re.search(b"Metrics",title.encode(encoding)) is not None:
             #print "   Processing Coverage Results from: " + os.path.basename(HtmlReportName)
             CoverageResultsName = procCoverageResults(HtmlReportName,table, jobName)
             
@@ -460,7 +460,7 @@ def processTotals(complexityIndex, columnTitles, info):
 def procCombinedCoverageResults(HtmlReportName,table):
 
     # setup BeautifulSoup processor for input table
-    tableSoup = BeautifulSoup(table.encode('ascii'),'html.parser')
+    tableSoup = BeautifulSoup(table.encode(encoding),'html.parser')
 
     # Get Column Titles 
     columnTitles = []
@@ -539,10 +539,10 @@ def procCombinedCoverageResults(HtmlReportName,table):
     
         # grab the info inside each of the <td> tags
         if PY_MAJOR_VERSION >= 3:
-            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK).decode('ascii')
+            info = [child.string.encode(encoding,'xmlcharrefreplace').decode(encoding).replace(NPBS,BLANK)
                     for child in dataEntry.children]
         else:
-            info = [child.string.encode('ascii','xmlcharrefreplace').replace(NPBS,BLANK)
+            info = [child.string.encode(encoding,'xmlcharrefreplace').replace(NPBS,BLANK)
                     for child in dataEntry.children]
 
         # move to next <td> tag
@@ -584,7 +584,7 @@ def runCombinedCov(HtmlReportName = ""):
         if str(title) == "None":
             continue
         # if the title contains Metrics in the title
-        if re.search(b"Metrics",title.encode('ascii')) is not None:
+        if re.search(b"Metrics",title.encode(encoding)) is not None:
             #print "   Processing Coverage Results from: " + os.path.basename(HtmlReportName)
             procCombinedCoverageResults(HtmlReportName, table)
 
