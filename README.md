@@ -56,7 +56,7 @@ There are 2 options for running tests
         results from all these individual machines/nodes
     -   In this case, the VectorCAST/Manage project should be specified
         as relative to the root of the checkout
-    - There is now an option for the user can choose to use the main Pipeline Job's Workspace as 
+    - There is now an option to use the main Pipeline Job's Workspace as 
         a dedicated single checkout directory.  This checkout directory must be available
         to all executors across all nodes either by having all executors running on the same
         computer or have the main Pipeline Job's Workspace on a shared network drive.
@@ -190,6 +190,13 @@ results" in the Publish JUnit test result report configuration.
 The current pipeline implementation will not work in a multi-branch pipeline job.
 
 ## Changelog
+
+### Version 0.63 (8 April 2020)
+
+- Support Multi-Branch Pipelines
+- Include plugin version in Pipeline Job Jenkins Script and console log
+- Check for illegal characters in Pipeline Job names
+- Update Single Jobs to use same reporting as Pipeline Jobs
 
 ### Version 0.62 (10 March 2020)
 
