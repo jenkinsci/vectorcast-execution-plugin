@@ -28,7 +28,9 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   "NOT_LINKED",
                   "Preprocess Failed",
                   "Abnormal Termination on Environment",
-                  "not recognized as an internal or external command"]
+                  "not recognized as an internal or external command",
+                  "Another Workspace with this path already exists",
+                  "Destination directory or database is not writable"]
                 
 VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.lang.Exception"]                       
 
@@ -36,6 +38,7 @@ VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.
 def setupManageProject() {
     def cmds = """        
         _RM *_rebuild.html
+        _RM CombinedReport.html
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_sharedArtifactDirectory} --status"  
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --force --release-locks"
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
