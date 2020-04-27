@@ -23,6 +23,8 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
+
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -36,6 +38,7 @@ import hudson.tasks.Builder;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
@@ -429,6 +432,12 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             }
         }
     }
+
+    private void printVersion( PrintStream logger )
+    {
+	logger.println( "[VectorCAST Execution Version]: " + VcastUtils.getVersion().orElse( "Error - Could not determine version" ) );
+    }
+
     /**
      * Perform the build step. Copy the scripts from the archive/directory to the workspace
      * @param build build
@@ -459,6 +468,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             if (testPath.isFile()) {
                 // Have jar file...
                 jFile = new JarFile(testPath);
+                printVersion( listener.getLogger() );
                 Enumeration<JarEntry> entries = jFile.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
