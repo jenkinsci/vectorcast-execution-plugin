@@ -140,8 +140,8 @@ def checkUseNewReportsAndAPI():
     if os.environ.get("VCAST_REPORT_ENGINE", "") == "LEGACY":
         # Using legacy reporting with new reports - fall back to parsing html report
         if verbose:
-            print("Reports forced to be old/legacy, so use them")
-        return False
+            print("VectorCAST/Execution ignoring LEGACY VCAST_REPORT_ENGINE.")
+
     # Look for existence of file that only exists in distribution with the new reports
     check_file = os.path.join(os.environ.get('VECTORCAST_DIR'),
                              "python",
@@ -263,7 +263,8 @@ def genDataApiReports(entry, jUnit, cbtDict):
             
     except Exception as e:
         print("ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"])
-        traceback.print_exc()
+        if verbose:
+            traceback.print_exc()
         
     return xml_file
     
@@ -313,7 +314,8 @@ def generateCoverReport(path, env, level ):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ": ")
-        traceback.print_exc()
+        if verbose:
+            traceback.print_exc()
 
 def generateUTReport(path, env, level): 
     global verbose
@@ -329,7 +331,8 @@ def generateUTReport(path, env, level):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ".")
-        traceback.print_exc()
+        if verbose:
+            traceback.print_exc()
 
 def generateIndividualReports(entry, envName):
     global verbose
@@ -641,7 +644,7 @@ if __name__ == '__main__':
     else:
         junit = False
         
-    if args.buildlog:
+    if args.buildlog and os.path.exists(args.buildlog):
         buildLogData = open(args.buildlog,"r").readlines()
         cbt = ParseConsoleForCBT()
         cbtDict = cbt.parse(buildLogData)

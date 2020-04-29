@@ -6,7 +6,6 @@ compoundTestIndex = 0
 initTestIndex = 1
 simpleTestIndex = 2
 
-
 class ParseConsoleForCBT(object):
     def __init__(self):
         self.environmentDict = {}
@@ -28,66 +27,85 @@ class ParseConsoleForCBT(object):
 
         for line in console_log:
             line = line.strip()
-            
+                        
             if line.startswith("Processing options file"):
-                if started:
-                    self.environmentDict[hashCode] = [[],[],[]]
+
                 hashCode = line.replace("\\","/").split("/")[-2].strip()
+                
+                # only save hashCode from this test if the environment has been migrated 
+                # has an all numeric hash - else use Creating Environment as the hash
+                if hashCode.isdigit():
+                    self.environmentDict[hashCode] = [[],[],[]]
+                    started = True
+                
+                continue
+                
+            if not started and "Creating Environment" in line:
+                # only save hashCode from this test if the environment is running in monitored 
+                # mode and uses the enviornment name instead of a hashCode
+                hashCode = line.split("\"")[1]
+                self.environmentDict[hashCode] = [[],[],[]]
+                print "*", hashCode
                 started = True
-                continue
 
-            if started and line.startswith("Creating report"):
-                started = False
+            if started: 
+            
+                if line.startswith("Creating report"):
+                    started = False
+                    continue
                 
-                continue
-             
-            if "Preparing to run all" in line: 
-                line = line.replace("Preparing to run", "Running")
-
-            elif "Preparing to run " in line: 
-                line = line.replace("Preparing to run", "Running:")
-
-
-            if "Running all" in line or "Preparing to run all" in line:
-                fileName = ""
-                func = ""
-                try:
-                    fileName, func = line.split()[2].split(".",1)
-                except:
-                    fileName = line.split()[2].split(".",1)[0]
-
-                # Running all <<COMPOUND>> test cases
-                if "Running all <<COMPOUND>> test cases" in line:
-                    runningCompound = True
-                    runningInits = False
-
-                # Running all manager.<<INIT>> test cases
-                elif "<<INIT>>" == func:
-                    runningCompound = False
-                    runningInits = True
-
-                #Running all MANAGER."-" test cases
-                elif "\"" in func:
-                    runningCompound = False
-                    runningInits = False
-
-                #Running all manager.(cl)Manager::PlaceOrder test cases
-                else:
-                    runningCompound = False
-                    runningInits = False
+                elif "Completed Incremental Execution processing" in line:
+                    started = False
+                    continue
                 
-            if "Running: " in line:
-                
-                if runningCompound:
-                    self.environmentDict[hashCode][compoundTestIndex].append(line.split("Running: ")[-1])
+                elif "Completed Batch Execution processing" in line:
+                    started = False
+                    continue
 
-                elif runningInits:
-                    self.environmentDict[hashCode][initTestIndex].append(line.split("Running: ")[-1])
+                if "Preparing to run all" in line: 
+                    line = line.replace("Preparing to run", "Running")
 
-                else:
-                    tc = line.split("Running: ")[-1]                                            
-                    self.environmentDict[hashCode][simpleTestIndex].append(fileName + "/" + func + "/" + tc)
+                elif "Preparing to run " in line: 
+                    line = line.replace("Preparing to run", "Running:")
+
+
+                if "Running all" in line or "Preparing to run all" in line:
+                    fileName = ""
+                    func = ""
+                    try:
+                        fileName, func = line.split()[2].split(".",1)
+                    except:
+                        fileName = line.split()[2].split(".",1)[0]
+
+                    # Running all <<COMPOUND>> test cases
+                    if "Running all <<COMPOUND>> test cases" in line:
+                        runningCompound = True
+                        runningInits = False
+
+                    # Running all manager.<<INIT>> test cases
+                    elif "<<INIT>>" == func:
+                        runningCompound = False
+                        runningInits = True
+
+                    #Running all MANAGER."-" test cases
+                    elif "\"" in func:
+                        runningCompound = False
+                        runningInits = False
+
+                    #Running all manager.(cl)Manager::PlaceOrder test cases
+                    else:
+                        runningCompound = False
+                        runningInits = False
                     
+                if "Running: " in line:
+                    if runningCompound:
+                        self.environmentDict[hashCode][compoundTestIndex].append(line.split("Running: ")[-1])
+                    elif runningInits:
+                        self.environmentDict[hashCode][initTestIndex].append(line.split("Running: ")[-1])
+                    else:
+                        tc = line.split("Running: ")[-1]                                            
+                        self.environmentDict[hashCode][simpleTestIndex].append(fileName + "/" + func + "/" + tc)
+                
         return self.environmentDict           
 
 if __name__ == '__main__':
