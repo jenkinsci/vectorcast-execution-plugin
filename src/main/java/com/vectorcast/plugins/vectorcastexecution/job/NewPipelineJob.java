@@ -23,6 +23,8 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
+
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import net.sf.json.JSONObject;
@@ -366,6 +368,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
+            "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
             "\n" +  
             "\n" +  
             "/* DEBUG JSON RESPONSE: \n" + debugJSON + "\n*/"+

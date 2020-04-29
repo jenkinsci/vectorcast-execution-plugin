@@ -41,6 +41,7 @@ from vector.apps.DataAPI.cover_api import CoverApi
 from vector.apps.ReportBuilder.custom_report import fmt_percent
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
+import hashlib 
 
 def dummy(*args, **kwargs):
     return None
@@ -328,7 +329,7 @@ class GenerateXml(BaseGenerateXml):
         super(GenerateXml, self).__init__(cover_report_name, verbose)
 
         self.cbtDict = cbtDict
-        self.hashCode = build_dir.split("/")[-1]            
+        self.hashCode = build_dir.split("/")[-1].upper()
         self.usingJunit = useJunit
         self.build_dir = build_dir
         self.env = env
@@ -475,17 +476,11 @@ class GenerateXml(BaseGenerateXml):
             exp_pass += summary.control_flow_total - summary.control_flow_fail
             exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
 
-        self.api.report(
-            testcases=[tc],
-            single_testcase=True,
-            report_type="Demo",
-            formats=["TEXT"],
-            output_file="execution_results.txt",
-            sections=[ "TESTCASE_SECTIONS"],
-            testcase_sections=["EXECUTION_RESULTS"])
-
-        result = open("execution_results.txt","r").read()
-        os.remove("execution_results.txt")     
+        result = self.__get_testcase_execution_results(
+            tc,
+            classname,
+            unit_subp,
+            tc_name)
 
         # Failure takes priority  
         if not tc.passed:
@@ -535,16 +530,12 @@ class GenerateXml(BaseGenerateXml):
         if tc.passed:
             msg = "PASS"
         else:
-            self.api.report(
-                testcases=[tc],
-                single_testcase=True,
-                report_type="Demo",
-                formats=["TEXT"],
-                output_file="execution_results.txt",
-                sections=[ "TESTCASE_SECTIONS"],
-                testcase_sections=["EXECUTION_RESULTS"])
+            result = self.__get_testcase_execution_results(
+                tc,
+                unit_name,
+                func_name,
+                tc_name)
 
-            result = open("execution_results.txt","r").read()
             result = cgi.escape(result)
             result = result.replace("\"","")
             result = result.replace("\n","&#xA;")
@@ -716,6 +707,28 @@ class GenerateXml(BaseGenerateXml):
             pprint.pprint (self.cbtDict, width = 132)
             traceback.print_exc()
             sys.exit()
+
+    def __get_testcase_execution_results(self, tc, classname, unit_subp, tc_name):
+        report_name = hashlib.md5('.'.join(["execution_results",
+                                            classname,
+                                            unit_subp,
+                                            tc_name])).hexdigest()
+
+        self.api.report(
+            testcases=[tc],
+            single_testcase=True,
+            report_type="Demo",
+            formats=["TEXT"],
+            output_file=report_name,
+            sections=[ "TESTCASE_SECTIONS"],
+            testcase_sections=["EXECUTION_RESULTS"])
+
+        with open(report_name,"r") as f:
+            out = f.read()
+
+        os.remove(report_name)
+
+        return out
 
     def __print_test_case_was_skipped(self, searchName, passed):
         if self.verbose:
