@@ -134,8 +134,8 @@ def checkUseNewReportsAndAPI():
     if os.environ.get("VCAST_REPORT_ENGINE", "") == "LEGACY":
         # Using legacy reporting with new reports - fall back to parsing html report
         if verbose:
-            print("Reports forced to be old/legacy, so use them")
-        return False
+            print("VectorCAST/Execution ignoring LEGACY VCAST_REPORT_ENGINE.")
+
     # Look for existence of file that only exists in distribution with the new reports
     check_file = os.path.join(os.environ.get('VECTORCAST_DIR'),
                              "python",
