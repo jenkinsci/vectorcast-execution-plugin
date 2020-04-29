@@ -473,19 +473,11 @@ class GenerateXml(BaseGenerateXml):
             exp_pass += summary.control_flow_total - summary.control_flow_fail
             exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
 
-        exec_rpt_name = hashlib.md5("execution_results." + classname + "." + unit_subp + "." + tc_name).hexdigest()
-                
-        self.api.report(
-            testcases=[tc],
-            single_testcase=True,
-            report_type="Demo",
-            formats=["TEXT"],
-            output_file=exec_rpt_name,
-            sections=[ "TESTCASE_SECTIONS"],
-            testcase_sections=["EXECUTION_RESULTS"])
-
-        result = open(exec_rpt_name,"r").read()
-        os.remove(exec_rpt_name)     
+        result = self.__get_testcase_execution_results(
+            tc,
+            classname,
+            unit_subp,
+            tc_name)
 
         # Failure takes priority  
         if not tc.passed:
@@ -535,23 +527,16 @@ class GenerateXml(BaseGenerateXml):
         if tc.passed:
             msg = "PASS"
         else:
-            exec_rpt_name = hashlib.md5("execution_results." + classname + "." + unit_subp + "." + tc_name).hexdigest()
+            result = self.__get_testcase_execution_results(
+                tc,
+                unit_name,
+                func_name,
+                tc_name)
 
-            self.api.report(
-                testcases=[tc],
-                single_testcase=True,
-                report_type="Demo",
-                formats=["TEXT"],
-                output_file=exec_rpt_name,
-                sections=[ "TESTCASE_SECTIONS"],
-                testcase_sections=["EXECUTION_RESULTS"])
-
-            result = open(exec_rpt_name,"r").read()
             result = cgi.escape(result)
             result = result.replace("\"","")
             result = result.replace("\n","&#xA;")
             msg = "FAIL {} / {}  Execution Report:\n {}".format(exp_pass, exp_total, result)
-            os.remove(exec_rpt_name)     
 
         self.fh.write('            <message>%s</message>\n' % msg)
         self.fh.write('        </test>\n')
@@ -719,6 +704,28 @@ class GenerateXml(BaseGenerateXml):
             pprint.pprint (self.cbtDict, width = 132)
             traceback.print_exc()
             sys.exit()
+
+    def __get_testcase_execution_results(self, tc, classname, unit_subp, tc_name):
+        report_name = hashlib.md5('.'.join(["execution_results",
+                                            classname,
+                                            unit_subp,
+                                            tc_name])).hexdigest()
+
+        self.api.report(
+            testcases=[tc],
+            single_testcase=True,
+            report_type="Demo",
+            formats=["TEXT"],
+            output_file=report_name,
+            sections=[ "TESTCASE_SECTIONS"],
+            testcase_sections=["EXECUTION_RESULTS"])
+
+        with open(report_name,"r") as f:
+            out = f.read()
+
+        os.remove(report_name)
+
+        return out
 
     def __print_test_case_was_skipped(self, searchName, passed):
         if self.verbose:
