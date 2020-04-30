@@ -31,7 +31,7 @@ There are 2 types of supported jobs and 1 deprecated job type
 
 -   **Single Job**
 -   **Pipeline Job**
--   **Multi Job (Deprecated)**
+-   **Multi-Job (Deprecated)**
 
 ### Single Job
 
@@ -128,7 +128,7 @@ tests
 
 ## Controlling Where Jobs Run
 
-When using Multi Jobs, the jobs are created to run on specific nodes
+When using Multi-Jobs, the jobs are created to run on specific nodes
 related to the compiler chosen for the environment. E.g.
 
 ![](docs/images/restrict.png)
@@ -196,7 +196,7 @@ The current pipeline implementation will not work in a multi-branch pipeline job
 - Support Multi-Branch Pipelines
 - Include plugin version in Pipeline Job Jenkins Script and console log
 - Check for illegal characters in Pipeline Job names
-- Update Single and Multi Jobs to use same reporting as Pipeline Jobs
+- Update Single and Multi-Jobs to use same reporting as Pipeline Jobs
 - Remove CombinedReport.html from previous Pipeline job build at beginning of new build
 - Make aggregate coverage results consistent with VectorCAST/Manage aggregate coverage results
 - Always use new VectorCAST report API for VectorCAST/2019 and later
@@ -387,7 +387,7 @@ The current pipeline implementation will not work in a multi-branch pipeline job
 
 ### Version 0.26 (1 Nov 2017
 
--   Option to set the name of the single job or multi job (name is
+-   Option to set the name of the single job or multi-job (name is
     pre-pended to sub-job in the case of multi-jobs)
 -   Option to configure (at creation/update time) the node to run the
     single job or top-level multi-job on
