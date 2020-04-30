@@ -202,6 +202,7 @@ The current pipeline implementation will not work in a multi-branch pipeline job
 - Always use new VectorCAST report API for VectorCAST/2019 and later
 - Fix potential file access race condition when generating xml
 - Fix exception when building VectorCAST/Unit regression script environments
+- Support for VectorCAST/vpython 3
 
 ### Version 0.62 (10 March 2020)
 
