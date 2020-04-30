@@ -189,14 +189,19 @@ results" in the Publish JUnit test result report configuration.
 
 The current pipeline implementation will not work in a multi-branch pipeline job.
 
-## Changelog
+## Change Log
 
-### Version 0.63 (8 April 2020)
+### Version 0.63 (30 April 2020)
 
 - Support Multi-Branch Pipelines
 - Include plugin version in Pipeline Job Jenkins Script and console log
 - Check for illegal characters in Pipeline Job names
-- Update Single Jobs to use same reporting as Pipeline Jobs
+- Update Single and Multi Jobs to use same reporting as Pipeline Jobs
+- Remove CombinedReport.html from previous Pipeline job build at beginning of new build
+- Make aggregate coverage results consistent with VectorCAST/Manage aggregate coverage results
+- Always use new VectorCAST report API for VectorCAST/2019 and later
+- Fix potential file access race condition when generating xml
+- Fix exception when building VectorCAST/Unit regression script environments
 
 ### Version 0.62 (10 March 2020)
 
