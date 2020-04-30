@@ -21,6 +21,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+from __future__ import print_function
+from __future__ import absolute_import
+
 import os
 import sys
 import argparse
@@ -35,8 +39,10 @@ import traceback
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
-python_path_updates += os.sep + "vpython-addons"
-sys.path.append(python_path_updates)
+# needed because vc18 vpython does not have bs4 package
+if sys.version_info[0] < 3:
+    python_path_updates += os.sep + 'vpython-addons'
+    sys.path.append(python_path_updates)
 
 import tcmr2csv
 import vcastcsv2jenkins

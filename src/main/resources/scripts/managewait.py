@@ -21,6 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+from __future__ import print_function
+
 import subprocess
 import os
 import sys
@@ -30,7 +33,7 @@ import re
 import time
 
 
-class ManageWait():
+class ManageWait(object):
     def __init__(self, verbose, command_line, wait_time, wait_loops):
         self.wait_time = wait_time
         self.wait_loops = wait_loops
@@ -47,7 +50,7 @@ class ManageWait():
         loop_count = 0
         while 1:
             loop_count += 1
-            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
+            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
             if not silent:
                 print("Manage started")
             license_outage = False

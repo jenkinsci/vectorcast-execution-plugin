@@ -1,3 +1,4 @@
+from __future__ import print_function
 import subprocess
 import os
 import re
@@ -7,7 +8,10 @@ manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
 
 
 def printEnvironmentInfo(ManageProjectName):
-    p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --full-status",shell=True,stdout=subprocess.PIPE)
+    p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --full-status",
+                         shell=True,
+                         stdout=subprocess.PIPE,
+                         universal_newlines=True)
     out, err = p.communicate()
     
     job_list = []

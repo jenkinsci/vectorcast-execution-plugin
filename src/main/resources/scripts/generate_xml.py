@@ -21,9 +21,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+from __future__ import print_function
+
 import os
 import datetime
 import cgi
+import sys
 # Later version of VectorCAST have renamed to Unit Test API
 # Try loading the newer (renamed) version first and fall back
 # to the older.
@@ -91,7 +95,7 @@ class BaseGenerateXml(object):
             entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
             
         if self.verbose:
-            print "Coverage Type:", cov_type
+            print("Coverage Type:", cov_type)
 
         if cov_type == None:
             return entry
@@ -706,10 +710,13 @@ class GenerateXml(BaseGenerateXml):
             sys.exit()
 
     def __get_testcase_execution_results(self, tc, classname, unit_subp, tc_name):
-        report_name = hashlib.md5('.'.join(["execution_results",
-                                            classname,
-                                            unit_subp,
-                                            tc_name])).hexdigest()
+        report_name_hash =  '.'.join(
+            ["execution_results", classname, unit_subp, tc_name])
+        # Unicode-objects must be encoded before hashing in Python 3
+        if sys.version_info[0] >= 3:
+            report_name_hash = report_name_hash.encode('utf-8')
+
+        report_name = hashlib.md5(report_name_hash).hexdigest()
 
         self.api.report(
             testcases=[tc],

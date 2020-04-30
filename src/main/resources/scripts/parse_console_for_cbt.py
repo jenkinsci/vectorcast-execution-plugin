@@ -1,4 +1,5 @@
 #parse_console.py
+from __future__ import print_function
 from pprint import pprint
 import sys
 
@@ -6,7 +7,7 @@ compoundTestIndex = 0
 initTestIndex = 1
 simpleTestIndex = 2
 
-class ParseConsoleForCBT():
+class ParseConsoleForCBT(object):
     def __init__(self):
         self.environmentDict = {}
 
@@ -45,7 +46,7 @@ class ParseConsoleForCBT():
                 # mode and uses the enviornment name instead of a hashCode
                 hashCode = line.split("\"")[1]
                 self.environmentDict[hashCode] = [[],[],[]]
-                print "*", hashCode
+                print("*", hashCode)
                 started = True
 
             if started: 

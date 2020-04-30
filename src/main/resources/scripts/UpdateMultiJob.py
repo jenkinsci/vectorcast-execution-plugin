@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 import json
 import sys
@@ -6,11 +7,13 @@ import os
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
-python_path_updates += os.sep + "vpython-addons"
-sys.path.append(python_path_updates)
+# needed because vc18 vpython does not have bs4 package
+if sys.version_info[0] < 3:
+    python_path_updates += os.sep + 'vpython-addons'
+    sys.path.append(python_path_updates)
 import requests
 
-class VcJob:
+class VcJob(object):
 
     def __init__(self, base_url, username, password, verbose):
         self.jenkins_url = base_url
