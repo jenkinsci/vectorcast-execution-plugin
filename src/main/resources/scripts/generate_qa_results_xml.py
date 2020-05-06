@@ -194,7 +194,7 @@ def genQATestResults(mp, level = None, envName = None):
         
     if err:
         print(out, err)
-    processSystemTestResultsData(out.split("\n"))
+    processSystemTestResultsData(out.splitlines())
     
     saveQATestStatus(mp)
         

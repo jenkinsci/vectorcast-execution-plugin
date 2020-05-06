@@ -17,7 +17,7 @@ def printEnvironmentInfo(ManageProjectName):
     job_list = []
     level_list = []
 
-    list = out.split(os.linesep)
+    list = out.splitlines()
 
     for str in list:
         if re.match("^   [^\s]",str) is not None:

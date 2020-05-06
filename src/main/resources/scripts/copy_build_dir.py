@@ -129,7 +129,7 @@ if __name__ == '__main__':
                          stdout=subprocess.PIPE,
                          universal_newlines=True)
     out, err = p.communicate()
-    list = out.split(os.linesep)
+    list = out.splitlines()
     build_dir = ''
     for str in list:
         if "Build Directory:" in str:
