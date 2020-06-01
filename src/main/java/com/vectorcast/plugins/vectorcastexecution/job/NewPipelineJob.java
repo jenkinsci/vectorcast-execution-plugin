@@ -83,6 +83,10 @@ public class NewPipelineJob extends BaseJob {
     private String pipelineSCM = "";
     
     private boolean singleCheckout;
+
+    private boolean useCILicenses;
+    
+    private boolean useCBT;
     
     private String debugJSON;
 
@@ -116,6 +120,8 @@ public class NewPipelineJob extends BaseJob {
         sharedArtifactDirectory = json.optString("sharedArtifactDir","");
         pipelineSCM = json.optString("scmSnippet","").trim();
         singleCheckout = json.optBoolean("singleCheckout", false);
+        useCILicenses  = json.optBoolean("useCILicenses", false);
+        useCBT  = json.optBoolean("useCBT", true);
         
         // remove the win/linux options since there's no platform any more 
         environmentSetup = json.optString("environmentSetup", null);
@@ -171,12 +177,16 @@ public class NewPipelineJob extends BaseJob {
             return null;
         }
 
-		projectName = getBaseName() + ".vcast.pipeline";
-        
         if (getJobName() != null && !getJobName().isEmpty()) {
             projectName = getJobName();
         }
+        else {
+            projectName = getBaseName() + ".vcast.pipeline";        
+        }
 
+        // Remove all non-alphanumeric characters from the Jenkins Job name
+        projectName = projectName.replaceAll("[^a-zA-Z0-9_]","_");
+        
         if (getInstance().getJobNames().contains(projectName)) {
             throw new JobAlreadyExistsException(projectName);
         }
@@ -347,6 +357,11 @@ public class NewPipelineJob extends BaseJob {
         if ((environmentTeardown != null) && (!environmentTeardown.isEmpty())) {
             teardown = environmentTeardown.replace("\\","/").replace("\"","\\\"");
         }
+        String incremental = "\"\"";
+        if (useCBT)
+        {
+            incremental = "\"--incremental\"";
+        }
         
         String topOfJenkinsfile = "// ===============================================================\n" + 
             "// \n" +  
@@ -357,7 +372,7 @@ public class NewPipelineJob extends BaseJob {
             "//\n" +  
             "// ===============================================================\n" +  
             "\n" +  
-            "VC_Manage_Project     = \"" + this.getManageProjectName() + "\"\n" + 
+            "VC_Manage_Project     = \'" + this.getManageProjectName() + "\'\n" + 
             "VC_EnvSetup        = '''" + setup + "'''\n" + 
             "VC_Build_Preamble  = \"" + preamble + "\"\n" + 
             "VC_EnvTeardown     = '''" + teardown + "'''\n" + 
@@ -368,6 +383,9 @@ public class NewPipelineJob extends BaseJob {
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
+            "VC_UseCILicense = " + ((useCILicenses) ? "1" : "0") + "\n" +  
+            "VC_useCBT = " + incremental + "\n" +  
+            
             "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
             "\n" +  
             "\n" +  
