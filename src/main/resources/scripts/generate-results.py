@@ -646,7 +646,7 @@ if __name__ == '__main__':
         
     if args.buildlog and os.path.exists(args.buildlog):
         buildLogData = open(args.buildlog,"r").readlines()
-        cbt = ParseConsoleForCBT()
+        cbt = ParseConsoleForCBT(verbose)
         cbtDict = cbt.parse(buildLogData)
         
     else:
