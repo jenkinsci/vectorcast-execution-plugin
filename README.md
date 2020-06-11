@@ -69,6 +69,14 @@ There are 2 options for running tests
     -   The reports are generated into the workspace and archived as
         part of the Jenkins job
  
+The user will be able to disable the use of Change Based Testing to perform a 
+complete run of their VectorCAST Project.  By default Change Based Testing is enabled, but 
+this option can be disabled by unchecking the Use Change Based Testing box
+
+For users with Continuous Integration Licneses, you will be able to access those licenses by
+checking the Use Continuous Integration License checkbox.  If you do not have 
+Continuous Integration License, do not check this box as you will encounter licensing errors.
+
 Additionally, if a shared artifact directory is specified, VectorCAST/Manage
 will execute jobs independently, but have a central location for storing
 the build artifacts.  This option can be used to accelerate testing by use
