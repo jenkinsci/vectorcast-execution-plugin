@@ -79,7 +79,16 @@ Continuous Integration License, do not check this box as you will encounter lice
 
 If the user wishes to call the Jenkins job from another Pipeline job, check the box to 
 parameterize the Jenkinsfile.  This will add a parameter to the pipeline job (VCAST_PROJECT_DIR) 
-that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage project.  
+that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage project.  Calling
+the build command will return Failed, Unstable, Success cooresponding to the results of the VectorCAST
+Pipeline job.  To enabled the main pipeline job to continue, the user can surround the build command without
+a ~catchError~ block as demonstrated below
+
+```
+catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : false ) {
+   build job: 'UnitTestingProject_vcast_pipeline', parameters: [string(name: 'VCAST_PROJECT_DIR', value: 'C:\\UnitTesting\\Project')]
+}
+```
 
 Additionally, if a shared artifact directory is specified, VectorCAST/Manage
 will execute jobs independently, but have a central location for storing
