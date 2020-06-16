@@ -82,7 +82,7 @@ parameterize the Jenkinsfile.  This will add a parameter to the pipeline job (VC
 that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage project.  Calling
 the build command will return Failed, Unstable, Success cooresponding to the results of the VectorCAST
 Pipeline job.  To enabled the main pipeline job to continue, the user can surround the build command without
-a ~catchError~ block as demonstrated below
+a _catchError_ block as demonstrated below
 
 ```
 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : false ) {
