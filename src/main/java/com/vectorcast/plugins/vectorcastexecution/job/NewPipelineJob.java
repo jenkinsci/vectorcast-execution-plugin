@@ -87,6 +87,8 @@ public class NewPipelineJob extends BaseJob {
     private boolean useCILicenses;
     
     private boolean useCBT;
+
+    private boolean useParameters;
     
     private String debugJSON;
 
@@ -122,6 +124,7 @@ public class NewPipelineJob extends BaseJob {
         singleCheckout = json.optBoolean("singleCheckout", false);
         useCILicenses  = json.optBoolean("useCILicenses", false);
         useCBT  = json.optBoolean("useCBT", true);
+        useParameters  = json.optBoolean("useParameters", true);
         
         // remove the win/linux options since there's no platform any more 
         environmentSetup = json.optString("environmentSetup", null);
@@ -279,7 +282,16 @@ public class NewPipelineJob extends BaseJob {
 	 */
 	private File writeConfigFile() throws IOException {
 
-		InputStream in = getClass().getResourceAsStream("/scripts/config.xml");
+        
+		InputStream in;
+
+        if (useParameters) {
+            in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
+        } else {
+            in = getClass().getResourceAsStream("/scripts/config.xml");
+        }
+        
+		//InputStream in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
 		BufferedReader br = new BufferedReader(new InputStreamReader(in));
 		File configFile = File.createTempFile("config_temp", ".xml");
 
@@ -363,6 +375,12 @@ public class NewPipelineJob extends BaseJob {
             incremental = "\"--incremental\"";
         }
         
+        String VC_Proj_Prefix = "";
+        
+        if (useParameters) {
+            VC_Proj_Prefix = "${VCAST_PROJECT_DIR}/";
+        }
+        
         String topOfJenkinsfile = "// ===============================================================\n" + 
             "// \n" +  
             "// Auto-generated script by VectorCAST Execution Plug-in \n" +  
@@ -372,7 +390,7 @@ public class NewPipelineJob extends BaseJob {
             "//\n" +  
             "// ===============================================================\n" +  
             "\n" +  
-            "VC_Manage_Project     = \'" + this.getManageProjectName() + "\'\n" + 
+            "VC_Manage_Project     = \"" + VC_Proj_Prefix + "\" + \'" + this.getManageProjectName() + "\'\n" + 
             "VC_EnvSetup        = '''" + setup + "'''\n" + 
             "VC_Build_Preamble  = \"" + preamble + "\"\n" + 
             "VC_EnvTeardown     = '''" + teardown + "'''\n" + 

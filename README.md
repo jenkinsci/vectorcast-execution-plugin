@@ -77,6 +77,10 @@ For users with Continuous Integration Licneses, you will be able to access those
 checking the Use Continuous Integration License checkbox.  If you do not have 
 Continuous Integration License, do not check this box as you will encounter licensing errors.
 
+If the user wishes to call the Jenkins job from another Pipeline job, check the box to 
+parameterize the Jenkinsfile.  This will add a parameter to the pipeline job (VCAST_PROJECT_DIR) 
+that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage project.  
+
 Additionally, if a shared artifact directory is specified, VectorCAST/Manage
 will execute jobs independently, but have a central location for storing
 the build artifacts.  This option can be used to accelerate testing by use
