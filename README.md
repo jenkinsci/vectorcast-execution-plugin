@@ -78,15 +78,18 @@ checking the Use Continuous Integration License checkbox.  If you do not have 
 Continuous Integration License, do not check this box as you will encounter licensing errors.
 
 If the user wishes to call the Jenkins job from another Pipeline job, check the box to 
-parameterize the Jenkinsfile.  This will add a parameter to the pipeline job (VCAST_PROJECT_DIR) 
-that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage project.  Calling
-the build command will return Failed, Unstable, Success cooresponding to the results of the VectorCAST
+parameterize the Jenkinsfile.  This will add parameters to the pipeline job  
+that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage project (VCAST_PROJECT_DIR)
+and for forcing the VectorCAST Jobs to be executed on a specific node (VCAST_FORCE_NODE_EXEC_NAME) instead of using 
+the compiler as a node label.
+
+Calling the build command will return Failed, Unstable, Success cooresponding to the results of the VectorCAST
 Pipeline job.  To enabled the main pipeline job to continue, the user can surround the build command without
 a _catchError_ block as demonstrated below
 
 ```
 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : false ) {
-   build job: 'UnitTestingProject_vcast_pipeline', parameters: [string(name: 'VCAST_PROJECT_DIR', value: 'C:\\UnitTesting\\Project')]
+   build job: 'UnitTestingProject_vcast_pipeline', parameters: [string(name: 'VCAST_PROJECT_DIR', value: 'C:\\UnitTesting\\Project'), string(name: 'VCAST_FORCE_NODE_EXEC_NAME', value: 'MyTestNode')]
 }
 ```
 

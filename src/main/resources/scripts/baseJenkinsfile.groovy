@@ -142,7 +142,24 @@ def transformIntoStep(inputString) {
     // this will route the job to a specific node matching that label 
     return {
         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-            node ( compiler as String ){
+        
+            // Try to use VCAST_FORCE_NODE_EXEC_NAME parameter.  
+            // If 0 length or not present, use the compiler name as a nodel label
+            def nodeID = "default"
+            try {
+                if ("${VCAST_FORCE_NODE_EXEC_NAME}".length() > 0) {
+                    nodeID = "${VCAST_FORCE_NODE_EXEC_NAME}"
+                }
+                else {
+                    nodeID = compiler
+                }
+            } catch (exe) {
+               nodeID = compiler
+            }
+            
+            print "Using NodeID = " + nodeID
+            
+            node ( nodeID as String ){
             
                 println "Starting Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
             
