@@ -91,7 +91,7 @@ def runCommands(cmds, useLocalCmds = true) {
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_RPTS_SELF_CONTAINED=FALSE
             export VCAST_NO_FILE_TRUNCATION=1
-            export VCAST_USE_CI_LICENSES=${VC_UseCILicense}
+            export VCAST_USING_HEADLESS_MODE=${VC_UseCILicense}
             
             """.stripIndent()
         if (useLocalCmds) {
@@ -107,7 +107,7 @@ def runCommands(cmds, useLocalCmds = true) {
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
             set VCAST_NO_FILE_TRUNCATION=1
-            set VCAST_USE_CI_LICENSES=${VC_UseCILicense}
+            set VCAST_USING_HEADLESS_MODE=${VC_UseCILicense}
             """.stripIndent()
         if (useLocalCmds) {
             cmds = localCmds + cmds
