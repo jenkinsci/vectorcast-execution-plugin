@@ -260,7 +260,20 @@ pipeline {
         stage('Single-Checkout') {
             steps {
                 script {
-                    if (VC_useOneCheckoutDir) {
+                    def usingExternalRepo = false;
+
+                    try {
+                        if ("${VCAST_FORCE_NODE_EXEC_NAME}".length() > 0) {
+                            usingExternalRepo = true
+                        }
+                        else {
+                            usingExternalRepo = false
+                        }
+                    } catch (exe) {
+                       usingExternalRepo = false
+                    }
+                
+                    if (VC_useOneCheckoutDir and not usingExternalRepo) {
                         VC_OriginalWorkspace = "${env.WORKSPACE}"
                         println "scmStep executed here: " + VC_OriginalWorkspace
                         scmStep()
@@ -277,7 +290,12 @@ pipeline {
                         print "Updating " + origSetup + " \nto: " + VC_EnvSetup
                         }
                     else {
-                        println "Not using Single Checkout"
+                        if (usingExternalRepo) {
+                            println "Using ${VCAST_FORCE_NODE_EXEC_NAME}/${VC_Manage_Project} as single checkout directory"
+                        }
+                        else {
+                            println "Not using Single Checkout"
+                        }
                     }
                 }
             }

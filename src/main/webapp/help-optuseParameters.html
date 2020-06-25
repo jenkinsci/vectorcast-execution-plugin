@@ -29,5 +29,12 @@ THE SOFTWARE.
   <li>VCAST_FORCE_NODE_EXEC_NAME - Forces VectorCAST Jobs to be run on a specific node instead of a node with a label matching the compiler</li>
 </ul>
 
-
+Syntax of what a calling job may use to call a parameterized VectorCAST Pipeline job
+<pre>
+catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : false ) {
+   build job: 'UnitTestingProject_vcast_pipeline', 
+    parameters: [string(name: 'VCAST_PROJECT_DIR',          value: 'C:\\UnitTesting\\Project'), 
+                 string(name: 'VCAST_FORCE_NODE_EXEC_NAME', value: 'MyTestNode')]
+}
+</pre>
 </div>

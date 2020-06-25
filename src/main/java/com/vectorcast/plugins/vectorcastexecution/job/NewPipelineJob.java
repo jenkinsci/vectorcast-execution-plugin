@@ -122,7 +122,7 @@ public class NewPipelineJob extends BaseJob {
         sharedArtifactDirectory = json.optString("sharedArtifactDir","");
         pipelineSCM = json.optString("scmSnippet","").trim();
         singleCheckout = json.optBoolean("singleCheckout", false);
-        useCILicenses  = json.optBoolean("useCILicenses", false);
+        useCILicenses  = json.optBoolean("useCiLicense", false);
         useCBT  = json.optBoolean("useCBT", true);
         useParameters  = json.optBoolean("useParameters", true);
         
