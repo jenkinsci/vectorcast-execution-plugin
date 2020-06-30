@@ -273,7 +273,7 @@ pipeline {
                        usingExternalRepo = false
                     }
                 
-                    if (VC_useOneCheckoutDir and not usingExternalRepo) {
+                    if (VC_useOneCheckoutDir && !usingExternalRepo) {
                         VC_OriginalWorkspace = "${env.WORKSPACE}"
                         println "scmStep executed here: " + VC_OriginalWorkspace
                         scmStep()
