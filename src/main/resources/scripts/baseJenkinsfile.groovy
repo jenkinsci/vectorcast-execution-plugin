@@ -467,21 +467,37 @@ pipeline {
                         }
                                             
                         // Make sure the build completed and we have two key reports
-                        //   - CombinedReport.html (combined rebuild reports from all the environments)
+                        //   - Using CBT - CombinedReport.html (combined rebuild reports from all the environments)
                         //   - full status report from the manage project
-                        if (fileExists('CombinedReport.html') && fileExists("${mpName}_full_report.html")) {
-                            // If we have both of these, add them to the summary in the "normal" job view
-                            // Blue ocean view doesn't have a summary
+                        if (VC_useCBT) {
+                            if (fileExists('CombinedReport.html') && fileExists("${mpName}_full_report.html")) {
+                                // If we have both of these, add them to the summary in the "normal" job view
+                                // Blue ocean view doesn't have a summary
 
-                            def summaryText = readFile('CombinedReport.html') + "<br> " + readFile("${mpName}_full_report.html")
-                            createSummary icon: "monitor.gif", text: summaryText
+                                def summaryText = readFile('CombinedReport.html') + "<br> " + readFile("${mpName}_full_report.html")
+                                createSummary icon: "monitor.gif", text: summaryText
                             
+                            } else {
+                                // If not, something went wrong... Make the build as unstable 
+                                currentBuild.result = 'UNSTABLE'
+                                createSummary icon: "warning.gif", text: "General Failure"
+                                currentBuild.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
+                            }                     
                         } else {
-                            // If not, something went wrong... Make the build as unstable 
-                            currentBuild.result = 'UNSTABLE'
-                            createSummary icon: "warning.gif", text: "General Failure"
-                            currentBuild.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
-                        }                     
+                            if (fileExists("${mpName}_full_report.html")) {
+                                // If we have both of these, add them to the summary in the "normal" job view
+                                // Blue ocean view doesn't have a summary
+
+                                def summaryText = readFile("${mpName}_full_report.html")
+                                createSummary icon: "monitor.gif", text: summaryText
+                            
+                            } else {
+                                // If not, something went wrong... Make the build as unstable 
+                                currentBuild.result = 'UNSTABLE'
+                                createSummary icon: "warning.gif", text: "General Failure"
+                                currentBuild.description = "General Failure, Full Report Not Present. Please see the console for more information\n"
+                            }                                             
+                        }
 
                         if (unstable) {
                             currentBuild.result = 'UNSTABLE'
