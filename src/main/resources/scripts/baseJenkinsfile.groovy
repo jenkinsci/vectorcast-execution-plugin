@@ -144,7 +144,7 @@ def transformIntoStep(inputString) {
         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
         
             // Try to use VCAST_FORCE_NODE_EXEC_NAME parameter.  
-            // If 0 length or not present, use the compiler name as a nodel label
+            // If 0 length or not present, use the compiler name as a node label
             def nodeID = "default"
             try {
                 if ("${VCAST_FORCE_NODE_EXEC_NAME}".length() > 0) {
@@ -281,13 +281,21 @@ pipeline {
                         VC_Manage_Project = VC_OriginalWorkspace + "/" + VC_Manage_Project
                         
                         def origSetup = VC_EnvSetup
+                        def origTeardown = VC_EnvTeardown
+                        def orig_VC_sharedArtifactDirectory = VC_sharedArtifactDirectory
                         if (isUnix()) {
                             VC_EnvSetup = VC_EnvSetup.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
+                            VC_EnvTeardown = VC_EnvTeardown.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
+                            VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
                         } else {
                             VC_OriginalWorkspace = VC_OriginalWorkspace.replace('\\','/')
                             VC_EnvSetup = VC_EnvSetup.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                            VC_EnvTeardown = VC_EnvTeardown.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                            VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
                         }
-                        print "Updating " + origSetup + " \nto: " + VC_EnvSetup
+                        print "Updating setup script " + origSetup + " \nto: " + VC_EnvSetup
+                        print "Updating teardown script " + origTeardown + " \nto: " + origTeardown
+                        print "Updating shared artifact directory " + orig_VC_sharedArtifactDirectory + " \nto: " + VC_sharedArtifactDirectory
                         }
                     else {
                         if (usingExternalRepo) {
