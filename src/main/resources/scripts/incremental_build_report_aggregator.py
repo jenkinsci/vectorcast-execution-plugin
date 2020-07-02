@@ -144,6 +144,7 @@ def parse_html_files():
     preserved_count = 0
     executed_count = 0
     total_count = 0
+        
     if main_soup.find(id="report-title"):
         main_manage_api_report = True
         # New Manage reports have div with id=report-title
@@ -212,10 +213,15 @@ def parse_html_files():
     main_count_list[2].string.replace_with(str(executed_count))
     main_count_list[3].string.replace_with(str(total_count))
 
+    import fixup_reports
+    main_soup = fixup_reports.fixup_2020_soup(main_soup)
+    
     # moving rebuild reports down in to a sub directory
     f = open("CombinedReport.html","w", encoding="utf-8")
     f.write(main_soup.prettify(formatter="html"))
     f.close()
+
+    return 
     
     # moving rebuild reports down in to a sub directory
     if not os.path.exists("rebuild_reports"):
