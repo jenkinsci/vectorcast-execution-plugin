@@ -29,6 +29,7 @@ import argparse
 import os
 import sys
 import fixup_reports
+import shutil
 
 def generate_full_status(manageProject): 
 
@@ -38,8 +39,10 @@ def generate_full_status(manageProject):
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         api = VCProjectApi(manageProject)
         from vector.apps.ReportBuilder.custom_report import CustomReport
-        CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "MANAGE_CONFIG_DATA", "MANAGE_STATUS_FULL", "CUSTOM_FOOTER"], environments=api.Environment.all(), levels = [] )
-        fixup_reports.fixup_2020_reports(report_name)
+        
+        CustomReport.report_from_api(api, report_type="MANAGE_STATUS_FULL_REPORT", formats=["HTML"], output_file=report_name, environments=api.Environment.all(), levels = [] )
+        shutil.copy(report_name,report_name + "_tmp")
+        fixup_reports.fixup_2020_reports(report_name + "_tmp")
         
     except:
         from managewait import ManageWait

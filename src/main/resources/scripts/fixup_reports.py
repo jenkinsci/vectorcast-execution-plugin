@@ -44,54 +44,50 @@ def fixup_2020_soup(main_soup):
         
     for div in main_soup.find_all("div", {'id':'title-bar'}): 
         div.decompose()
-    
+        
     #<div class="report-body no-toc" id="main-scroller">
     div = main_soup.find("div", {'class':'report-body'})    
-    div['class']="report-body no-toc"
-    
+    try:
+        div['class']="report-body no-toc"
+    except:
+        pass
+        
     for th in main_soup.find_all("th",): 
-        th['style'] = "text-align:left;padding:0.25em;padding-right:1em;border-bottom:1px solid #e5e5e5;"
+        th['style'] = "border-bottom:1px solid #e5e5e5;text-align:left;padding:0.25em;padding-right:1em;"
         
-    for td in main_soup.find_all("td", {'class':'success'}): 
-        del(td['class'])
-        td['style'] = "background-color:#c8f0c8;border-bottom:1px solid #e5e5e5;"
-        
-    for td in main_soup.find_all("td", {'class':'danger'}): 
-        del(td['class'])
-        td['style'] = "background-color:#facaca;border-bottom: 1px solid #e5e5e5;"
+    # replace class with style because Jenkins won't be able to use the .css in the build summary area
+    class2style = {'bold-text' : 'font-weight: bold;',
+                   'col_unit': 'word-break:break-all;width:30%;',
+                   'col_subprogram': 'word-break:break-all;width:30%;',
+                   'col_complexity': 'white-space:nowrap;',
+                   'col_metric': 'white-space:nowrap;',
+                   'i0' : 'padding-left:0.25em;min-width:11em',
+                   'i1' : 'padding-left: 1.25em;min-width: 11em;',
+                   'i2' : 'padding-left: 2.25em;',
+                   'i3' : 'padding-left: 3.25em;',
+                   'i4' : 'padding-left: 4.25em;',
+                   'i5' : 'padding-left: 5.25em;',
+                   'success' : 'background-color:#c8f0c8;',
+                   'warning' : 'background-color:#f5f5c8;',
+                   'danger'  : 'background-color:#facaca;'}
 
-    for td in main_soup.find_all("td", {'class':'warning'}): 
-        del(td['class'])
-        td['style'] = "background-color:#f5f5c8;border-bottom: 1px solid #e5e5e5;"
+    for td in main_soup.find_all("td"):
+        style = 'border-bottom:1px solid #e5e5e5;'
+        try:
+            for item in td['class']:
+                try:
+                    style += class2style[item]
+                except:
+                    print ("unhandled class " + item)
+        except:
+            pass
 
-        
-    for td in main_soup.find_all("td", {'class':'bold-text i1'}): 
-        del(td['class'])
-        td['style'] = "font-weight: bold;padding-left: 1.25em;min-width: 11em;border-bottom:1px solid #e5e5e5;"
-        
-    for td in main_soup.find_all("td", {'class':'bold-text i2'}): 
-        del(td['class'])
-        td['style'] = "font-weight: bold;padding-left: 2.25em;border-bottom:1px solid #e5e5e5;"
-        
-    for td in main_soup.find_all("td", {'class':'bold-text i3'}): 
-        del(td['class'])
-        td['style'] = "font-weight: bold;padding-left: 3.25em;border-bottom:1px solid #e5e5e5;"
-        
-    for td in main_soup.find_all("td", {'class':'i4'}): 
-        del(td['class'])
-        td['style'] = "font-weight: bold;padding-left: 4.25em;border-bottom:1px solid #e5e5e5;"
-        
-    for td in main_soup.find_all("td", {'class':'i5'}): 
-        del(td['class'])
-        td['style'] = "font-weight: bold;padding-left: 5.25em;border-bottom:1px solid #e5e5e5;"
-    for td in main_soup.find_all("td", {'class':'danger'}): 
-        del(td['class'])
-        td['style'] = "background-color:#facaca;"
-
-    for td in main_soup.find_all("td", {'class':'warning'}): 
-        del(td['class'])
-        td['style'] = "background-color:#f5f5c8;"
-        
+        try:
+            del(td['class'])
+            td['style'] = style
+        except:
+            pass  
+            
     return main_soup
 
 def fixup_2020_reports(report_name):
