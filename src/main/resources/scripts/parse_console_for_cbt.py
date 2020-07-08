@@ -51,7 +51,11 @@ class ParseConsoleForCBT(object):
                 
 
             if started: 
-            
+                if line.startswith("Adding result file"):
+                    result = line.split(" as ",1)[1]
+                    self.environmentDict[hashCode][simpleTestIndex].append(result)
+                    continue
+
                 if line.startswith("Creating report"):
                     started = False
                     continue

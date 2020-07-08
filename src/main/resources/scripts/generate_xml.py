@@ -326,10 +326,11 @@ class GenerateManageXml(BaseGenerateXml):
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, useJunit = True, cbtDict= None):
+    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, useJunit = True, cbtDict= None):
         super(GenerateXml, self).__init__(cover_report_name, verbose)
 
         self.cbtDict = cbtDict
+        self.FullManageProjectName = FullManageProjectName
         
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         
@@ -392,32 +393,88 @@ class GenerateXml(BaseGenerateXml):
 # Find the test case file
 #
     def generate_unit(self):
+        
         if isinstance(self.api, CoverApi):
-            print("   Skipping test results for QA project " + os.path.join(self.build_dir,self.env))
-            return
+            self.start_system_test_file()
+            try:
+                from vector.apps.DataAPI.vcproject_api import VCProjectApi
+                api = VCProjectApi(self.FullManageProjectName)
+                
+                for env in api.Environment.all():
+                    if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
+                        for st in env.system_tests:
+                            #pprint(vars(st))
+                            pass_fail_rerun = ""
+                            if st.run_needed and st.type == 2: #SystemTestType.MANUAL:
+                                pass_fail_rerun =  ": Manual system tests can't be run in Jenkins"
+                            elif st.run_needed:
+                                pass_fail_rerun =  ": Needs to be executed"
+                            elif st.passed:
+                                pass_fail_rerun =  ": Passed"
+                            else:
+                                pass_fail_rerun =  ": Failed"
+                                
+                            level = env.compiler.name + "/" + env.testsuite.name + "/" + env.name
+                            if self.verbose:
+                                print (level, tc.name, pass_fail_rerun)
+                            self.write_testcase(st, level, st.name)
 
-        try:
-            self.start_unit_file()
-            self.add_compound_tests()
-            self.add_init_tests()
-            for unit in self.api.Unit.all():
-                if unit.is_uut:
-                    for func in unit.functions:
-                        if not func.is_non_testable_stub:
-                            for tc in func.testcases:
-                                if not tc.is_csv_map:
-                                    if not tc.for_compound_only:
-                                        self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
-            self.end_unit_file()
+            except ImportError as e:
+                print("   Skipping test results for QA project " + os.path.join(self.build_dir,self.env))
 
-        except AttributeError as e:
-            print(e)
-            pass
+        else:
+            try:
+                self.start_unit_test_file()
+                self.add_compound_tests()
+                self.add_init_tests()
+                for unit in self.api.Unit.all():
+                    if unit.is_uut:
+                        for func in unit.functions:
+                            if not func.is_non_testable_stub:
+                                for tc in func.testcases:
+                                    if not tc.is_csv_map:
+                                        if not tc.for_compound_only:
+                                            self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
 
+            except AttributeError as e:
+                print(e)
+                pass
+                
+        self.end_test_results_file()
 #
 # Internal - start the xUnit XML file
 #
-    def start_unit_file(self):
+    def start_system_test_file(self):
+        if self.verbose:
+            print("  Writing testcase xml file:        {}".format(self.unit_report_name))
+
+        self.fh = open(self.unit_report_name, "w")
+        if not self.usingJunit:
+            print ("xUnit not supported for System Test Results - please add --junit to your genreate-results.py command and update your jenkins job")
+            raise NotImplementedError
+        else:
+            errors = 0
+            failed = 0
+            success = 0                                            
+            
+            from vector.apps.DataAPI.vcproject_api import VCProjectApi 
+            api = VCProjectApi(self.FullManageProjectName)
+            
+            for env in api.Environment.all():
+                if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
+                    for st in env.system_tests:
+                        if st.passed == st.total:
+                            success += 1
+                        else:
+                            failed += 1
+                            errors += 1                            
+                        
+            self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+            self.fh.write("<testsuites>\n")
+            self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
+                (errors,success+failed+errors, failed, cgi.escape(self.env)))
+                
+    def start_unit_test_file(self):
         if self.verbose:
             print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
@@ -451,13 +508,22 @@ class GenerateXml(BaseGenerateXml):
 #
     def write_testcase_jUnit(self, tc, unit_name, func_name):
     
+        isSystemTest = False
+        
+        try:
+            from vector.apps.DataAPI.manage_models import SystemTest
+            if (isinstance(tc, SystemTest)):
+                isSystemTest = True
+        except:
+            pass
+
         # If cbtDict is None, no build log was passed in...don't mark anything as skipped 
         if self.cbtDict == None:
             tcSkipped = False 
             
         # else there is something check , if the length of cbtDict is greater than zero
         elif len(self.cbtDict) > 0:
-            tcSkipped = self.was_test_case_skipped(tc,"/".join([unit_name, func_name, tc.name]))
+            tcSkipped = self.was_test_case_skipped(tc,"/".join([unit_name, func_name, tc.name]),isSystemTest)
             
         # finally - there was something to check, but it was empty
         else:
@@ -482,18 +548,35 @@ class GenerateXml(BaseGenerateXml):
 
         classname = compiler + "." + testsuite + "." + envName
 
-        summary = tc.history.summary
-        exp_total = summary.expected_total
-        exp_pass = exp_total - summary.expected_fail
-        if self.api.environment.get_option("VCAST_OLD_STYLE_MANAGEMENT_REPORT"):
-            exp_pass += summary.control_flow_total - summary.control_flow_fail
-            exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
+        if isSystemTest:        
+            exp_total = tc.total
+            exp_pass = tc.passed
+            result = "  System Test Build Status: " + tc.build_status + ". \n   System Test: " + tc.name + " \n   Execution Status: "
+            if tc.run_needed and tc.type == 2: #SystemTestType.MANUAL:
+                result += "Manual system tests can't be run in Jenkins"
+                tc.passed = 1
+            elif tc.run_needed:
+                result += "Needs to be executed"
+                tc.passed = 1
+            elif tc.passed == tc.total:
+                result += "Passed"
+            else:
+                result += "Failed {} / {} ".format(tc.passed, tc.total)
+                tc.passed = 0
+                
+        else:
+            summary = tc.history.summary
+            exp_total = summary.expected_total
+            exp_pass = exp_total - summary.expected_fail
+            if self.api.environment.get_option("VCAST_OLD_STYLE_MANAGEMENT_REPORT"):
+                exp_pass += summary.control_flow_total - summary.control_flow_fail
+                exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
 
-        result = self.__get_testcase_execution_results(
-            tc,
-            classname,
-            unit_subp,
-            tc_name)
+            result = self.__get_testcase_execution_results(
+                tc,
+                classname,
+                unit_subp,
+                tc_name)
 
         # Failure takes priority  
         if not tc.passed:
@@ -569,7 +652,7 @@ class GenerateXml(BaseGenerateXml):
 #
 # Internal - write the end of the xUnit or jUnit XML file and close it
 #
-    def end_unit_file(self):
+    def end_test_results_file(self):
         if not self.usingJunit:
             self.fh.write('    </suite>\n')
             self.fh.write('    <duration>1</duration>\n\n')
@@ -700,25 +783,34 @@ class GenerateXml(BaseGenerateXml):
         self.write_cov_units()
         self.end_cov_file_environment()
 
-    def was_test_case_skipped(self, tc, searchName):
+    def was_test_case_skipped(self, tc, searchName, isSystemTest):
         import sys, traceback, pprint
         try:
-            #Failed import TCs don't get any indication in the build.log
-            if tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
-                return False
-                
-            compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
-            
-            #Recursive Compound don't get any named indication in the build.log
-            if tc.kind == TestCase.KINDS['compound'] and (tc.testcase_status == "TCR_RECURSIVE_COMPOUND" or tc.name in compoundTests):
-                return False
-            elif tc.kind == TestCase.KINDS['init'] and tc.name in initTests:
-                return False
-            elif searchName in simpleTestcases or tc.testcase_status == "TCR_NO_EXPECTED_VALUES":
-                return False
+            if isSystemTest:
+                compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
+				# use tc.name because system tests aren't for a specific unit/function
+                if tc.name in simpleTestcases:
+                    return False
+                else:
+                    self.__print_test_case_was_skipped(searchName, tc.passed)
+                    return True
             else:
-                self.__print_test_case_was_skipped(searchName, tc.passed)
-                return True
+                #Failed import TCs don't get any indication in the build.log
+                if tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
+                    return False
+                    
+                compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
+                
+                #Recursive Compound don't get any named indication in the build.log
+                if tc.kind == TestCase.KINDS['compound'] and (tc.testcase_status == "TCR_RECURSIVE_COMPOUND" or tc.name in compoundTests):
+                    return False
+                elif tc.kind == TestCase.KINDS['init'] and tc.name in initTests:
+                    return False
+                elif searchName in simpleTestcases or tc.testcase_status == "TCR_NO_EXPECTED_VALUES":
+                    return False
+                else:
+                    self.__print_test_case_was_skipped(searchName, tc.passed)
+                    return True
         except KeyError:
             self.__print_test_case_was_skipped(searchName, tc.passed)
             return True
