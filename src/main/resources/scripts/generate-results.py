@@ -66,75 +66,6 @@ global wait_loops
 
 verbose = False
 
-#
-# Internal - jUnit works best with one overall file for all test results
-#
-def writeJunitFinalCombinedTestResults(manageProjectName):
-    fname = manageProjectName
-    totalFailed = 0
-    
-    f=open("xml_data/test_results_"+fname+"_combined_final.xml","w")
-    f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-    f.write("<testsuites>\n")
-
-    for testResults in glob.glob('xml_data/test_results*.xml'):
-        if testResults.endswith("_combined_final.xml"):
-            continue
-        if not testResults.endswith("_combined.xml"):
-            os.remove(testResults)
-            continue
-            
-        data = open(testResults,"r").readlines()[2:-1]
-        for line in data:
-            if "<testsuite errors=" in line:
-                totalFailed += int(line.split("\"")[5])
-        os.remove(testResults)
-        wrData = "".join(data)
-        f.write(wrData)
-     
-    f.write("\n</testsuites>\n")
-    f.close()
-    
-    open("unit_test_fail_count.txt","w").write(str(totalFailed))
-
-#
-# Internal - jUnit works best with one overall file for all test results
-#
-def writeJunitCombinedTestResults(manageProjectName,orig_level,envName):
-    fname = manageProjectName
-    if orig_level:
-        level = orig_level.split("/")
-        if len(level) == 2:
-            # Level does not include source and platform
-            jobName = level[0] + "_" + level[1].rstrip()
-        else:
-            # Level includes source and platform
-            jobName = level[2] + "_" + level[3].rstrip()
-        fname = manageProjectName + "_" + jobName + "_" + envName
-        
-    f=open("xml_data/test_results_"+fname+"_combined.xml","w")
-    f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-    f.write("<testsuites>\n")
-
-    for testResults in glob.glob('xml_data/test_results*.xml'):
-        if  "combined" in testResults:
-            continue
-        data = open(testResults,"r").readlines()[2:-1]
-        os.remove(testResults)
-        wrData =  "".join(data)
-        f.write(wrData)
-     
-    f.write("\n</testsuites>\n")
-    f.close()
-
-def runManageWithWait(command_line, silent=False):
-    global verbose
-    global wait_time
-    global wait_loops
-
-    manageWait = ManageWait(verbose, command_line, wait_time, wait_loops)
-    return manageWait.exec_manage(silent)
-
 # Determine if this version of VectorCAST supports new-style reporting/Data API
 def checkUseNewReportsAndAPI():
     if os.environ.get("VCAST_REPORT_ENGINE", "") == "LEGACY":
@@ -223,7 +154,7 @@ def delete_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
         
-def genDataApiReports(FullManageProjectName, entry, jUnit, cbtDict):
+def genDataApiReports(FullManageProjectName, entry, cbtDict):
     xml_file = ""
     
     try:
@@ -248,7 +179,6 @@ def genDataApiReports(FullManageProjectName, entry, jUnit, cbtDict):
                                jenkins_link,
                                jobNameDotted, 
                                verbose, 
-                               jUnit,
                                cbtDict)
                                
         if xml_file.api != None:
@@ -352,25 +282,25 @@ def generateIndividualReports(entry, envName):
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
 
-def useNewAPI(FullManageProjectName, manageEnvs, level, envName, jUnit, cbtDict):
+def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict):
         
     for currentEnv in manageEnvs:
         if envName == None:
-            genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], jUnit, cbtDict)
+            genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict)
             generateIndividualReports(manageEnvs[currentEnv], envName)
             
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
             if env_level.upper() == level.upper():
-                genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], jUnit, cbtDict)
+                genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict)
                 generateIndividualReports(manageEnvs[currentEnv], envName)
 
 
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
-def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, jUnit = True, cbtDict = None):
+def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None):
 
     if timing:
         print("Start: " + str(time.time()))
@@ -438,7 +368,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         if timing:
             print("Using DataAPI for reporting")
             print("Get Info: " + str(time.time()))
-        useNewAPI(FullManageProjectName, manageEnvs, level, envName, jUnit, cbtDict)
+        useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict)
         if timing:
             print("XML and Individual reports: " + str(time.time()))
 
@@ -558,7 +488,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                     # Create the test_results_ and coverage_results_ csv files
                     testResultName, coverageResultsName = tcmr2csv.run(reportName, level, version)
 
-                    vcastcsv2jenkins.run  (test = testResultName, coverage = coverageResultsName, useExecRpt=generate_individual_reports, version=version, junit=junit)
+                    vcastcsv2jenkins.run  (test = testResultName, coverage = coverageResultsName, useExecRpt=generate_individual_reports, version=version)
 
                     if envName:
                         adjustedReportName = "management" + os.sep + jobName + "_" + envName + ".html"
@@ -581,11 +511,6 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if timing:
         print("QA Results reports: " + str(time.time()))
             
-    if junit:   
-        if verbose:
-            print("Writing combined test data for JUnit")
-        #generate_qa_results_xml.genQATestResults(FullManageProjectName, saved_level, saved_envName)
-        #writeJunitCombinedTestResults(manageProjectName,saved_level,saved_envName)
 
     if timing:
         print("Complete: " + str(time.time()))
@@ -601,17 +526,13 @@ if __name__ == '__main__':
     parser.add_argument('--wait_time',   help='Time (in seconds) to wait between execution attempts', type=int, default=30)
     parser.add_argument('--wait_loops',   help='Number of times to retry execution', type=int, default=1)
     parser.add_argument('--timing',   help='Display timing information for report generation', action="store_true")
-    parser.add_argument('--junit',   help='Output test resutls in junit format', action="store_true")
+    parser.add_argument('--junit',   help='Output test resutls in JUnit format', action="store_true")
     parser.add_argument('--api',   help='Unused', type=int)
     parser.add_argument('--final',   help='Write Final JUnit Test Results file',  action="store_true")
     parser.add_argument('--buildlog',   help='Build Log for CBT Statitics')
 
     args = parser.parse_args()
     
-    if args.final:
-        #generate_qa_results_xml.genQATestResults(args.ManageProject)
-        #writeJunitFinalCombinedTestResults(os.path.basename(args.ManageProject))
-        sys.exit(0)
     try:
         if "19.sp1" in open(os.path.join(os.environ['VECTORCAST_DIR'],"DATA/tools_version.txt").read):
             # custom report patch for SP1 problem - should be fixed in future release      
@@ -643,7 +564,8 @@ if __name__ == '__main__':
     if args.junit:
         junit = True
     else:
-        junit = False
+        print ("Test results reporting has been migrated to JUnit.  If you are using older xUnit plugin with Single Jobs, please switch to using JUnit.  If you need assistance with that, contact support@us.vector.com")
+        junit = True
         
     if args.buildlog and os.path.exists(args.buildlog):
         buildLogData = open(args.buildlog,"r").readlines()
@@ -659,5 +581,5 @@ if __name__ == '__main__':
     # Used for VC19 SP2 onwards
     os.environ['VCAST_RPTS_SELF_CONTAINED'] = 'FALSE'
 
-    buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, junit, cbtDict)
+    buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict)
 
