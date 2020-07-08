@@ -456,11 +456,9 @@ getEnvironmentTeardownUnix() + "\n";
             if (getOptionUseReporting()) {
                 addReportingCommands(p, detail, baseName);
                 addArchiveArtifacts(p);
-                //addXunit(p);
                 addJunit(p);
                 addVCCoverage(p);
                 addPostReportingGroovy(p);
-                // RMK : TODO - fixup/combine groovy
             } else {
                 addPostbuildGroovy(p, detail, baseName);
             }
