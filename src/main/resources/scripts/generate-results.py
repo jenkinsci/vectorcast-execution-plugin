@@ -66,6 +66,14 @@ global wait_loops
 
 verbose = False
 
+def runManageWithWait(command_line, silent=False):
+    global verbose
+    global wait_time
+    global wait_loops
+
+    manageWait = ManageWait(verbose, command_line, wait_time, wait_loops)
+    return manageWait.exec_manage(silent)
+
 # Determine if this version of VectorCAST supports new-style reporting/Data API
 def checkUseNewReportsAndAPI():
     if os.environ.get("VCAST_REPORT_ENGINE", "") == "LEGACY":
