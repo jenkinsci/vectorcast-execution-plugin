@@ -31,9 +31,15 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   "not recognized as an internal or external command",
                   "Another Workspace with this path already exists",
                   "Destination directory or database is not writable",
-                  "Could not acquire a read lock on the project's vcm file"]
+                  "Could not acquire a read lock on the project's vcm file",
+                  "No environments found in ",
+                  ".vcm is invalid",
+                  "Invalid Workspace. Please ensure the directory and database contain write permission",
+                  "The environment is invalid because",
+                  "Please ensure that the project has the proper permissions and that the environment is not being accessed by another process."
+                  ]
                 
-VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.lang.Exception"]                       
+VC_UnstablePhrases = ["Value Line Error - Command Ignored"]                       
 
 // setup the manage project to have preset options
 def setupManageProject() {
@@ -140,7 +146,7 @@ def transformIntoStep(inputString) {
     // node is based on compiler label
     // this will route the job to a specific node matching that label 
     return {
-        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        try { //catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
         
             // Try to use VCAST_FORCE_NODE_EXEC_NAME parameter.  
             // If 0 length or not present, use the compiler name as a node label
@@ -219,8 +225,18 @@ def transformIntoStep(inputString) {
                 (foundKeywords, failure, unstable) = checkLogsForErrors(buildLogText) 
                 
                 if (failure) {
-                    throw new Exception ("Error in Commands: " + foundKeywords)
+                    throw new Exception ("From VectorCAST: Error in Commands: " + foundKeywords)
                 }
+            }
+        } catch (Exception e) {
+            if (e.toString().contains("VectorCAST")) {
+                catchError(stageResult: 'FAILURE') {
+                    throw new Exception ("Triggering stage failure - Error in Commands: " + foundKeywords)
+                }
+            }
+            else {
+                print "Non VectorCAST Exception: " + e.toString()
+                throw e
             }
         }
     }
@@ -409,6 +425,7 @@ pipeline {
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=aggregate   --output=${mpName}_aggregate_report.html"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=metrics     --output=${mpName}_metrics_report.html"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=environment --output=${mpName}_environment_report.html"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --final
                     """.stripIndent()
                     
                     buildLogText += runCommands(cmds)
@@ -446,10 +463,10 @@ pipeline {
         
         stage('Check-Build-Log') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', 
-                    message : "Failure while checking reports...Please see the console for more information") {
-                    script {
-                                                    
+                script {
+                    try { // (buildResult: 'SUCCESS', stageResult: 'FAILURE', 
+                          // message : "Failure while checking reports...Please see the console for more information") {
+                                                                               
                         // get the console log - this requires running outside of the Groovy Sandbox
                         def logContent = readFile 'complete_build.log'
                             
@@ -531,7 +548,17 @@ pipeline {
                         if (failure) {
                             currentBuild.result = 'FAILURE'
                             println "Throwing exception: " + "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords
-                            throw new Exception ("Problematic data found in console output, search the console output for the following phrases: " + foundKeywords)
+                            throw new Exception ("From VectorCAST: Problematic data found in console output, search the console output for the following phrases: " + foundKeywords)
+                        }
+                    } catch (Exception e) {
+                        if (e.toString().contains("VectorCAST")) {
+                            catchError(stageResult: 'FAILURE') {
+                                throw new Exception ("Triggering stage failure - Error in Commands: " + foundKeywords)
+                            }
+                        }
+                        else {
+                            print "Non VectorCAST Exception: " + e.toString()
+                            throw e
                         }
                     }
                 }
