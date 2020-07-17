@@ -532,8 +532,8 @@ class GenerateXml(BaseGenerateXml):
         compiler = cgi.escape(self.compiler).replace(".","")
         testsuite = cgi.escape(self.testsuite).replace(".","")
         envName = cgi.escape(self.env).replace(".","")
-
-        unit_subp = self.env + "." + unit_name + "." + func_name
+        
+        tc_name_full =  unit_name + "." + func_name + "." + tc_name
 
         classname = compiler + "." + testsuite + "." + envName
 
@@ -564,8 +564,7 @@ class GenerateXml(BaseGenerateXml):
             result = self.__get_testcase_execution_results(
                 tc,
                 classname,
-                unit_subp,
-                tc_name)
+                tc_name_full)
 
         # Failure takes priority  
         if not tc.passed:
@@ -587,7 +586,7 @@ class GenerateXml(BaseGenerateXml):
         msg = msg.replace("\"","")
         msg = msg.replace("\n","&#xA;")
         
-        self.fh.write(testcaseString % (tc_name, classname, extraStatus, msg))
+        self.fh.write(testcaseString % (tc_name_full, classname, extraStatus, msg))
 
 #
 # Internal - write the end of the jUnit XML file and close it
@@ -753,9 +752,9 @@ class GenerateXml(BaseGenerateXml):
             traceback.print_exc()
             sys.exit()
 
-    def __get_testcase_execution_results(self, tc, classname, unit_subp, tc_name):
+    def __get_testcase_execution_results(self, tc, classname, tc_name):
         report_name_hash =  '.'.join(
-            ["execution_results", classname, unit_subp, tc_name])
+            ["execution_results", classname, tc_name])
         # Unicode-objects must be encoded before hashing in Python 3
         if sys.version_info[0] >= 3:
             report_name_hash = report_name_hash.encode('utf-8')
