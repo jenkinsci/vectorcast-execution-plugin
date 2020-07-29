@@ -31,6 +31,7 @@ import argparse
 import shutil
 import re
 import time
+from datetime import datetime
 
 
 class ManageWait(object):
@@ -70,7 +71,7 @@ class ManageWait(object):
                         out_mgt = out_mgt.replace("FLEXlm Error", "FLEXlm Err..")
                         edited_license_outage_msg = out_mgt
                     if not silent:
-                        print (out_mgt)
+                        print (datetime.now().strftime("%H:%M:%S.%f") + "  " + out_mgt)
                     output += ( out_mgt + "\n" )
  
             if not silent:

@@ -25,7 +25,7 @@
 from __future__ import print_function
 
 import os
-import datetime
+from datetime import datetime
 import cgi
 import sys
 # Later version of VectorCAST have renamed to Unit Test API
@@ -153,7 +153,7 @@ class BaseGenerateXml(object):
 # Internal - generate the formatted timestamp to write to the coverage file
 #
     def get_timestamp(self):
-        dt = datetime.datetime.now()
+        dt = datetime.now()
         hour = dt.hour
         if hour > 12:
             hour -= 12
@@ -369,6 +369,7 @@ class GenerateXml(BaseGenerateXml):
             return
 
         self.api.commit = dummy
+        self.failed_count = 0
 
 #
 # Internal - add any compound tests to the unit report
@@ -462,7 +463,8 @@ class GenerateXml(BaseGenerateXml):
                         success += 1
                     else:
                         failed += 1
-                        errors += 1                            
+                        errors += 1  
+                        self.failed_count += 1
                     
         self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
         self.fh.write("<testsuites>\n")
@@ -481,6 +483,7 @@ class GenerateXml(BaseGenerateXml):
         for tc in self.api.TestCase.all():
             if not tc.for_compound_only and not tc.is_csv_map:
                 if not tc.passed:
+                    self.failed_count += 1
                     failed += 1
                     if tc.execution_status != "EXEC_SUCCESS_FAIL ":
                         errors += 1
@@ -506,20 +509,27 @@ class GenerateXml(BaseGenerateXml):
         except:
             pass
 
+        start_tdo = datetime.now()
+        end_tdo   = None
         # If cbtDict is None, no build log was passed in...don't mark anything as skipped 
         if self.cbtDict == None:
             tcSkipped = False 
             
         # else there is something check , if the length of cbtDict is greater than zero
         elif len(self.cbtDict) > 0:
-            tcSkipped = self.was_test_case_skipped(tc,"/".join([unit_name, func_name, tc.name]),isSystemTest)
+            tcSkipped, start_tdo, end_tdo = self.was_test_case_skipped(tc,"/".join([unit_name, func_name, tc.name]),isSystemTest)
             
         # finally - there was something to check, but it was empty
         else:
             tcSkipped = True
+         
+        if end_tdo:
+            deltaTimeStr = str((end_tdo - start_tdo).total_seconds())
+        else:
+            deltaTimeStr = "0.0"
 
         testcaseString ="""
-        <testcase name="%s" classname="%s" time="0">
+        <testcase name="%s" classname="%s" time="%s">
             %s
             <system-out>
 %s                     
@@ -532,8 +542,8 @@ class GenerateXml(BaseGenerateXml):
         compiler = cgi.escape(self.compiler).replace(".","")
         testsuite = cgi.escape(self.testsuite).replace(".","")
         envName = cgi.escape(self.env).replace(".","")
-
-        unit_subp = self.env + "." + unit_name + "." + func_name
+        
+        tc_name_full =  unit_name + "." + func_name + "." + tc_name
 
         classname = compiler + "." + testsuite + "." + envName
 
@@ -564,8 +574,7 @@ class GenerateXml(BaseGenerateXml):
             result = self.__get_testcase_execution_results(
                 tc,
                 classname,
-                unit_subp,
-                tc_name)
+                tc_name_full)
 
         # Failure takes priority  
         if not tc.passed:
@@ -587,7 +596,7 @@ class GenerateXml(BaseGenerateXml):
         msg = msg.replace("\"","")
         msg = msg.replace("\n","&#xA;")
         
-        self.fh.write(testcaseString % (tc_name, classname, extraStatus, msg))
+        self.fh.write(testcaseString % (tc_name_full, classname, deltaTimeStr, extraStatus, msg))
 
 #
 # Internal - write the end of the jUnit XML file and close it
@@ -723,39 +732,40 @@ class GenerateXml(BaseGenerateXml):
             if isSystemTest:
                 compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
 				# use tc.name because system tests aren't for a specific unit/function
-                if tc.name in simpleTestcases:
-                    return False
+                if searchName in simpleTestcases.keys():
+                    return [False, simpleTestcases[searchName][0], simpleTestcases[searchName][1]]
                 else:
                     self.__print_test_case_was_skipped(searchName, tc.passed)
-                    return True
+                    return [True, None, None]
             else:
                 #Failed import TCs don't get any indication in the build.log
                 if tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
-                    return False
+                    return [False, None, None]
                     
                 compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
-                
+                                
                 #Recursive Compound don't get any named indication in the build.log
-                if tc.kind == TestCase.KINDS['compound'] and (tc.testcase_status == "TCR_RECURSIVE_COMPOUND" or tc.name in compoundTests):
-                    return False
-                elif tc.kind == TestCase.KINDS['init'] and tc.name in initTests:
-                    return False
-                elif searchName in simpleTestcases or tc.testcase_status == "TCR_NO_EXPECTED_VALUES":
-                    return False
+                if tc.kind == TestCase.KINDS['compound'] and (tc.testcase_status == "TCR_RECURSIVE_COMPOUND" or searchName in compoundTests.keys()):
+                    return [False, compoundTests[searchName][0], compoundTests[searchName][1]]
+                elif tc.kind == TestCase.KINDS['init'] and searchName in initTests.keys():
+                    return [False, initTests[searchName][0], initTests[searchName][1]]
+                elif searchName in simpleTestcases.keys() or tc.testcase_status == "TCR_NO_EXPECTED_VALUES":
+                    #print ("found" , self.hashCode, searchName, str( simpleTestcases[searchName][1] - simpleTestcases[searchName][0]))
+                    return [False, simpleTestcases[searchName][0], simpleTestcases[searchName][1]]
                 else:
                     self.__print_test_case_was_skipped(searchName, tc.passed)
-                    return True
+                    return [True, None, None]
         except KeyError:
             self.__print_test_case_was_skipped(searchName, tc.passed)
-            return True
+            return [True, None, None]
         except Exception as e: 
             pprint.pprint (self.cbtDict, width = 132)
             traceback.print_exc()
             sys.exit()
 
-    def __get_testcase_execution_results(self, tc, classname, unit_subp, tc_name):
+    def __get_testcase_execution_results(self, tc, classname, tc_name):
         report_name_hash =  '.'.join(
-            ["execution_results", classname, unit_subp, tc_name])
+            ["execution_results", classname, tc_name])
         # Unicode-objects must be encoded before hashing in Python 3
         if sys.version_info[0] >= 3:
             report_name_hash = report_name_hash.encode('utf-8')

@@ -199,7 +199,10 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict):
             xml_file.generate_cover()
         else:
             print("   Skipping environment: " + jobNameDotted)
-            
+        f = open("unit_test_fail_count.txt","w")
+        f.write(str(xml_file.failed_count))
+        f.close()
+    
     except Exception as e:
         print("ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"])
         if verbose:

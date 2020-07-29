@@ -89,9 +89,7 @@ public class NewPipelineJob extends BaseJob {
     private boolean useCBT;
 
     private boolean useParameters;
-    
-    private String debugJSON;
-
+   
     /** Environment setup script */
     private String environmentSetup;
     /** Execute preamble */
@@ -112,8 +110,9 @@ public class NewPipelineJob extends BaseJob {
 		super(request, response, false);
 
 		JSONObject json = request.getSubmittedForm();
-        debugJSON = json.toString();
         
+        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "JSON Info for Pipeline Create: " + json.toString());
+
 		nodeLabel = json.optString("nodeLabel");
 		if (nodeLabel == null || nodeLabel.isEmpty()) {
 			nodeLabel = "master";
@@ -145,7 +144,7 @@ public class NewPipelineJob extends BaseJob {
         if (MPName.startsWith("/"))      absPath = true;
         if (MPName.matches("[a-zA-Z]:.*")) absPath = true;
         
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, "MPName: " + MPName + "   scmSnippet: " + pipelineSCM,  "MPName: " + MPName + "   scmSnippet: " + pipelineSCM);
+        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "MPName: " + MPName + "   scmSnippet: " + pipelineSCM,  "MPName: " + MPName + "   scmSnippet: " + pipelineSCM);
 
         if (pipelineSCM.length() != 0 && absPath) {
             throw new ScmConflictException(pipelineSCM, MPName);
@@ -158,7 +157,7 @@ public class NewPipelineJob extends BaseJob {
 	 * @return the project name
 	 */
 	public String getProjectName() {
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
+        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
         
 		return projectName;
 	}
@@ -194,7 +193,7 @@ public class NewPipelineJob extends BaseJob {
             throw new JobAlreadyExistsException(projectName);
         }
             
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
+        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
 		return null;
     }
 
@@ -405,11 +404,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_useCBT = " + incremental + "\n" +  
             
             "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
-            "\n" +  
-            "\n" +  
-            "/* DEBUG JSON RESPONSE: \n" + debugJSON + "\n*/"+
-            "\n" +  
-            "\n" + 
+            "\n" +   
             "";
             
         String baseJenkinsfile = getBaseJenkinsfile();

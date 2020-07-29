@@ -57,7 +57,7 @@ def setupManageProject() {
 def checkLogsForErrors(log) {
 
     def boolean failure = false;
-    def boolean unstable = false;
+    def boolean unstable_flag = false;
     def foundKeywords = ""
 
     // Check for unstable first
@@ -66,7 +66,7 @@ def checkLogsForErrors(log) {
         if (log.contains(it)) {
             // found a phrase considered unstable, mark the build accordingly  
             foundKeywords =  foundKeywords + it + ", " 
-            unstable = true
+            unstable_flag = true
         }
     }
     
@@ -79,13 +79,16 @@ def checkLogsForErrors(log) {
             failure = true
         }
     }
+    if (foundKeywords.endsWith(", ")) {
+        foundKeywords = foundKeywords[0..-3]
+    }
 
-    return [foundKeywords, failure, unstable]
+    return [foundKeywords, failure, unstable_flag]
 }
 // run commands on Unix (Linux) or Windows
 def runCommands(cmds, useLocalCmds = true) {
     def boolean failure = false;
-    def boolean unstable = false;
+    def boolean unstable_flag = false;
     def foundKeywords = ""
     def localCmds = """"""
      
@@ -146,7 +149,7 @@ def transformIntoStep(inputString) {
     // node is based on compiler label
     // this will route the job to a specific node matching that label 
     return {
-        try { //catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
         
             // Try to use VCAST_FORCE_NODE_EXEC_NAME parameter.  
             // If 0 length or not present, use the compiler name as a node label
@@ -198,9 +201,9 @@ def transformIntoStep(inputString) {
                     
                 def foundKeywords = ""
                 def boolean failure = false
-                def boolean unstable = false
+                def boolean unstable_flag = false
                                         
-                (foundKeywords, failure, unstable) = checkLogsForErrors(buildLogText) 
+                (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
                 if (!failure && VC_sharedArtifactDirectory.length() == 0) {
                     writeFile file: "build.log", text: buildLogText
@@ -222,21 +225,13 @@ def transformIntoStep(inputString) {
                 
                 println "Finished Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
 
-                (foundKeywords, failure, unstable) = checkLogsForErrors(buildLogText) 
+                (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
                 if (failure) {
-                    throw new Exception ("From VectorCAST: Error in Commands: " + foundKeywords)
+                    error ("Error in Commands: " + foundKeywords)
+                } else if (unstable_flag) {
+                    unstable("Triggering stage unstable because keywords found: " + foundKeywords)
                 }
-            }
-        } catch (Exception e) {
-            if (e.toString().contains("VectorCAST")) {
-                catchError(stageResult: 'FAILURE') {
-                    throw new Exception ("Triggering stage failure - Error in Commands: " + foundKeywords)
-                }
-            }
-            else {
-                print "Non VectorCAST Exception: " + e.toString()
-                throw e
             }
         }
     }
@@ -425,14 +420,13 @@ pipeline {
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=aggregate   --output=${mpName}_aggregate_report.html"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=metrics     --output=${mpName}_metrics_report.html"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=environment --output=${mpName}_environment_report.html"
-                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --final
                     """.stripIndent()
                     
                     buildLogText += runCommands(cmds)
 
                     writeFile file: "complete_build.log", text: unstashedBuildLogText + buildLogText
                     
-                    (foundKeywords, failure, unstable) = checkLogsForErrors(buildLogText) 
+                    (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
                     if (failure) {
                         throw new Exception ("Error in Commands: " + foundKeywords)
@@ -448,25 +442,18 @@ pipeline {
                     ])
 
                 // Send test results to JUnit plugin
-                step([$class: 'JUnitResultArchiver', allowEmptyResults: true, testResults: '**/test_results_*.xml'])
+                step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
 
                 // Save all the html, xml, and txt files
-                archiveArtifacts '*.html'
-                archiveArtifacts '**/*.html'
-                archiveArtifacts '**/*.xml'
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.css'
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.png'
-                archiveArtifacts '*.txt'
-                archiveArtifacts 'complete_build.log'
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, **/*.xml, **/*.css, **/*.png, **/*.txt, complete_build.log'
             }
         }
         
         stage('Check-Build-Log') {
             steps {
-                script {
-                    try { // (buildResult: 'SUCCESS', stageResult: 'FAILURE', 
-                          // message : "Failure while checking reports...Please see the console for more information") {
-                                                                               
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    script {
+                                                    
                         // get the console log - this requires running outside of the Groovy Sandbox
                         def logContent = readFile 'complete_build.log'
                             
@@ -475,13 +462,9 @@ pipeline {
                         
                         def foundKeywords = ""
                         def boolean failure = false
-                        def boolean unstable = false
+                        def boolean unstable_flag = false
                                                 
-                        (foundKeywords, failure, unstable) = checkLogsForErrors(logContent) 
-
-                        if (foundKeywords.endsWith(",")) {
-                            foundKeywords = foundKeywords[0..-2]
-                        }
+                        (foundKeywords, failure, unstable_flag) = checkLogsForErrors(logContent) 
 
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly
@@ -542,23 +525,11 @@ pipeline {
                         
                         runCommands(cmds)
 
-                        if (unstable) {
-                            currentBuild.result = 'UNSTABLE'
-                        }
                         if (failure) {
                             currentBuild.result = 'FAILURE'
-                            println "Throwing exception: " + "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords
-                            throw new Exception ("From VectorCAST: Problematic data found in console output, search the console output for the following phrases: " + foundKeywords)
-                        }
-                    } catch (Exception e) {
-                        if (e.toString().contains("VectorCAST")) {
-                            catchError(stageResult: 'FAILURE') {
-                                throw new Exception ("Triggering stage failure - Error in Commands: " + foundKeywords)
-                            }
-                        }
-                        else {
-                            print "Non VectorCAST Exception: " + e.toString()
-                            throw e
+                            error ("Raising Error: " + "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords)
+                        } else if (unstable_flag) {
+                            unstable("Triggering stage unstable because keywords found: " + foundKeywords)
                         }
                     }
                 }
