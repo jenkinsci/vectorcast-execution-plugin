@@ -144,6 +144,7 @@ def parse_html_files():
     preserved_count = 0
     executed_count = 0
     total_count = 0
+        
     if main_soup.find(id="report-title"):
         main_manage_api_report = True
         # New Manage reports have div with id=report-title
@@ -212,8 +213,23 @@ def parse_html_files():
     main_count_list[2].string.replace_with(str(executed_count))
     main_count_list[3].string.replace_with(str(total_count))
 
+    # remove the table of content because the >v icon is messing stuff up and its pointless in this report    
+    for div in main_soup.find_all("div", {'class':'contents-block'}): 
+        div.decompose()
+        
+    #<div class="report-body no-toc" id="main-scroller">
+    div = main_soup.find("div", {'class':'report-body'})    
+    div['class']="report-body no-toc"
+    
+    f = open("Incremental_Rebuild_Report.html","w", encoding="utf-8")
+    f.write(main_soup.prettify(formatter="html"))
+    f.close()
+
+    import fixup_reports
+    main_soup = fixup_reports.fixup_2020_soup(main_soup)
+    
     # moving rebuild reports down in to a sub directory
-    f = open("CombinedReport.html","w", encoding="utf-8")
+    f = open("combined_incr_rebuild.tmp","w", encoding="utf-8")
     f.write(main_soup.prettify(formatter="html"))
     f.close()
     

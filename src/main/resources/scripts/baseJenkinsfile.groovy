@@ -39,7 +39,6 @@ VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.
 def setupManageProject() {
     def cmds = """        
         _RM *_rebuild.html
-        _RM CombinedReport.html
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_sharedArtifactDirectory} --status"  
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --force --release-locks"
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
@@ -406,7 +405,7 @@ pipeline {
                     }
                     cmds =  """                         
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py --rptfmt HTML
-                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --full-status=${mpName}_full_report.html"
+                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/full_report_no_toc.py "${VC_Manage_Project}"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=aggregate   --output=${mpName}_aggregate_report.html"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=metrics     --output=${mpName}_metrics_report.html"
                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=environment --output=${mpName}_environment_report.html"
@@ -478,25 +477,37 @@ pipeline {
                         //   - Using CBT - CombinedReport.html (combined rebuild reports from all the environments)
                         //   - full status report from the manage project
                         if (VC_useCBT) {
-                            if (fileExists('CombinedReport.html') && fileExists("${mpName}_full_report.html")) {
+                            if (fileExists('combined_incr_rebuild.tmp') && fileExists("${mpName}_full_report.html_tmp")) {
                                 // If we have both of these, add them to the summary in the "normal" job view
                                 // Blue ocean view doesn't have a summary
 
-                                def summaryText = readFile('CombinedReport.html') + "<br> " + readFile("${mpName}_full_report.html")
+                                def summaryText = readFile('combined_incr_rebuild.tmp') + "<br> " + readFile("${mpName}_full_report.html_tmp")
                                 createSummary icon: "monitor.gif", text: summaryText
+                                
                             
                             } else {
+                                if (fileExists('combined_incr_rebuild.tmp')) { 
+                                    print "combined_incr_rebuild.tmp found" 
+                                } else {
+                                    print "combined_incr_rebuild.tmp missing" 
+                                }
+                                if (fileExists("${mpName}_full_report.html_tmp")) { 
+                                    print "${mpName}_full_report.html_tmp found" 
+                                } else {
+                                    print "${mpName}_full_report.html_tmp missing" 
+                                }
+                                
                                 // If not, something went wrong... Make the build as unstable 
                                 currentBuild.result = 'UNSTABLE'
                                 createSummary icon: "warning.gif", text: "General Failure"
                                 currentBuild.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
                             }                     
                         } else {
-                            if (fileExists("${mpName}_full_report.html")) {
+                            if (fileExists("${mpName}_full_report.html_tmp")) {
                                 // If we have both of these, add them to the summary in the "normal" job view
                                 // Blue ocean view doesn't have a summary
 
-                                def summaryText = readFile("${mpName}_full_report.html")
+                                def summaryText = readFile("${mpName}_full_report.html_tmp")
                                 createSummary icon: "monitor.gif", text: summaryText
                             
                             } else {
@@ -506,6 +517,14 @@ pipeline {
                                 currentBuild.description = "General Failure, Full Report Not Present. Please see the console for more information\n"
                             }                                             
                         }
+
+                        // Remove temporary files used for summary page
+                        def cmds = """        
+                            _RM combined_incr_rebuild.tmp
+                            _RM ${mpName}_full_report.html_tmp
+                        """.stripIndent()
+                        
+                        runCommands(cmds)
 
                         if (unstable) {
                             currentBuild.result = 'UNSTABLE'
