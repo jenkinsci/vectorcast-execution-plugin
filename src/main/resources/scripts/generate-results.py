@@ -223,7 +223,7 @@ def delete_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
         
-def genDataApiReports(entry, jUnit, cbtDict):
+def genDataApiReports(FullManageProjectName, entry, jUnit, cbtDict):
     xml_file = ""
     
     try:
@@ -239,7 +239,8 @@ def genDataApiReports(entry, jUnit, cbtDict):
         xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + level + "_" + env + ".xml"
         xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + level + "_" + env + ".xml"
 
-        xml_file = GenerateXml(entry["build_dir"],
+        xml_file = GenerateXml(FullManageProjectName,
+                               entry["build_dir"],
                                entry["env"],entry["compiler"],entry["testsuite"],
                                xmlCoverReportName,
                                jenkins_name,
@@ -351,18 +352,18 @@ def generateIndividualReports(entry, envName):
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
 
-def useNewAPI(manageEnvs, level, envName, jUnit, cbtDict):
+def useNewAPI(FullManageProjectName, manageEnvs, level, envName, jUnit, cbtDict):
         
     for currentEnv in manageEnvs:
         if envName == None:
-            genDataApiReports(manageEnvs[currentEnv], jUnit, cbtDict)
+            genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], jUnit, cbtDict)
             generateIndividualReports(manageEnvs[currentEnv], envName)
             
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
             if env_level.upper() == level.upper():
-                genDataApiReports(manageEnvs[currentEnv], jUnit, cbtDict)
+                genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], jUnit, cbtDict)
                 generateIndividualReports(manageEnvs[currentEnv], envName)
 
 
@@ -437,7 +438,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         if timing:
             print("Using DataAPI for reporting")
             print("Get Info: " + str(time.time()))
-        useNewAPI(manageEnvs, level, envName, jUnit, cbtDict)
+        useNewAPI(FullManageProjectName, manageEnvs, level, envName, jUnit, cbtDict)
         if timing:
             print("XML and Individual reports: " + str(time.time()))
 
@@ -583,8 +584,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if junit:   
         if verbose:
             print("Writing combined test data for JUnit")
-        generate_qa_results_xml.genQATestResults(FullManageProjectName, saved_level, saved_envName)
-        writeJunitCombinedTestResults(manageProjectName,saved_level,saved_envName)
+        #generate_qa_results_xml.genQATestResults(FullManageProjectName, saved_level, saved_envName)
+        #writeJunitCombinedTestResults(manageProjectName,saved_level,saved_envName)
 
     if timing:
         print("Complete: " + str(time.time()))
@@ -608,8 +609,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     if args.final:
-        generate_qa_results_xml.genQATestResults(args.ManageProject)
-        writeJunitFinalCombinedTestResults(os.path.basename(args.ManageProject))
+        #generate_qa_results_xml.genQATestResults(args.ManageProject)
+        #writeJunitFinalCombinedTestResults(os.path.basename(args.ManageProject))
         sys.exit(0)
     try:
         if "19.sp1" in open(os.path.join(os.environ['VECTORCAST_DIR'],"DATA/tools_version.txt").read):
