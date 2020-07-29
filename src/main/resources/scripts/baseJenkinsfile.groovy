@@ -91,7 +91,7 @@ def runCommands(cmds, useLocalCmds = true) {
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_RPTS_SELF_CONTAINED=FALSE
             export VCAST_NO_FILE_TRUNCATION=1
-            export VCAST_USE_CI_LICENSES=${VC_UseCILicense}
+            export VCAST_USING_HEADLESS_MODE=${VC_UseCILicense}
             
             """.stripIndent()
         if (useLocalCmds) {
@@ -107,7 +107,7 @@ def runCommands(cmds, useLocalCmds = true) {
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
             set VCAST_NO_FILE_TRUNCATION=1
-            set VCAST_USE_CI_LICENSES=${VC_UseCILicense}
+            set VCAST_USING_HEADLESS_MODE=${VC_UseCILicense}
             """.stripIndent()
         if (useLocalCmds) {
             cmds = localCmds + cmds
@@ -142,7 +142,24 @@ def transformIntoStep(inputString) {
     // this will route the job to a specific node matching that label 
     return {
         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-            node ( compiler as String ){
+        
+            // Try to use VCAST_FORCE_NODE_EXEC_NAME parameter.  
+            // If 0 length or not present, use the compiler name as a node label
+            def nodeID = "default"
+            try {
+                if ("${VCAST_FORCE_NODE_EXEC_NAME}".length() > 0) {
+                    nodeID = "${VCAST_FORCE_NODE_EXEC_NAME}"
+                }
+                else {
+                    nodeID = compiler
+                }
+            } catch (exe) {
+               nodeID = compiler
+            }
+            
+            print "Using NodeID = " + nodeID
+            
+            node ( nodeID as String ){
             
                 println "Starting Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
             
@@ -243,7 +260,20 @@ pipeline {
         stage('Single-Checkout') {
             steps {
                 script {
-                    if (VC_useOneCheckoutDir) {
+                    def usingExternalRepo = false;
+
+                    try {
+                        if ("${VCAST_FORCE_NODE_EXEC_NAME}".length() > 0) {
+                            usingExternalRepo = true
+                        }
+                        else {
+                            usingExternalRepo = false
+                        }
+                    } catch (exe) {
+                       usingExternalRepo = false
+                    }
+                
+                    if (VC_useOneCheckoutDir && !usingExternalRepo) {
                         VC_OriginalWorkspace = "${env.WORKSPACE}"
                         println "scmStep executed here: " + VC_OriginalWorkspace
                         scmStep()
@@ -251,16 +281,29 @@ pipeline {
                         VC_Manage_Project = VC_OriginalWorkspace + "/" + VC_Manage_Project
                         
                         def origSetup = VC_EnvSetup
+                        def origTeardown = VC_EnvTeardown
+                        def orig_VC_sharedArtifactDirectory = VC_sharedArtifactDirectory
                         if (isUnix()) {
                             VC_EnvSetup = VC_EnvSetup.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
+                            VC_EnvTeardown = VC_EnvTeardown.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
+                            VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
                         } else {
                             VC_OriginalWorkspace = VC_OriginalWorkspace.replace('\\','/')
                             VC_EnvSetup = VC_EnvSetup.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                            VC_EnvTeardown = VC_EnvTeardown.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                            VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
                         }
-                        print "Updating " + origSetup + " \nto: " + VC_EnvSetup
+                        print "Updating setup script " + origSetup + " \nto: " + VC_EnvSetup
+                        print "Updating teardown script " + origTeardown + " \nto: " + origTeardown
+                        print "Updating shared artifact directory " + orig_VC_sharedArtifactDirectory + " \nto: " + VC_sharedArtifactDirectory
                         }
                     else {
-                        println "Not using Single Checkout"
+                        if (usingExternalRepo) {
+                            println "Using ${VCAST_FORCE_NODE_EXEC_NAME}/${VC_Manage_Project} as single checkout directory"
+                        }
+                        else {
+                            println "Not using Single Checkout"
+                        }
                     }
                 }
             }
@@ -432,21 +475,37 @@ pipeline {
                         }
                                             
                         // Make sure the build completed and we have two key reports
-                        //   - CombinedReport.html (combined rebuild reports from all the environments)
+                        //   - Using CBT - CombinedReport.html (combined rebuild reports from all the environments)
                         //   - full status report from the manage project
-                        if (fileExists('CombinedReport.html') && fileExists("${mpName}_full_report.html")) {
-                            // If we have both of these, add them to the summary in the "normal" job view
-                            // Blue ocean view doesn't have a summary
+                        if (VC_useCBT) {
+                            if (fileExists('CombinedReport.html') && fileExists("${mpName}_full_report.html")) {
+                                // If we have both of these, add them to the summary in the "normal" job view
+                                // Blue ocean view doesn't have a summary
 
-                            def summaryText = readFile('CombinedReport.html') + "<br> " + readFile("${mpName}_full_report.html")
-                            createSummary icon: "monitor.gif", text: summaryText
+                                def summaryText = readFile('CombinedReport.html') + "<br> " + readFile("${mpName}_full_report.html")
+                                createSummary icon: "monitor.gif", text: summaryText
                             
+                            } else {
+                                // If not, something went wrong... Make the build as unstable 
+                                currentBuild.result = 'UNSTABLE'
+                                createSummary icon: "warning.gif", text: "General Failure"
+                                currentBuild.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
+                            }                     
                         } else {
-                            // If not, something went wrong... Make the build as unstable 
-                            currentBuild.result = 'UNSTABLE'
-                            createSummary icon: "warning.gif", text: "General Failure"
-                            currentBuild.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
-                        }                     
+                            if (fileExists("${mpName}_full_report.html")) {
+                                // If we have both of these, add them to the summary in the "normal" job view
+                                // Blue ocean view doesn't have a summary
+
+                                def summaryText = readFile("${mpName}_full_report.html")
+                                createSummary icon: "monitor.gif", text: summaryText
+                            
+                            } else {
+                                // If not, something went wrong... Make the build as unstable 
+                                currentBuild.result = 'UNSTABLE'
+                                createSummary icon: "warning.gif", text: "General Failure"
+                                currentBuild.description = "General Failure, Full Report Not Present. Please see the console for more information\n"
+                            }                                             
+                        }
 
                         if (unstable) {
                             currentBuild.result = 'UNSTABLE'

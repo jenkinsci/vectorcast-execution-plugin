@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!--
+The MIT License
+
+Copyright 2016 Vector Software.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<div>
+    The use case for this option is when another Pipeline job wants call the VectorCAST pipeline job and has checked out the VectorCAST Project.  This options sets up the following parameters to be passed in from another Pipeline Job.
+<ul>
+  <li>VCAST_PROJECT_DIR - Predeterminted location of the VectorCAST/Manage project that is passed in.  When using this option do not specify a fully qualified path name to the VectorCAST/Manage Project</li>
+  <li>VCAST_FORCE_NODE_EXEC_NAME - Forces VectorCAST Jobs to be run on a specific node instead of a node with a label matching the compiler</li>
+</ul>
+
+Syntax of what a calling job may use to call a parameterized VectorCAST Pipeline job
+<pre>
+catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : false ) {
+   build job: 'UnitTestingProject_vcast_pipeline', 
+    parameters: [string(name: 'VCAST_PROJECT_DIR',          value: 'C:\\UnitTesting\\Project'), 
+                 string(name: 'VCAST_FORCE_NODE_EXEC_NAME', value: 'MyTestNode')]
+}
+</pre>
+</div>

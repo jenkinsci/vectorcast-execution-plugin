@@ -44,13 +44,18 @@
             <f:textbox name="manageProjectName" size="50" required="true" />
           </f:entry>
             <f:entry title="${%VCJob.Options.useCBT.title}" description="${%VCJob.Options.useCBT.description}"
-                    help="/plugin/vectorcast-execution/help-optuseuseCBT.html">
+                    help="/plugin/vectorcast-execution/help-optuseCBT.html">
                 <f:checkbox name="useCBT" checked="${instance.useCBT}" default="true"/>
             </f:entry>        
             <f:entry title="${%VCJob.Options.useCiLicense.title}" description="${%VCJob.Options.useCiLicense.description}"
                     help="/plugin/vectorcast-execution/help-optuseCiLicense.html">
                 <f:checkbox name="useCiLicense" checked="${instance.useCiLicense}" default="false"/>
+            </f:entry>  
+            <f:entry title="${%VCJob.Options.useParameters.title}" description="${%VCJob.Options.useParameters.description}"
+                    help="/plugin/vectorcast-execution/help-optuseParameters.html">
+                <f:checkbox name="useParameters" checked="${instance.useParameters}" default="false"/>
             </f:entry>        
+             
         </f:section>
         
         <vc:retry></vc:retry>

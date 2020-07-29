@@ -8,6 +8,9 @@ manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
 
 
 def printEnvironmentInfo(ManageProjectName):
+
+    somethingPrinted = False
+    
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --full-status",
                          shell=True,
                          stdout=subprocess.PIPE,
@@ -29,6 +32,11 @@ def printEnvironmentInfo(ManageProjectName):
             env_name = str.split()[0]
                 
             print ("%s %s %s" % (compiler , testsuite , env_name))
-
+            
+            somethingPrinted = True;
+            
+    if not somethingPrinted:
+        print ("No environments found in " + ManageProjectName + ". Please check configuration", file=sys.stderr)
+        
 if __name__ == "__main__":
     printEnvironmentInfo(sys.argv[1])
