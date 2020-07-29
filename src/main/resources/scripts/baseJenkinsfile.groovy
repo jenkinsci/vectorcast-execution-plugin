@@ -431,7 +431,7 @@ pipeline {
                     ])
 
                 // Send test results to JUnit plugin
-                step([$class: 'JUnitResultArchiver', allowEmptyResults: true, testResults: '**/test_results_*.xml'])
+                step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
 
                 // Save all the html, xml, and txt files
                 archiveArtifacts '*.html'
@@ -439,7 +439,7 @@ pipeline {
                 archiveArtifacts '**/*.xml'
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.css'
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.png'
-                archiveArtifacts '*.txt'
+                archiveArtifacts allowEmptyArchive: true, artifacts: '*.txt'
                 archiveArtifacts 'complete_build.log'
             }
         }
