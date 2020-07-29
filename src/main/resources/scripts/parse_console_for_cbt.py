@@ -2,14 +2,16 @@
 from __future__ import print_function
 from pprint import pprint
 import sys
+import hashlib
 
 compoundTestIndex = 0
 initTestIndex = 1
 simpleTestIndex = 2
 
 class ParseConsoleForCBT(object):
-    def __init__(self):
+    def __init__(self, verbose = False):
         self.environmentDict = {}
+        self.verbose = verbose
 
     def checkForSave(self, compoundTests, initTests, simpleTestcases):
         if len(compoundTests) > 0 or len(initTests) > 0 or  len(simpleTestcases) > 0:
@@ -31,23 +33,22 @@ class ParseConsoleForCBT(object):
                         
             if line.startswith("Processing options file"):
 
-                hashCode = line.replace("\\","/").split("/")[-2].strip()
+                build_dir = "/".join(line.replace("\\","/").split(" ")[-1].strip().split("/")[:-1]).upper()
                 
-                # only save hashCode from this test if the environment has been migrated 
-                # has an all numeric hash - else use Creating Environment as the hash
-                if hashCode.isdigit():
+                # Unicode-objects must be encoded before hashing in Python 3
+                if sys.version_info[0] >= 3:
+                    build_dir = build_dir.encode('utf-8')
+
+                hashCode = hashlib.md5(build_dir).hexdigest()
+                
+                if self.verbose:
+                    print ("Dir: " + build_dir+ " Hash: " +hashCode)
+                
+                started = True
+                if hashCode not in  self.environmentDict.keys():
                     self.environmentDict[hashCode] = [[],[],[]]
-                    started = True
-                
                 continue
                 
-            if not started and "Creating Environment" in line:
-                # only save hashCode from this test if the environment is running in monitored 
-                # mode and uses the enviornment name instead of a hashCode
-                hashCode = line.split("\"")[1]
-                self.environmentDict[hashCode] = [[],[],[]]
-                print("*", hashCode)
-                started = True
 
             if started: 
             
@@ -106,13 +107,25 @@ class ParseConsoleForCBT(object):
                     else:
                         tc = line.split("Running: ")[-1]                                            
                         self.environmentDict[hashCode][simpleTestIndex].append(fileName + "/" + func + "/" + tc)
-                
+                elif "There are no slots in compound test" in line:
+                    ##     There are no slots in compound test <<COMPOUND>>.FailNo_Slots.
+                    tc_name = line.split(" ")[-1][:-1]
+                    self.environmentDict[hashCode][compoundTestIndex].append(tc_name)
+
+                elif "All slots in compound test" in line:
+                    ##     There are no slots in compound test <<COMPOUND>>.FailNo_Slots.
+                    tc_name = line.split(" ")[5]
+                    self.environmentDict[hashCode][compoundTestIndex].append(tc_name)
+
+        if self.verbose:
+            pprint(self.environmentDict, width=132)
+            
         return self.environmentDict           
 
 if __name__ == '__main__':
     
     buildLogData = open(sys.argv[1],"r").readlines()
-    parser = ParseConsoleForCBT()
-    #parser.parse(buildLogData)
-    pprint(parser.parse(buildLogData), width=132)
+    parser = ParseConsoleForCBT(True)
+    parser.parse(buildLogData)
+    #pprint(parser.parse(buildLogData), width=132)
     

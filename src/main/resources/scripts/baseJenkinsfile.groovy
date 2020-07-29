@@ -30,7 +30,8 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   "Abnormal Termination on Environment",
                   "not recognized as an internal or external command",
                   "Another Workspace with this path already exists",
-                  "Destination directory or database is not writable"]
+                  "Destination directory or database is not writable",
+                  "Could not acquire a read lock on the project's vcm file"]
                 
 VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.lang.Exception"]                       
 
@@ -89,6 +90,9 @@ def runCommands(cmds, useLocalCmds = true) {
             ${VC_EnvSetup}
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_RPTS_SELF_CONTAINED=FALSE
+            export VCAST_NO_FILE_TRUNCATION=1
+            export VCAST_USE_CI_LICENSES=${VC_UseCILicense}
+            
             """.stripIndent()
         if (useLocalCmds) {
             cmds = localCmds + cmds
@@ -102,6 +106,8 @@ def runCommands(cmds, useLocalCmds = true) {
             ${VC_EnvSetup}
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
+            set VCAST_NO_FILE_TRUNCATION=1
+            set VCAST_USE_CI_LICENSES=${VC_UseCILicense}
             """.stripIndent()
         if (useLocalCmds) {
             cmds = localCmds + cmds
@@ -160,7 +166,7 @@ def transformIntoStep(inputString) {
                 // setup the commands for building, executing, and transferring information
                 cmds =  """
                     ${VC_EnvSetup}
-                    ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --level ${compiler}/${test_suite} -e ${environment} --build-execute --incremental --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+                    ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
                     ${VC_EnvTeardown}
                 """.stripIndent()
                 

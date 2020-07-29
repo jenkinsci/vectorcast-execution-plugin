@@ -330,7 +330,19 @@ class GenerateXml(BaseGenerateXml):
         super(GenerateXml, self).__init__(cover_report_name, verbose)
 
         self.cbtDict = cbtDict
-        self.hashCode = build_dir.split("/")[-1].upper()
+        
+        ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
+        
+        build_dir_4hash = build_dir.upper()
+        # Unicode-objects must be encoded before hashing in Python 3
+        if sys.version_info[0] >= 3:
+            build_dir_4hash = build_dir_4hash.encode('utf-8')
+
+        self.hashCode = hashlib.md5(build_dir_4hash).hexdigest()
+        if verbose:
+            print ("Dir: " + build_dir_4hash+ " Hash: " +self.hashCode)
+
+        #self.hashCode = build_dir.split("/")[-1].upper()
         self.usingJunit = useJunit
         self.build_dir = build_dir
         self.env = env
@@ -486,7 +498,7 @@ class GenerateXml(BaseGenerateXml):
         # Failure takes priority  
         if not tc.passed:
             if tcSkipped: 
-                status = "Skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nFAIL"
+                status = "Testcase may have been skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nFAIL"
             else:
                 status = "FAIL"
             extraStatus = "\n            <failure type=\"failure\"/>\n"
@@ -691,12 +703,18 @@ class GenerateXml(BaseGenerateXml):
     def was_test_case_skipped(self, tc, searchName):
         import sys, traceback, pprint
         try:
+            #Failed import TCs don't get any indication in the build.log
+            if tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
+                return False
+                
             compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
-            if tc.kind == TestCase.KINDS['compound'] and tc.name in compoundTests:
+            
+            #Recursive Compound don't get any named indication in the build.log
+            if tc.kind == TestCase.KINDS['compound'] and (tc.testcase_status == "TCR_RECURSIVE_COMPOUND" or tc.name in compoundTests):
                 return False
             elif tc.kind == TestCase.KINDS['init'] and tc.name in initTests:
                 return False
-            elif searchName in simpleTestcases:
+            elif searchName in simpleTestcases or tc.testcase_status == "TCR_NO_EXPECTED_VALUES":
                 return False
             else:
                 self.__print_test_case_was_skipped(searchName, tc.passed)
