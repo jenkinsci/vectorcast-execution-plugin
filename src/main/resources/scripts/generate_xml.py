@@ -48,7 +48,7 @@ def dummy(*args, **kwargs):
     return None
 
 ##########################################################################
-# This class generates the XML (xUnit based) report for the overall
+# This class generates the XML (JUnit based) report for the overall
 # (Emma based) report for Coverage
 #
 class BaseGenerateXml(object):
@@ -284,7 +284,7 @@ class BaseGenerateXml(object):
         self.num_units = len(self.our_units)
 
 ##########################################################################
-# This class generates the XML (xUnit based) report for the overall
+# This class generates the XML (JUnit based) report for the overall
 # (Emma based) report for Coverage
 #
 class GenerateManageXml(BaseGenerateXml):
@@ -319,14 +319,14 @@ class GenerateManageXml(BaseGenerateXml):
         self.api.close()
 
 ##########################################################################
-# This class generates the XML (xUnit based) report for dynamic tests and
+# This class generates the XML (Junit based) report for dynamic tests and
 # the XML (Emma based) report for Coverage results
 #
 # In both cases these are for a single environment
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, useJunit = True, cbtDict= None):
+    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None):
         super(GenerateXml, self).__init__(cover_report_name, verbose)
 
         self.cbtDict = cbtDict
@@ -344,7 +344,6 @@ class GenerateXml(BaseGenerateXml):
             print ("Dir: " + build_dir_4hash+ " Hash: " +self.hashCode)
 
         #self.hashCode = build_dir.split("/")[-1].upper()
-        self.usingJunit = useJunit
         self.build_dir = build_dir
         self.env = env
         self.compiler = compiler
@@ -442,71 +441,61 @@ class GenerateXml(BaseGenerateXml):
                 
         self.end_test_results_file()
 #
-# Internal - start the xUnit XML file
+# Internal - start the JUnit XML file
 #
     def start_system_test_file(self):
         if self.verbose:
             print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
         self.fh = open(self.unit_report_name, "w")
-        if not self.usingJunit:
-            print ("xUnit not supported for System Test Results - please add --junit to your genreate-results.py command and update your jenkins job")
-            raise NotImplementedError
-        else:
-            errors = 0
-            failed = 0
-            success = 0                                            
-            
-            from vector.apps.DataAPI.vcproject_api import VCProjectApi 
-            api = VCProjectApi(self.FullManageProjectName)
-            
-            for env in api.Environment.all():
-                if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
-                    for st in env.system_tests:
-                        if st.passed == st.total:
-                            success += 1
-                        else:
-                            failed += 1
-                            errors += 1                            
-                        
-            self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-            self.fh.write("<testsuites>\n")
-            self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
-                (errors,success+failed+errors, failed, cgi.escape(self.env)))
+        errors = 0
+        failed = 0
+        success = 0                                            
+        
+        from vector.apps.DataAPI.vcproject_api import VCProjectApi 
+        api = VCProjectApi(self.FullManageProjectName)
+        
+        for env in api.Environment.all():
+            if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
+                for st in env.system_tests:
+                    if st.passed == st.total:
+                        success += 1
+                    else:
+                        failed += 1
+                        errors += 1                            
+                    
+        self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        self.fh.write("<testsuites>\n")
+        self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
+            (errors,success+failed+errors, failed, cgi.escape(self.env)))
                 
     def start_unit_test_file(self):
         if self.verbose:
             print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
         self.fh = open(self.unit_report_name, "w")
-        if not self.usingJunit:
-            self.fh.write('<testsuites xmlns="http://check.sourceforge.net/ns">\n')
-            self.fh.write('    <datetime>%s</datetime>\n' % self.get_timestamp())
-            self.fh.write('    <suite>\n')
-            self.fh.write('        <title>%s</title>\n' % self.jobNameDotted)
-        else:
-            errors = 0
-            failed = 0
-            success = 0                                            
-            
-            for tc in self.api.TestCase.all():
-                if not tc.for_compound_only and not tc.is_csv_map:
-                    if not tc.passed:
-                        failed += 1
-                        if tc.execution_status != "EXEC_SUCCESS_FAIL ":
-                            errors += 1
-                    else:
-                        success += 1
-                        
-            self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-            self.fh.write("<testsuites>\n")
-            self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
-                (errors,success+failed+errors, failed, cgi.escape(self.env)))
+        errors = 0
+        failed = 0
+        success = 0                                            
+        
+        for tc in self.api.TestCase.all():
+            if not tc.for_compound_only and not tc.is_csv_map:
+                if not tc.passed:
+                    failed += 1
+                    if tc.execution_status != "EXEC_SUCCESS_FAIL ":
+                        errors += 1
+                else:
+                    success += 1
+                    
+        self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        self.fh.write("<testsuites>\n")
+        self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
+            (errors,success+failed+errors, failed, cgi.escape(self.env)))
 
 #
 # Internal - write a testcase to the jUnit XML file
 #
-    def write_testcase_jUnit(self, tc, unit_name, func_name):
+    def write_testcase(self, tc, unit_name, func_name):
     
         isSystemTest = False
         
@@ -601,66 +590,11 @@ class GenerateXml(BaseGenerateXml):
         self.fh.write(testcaseString % (tc_name, classname, extraStatus, msg))
 
 #
-# Internal - write a testcase to the xUnit XML file
-#
-    def write_testcase_xUnit(self, tc, unit_name, func_name):
-
-        unit_name = cgi.escape(unit_name)
-        func_name = cgi.escape(func_name).replace("\"","&quot;")
-        tc_name = cgi.escape(tc.name)
-        if tc.passed:
-            self.fh.write('        <test result="success">\n')
-        else:
-            self.fh.write('        <test result="failure">\n')
-        self.fh.write('            <fn>{}.{}</fn>\n'.format(unit_name, func_name))
-        self.fh.write('            <id>{}.{}.{}</id>\n'.format(unit_name, func_name, tc_name))
-        self.fh.write('            <iteration>1</iteration>\n')
-        self.fh.write('            <description>Simple Test Case</description>\n')
-        summary = tc.history.summary
-        exp_total = summary.expected_total
-        exp_pass = exp_total - summary.expected_fail
-        if self.api.environment.get_option("VCAST_OLD_STYLE_MANAGEMENT_REPORT"):
-            exp_pass += summary.control_flow_total - summary.control_flow_fail
-            exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
-
-        if tc.passed:
-            msg = "PASS"
-        else:
-            result = self.__get_testcase_execution_results(
-                tc,
-                unit_name,
-                func_name,
-                tc_name)
-
-            result = cgi.escape(result)
-            result = result.replace("\"","")
-            result = result.replace("\n","&#xA;")
-            msg = "FAIL {} / {}  Execution Report:\n {}".format(exp_pass, exp_total, result)
-
-        self.fh.write('            <message>%s</message>\n' % msg)
-        self.fh.write('        </test>\n')
-
-#
-# Internal - write a testcase to the xUnit or jUnit XML file
-#
-    def write_testcase(self, tc, unit_name, func_name):
-        if not self.usingJunit:
-            self.write_testcase_xUnit(tc, unit_name, func_name)
-        else:
-            self.write_testcase_jUnit(tc, unit_name, func_name)
-
-#
-# Internal - write the end of the xUnit or jUnit XML file and close it
+# Internal - write the end of the jUnit XML file and close it
 #
     def end_test_results_file(self):
-        if not self.usingJunit:
-            self.fh.write('    </suite>\n')
-            self.fh.write('    <duration>1</duration>\n\n')
-            self.fh.write('</testsuites>\n')
-            self.fh.close()
-        else:
-            self.fh.write("   </testsuite>\n")
-            self.fh.write("</testsuites>\n")
+        self.fh.write("   </testsuite>\n")
+        self.fh.write("</testsuites>\n")
         self.fh.close()
 
 #
