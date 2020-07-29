@@ -31,9 +31,15 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   "not recognized as an internal or external command",
                   "Another Workspace with this path already exists",
                   "Destination directory or database is not writable",
-                  "Could not acquire a read lock on the project's vcm file"]
+                  "Could not acquire a read lock on the project's vcm file",
+                  "No environments found in ",
+                  ".vcm is invalid",
+                  "Invalid Workspace. Please ensure the directory and database contain write permission",
+                  "The environment is invalid because",
+                  "Please ensure that the project has the proper permissions and that the environment is not being accessed by another process."
+                  ]
                 
-VC_UnstablePhrases = ["Value Line Error - Command Ignored", "groovy.lang","java.lang.Exception"]                       
+VC_UnstablePhrases = ["Value Line Error - Command Ignored"]                       
 
 // setup the manage project to have preset options
 def setupManageProject() {
@@ -51,7 +57,7 @@ def setupManageProject() {
 def checkLogsForErrors(log) {
 
     def boolean failure = false;
-    def boolean unstable = false;
+    def boolean unstable_flag = false;
     def foundKeywords = ""
 
     // Check for unstable first
@@ -60,7 +66,7 @@ def checkLogsForErrors(log) {
         if (log.contains(it)) {
             // found a phrase considered unstable, mark the build accordingly  
             foundKeywords =  foundKeywords + it + ", " 
-            unstable = true
+            unstable_flag = true
         }
     }
     
@@ -73,13 +79,16 @@ def checkLogsForErrors(log) {
             failure = true
         }
     }
+    if (foundKeywords.endsWith(", ")) {
+        foundKeywords = foundKeywords[0..-3]
+    }
 
-    return [foundKeywords, failure, unstable]
+    return [foundKeywords, failure, unstable_flag]
 }
 // run commands on Unix (Linux) or Windows
 def runCommands(cmds, useLocalCmds = true) {
     def boolean failure = false;
-    def boolean unstable = false;
+    def boolean unstable_flag = false;
     def foundKeywords = ""
     def localCmds = """"""
      
@@ -192,9 +201,9 @@ def transformIntoStep(inputString) {
                     
                 def foundKeywords = ""
                 def boolean failure = false
-                def boolean unstable = false
+                def boolean unstable_flag = false
                                         
-                (foundKeywords, failure, unstable) = checkLogsForErrors(buildLogText) 
+                (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
                 if (!failure && VC_sharedArtifactDirectory.length() == 0) {
                     writeFile file: "build.log", text: buildLogText
@@ -216,10 +225,12 @@ def transformIntoStep(inputString) {
                 
                 println "Finished Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
 
-                (foundKeywords, failure, unstable) = checkLogsForErrors(buildLogText) 
+                (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
                 if (failure) {
-                    throw new Exception ("Error in Commands: " + foundKeywords)
+                    error ("Error in Commands: " + foundKeywords)
+                } else if (unstable_flag) {
+                    unstable("Triggering stage unstable because keywords found: " + foundKeywords)
                 }
             }
         }
@@ -415,7 +426,7 @@ pipeline {
 
                     writeFile file: "complete_build.log", text: unstashedBuildLogText + buildLogText
                     
-                    (foundKeywords, failure, unstable) = checkLogsForErrors(buildLogText) 
+                    (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
                     if (failure) {
                         throw new Exception ("Error in Commands: " + foundKeywords)
@@ -434,20 +445,13 @@ pipeline {
                 step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
 
                 // Save all the html, xml, and txt files
-                archiveArtifacts '*.html'
-                archiveArtifacts '**/*.html'
-                archiveArtifacts '**/*.xml'
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.css'
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.png'
-                archiveArtifacts allowEmptyArchive: true, artifacts: '*.txt'
-                archiveArtifacts 'complete_build.log'
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, **/*.xml, **/*.css, **/*.png, **/*.txt, complete_build.log'
             }
         }
         
         stage('Check-Build-Log') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', 
-                    message : "Failure while checking reports...Please see the console for more information") {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     script {
                                                     
                         // get the console log - this requires running outside of the Groovy Sandbox
@@ -458,13 +462,9 @@ pipeline {
                         
                         def foundKeywords = ""
                         def boolean failure = false
-                        def boolean unstable = false
+                        def boolean unstable_flag = false
                                                 
-                        (foundKeywords, failure, unstable) = checkLogsForErrors(logContent) 
-
-                        if (foundKeywords.endsWith(",")) {
-                            foundKeywords = foundKeywords[0..-2]
-                        }
+                        (foundKeywords, failure, unstable_flag) = checkLogsForErrors(logContent) 
 
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly
@@ -525,13 +525,11 @@ pipeline {
                         
                         runCommands(cmds)
 
-                        if (unstable) {
-                            currentBuild.result = 'UNSTABLE'
-                        }
                         if (failure) {
                             currentBuild.result = 'FAILURE'
-                            println "Throwing exception: " + "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords
-                            throw new Exception ("Problematic data found in console output, search the console output for the following phrases: " + foundKeywords)
+                            error ("Raising Error: " + "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords)
+                        } else if (unstable_flag) {
+                            unstable("Triggering stage unstable because keywords found: " + foundKeywords)
                         }
                     }
                 }

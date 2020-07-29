@@ -3,6 +3,7 @@ from __future__ import print_function
 from pprint import pprint
 import sys
 import hashlib
+from datetime import datetime
 
 compoundTestIndex = 0
 initTestIndex = 1
@@ -27,8 +28,20 @@ class ParseConsoleForCBT(object):
         fileName = ""
         hashCode = ""
         started = False
+        start_dto = datetime.now()
+        end_dto = datetime.now()
+        line_dto = datetime.now()
+        now = datetime.now()
+        tc_name = ""
+        currTestNdx = 0
 
         for line in console_log:
+            try:
+                lineTime, line = line.split(" ",1)
+                line_dto = datetime.strptime(lineTime,"%H:%M:%S.%f")
+            except:
+                pass 
+
             line = line.strip()
                         
             if line.startswith("Processing options file"):
@@ -46,14 +59,15 @@ class ParseConsoleForCBT(object):
                 
                 started = True
                 if hashCode not in  self.environmentDict.keys():
-                    self.environmentDict[hashCode] = [[],[],[]]
+                    self.environmentDict[hashCode] = [{},{},{}]
                 continue
                 
 
             if started: 
+                # system test
                 if line.startswith("Adding result file"):
-                    result = line.split(" as ",1)[1]
-                    self.environmentDict[hashCode][simpleTestIndex].append(result)
+                    tc_name = line.split(" as ",1)[1]
+                    self.environmentDict[hashCode][simpleTestIndex][tc_name] = [now, now]
                     continue
 
                 if line.startswith("Creating report"):
@@ -103,23 +117,37 @@ class ParseConsoleForCBT(object):
                         runningCompound = False
                         runningInits = False
                     
+                if "Test Execution Complete" in line or "Error: " in line:
+                    end_tdo = line_dto
+                    duration_tdo = end_tdo - start_dto
+                    self.environmentDict[hashCode][currTestNdx][tc_name][1] = end_tdo
+
                 if "Running: " in line:
+                    start_dto = line_dto
                     if runningCompound:
-                        self.environmentDict[hashCode][compoundTestIndex].append(line.split("Running: ")[-1])
+                        tc_name = "<<COMPOUND>>/<<COMPOUND>>/" + line.split("Running: ")[-1]
+                        currTestNdx = compoundTestIndex
+                        self.environmentDict[hashCode][currTestNdx][tc_name] = [start_dto, None]
                     elif runningInits:
-                        self.environmentDict[hashCode][initTestIndex].append(line.split("Running: ")[-1])
+                        tc_name = "<<INIT>>/<<INIT>>/" + line.split("Running: ")[-1]
+                        currTestNdx = initTestIndex
+                        self.environmentDict[hashCode][currTestNdx][tc_name] = [start_dto, None]
                     else:
-                        tc = line.split("Running: ")[-1]                                            
-                        self.environmentDict[hashCode][simpleTestIndex].append(fileName + "/" + func + "/" + tc)
+                        tc = line.split("Running: ")[-1]     
+                        tc_name = fileName + "/" + func + "/" + tc
+                        currTestNdx = simpleTestIndex                        
+                        self.environmentDict[hashCode][currTestNdx][tc_name] = [start_dto, None]
                 elif "There are no slots in compound test" in line:
                     ##     There are no slots in compound test <<COMPOUND>>.FailNo_Slots.
                     tc_name = line.split(" ")[-1][:-1]
-                    self.environmentDict[hashCode][compoundTestIndex].append(tc_name)
+                    currTestNdx = compoundTestIndex                        
+                    self.environmentDict[hashCode][currTestNdx][tc_name] = [start_dto, None]
 
                 elif "All slots in compound test" in line:
                     ##     There are no slots in compound test <<COMPOUND>>.FailNo_Slots.
                     tc_name = line.split(" ")[5]
-                    self.environmentDict[hashCode][compoundTestIndex].append(tc_name)
+                    currTestNdx = compoundTestIndex                        
+                    self.environmentDict[hashCode][currTestNdx][tc_name] = [start_dto, None]
 
         if self.verbose:
             pprint(self.environmentDict, width=132)
