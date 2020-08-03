@@ -36,7 +36,8 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   ".vcm is invalid",
                   "Invalid Workspace. Please ensure the directory and database contain write permission",
                   "The environment is invalid because",
-                  "Please ensure that the project has the proper permissions and that the environment is not being accessed by another process."
+                  "Please ensure that the project has the proper permissions and that the environment is not being accessed by another process.",
+                  "Error: That command is not permitted in continuous integration mode"
                   ]
                 
 VC_UnstablePhrases = ["Value Line Error - Command Ignored"]                       
@@ -99,7 +100,11 @@ def runCommands(cmds, useLocalCmds = true) {
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_RPTS_SELF_CONTAINED=FALSE
             export VCAST_NO_FILE_TRUNCATION=1
-            export VCAST_USING_HEADLESS_MODE=${VC_UseCILicense}
+            if [ ${VC_UseCILicense} -eq 1 ]; then
+               export VCAST_USING_HEADLESS_MODE=1
+            else
+               unset VCAST_USING_HEADLESS_MODE
+            fi
             
             """.stripIndent()
         if (useLocalCmds) {
@@ -115,7 +120,7 @@ def runCommands(cmds, useLocalCmds = true) {
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
             set VCAST_NO_FILE_TRUNCATION=1
-            set VCAST_USING_HEADLESS_MODE=${VC_UseCILicense}
+            IF [${VC_UseCILicense}]==[1] (set VCAST_USING_HEADLESS_MODE=1) else (set VCAST_USING_HEADLESS_MODE=)
             """.stripIndent()
         if (useLocalCmds) {
             cmds = localCmds + cmds
