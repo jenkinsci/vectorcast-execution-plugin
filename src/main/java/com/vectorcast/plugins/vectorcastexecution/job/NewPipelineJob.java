@@ -380,6 +380,12 @@ public class NewPipelineJob extends BaseJob {
             VC_Proj_Prefix = "${VCAST_PROJECT_DIR}/";
         }
         
+        String VC_Use_CI = "";
+
+        if (useCILicenses) {
+            VC_Use_CI = "\"--ci\"";
+        } 
+        
         String topOfJenkinsfile = "// ===============================================================\n" + 
             "// \n" +  
             "// Auto-generated script by VectorCAST Execution Plug-in \n" +  
@@ -400,9 +406,8 @@ public class NewPipelineJob extends BaseJob {
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
-            "VC_UseCILicense = " + ((useCILicenses) ? "1" : "0") + "\n" +  
+            "VC_UseCILicense = " + VC_Use_CI + "\n" +  
             "VC_useCBT = " + incremental + "\n" +  
-            
             "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
             "\n" +   
             "";

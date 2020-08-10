@@ -199,17 +199,18 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict):
             xml_file.generate_cover()
         else:
             print("   Skipping environment: " + jobNameDotted)
-        f = open("unit_test_fail_count.txt","w")
-        f.write(str(xml_file.failed_count))
-        f.close()
+            
     
     except Exception as e:
         print("ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"])
         if verbose:
             traceback.print_exc()
+    try:       
+        return xml_file.failed_count
+    except:
+        return 0
         
-    return xml_file
-    
+        
 def fixup_css(report_name):
     # Needed for VC19 and VC19 SP1.
     # From VC19 SP2 onwards a new option VCAST_RPTS_SELF_CONTAINED is used instead
@@ -294,18 +295,24 @@ def generateIndividualReports(entry, envName):
             generateUTReport(unit_path , env, level)                
 
 def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict):
+    failed_count = 0 
         
     for currentEnv in manageEnvs:
+        print("Failed Count = ", failed_count)
         if envName == None:
-            genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict)
+            failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict)
             generateIndividualReports(manageEnvs[currentEnv], envName)
             
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
             if env_level.upper() == level.upper():
-                genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict)
+                failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict)
                 generateIndividualReports(manageEnvs[currentEnv], envName)
+    print("Failed Count = ", failed_count)
+    f = open("unit_test_fail_count.txt","w")
+    f.write(str(failed_count))
+    f.close()
 
 
 # build the Test Case Management Report for Manage Project

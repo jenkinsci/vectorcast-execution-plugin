@@ -120,7 +120,11 @@ class ParseConsoleForCBT(object):
                 if "Test Execution Complete" in line or "Error: " in line:
                     end_tdo = line_dto
                     duration_tdo = end_tdo - start_dto
-                    self.environmentDict[hashCode][currTestNdx][tc_name][1] = end_tdo
+                    try:
+                        self.environmentDict[hashCode][currTestNdx][tc_name][1] = end_tdo
+                    except KeyError:
+						# key error would be for the "Error: " when the test case hadn't started
+                        pass                        
 
                 if "Running: " in line:
                     start_dto = line_dto
