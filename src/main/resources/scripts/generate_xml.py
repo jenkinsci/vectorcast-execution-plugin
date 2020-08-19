@@ -432,7 +432,7 @@ class GenerateXml(BaseGenerateXml):
                         for func in unit.functions:
                             if not func.is_non_testable_stub:
                                 for tc in func.testcases:
-                                    if not tc.is_csv_map:
+                                    if not tc.is_csv_map and not tc.is_vct_map:
                                         if not tc.for_compound_only:
                                             self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
 
@@ -481,7 +481,7 @@ class GenerateXml(BaseGenerateXml):
         success = 0                                            
         
         for tc in self.api.TestCase.all():
-            if not tc.for_compound_only and not tc.is_csv_map:
+            if not tc.for_compound_only and not tc.is_csv_map and not tc.is_vct_map:
                 if not tc.passed:
                     self.failed_count += 1
                     failed += 1
