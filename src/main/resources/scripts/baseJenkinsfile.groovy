@@ -36,7 +36,8 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   ".vcm is invalid",
                   "Invalid Workspace. Please ensure the directory and database contain write permission",
                   "The environment is invalid because",
-                  "Please ensure that the project has the proper permissions and that the environment is not being accessed by another process."
+                  "Please ensure that the project has the proper permissions and that the environment is not being accessed by another process.",
+                  "Error: That command is not permitted in continuous integration mode"
                   ]
                 
 VC_UnstablePhrases = ["Value Line Error - Command Ignored"]                       
@@ -45,9 +46,9 @@ VC_UnstablePhrases = ["Value Line Error - Command Ignored"]
 def setupManageProject() {
     def cmds = """        
         _RM *_rebuild.html
-        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_sharedArtifactDirectory} --status"  
-        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --force --release-locks"
-        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} ${VC_sharedArtifactDirectory} --status"  
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --release-locks"
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
     """.stripIndent()
 
     runCommands(cmds)
@@ -99,7 +100,6 @@ def runCommands(cmds, useLocalCmds = true) {
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_RPTS_SELF_CONTAINED=FALSE
             export VCAST_NO_FILE_TRUNCATION=1
-            export VCAST_USING_HEADLESS_MODE=${VC_UseCILicense}
             
             """.stripIndent()
         if (useLocalCmds) {
@@ -115,7 +115,6 @@ def runCommands(cmds, useLocalCmds = true) {
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_RPTS_SELF_CONTAINED=FALSE
             set VCAST_NO_FILE_TRUNCATION=1
-            set VCAST_USING_HEADLESS_MODE=${VC_UseCILicense}
             """.stripIndent()
         if (useLocalCmds) {
             cmds = localCmds + cmds
@@ -149,7 +148,7 @@ def transformIntoStep(inputString) {
     // node is based on compiler label
     // this will route the job to a specific node matching that label 
     return {
-        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
         
             // Try to use VCAST_FORCE_NODE_EXEC_NAME parameter.  
             // If 0 length or not present, use the compiler name as a node label
@@ -191,7 +190,7 @@ def transformIntoStep(inputString) {
                 // setup the commands for building, executing, and transferring information
                 cmds =  """
                     ${VC_EnvSetup}
-                    ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+                    ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
                     ${VC_EnvTeardown}
                 """.stripIndent()
                 
@@ -208,7 +207,7 @@ def transformIntoStep(inputString) {
                 if (!failure && VC_sharedArtifactDirectory.length() == 0) {
                     writeFile file: "build.log", text: buildLogText
 
-                    buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --level ${compiler}/${test_suite} -e ${environment} --junit --buildlog build.log""")
+                    buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --junit --buildlog build.log""")
 
                     if (VC_usingSCM && !VC_useOneCheckoutDir) {
                         def fixedJobName = fixUpName("${env.JOB_NAME}")
@@ -372,77 +371,80 @@ pipeline {
 
         // Generating the reports needed for VectorCAST/Coverage plugin and JUnit
         stage('Generate-Overall-Reports') {
+        
             steps {
-                // Run the setup step to copy over the scripts
-                step([$class: 'VectorCASTSetup'])
-                
-                script {
-                    def unstashedBuildLogText = ""
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    // Run the setup step to copy over the scripts
+                    step([$class: 'VectorCASTSetup'])
                     
-                    // unstash each of the files
-                    EnvList.each {
-                        (compiler, test_suite, environment) = it.split()
-                        String stashName = fixUpName("${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage")
+                    script {
+                        def unstashedBuildLogText = ""
                         
-                        try {
-                            unstash stashName as String
-                            unstashedBuildLogText += readFile "${compiler}_${test_suite}_${environment}_build.log"
-                            unstashedBuildLogText += '\n'
+                        // unstash each of the files
+                        EnvList.each {
+                            (compiler, test_suite, environment) = it.split()
+                            String stashName = fixUpName("${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage")
                             
-                        }
-                        catch (Exception ex) {
-                            println ex
-                        }
-                    } 
-                    
-                    // get the manage projects full name and base name
-                    def mpFullName = VC_Manage_Project.split("/")[-1]
-                    def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
-                    def buildLogText = ""
-                    
-                    // if we are using SCM and not using a shared artifact directory...
-                    if (VC_usingSCM && !VC_useOneCheckoutDir && VC_sharedArtifactDirectory.length() == 0) {
-                        // run a script to extract stashed files and process data into xml reports                        
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py""" )
+                            try {
+                                unstash stashName as String
+                                unstashedBuildLogText += readFile "${compiler}_${test_suite}_${environment}_build.log"
+                                unstashedBuildLogText += '\n'
+                                
+                            }
+                            catch (Exception ex) {
+                                println ex
+                            }
+                        } 
                         
-                    // else if we are using a shared artifact directory
-                    } else if (VC_useOneCheckoutDir || VC_sharedArtifactDirectory.length() != 0) {
-                    
-                        // use unstashed build logs to get the skipped data
-                        writeFile file: "unstashed_build.log", text: unstashedBuildLogText
+                        // get the manage projects full name and base name
+                        def mpFullName = VC_Manage_Project.split("/")[-1]
+                        def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
+                        def buildLogText = ""
+                        
+                        // if we are using SCM and not using a shared artifact directory...
+                        if (VC_usingSCM && !VC_useOneCheckoutDir && VC_sharedArtifactDirectory.length() == 0) {
+                            // run a script to extract stashed files and process data into xml reports                        
+                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py""" )
+                            
+                        // else if we are using a shared artifact directory
+                        } else if (VC_useOneCheckoutDir || VC_sharedArtifactDirectory.length() != 0) {
+                        
+                            // use unstashed build logs to get the skipped data
+                            writeFile file: "unstashed_build.log", text: unstashedBuildLogText
 
-                        // run the metrics at the end
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
+                            // run the metrics at the end
+                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
+                        }
+                        cmds =  """                         
+                            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py --rptfmt HTML
+                            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/full_report_no_toc.py "${VC_Manage_Project}"
+                            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=aggregate   --output=${mpName}_aggregate_report.html"
+                            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=metrics     --output=${mpName}_metrics_report.html"
+                            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=environment --output=${mpName}_environment_report.html"
+                        """.stripIndent()
+                        
+                        buildLogText += runCommands(cmds)
+
+                        writeFile file: "complete_build.log", text: unstashedBuildLogText + buildLogText
+                        
+                        (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
+                    
+                        if (failure) {
+                            throw new Exception ("Error in Commands: " + foundKeywords)
+                        }
                     }
-                    cmds =  """                         
-                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py --rptfmt HTML
-                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/full_report_no_toc.py "${VC_Manage_Project}"
-                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=aggregate   --output=${mpName}_aggregate_report.html"
-                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=metrics     --output=${mpName}_metrics_report.html"
-                        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  --create-report=environment --output=${mpName}_environment_report.html"
-                    """.stripIndent()
                     
-                    buildLogText += runCommands(cmds)
+                    // Send reports to the code coverage plugin
+                    step([$class: 'VectorCASTPublisher', 
+                        includes: 'xml_data/coverage_results*.xml', 
+                        useThreshold: VC_Use_Threshold,        
+                        healthyTarget:   VC_Healthy_Target, 
+                        unhealthyTarget: VC_Unhealthy_Target
+                        ])
 
-                    writeFile file: "complete_build.log", text: unstashedBuildLogText + buildLogText
-                    
-                    (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
-                
-                    if (failure) {
-                        throw new Exception ("Error in Commands: " + foundKeywords)
-                    }
-                }
-                
-                // Send reports to the code coverage plugin
-                step([$class: 'VectorCASTPublisher', 
-                    includes: 'xml_data/coverage_results*.xml', 
-                    useThreshold: VC_Use_Threshold,        
-                    healthyTarget:   VC_Healthy_Target, 
-                    unhealthyTarget: VC_Unhealthy_Target
-                    ])
-
-                // Send test results to JUnit plugin
-                step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
+                    // Send test results to JUnit plugin
+                    step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
+                }            
 
                 // Save all the html, xml, and txt files
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, **/*.xml, **/*.css, **/*.png, **/*.txt, complete_build.log'
@@ -451,7 +453,7 @@ pipeline {
         
         stage('Check-Build-Log') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
                                                     
                         // get the console log - this requires running outside of the Groovy Sandbox
@@ -524,7 +526,12 @@ pipeline {
                         """.stripIndent()
                         
                         runCommands(cmds)
-
+                        
+                        def unitTestErrorCount = ""
+                        unitTestErrorCount = readFile "unit_test_fail_count.txt"
+                        if (unitTestErrorCount != "0") {
+                            currentBuild.description += " \nFailed test cases, Junit will mark at least as UNSTABLE"
+                        }
                         if (failure) {
                             currentBuild.result = 'FAILURE'
                             error ("Raising Error: " + "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords)

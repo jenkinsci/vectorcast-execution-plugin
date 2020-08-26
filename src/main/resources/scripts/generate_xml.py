@@ -432,12 +432,13 @@ class GenerateXml(BaseGenerateXml):
                         for func in unit.functions:
                             if not func.is_non_testable_stub:
                                 for tc in func.testcases:
-                                    if not tc.is_csv_map:
+                                    if not tc.is_csv_map and not tc.is_vct_map:
                                         if not tc.for_compound_only:
                                             self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
 
             except AttributeError as e:
-                print(e)
+                import traceback
+                traceback.print_exc()
                 pass
                 
         self.end_test_results_file()
@@ -481,7 +482,7 @@ class GenerateXml(BaseGenerateXml):
         success = 0                                            
         
         for tc in self.api.TestCase.all():
-            if not tc.for_compound_only and not tc.is_csv_map:
+            if not tc.for_compound_only and not tc.is_csv_map and not tc.is_vct_map:
                 if not tc.passed:
                     self.failed_count += 1
                     failed += 1
@@ -791,3 +792,46 @@ class GenerateXml(BaseGenerateXml):
     def __print_test_case_was_skipped(self, searchName, passed):
         if self.verbose:
             print("skipping ", self.hashCode, searchName, passed)
+
+if __name__ == '__main__':
+
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('environment', help='VectorCAST environment name')
+    parser.add_argument('-v', '--verbose', default=False, help='Enable verbose output', action="store_true")
+    args = parser.parse_args()
+    
+    envPath = os.path.dirname(os.path.abspath(args.environment))
+    env = os.path.basename(args.environment)
+    
+    if env.endswith(".vcp"):
+        env = env[:-4]
+        
+    if env.endswith(".vce"):
+        env = env[:-4]
+        
+    jobNameDotted = env
+    jenkins_name = env
+    jenkins_link = env
+    xmlCoverReportName = "coverage_results_" + env + ".xml"
+    xmlTestingReportName = "test_results_" + env + ".xml"
+
+    xml_file = GenerateXml(env,
+                           envPath,
+                           env, "", "", 
+                           xmlCoverReportName,
+                           jenkins_name,
+                           xmlTestingReportName,
+                           jenkins_link,
+                           jobNameDotted, 
+                           args.verbose, 
+                           None)
+
+    
+    if xml_file.using_cover:
+        xml_file.generate_cover()
+        print ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
+    else:
+        xml_file.generate_unit()
+        print ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)
+    
