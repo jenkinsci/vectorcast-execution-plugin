@@ -98,7 +98,6 @@ def runCommands(cmds, useLocalCmds = true) {
         localCmds = """
             ${VC_EnvSetup}
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
-            export VCAST_RPTS_SELF_CONTAINED=FALSE
             export VCAST_NO_FILE_TRUNCATION=1
             
             """.stripIndent()
@@ -113,7 +112,6 @@ def runCommands(cmds, useLocalCmds = true) {
         localCmds = """
             ${VC_EnvSetup}
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
-            set VCAST_RPTS_SELF_CONTAINED=FALSE
             set VCAST_NO_FILE_TRUNCATION=1
             """.stripIndent()
         if (useLocalCmds) {
@@ -220,7 +218,7 @@ def transformIntoStep(inputString) {
                 // no cleanup - possible CBT
                 // use individual names
                 def fixedJobName = fixUpName("${env.JOB_NAME}")
-                stash includes: "${compiler}_${test_suite}_${environment}_build.log, **/${compiler}_${test_suite}_${environment}_rebuild.html, **/*.css, **/*.png, execution/*.html, management/*${compiler}_${test_suite}_${environment}*, xml_data/*${compiler}_${test_suite}_${environment}*, ${fixedJobName}_${compiler}_${test_suite}_${environment}_build.tar", name: stashName as String
+                stash includes: "${compiler}_${test_suite}_${environment}_build.log, **/${compiler}_${test_suite}_${environment}_rebuild.html, execution/*.html, management/*${compiler}_${test_suite}_${environment}*, xml_data/*${compiler}_${test_suite}_${environment}*, ${fixedJobName}_${compiler}_${test_suite}_${environment}_build.tar", name: stashName as String
                 
                 println "Finished Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
 
@@ -447,7 +445,7 @@ pipeline {
                 }            
 
                 // Save all the html, xml, and txt files
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, **/*.xml, **/*.css, **/*.png, **/*.txt, complete_build.log'
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, **/*.xml, **/*.txt, complete_build.log'
             }
         }
         
