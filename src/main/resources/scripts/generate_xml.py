@@ -827,11 +827,13 @@ if __name__ == '__main__':
                            args.verbose, 
                            None)
 
-    
-    if xml_file.using_cover:
+    if xml_file.api == None:
+        print ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
+        
+    elif xml_file.using_cover:
         xml_file.generate_cover()
         print ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
+
     else:
         xml_file.generate_unit()
         print ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)
-    
