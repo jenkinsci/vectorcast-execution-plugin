@@ -380,7 +380,7 @@ public class NewPipelineJob extends BaseJob {
             VC_Proj_Prefix = "${VCAST_PROJECT_DIR}/";
         }
         
-        String VC_Use_CI = "";
+        String VC_Use_CI = "\"\"";
 
         if (useCILicenses) {
             VC_Use_CI = "\"--ci\"";
