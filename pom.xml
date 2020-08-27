@@ -44,16 +44,10 @@
 
     <developers>
         <developer>
-            <id>rmkeeble</id>
-            <name>Richard Keeble</name>
-            <email>richard.keeble@vectorcast.com</email>
-            <organization>Vector Software</organization>
-        </developer>
-        <developer>
-            <id>nbelliot</id>
-            <name>Nicholas Elliot</name>
-            <email>nicholas.elliot@vector.com</email>
-            <organization>Vector Software</organization>
+            <id>TimSVector</id>
+            <name>Tim Schneider</name>
+            <email>Tim.Schneider@vector.com</email>
+            <organization>Vector Informatik, GmbH</organization>
         </developer>
     </developers>
 
