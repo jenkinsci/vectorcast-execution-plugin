@@ -123,7 +123,7 @@ public class NewPipelineJob extends BaseJob {
         singleCheckout = json.optBoolean("singleCheckout", false);
         useCILicenses  = json.optBoolean("useCiLicense", false);
         useCBT  = json.optBoolean("useCBT", true);
-        useParameters  = json.optBoolean("useParameters", true);
+        useParameters  = json.optBoolean("useParameters", false);
         
         // remove the win/linux options since there's no platform any more 
         environmentSetup = json.optString("environmentSetup", null);

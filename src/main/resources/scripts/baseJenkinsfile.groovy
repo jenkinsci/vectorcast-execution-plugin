@@ -523,7 +523,7 @@ pipeline {
                         def unitTestErrorCount = ""
                         unitTestErrorCount = readFile "unit_test_fail_count.txt"
                         if (unitTestErrorCount != "0") {
-                            currentBuild.description += " \nFailed test cases, Junit will mark at least as UNSTABLE"
+                            currentBuild.description += "Failed test cases, Junit will mark at least as UNSTABLE"
                         }
                         if (failure) {
                             currentBuild.result = 'FAILURE'
