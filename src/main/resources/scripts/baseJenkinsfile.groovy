@@ -463,6 +463,7 @@ pipeline {
 
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly
+                        currentBuild.description = ""
                         if (foundKeywords.size() > 0) {
                             currentBuild.description = "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords + "\n"
                         }
@@ -523,7 +524,7 @@ pipeline {
                         def unitTestErrorCount = ""
                         unitTestErrorCount = readFile "unit_test_fail_count.txt"
                         if (unitTestErrorCount != "0") {
-                            currentBuild.description += " \nFailed test cases, Junit will mark at least as UNSTABLE"
+                            currentBuild.description += "Failed test cases, Junit will mark at least as UNSTABLE"
                         }
                         if (failure) {
                             currentBuild.result = 'FAILURE'
