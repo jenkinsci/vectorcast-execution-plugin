@@ -463,6 +463,7 @@ pipeline {
 
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly
+                        currentBuild.description = ""
                         if (foundKeywords.size() > 0) {
                             currentBuild.description = "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords + "\n"
                         }
