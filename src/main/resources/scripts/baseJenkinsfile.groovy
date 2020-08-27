@@ -205,8 +205,6 @@ def transformIntoStep(inputString) {
                 if (!failure && VC_sharedArtifactDirectory.length() == 0) {
                     writeFile file: "build.log", text: buildLogText
 
-                    buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --junit --buildlog build.log""")
-
                     if (VC_usingSCM && !VC_useOneCheckoutDir) {
                         def fixedJobName = fixUpName("${env.JOB_NAME}")
                         buildLogText = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} ${compiler}/${test_suite} ${fixedJobName}_${compiler}_${test_suite}_${environment} ${environment}""" )
@@ -403,16 +401,13 @@ pipeline {
                         if (VC_usingSCM && !VC_useOneCheckoutDir && VC_sharedArtifactDirectory.length() == 0) {
                             // run a script to extract stashed files and process data into xml reports                        
                             buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py""" )
-                            
-                        // else if we are using a shared artifact directory
-                        } else if (VC_useOneCheckoutDir || VC_sharedArtifactDirectory.length() != 0) {
-                        
-                            // use unstashed build logs to get the skipped data
-                            writeFile file: "unstashed_build.log", text: unstashedBuildLogText
+                        }        
+                        // use unstashed build logs to get the skipped data
+                        writeFile file: "unstashed_build.log", text: unstashedBuildLogText
 
-                            // run the metrics at the end
-                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
-                        }
+                        // run the metrics at the end
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
+
                         cmds =  """                         
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py --rptfmt HTML
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/full_report_no_toc.py "${VC_Manage_Project}"

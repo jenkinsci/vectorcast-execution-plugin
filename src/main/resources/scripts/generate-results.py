@@ -298,7 +298,6 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict):
     failed_count = 0 
         
     for currentEnv in manageEnvs:
-        print("Failed Count = ", failed_count)
         if envName == None:
             failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict)
             generateIndividualReports(manageEnvs[currentEnv], envName)
@@ -309,7 +308,6 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict):
             if env_level.upper() == level.upper():
                 failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict)
                 generateIndividualReports(manageEnvs[currentEnv], envName)
-    print("Failed Count = ", failed_count)
     f = open("unit_test_fail_count.txt","w")
     f.write(str(failed_count))
     f.close()
