@@ -491,7 +491,7 @@ class GenerateXml(BaseGenerateXml):
             except:
                 vctMap = False
         
-            if (not tc.for_compound_only or tc.testcase_status == "TCR_STRICT_IMPORT_FAILED") and not tc.is_csv_map and not tc.vctMap:
+            if (not tc.for_compound_only or tc.testcase_status == "TCR_STRICT_IMPORT_FAILED") and not tc.is_csv_map and not vctMap:
                 if not tc.passed:
                     self.failed_count += 1
                     failed += 1
