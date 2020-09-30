@@ -416,7 +416,7 @@ class GenerateXml(BaseGenerateXml):
                                 
                             level = env.compiler.name + "/" + env.testsuite.name + "/" + env.name
                             if self.verbose:
-                                print (level, tc.name, pass_fail_rerun)
+                                print (level, st.name, pass_fail_rerun)
                             self.write_testcase(st, level, st.name)
 
             except ImportError as e:
