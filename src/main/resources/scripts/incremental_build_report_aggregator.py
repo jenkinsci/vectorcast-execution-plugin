@@ -47,7 +47,7 @@ if sys.version_info[0] < 3:
 from bs4 import BeautifulSoup
 
 import re
-def parse_text_files():
+def parse_text_files(mpName):
     header = """
 --------------------------------------------------------------------------------
 Manage Incremental Rebuild Report
@@ -107,7 +107,7 @@ Environments Affected
     template = "\nTotals                  %3d%% (%4d / %4d)          %9d %9d %9d"
     totalStr += template%(percentage,rebuild_count,rebuild_total,preserved_count,executed_count,total_count)
 
-    f = open("CombinedReport.txt","w")
+    f = open(mpName + "_rebuild.txt","w")
     f.write(header + outStr + totalStr)
     f.close()
 
@@ -125,7 +125,7 @@ Environments Affected
     for file in glob.glob("*.png"):
         shutil.copy(file, "rebuild_reports/"+file)
 
-def parse_html_files():
+def parse_html_files(mpName):
 
     report_file_list = []
     full_file_list = os.listdir(".")
@@ -221,7 +221,7 @@ def parse_html_files():
     div = main_soup.find("div", {'class':'report-body'})    
     div['class']="report-body no-toc"
     
-    f = open("Incremental_Rebuild_Report.html","w", encoding="utf-8")
+    f = open(mpName + "_rebuild.html","w", encoding="utf-8")
     f.write(main_soup.prettify(formatter="html"))
     f.close()
 
@@ -237,19 +237,22 @@ def parse_html_files():
     if not os.path.exists("rebuild_reports"):
         os.mkdir("rebuild_reports")
     for file in report_file_list:
+        if mpName + "_rebuild.html" in file:
+            continue
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('ManageProject')
     parser.add_argument('--rptfmt')
     parser.add_argument('--api',   help='Unused', type=int)
 
     args = parser.parse_args()
 
     if args.rptfmt and "TEXT" in args.rptfmt:
-        parse_text_files()
+        parse_text_files(args.ManageProject)
     else:
-        parse_html_files()
+        parse_html_files(args.ManageProject)
 
