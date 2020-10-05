@@ -418,6 +418,7 @@ class GenerateXml(BaseGenerateXml):
                             if self.verbose:
                                 print (level, st.name, pass_fail_rerun)
                             self.write_testcase(st, level, st.name)
+                api.close()
 
             except ImportError as e:
                 print("   Skipping test results for QA project " + os.path.join(self.build_dir,self.env))
@@ -470,7 +471,8 @@ class GenerateXml(BaseGenerateXml):
                         failed += 1
                         errors += 1  
                         self.failed_count += 1
-                    
+        api.close()            
+		
         self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
         self.fh.write("<testsuites>\n")
         self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %

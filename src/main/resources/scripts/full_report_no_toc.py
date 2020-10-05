@@ -43,6 +43,7 @@ def generate_full_status(manageProject):
         CustomReport.report_from_api(api, report_type="MANAGE_STATUS_FULL_REPORT", formats=["HTML"], output_file=report_name, environments=api.Environment.all(), levels = [] )
         shutil.copy(report_name,report_name + "_tmp")
         fixup_reports.fixup_2020_reports(report_name + "_tmp")
+        api.close()
         
     except:
         from managewait import ManageWait
