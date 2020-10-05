@@ -60,11 +60,13 @@ except:
     pass
     
 #global variables
+global print_exc
 global verbose
 global wait_time
 global wait_loops
 
 verbose = False
+print_exc = False
 
 def runManageWithWait(command_line, silent=False):
     global verbose
@@ -203,7 +205,7 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict):
     
     except Exception as e:
         print("ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"])
-        if verbose:
+        if print_exc:
             traceback.print_exc()
     try:       
         return xml_file.failed_count
@@ -257,7 +259,7 @@ def generateCoverReport(path, env, level ):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ": ")
-        if verbose:
+        if print_exc:
             traceback.print_exc()
 
 def generateUTReport(path, env, level): 
@@ -274,7 +276,7 @@ def generateUTReport(path, env, level):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ".")
-        if verbose:
+        if print_exc:
             traceback.print_exc()
 
 def generateIndividualReports(entry, envName):
@@ -544,7 +546,7 @@ if __name__ == '__main__':
     parser.add_argument('--timing',   help='Display timing information for report generation', action="store_true")
     parser.add_argument('--junit',   help='Output test resutls in JUnit format', action="store_true")
     parser.add_argument('--api',   help='Unused', type=int)
-    parser.add_argument('--final',   help='Write Final JUnit Test Results file',  action="store_true")
+    parser.add_argument('--print_exc',   help='Prints Exceptions',  action="store_true", default = False)
     parser.add_argument('--buildlog',   help='Build Log for CBT Statitics')
 
     args = parser.parse_args()
@@ -597,5 +599,7 @@ if __name__ == '__main__':
     # Used for VC19 SP2 onwards
     os.environ['VCAST_RPTS_SELF_CONTAINED'] = 'FALSE'
 
+    print_exc = args.print_exc
+    
     buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict)
 
