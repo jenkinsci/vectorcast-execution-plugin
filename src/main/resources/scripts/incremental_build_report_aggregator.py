@@ -218,8 +218,9 @@ def parse_html_files(mpName):
         div.decompose()
         
     #<div class="report-body no-toc" id="main-scroller">
-    div = main_soup.find("div", {'class':'report-body'})    
-    div['class']="report-body no-toc"
+    div = main_soup.find("div", {'class':'report-body'})  
+    if div:
+        div['class']="report-body no-toc"
     
     f = open(mpName + "_rebuild.html","w", encoding="utf-8")
     f.write(main_soup.prettify(formatter="html"))
