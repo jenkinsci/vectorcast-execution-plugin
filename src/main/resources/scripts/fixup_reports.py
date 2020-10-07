@@ -25,7 +25,17 @@
 from __future__ import division
 from __future__ import print_function
 
-import sys
+import sys, os
+# adding path
+jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
+python_path_updates = jenkinsScriptHome
+sys.path.append(python_path_updates)
+
+# needed because vc18 vpython does not have bs4 package
+if sys.version_info[0] < 3:
+    python_path_updates += os.sep + 'vpython-addons'
+    sys.path.append(python_path_updates)
+
 from bs4 import BeautifulSoup
 from io import open
 
