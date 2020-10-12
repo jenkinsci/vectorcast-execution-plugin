@@ -395,9 +395,9 @@ class GenerateXml(BaseGenerateXml):
     def generate_unit(self):
         
         if isinstance(self.api, CoverApi):
-            self.start_system_test_file()
             try:
                 from vector.apps.DataAPI.vcproject_api import VCProjectApi
+                self.start_system_test_file()
                 api = VCProjectApi(self.FullManageProjectName)
                 
                 for env in api.Environment.all():
@@ -421,7 +421,9 @@ class GenerateXml(BaseGenerateXml):
                 api.close()
 
             except ImportError as e:
-                print("   Skipping test results for QA project " + os.path.join(self.build_dir,self.env))
+                from generate_qa_results_xml import genQATestResults
+                genQATestResults(self.FullManageProjectName)
+                return
 
         else:
             try:

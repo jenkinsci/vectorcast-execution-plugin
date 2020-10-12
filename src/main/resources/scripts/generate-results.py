@@ -517,6 +517,19 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 copyList.append([reportName,adjustedReportName])
                 # Reset env
                 env = None
+		failed_count = 0
+		try:
+			for file in glob.glob("xml/test_results_*.xml"):
+				lines = open(file,"r").readlines()
+				failureLine = lines[2]
+				failed_count = int(failureLine.split("\"")[1])
+		except:
+			print ("   *Problem parsing file " + file + " to parse for unit testcase failures")
+			if print_exc:
+				traceback.print_exc()
+		f = open("unit_test_fail_count.txt","w")
+		f.write(str(failed_count))
+		f.close()
                 
 
         for file in copyList:
@@ -532,6 +545,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
     if timing:
         print("Complete: " + str(time.time()))
+		
+		
         
 if __name__ == '__main__':
 
