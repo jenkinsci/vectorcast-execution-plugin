@@ -376,7 +376,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     ### Using new data API - 2019 and beyond
     if timing:
         print("Cleanup: " + str(time.time()))
-    if useNewReport:
+    if useNewReport and not legacy:
 
         try:
             shutil.rmtree("execution") 
@@ -562,6 +562,7 @@ if __name__ == '__main__':
     parser.add_argument('--junit',   help='Output test resutls in JUnit format', action="store_true")
     parser.add_argument('--api',   help='Unused', type=int)
     parser.add_argument('--print_exc',   help='Prints Exceptions',  action="store_true", default = False)
+    parser.add_argument('--legacy',   help='Force legacy reports for testing only', action="store_true", default = False)
     parser.add_argument('--buildlog',   help='Build Log for CBT Statitics')
 
     args = parser.parse_args()
@@ -615,6 +616,7 @@ if __name__ == '__main__':
     os.environ['VCAST_RPTS_SELF_CONTAINED'] = 'FALSE'
 
     print_exc = args.print_exc
+    legacy = args.legacy
     
     buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict)
 
