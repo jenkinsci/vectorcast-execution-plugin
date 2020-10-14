@@ -50,7 +50,9 @@ def generate_full_status(manageProject):
 
         cmd = "--project " + manageProject + " --full-status=" + report_name
         manageWait = ManageWait(False, cmd, 30, 1)
-        return manageWait.exec_manage(True)
+        out_mgt = manageWait.exec_manage(True)
+        shutil.copy(report_name,report_name + "_tmp")
+        return out_mgt
         
 if __name__ == '__main__':
     manageProject = sys.argv[1]
