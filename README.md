@@ -46,7 +46,7 @@ There are 2 types of supported jobs and 1 deprecated job type
 (optionally) report on all environments in a VectorCAST/Manage project
 in parallel.
 
-*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel exeuction on a single VectorCAST Project*
+:warning:*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel exeuction on a single VectorCAST Project*
 
 ![](docs/images/pipeline_create.png)
 
