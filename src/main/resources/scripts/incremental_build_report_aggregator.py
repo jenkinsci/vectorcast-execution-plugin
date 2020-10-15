@@ -127,6 +127,9 @@ Environments Affected
 
 def parse_html_files(mpName):
 
+    if os.path.exists(mpName + "_rebuild.html"):
+        os.remove(mpName + "_rebuild.html")
+        
     report_file_list = []
     full_file_list = os.listdir(".")
     for file in full_file_list:
