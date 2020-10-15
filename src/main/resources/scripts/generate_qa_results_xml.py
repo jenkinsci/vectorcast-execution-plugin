@@ -157,7 +157,7 @@ def processSystemTestResultsData(lines):
                     
                 compiler = compiler.replace(".","").replace(" ", "")
                 
-                unit_report_name = "_".join(["test_results",envName,compiler, testsuite]) + ".xml"
+                unit_report_name = "_".join(["test_results",compiler, testsuite, envName]) + ".xml"
                 jobNameDotted = ".".join([compiler, testsuite, envName])
                 
             if tc_percent != "N/A":

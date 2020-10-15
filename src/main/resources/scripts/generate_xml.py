@@ -422,7 +422,7 @@ class GenerateXml(BaseGenerateXml):
 
             except ImportError as e:
                 from generate_qa_results_xml import genQATestResults
-                genQATestResults(self.FullManageProjectName)
+                genQATestResults(self.FullManageProjectName, self.compiler+ "/" + self.testsuite, self.env, True)
                 return
 
         else:
