@@ -413,12 +413,12 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         # capture the output of the manage call
         out_mgt = runManageWithWait(callStr)
 
-        missing = False
+        coverProjectInManageProject = False
         if "database missing or inaccessible" in out_mgt:
-            missing = True
+            coverProjectInManageProject = True
         elif re.search('Environment directory.*is missing', out_mgt):
-            missing = True
-        if missing:
+            coverProjectInManageProject = True
+        if coverProjectInManageProject:
             callStr = callStr.replace("report custom","cover report")
             print(callStr)
             out_mgt2 = runManageWithWait(callStr)
@@ -517,19 +517,23 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 copyList.append([reportName,adjustedReportName])
                 # Reset env
                 env = None
-		failed_count = 0
-		try:
-			for file in glob.glob("xml/test_results_*.xml"):
-				lines = open(file,"r").readlines()
-				failureLine = lines[2]
-				failed_count = int(failureLine.split("\"")[1])
-		except:
-			print ("   *Problem parsing file " + file + " to parse for unit testcase failures")
-			if print_exc:
-				traceback.print_exc()
-		f = open("unit_test_fail_count.txt","w")
-		f.write(str(failed_count))
-		f.close()
+        
+        if coverProjectInManageProject:
+            generate_qa_results_xml.genQATestResults(FullManageProjectName,saved_level,saved_envName)
+            
+        failed_count = 0
+        try:
+            for file in glob.glob("xml/test_results_*.xml"):
+                lines = open(file,"r").readlines()
+                failureLine = lines[2]
+                failed_count = int(failureLine.split("\"")[1])
+        except:
+            print ("   *Problem parsing file " + file + " to parse for unit testcase failures")
+            if print_exc:
+                traceback.print_exc()
+        f = open("unit_test_fail_count.txt","w")
+        f.write(str(failed_count))
+        f.close()
                 
 
         for file in copyList:
@@ -545,8 +549,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
     if timing:
         print("Complete: " + str(time.time()))
-		
-		
+        
+        
         
 if __name__ == '__main__':
 
@@ -617,6 +621,6 @@ if __name__ == '__main__':
 
     print_exc = args.print_exc
     legacy = args.legacy
-    
+        
     buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict)
 
