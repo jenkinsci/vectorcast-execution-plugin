@@ -87,7 +87,7 @@ def checkLogsForErrors(log) {
     return [foundKeywords, failure, unstable_flag]
 }
 // run commands on Unix (Linux) or Windows
-def runCommands(cmds, useLocalCmds = true) {
+def runCommands(cmds) {
     def boolean failure = false;
     def boolean unstable_flag = false;
     def foundKeywords = ""
@@ -101,9 +101,7 @@ def runCommands(cmds, useLocalCmds = true) {
             export VCAST_NO_FILE_TRUNCATION=1
             
             """.stripIndent()
-        if (useLocalCmds) {
-            cmds = localCmds + cmds
-        }
+        cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
         println "Running commands: " + cmds
         log = sh label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
@@ -114,9 +112,7 @@ def runCommands(cmds, useLocalCmds = true) {
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_NO_FILE_TRUNCATION=1
             """.stripIndent()
-        if (useLocalCmds) {
-            cmds = localCmds + cmds
-        }
+        cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
         println "Running commands: " + cmds
         log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
@@ -334,17 +330,23 @@ pipeline {
                     def EnvData = ""
                     
                     // Run a script to determine the compiler test_suite and environment
-                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project}""", false )
-                    
+                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project}""")
+                                        
                     // for a groovy list that is stored in a global variable EnvList to be use later in multiple places
                     def lines = EnvData.split('\n')
+                    def getjobs_py_found = false
                     lines.each { line ->
                         def trimmedString = line.trim()
                         boolean containsData = trimmedString?.trim()
-
-                        if (containsData && !trimmedString.contains("vpython"))  {
+                        
+                        if (getjobs_py_found)  {
+                            print ("++ " + trimmedString)
                             EnvList = EnvList + [trimmedString]
                         }
+                        else if (containsData && trimmedString.contains("vc_scripts/getjobs.py")) {
+                            getjobs_py_found = true
+                        }
+                        
                     }
                     
                     // down to here                                                                            ^^^
