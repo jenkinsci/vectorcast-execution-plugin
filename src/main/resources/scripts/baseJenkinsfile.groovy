@@ -108,6 +108,7 @@ def runCommands(cmds) {
         
     } else {
         localCmds = """
+            @echo off
             ${VC_EnvSetup}
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_NO_FILE_TRUNCATION=1
@@ -334,19 +335,13 @@ pipeline {
                                         
                     // for a groovy list that is stored in a global variable EnvList to be use later in multiple places
                     def lines = EnvData.split('\n')
-                    def getjobs_py_found = false
                     lines.each { line ->
                         def trimmedString = line.trim()
                         boolean containsData = trimmedString?.trim()
-                        
-                        if (getjobs_py_found)  {
+                        if (containsData) {
                             print ("++ " + trimmedString)
                             EnvList = EnvList + [trimmedString]
-                        }
-                        else if (containsData && trimmedString.contains("vc_scripts/getjobs.py")) {
-                            getjobs_py_found = true
-                        }
-                        
+                        }                        
                     }
                     
                     // down to here                                                                            ^^^

@@ -525,8 +525,10 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         try:
             for file in glob.glob("xml_data/test_results_*.xml"):
                 lines = open(file,"r").readlines()
-                failureLine = lines[2]
-                failed_count = int(failureLine.split("\"")[5])
+                for line in lines:
+                    if "failures" in line:
+                        failed_count = int(line.split("\"")[5])
+                        break
         except:
             print ("   *Problem parsing file " + file + " to parse for unit testcase failures")
             if print_exc:
