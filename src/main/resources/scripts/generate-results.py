@@ -527,7 +527,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 lines = open(file,"r").readlines()
                 for line in lines:
                     if "failures" in line:
-                        failed_count = int(line.split("\"")[5])
+                        failed_count += int(line.split("\"")[5])
                         break
         except:
             print ("   *Problem parsing file " + file + " to parse for unit testcase failures")
