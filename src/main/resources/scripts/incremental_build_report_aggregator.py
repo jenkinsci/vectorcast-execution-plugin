@@ -141,9 +141,9 @@ def parse_html_files(mpName):
         return
         
     try:
-        main_soup = BeautifulSoup(open(report_file_list[0]),features="lxml")
+        main_soup = BeautifulSoup(open(report_file_list[0], encoding="utf-8"),features="lxml")
     except:
-        main_soup = BeautifulSoup(open(report_file_list[0]))
+        main_soup = BeautifulSoup(open(report_file_list[0], encoding="utf-8"))
     preserved_count = 0
     executed_count = 0
     total_count = 0
@@ -170,9 +170,10 @@ def parse_html_files(mpName):
     insert_idx = 2
     for file in report_file_list[1:]:
         try:
-            soup = BeautifulSoup(open(file),features="lxml")
+            soup = BeautifulSoup(open(file, encoding="utf-8"),features="lxml")
         except:
-            soup = BeautifulSoup(open(file))
+            soup = BeautifulSoup(open(file, encoding="utf-8"))
+            
         if soup.find(id="report-title"):
             manage_api_report = True
             # New Manage reports have div with id=report-title
