@@ -437,7 +437,7 @@ pipeline {
                 }            
 
                 // Save all the html, xml, and txt files
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, **/*.xml, **/*.txt, complete_build.log'
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, **/*.xml, **/*.txt, **/*.png, **/*.css, complete_build.log'
             }
         }
         
