@@ -418,6 +418,9 @@ class GenerateXml(BaseGenerateXml):
                             if self.verbose:
                                 print (level, st.name, pass_fail_rerun)
                             self.write_testcase(st, level, st.name)
+                from generate_qa_results_xml import saveQATestStatus
+                genQATestResults(self.FullManageProjectName)
+
                 api.close()
 
             except ImportError as e:
