@@ -66,8 +66,6 @@ global wait_loops
 
 verbose = False
 
- = False
-
 def runManageWithWait(command_line, silent=False):
     global verbose
     global wait_time
