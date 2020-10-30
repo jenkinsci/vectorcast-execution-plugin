@@ -60,13 +60,13 @@ except:
     pass
     
 #global variables
-global print_exc
 global verbose
 global wait_time
 global wait_loops
 
 verbose = False
-print_exc = False
+
+ = False
 
 def runManageWithWait(command_line, silent=False):
     global verbose
@@ -205,8 +205,7 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict):
     
     except Exception as e:
         print("ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"])
-        if print_exc:
-            traceback.print_exc()
+        traceback.print_exc()
     try:       
         return xml_file.failed_count
     except:
@@ -259,8 +258,7 @@ def generateCoverReport(path, env, level ):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ": ")
-        if print_exc:
-            traceback.print_exc()
+        traceback.print_exc()
 
 def generateUTReport(path, env, level): 
     global verbose
@@ -276,8 +274,7 @@ def generateUTReport(path, env, level):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ".")
-        if print_exc:
-            traceback.print_exc()
+        traceback.print_exc()
 
 def generateIndividualReports(entry, envName):
     global verbose
@@ -531,8 +528,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                         break
         except:
             print ("   *Problem parsing file " + file + " to parse for unit testcase failures")
-            if print_exc:
-                traceback.print_exc()
+            traceback.print_exc()
         f = open("unit_test_fail_count.txt","w")
         f.write(str(failed_count))
         f.close()
@@ -567,7 +563,7 @@ if __name__ == '__main__':
     parser.add_argument('--timing',   help='Display timing information for report generation', action="store_true")
     parser.add_argument('--junit',   help='Output test resutls in JUnit format', action="store_true")
     parser.add_argument('--api',   help='Unused', type=int)
-    parser.add_argument('--print_exc',   help='Prints Exceptions',  action="store_true", default = False)
+
     parser.add_argument('--legacy',   help='Force legacy reports for testing only', action="store_true", default = False)
     parser.add_argument('--buildlog',   help='Build Log for CBT Statitics')
 
@@ -621,7 +617,16 @@ if __name__ == '__main__':
     # Used for VC19 SP2 onwards
     os.environ['VCAST_RPTS_SELF_CONTAINED'] = 'FALSE'
 
-    print_exc = args.print_exc
+
+
+
+
+
+
+
+
+
+
     legacy = args.legacy
         
     buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict)
