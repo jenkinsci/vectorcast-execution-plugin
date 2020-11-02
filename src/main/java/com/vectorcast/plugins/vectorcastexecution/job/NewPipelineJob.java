@@ -83,9 +83,13 @@ public class NewPipelineJob extends BaseJob {
     private String pipelineSCM = "";
     
     private boolean singleCheckout;
-    
-    private String debugJSON;
 
+    private boolean useCILicenses;
+    
+    private boolean useCBT;
+
+    private boolean useParameters;
+   
     /** Environment setup script */
     private String environmentSetup;
     /** Execute preamble */
@@ -106,8 +110,9 @@ public class NewPipelineJob extends BaseJob {
 		super(request, response, false);
 
 		JSONObject json = request.getSubmittedForm();
-        debugJSON = json.toString();
         
+        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "JSON Info for Pipeline Create: " + json.toString());
+
 		nodeLabel = json.optString("nodeLabel");
 		if (nodeLabel == null || nodeLabel.isEmpty()) {
 			nodeLabel = "master";
@@ -116,6 +121,9 @@ public class NewPipelineJob extends BaseJob {
         sharedArtifactDirectory = json.optString("sharedArtifactDir","");
         pipelineSCM = json.optString("scmSnippet","").trim();
         singleCheckout = json.optBoolean("singleCheckout", false);
+        useCILicenses  = json.optBoolean("useCiLicense", false);
+        useCBT  = json.optBoolean("useCBT", true);
+        useParameters  = json.optBoolean("useParameters", false);
         
         // remove the win/linux options since there's no platform any more 
         environmentSetup = json.optString("environmentSetup", null);
@@ -136,7 +144,7 @@ public class NewPipelineJob extends BaseJob {
         if (MPName.startsWith("/"))      absPath = true;
         if (MPName.matches("[a-zA-Z]:.*")) absPath = true;
         
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, "MPName: " + MPName + "   scmSnippet: " + pipelineSCM,  "MPName: " + MPName + "   scmSnippet: " + pipelineSCM);
+        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "MPName: " + MPName + "   scmSnippet: " + pipelineSCM,  "MPName: " + MPName + "   scmSnippet: " + pipelineSCM);
 
         if (pipelineSCM.length() != 0 && absPath) {
             throw new ScmConflictException(pipelineSCM, MPName);
@@ -149,7 +157,7 @@ public class NewPipelineJob extends BaseJob {
 	 * @return the project name
 	 */
 	public String getProjectName() {
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
+        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
         
 		return projectName;
 	}
@@ -171,17 +179,21 @@ public class NewPipelineJob extends BaseJob {
             return null;
         }
 
-		projectName = getBaseName() + ".vcast.pipeline";
-        
         if (getJobName() != null && !getJobName().isEmpty()) {
             projectName = getJobName();
         }
+        else {
+            projectName = getBaseName() + ".vcast.pipeline";        
+        }
 
+        // Remove all non-alphanumeric characters from the Jenkins Job name
+        projectName = projectName.replaceAll("[^a-zA-Z0-9_]","_");
+        
         if (getInstance().getJobNames().contains(projectName)) {
             throw new JobAlreadyExistsException(projectName);
         }
             
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
+        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
 		return null;
     }
 
@@ -269,7 +281,16 @@ public class NewPipelineJob extends BaseJob {
 	 */
 	private File writeConfigFile() throws IOException {
 
-		InputStream in = getClass().getResourceAsStream("/scripts/config.xml");
+        
+		InputStream in;
+
+        if (useParameters) {
+            in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
+        } else {
+            in = getClass().getResourceAsStream("/scripts/config.xml");
+        }
+        
+		//InputStream in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
 		BufferedReader br = new BufferedReader(new InputStreamReader(in));
 		File configFile = File.createTempFile("config_temp", ".xml");
 
@@ -347,6 +368,23 @@ public class NewPipelineJob extends BaseJob {
         if ((environmentTeardown != null) && (!environmentTeardown.isEmpty())) {
             teardown = environmentTeardown.replace("\\","/").replace("\"","\\\"");
         }
+        String incremental = "\"\"";
+        if (useCBT)
+        {
+            incremental = "\"--incremental\"";
+        }
+        
+        String VC_Proj_Prefix = "";
+        
+        if (useParameters) {
+            VC_Proj_Prefix = "${VCAST_PROJECT_DIR}/";
+        }
+        
+        String VC_Use_CI = "\"\"";
+
+        if (useCILicenses) {
+            VC_Use_CI = "\"--ci\"";
+        } 
         
         String topOfJenkinsfile = "// ===============================================================\n" + 
             "// \n" +  
@@ -357,7 +395,7 @@ public class NewPipelineJob extends BaseJob {
             "//\n" +  
             "// ===============================================================\n" +  
             "\n" +  
-            "VC_Manage_Project     = \"" + this.getManageProjectName() + "\"\n" + 
+            "VC_Manage_Project     = \"" + VC_Proj_Prefix + "\" + \'" + this.getManageProjectName() + "\'\n" + 
             "VC_EnvSetup        = '''" + setup + "'''\n" + 
             "VC_Build_Preamble  = \"" + preamble + "\"\n" + 
             "VC_EnvTeardown     = '''" + teardown + "'''\n" + 
@@ -368,12 +406,10 @@ public class NewPipelineJob extends BaseJob {
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
+            "VC_UseCILicense = " + VC_Use_CI + "\n" +  
+            "VC_useCBT = " + incremental + "\n" +  
             "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
-            "\n" +  
-            "\n" +  
-            "/* DEBUG JSON RESPONSE: \n" + debugJSON + "\n*/"+
-            "\n" +  
-            "\n" + 
+            "\n" +   
             "";
             
         String baseJenkinsfile = getBaseJenkinsfile();

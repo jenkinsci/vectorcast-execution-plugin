@@ -2,14 +2,17 @@
 from __future__ import print_function
 from pprint import pprint
 import sys
+import hashlib
+from datetime import datetime
 
 compoundTestIndex = 0
 initTestIndex = 1
 simpleTestIndex = 2
 
 class ParseConsoleForCBT(object):
-    def __init__(self):
+    def __init__(self, verbose = False):
         self.environmentDict = {}
+        self.verbose = verbose
 
     def checkForSave(self, compoundTests, initTests, simpleTestcases):
         if len(compoundTests) > 0 or len(initTests) > 0 or  len(simpleTestcases) > 0:
@@ -25,32 +28,48 @@ class ParseConsoleForCBT(object):
         fileName = ""
         hashCode = ""
         started = False
+        start_dto = datetime.now()
+        end_dto = datetime.now()
+        line_dto = datetime.now()
+        now = datetime.now()
+        tc_name = ""
+        currTestNdx = 0
 
         for line in console_log:
+            try:
+                lineTime, line = line.split(" ",1)
+                line_dto = datetime.strptime(lineTime,"%H:%M:%S.%f")
+            except:
+                pass 
+
             line = line.strip()
                         
             if line.startswith("Processing options file"):
 
-                hashCode = line.replace("\\","/").split("/")[-2].strip()
+                build_dir = "/".join(line.replace("\\","/").split(" ")[-1].strip().split("/")[:-1]).upper()
                 
-                # only save hashCode from this test if the environment has been migrated 
-                # has an all numeric hash - else use Creating Environment as the hash
-                if hashCode.isdigit():
-                    self.environmentDict[hashCode] = [[],[],[]]
-                    started = True
+                # Unicode-objects must be encoded before hashing in Python 3
+                if sys.version_info[0] >= 3:
+                    build_dir = build_dir.encode('utf-8')
+
+                hashCode = hashlib.md5(build_dir).hexdigest()
                 
+                if self.verbose:
+                    print ("Dir: " + build_dir+ " Hash: " +hashCode)
+                
+                started = True
+                if hashCode not in  self.environmentDict.keys():
+                    self.environmentDict[hashCode] = [{},{},{}]
                 continue
                 
-            if not started and "Creating Environment" in line:
-                # only save hashCode from this test if the environment is running in monitored 
-                # mode and uses the enviornment name instead of a hashCode
-                hashCode = line.split("\"")[1]
-                self.environmentDict[hashCode] = [[],[],[]]
-                print("*", hashCode)
-                started = True
 
             if started: 
-            
+                # system test
+                if line.startswith("Adding result file"):
+                    tc_name = line.split(" as ",1)[1]
+                    self.environmentDict[hashCode][simpleTestIndex][tc_name] = [now, now]
+                    continue
+
                 if line.startswith("Creating report"):
                     started = False
                     continue
@@ -98,21 +117,51 @@ class ParseConsoleForCBT(object):
                         runningCompound = False
                         runningInits = False
                     
+                if "Test Execution Complete" in line or "Error: " in line:
+                    end_tdo = line_dto
+                    duration_tdo = end_tdo - start_dto
+                    try:
+                        self.environmentDict[hashCode][currTestNdx][tc_name][1] = end_tdo
+                    except KeyError:
+						# key error would be for the "Error: " when the test case hadn't started
+                        pass                        
+
                 if "Running: " in line:
+                    start_dto = line_dto
                     if runningCompound:
-                        self.environmentDict[hashCode][compoundTestIndex].append(line.split("Running: ")[-1])
+                        tc_name = "<<COMPOUND>>/<<COMPOUND>>/" + line.split("Running: ")[-1]
+                        currTestNdx = compoundTestIndex
+                        self.environmentDict[hashCode][currTestNdx][tc_name] = [start_dto, None]
                     elif runningInits:
-                        self.environmentDict[hashCode][initTestIndex].append(line.split("Running: ")[-1])
+                        tc_name = "<<INIT>>/<<INIT>>/" + line.split("Running: ")[-1]
+                        currTestNdx = initTestIndex
+                        self.environmentDict[hashCode][currTestNdx][tc_name] = [start_dto, None]
                     else:
-                        tc = line.split("Running: ")[-1]                                            
-                        self.environmentDict[hashCode][simpleTestIndex].append(fileName + "/" + func + "/" + tc)
-                
+                        tc = line.split("Running: ")[-1]     
+                        tc_name = fileName + "/" + func + "/" + tc
+                        currTestNdx = simpleTestIndex                        
+                        self.environmentDict[hashCode][currTestNdx][tc_name] = [start_dto, None]
+                elif "There are no slots in compound test" in line:
+                    ##     There are no slots in compound test <<COMPOUND>>.FailNo_Slots.
+                    tc_name = line.split(" ")[-1][:-1]
+                    currTestNdx = compoundTestIndex                        
+                    self.environmentDict[hashCode][currTestNdx][tc_name] = [start_dto, None]
+
+                elif "All slots in compound test" in line:
+                    ##     There are no slots in compound test <<COMPOUND>>.FailNo_Slots.
+                    tc_name = line.split(" ")[5]
+                    currTestNdx = compoundTestIndex                        
+                    self.environmentDict[hashCode][currTestNdx][tc_name] = [start_dto, None]
+
+        if self.verbose:
+            pprint(self.environmentDict, width=132)
+            
         return self.environmentDict           
 
 if __name__ == '__main__':
     
     buildLogData = open(sys.argv[1],"r").readlines()
-    parser = ParseConsoleForCBT()
-    #parser.parse(buildLogData)
-    pprint(parser.parse(buildLogData), width=132)
+    parser = ParseConsoleForCBT(True)
+    parser.parse(buildLogData)
+    #pprint(parser.parse(buildLogData), width=132)
     

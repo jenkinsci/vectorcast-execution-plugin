@@ -46,6 +46,8 @@ There are 2 types of supported jobs and 1 deprecated job type
 (optionally) report on all environments in a VectorCAST/Manage project
 in parallel.
 
+:warning:*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel exeuction on a single VectorCAST Project*
+
 ![](docs/images/pipeline_create.png)
 
 There are 2 options for running tests
@@ -69,6 +71,30 @@ There are 2 options for running tests
     -   The reports are generated into the workspace and archived as
         part of the Jenkins job
  
+The user will be able to disable the use of Change Based Testing to perform a 
+complete run of their VectorCAST Project.  By default Change Based Testing is enabled, but 
+this option can be disabled by unchecking the Use Change Based Testing box
+
+For users with Continuous Integration Licneses, you will be able to access those licenses by
+checking the Use Continuous Integration License checkbox.  If you do not have 
+Continuous Integration License, do not check this box as you will encounter licensing errors.
+
+If the user wishes to call the Jenkins job from another Pipeline job, check the box to 
+parameterize the Jenkinsfile.  This will add parameters to the pipeline job  
+that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage project (VCAST_PROJECT_DIR)
+and for forcing the VectorCAST Jobs to be executed on a specific node (VCAST_FORCE_NODE_EXEC_NAME) instead of using 
+the compiler as a node label.
+
+Calling the build command will return Failed, Unstable, Success cooresponding to the results of the VectorCAST
+Pipeline job.  To enabled the main pipeline job to continue, the user can surround the build command without
+a _catchError_ block as demonstrated below
+
+```
+catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : false ) {
+   build job: 'UnitTestingProject_vcast_pipeline', parameters: [string(name: 'VCAST_PROJECT_DIR', value: 'C:\\UnitTesting\\Project'), string(name: 'VCAST_FORCE_NODE_EXEC_NAME', value: 'MyTestNode')]
+}
+```
+
 Additionally, if a shared artifact directory is specified, VectorCAST/Manage
 will execute jobs independently, but have a central location for storing
 the build artifacts.  This option can be used to accelerate testing by use

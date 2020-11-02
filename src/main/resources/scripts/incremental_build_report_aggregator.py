@@ -47,7 +47,7 @@ if sys.version_info[0] < 3:
 from bs4 import BeautifulSoup
 
 import re
-def parse_text_files():
+def parse_text_files(mpName):
     header = """
 --------------------------------------------------------------------------------
 Manage Incremental Rebuild Report
@@ -107,7 +107,7 @@ Environments Affected
     template = "\nTotals                  %3d%% (%4d / %4d)          %9d %9d %9d"
     totalStr += template%(percentage,rebuild_count,rebuild_total,preserved_count,executed_count,total_count)
 
-    f = open("CombinedReport.txt","w")
+    f = open(mpName + "_rebuild.txt","w")
     f.write(header + outStr + totalStr)
     f.close()
 
@@ -125,8 +125,11 @@ Environments Affected
     for file in glob.glob("*.png"):
         shutil.copy(file, "rebuild_reports/"+file)
 
-def parse_html_files():
+def parse_html_files(mpName):
 
+    if os.path.exists(mpName + "_rebuild.html"):
+        os.remove(mpName + "_rebuild.html")
+        
     report_file_list = []
     full_file_list = os.listdir(".")
     for file in full_file_list:
@@ -138,12 +141,13 @@ def parse_html_files():
         return
         
     try:
-        main_soup = BeautifulSoup(open(report_file_list[0]),features="lxml")
+        main_soup = BeautifulSoup(open(report_file_list[0], encoding="utf-8"),features="lxml")
     except:
-        main_soup = BeautifulSoup(open(report_file_list[0]))
+        main_soup = BeautifulSoup(open(report_file_list[0], encoding="utf-8"))
     preserved_count = 0
     executed_count = 0
     total_count = 0
+        
     if main_soup.find(id="report-title"):
         main_manage_api_report = True
         # New Manage reports have div with id=report-title
@@ -166,9 +170,10 @@ def parse_html_files():
     insert_idx = 2
     for file in report_file_list[1:]:
         try:
-            soup = BeautifulSoup(open(file),features="lxml")
+            soup = BeautifulSoup(open(file, encoding="utf-8"),features="lxml")
         except:
-            soup = BeautifulSoup(open(file))
+            soup = BeautifulSoup(open(file, encoding="utf-8"))
+            
         if soup.find(id="report-title"):
             manage_api_report = True
             # New Manage reports have div with id=report-title
@@ -212,8 +217,24 @@ def parse_html_files():
     main_count_list[2].string.replace_with(str(executed_count))
     main_count_list[3].string.replace_with(str(total_count))
 
+    # remove the table of content because the >v icon is messing stuff up and its pointless in this report    
+    for div in main_soup.find_all("div", {'class':'contents-block'}): 
+        div.decompose()
+        
+    #<div class="report-body no-toc" id="main-scroller">
+    div = main_soup.find("div", {'class':'report-body'})  
+    if div:
+        div['class']="report-body no-toc"
+    
+    f = open(mpName + "_rebuild.html","w", encoding="utf-8")
+    f.write(main_soup.prettify(formatter="html"))
+    f.close()
+
+    import fixup_reports
+    main_soup = fixup_reports.fixup_2020_soup(main_soup)
+    
     # moving rebuild reports down in to a sub directory
-    f = open("CombinedReport.html","w", encoding="utf-8")
+    f = open("combined_incr_rebuild.tmp","w", encoding="utf-8")
     f.write(main_soup.prettify(formatter="html"))
     f.close()
     
@@ -221,19 +242,22 @@ def parse_html_files():
     if not os.path.exists("rebuild_reports"):
         os.mkdir("rebuild_reports")
     for file in report_file_list:
+        if mpName + "_rebuild.html" in file:
+            continue
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('ManageProject')
     parser.add_argument('--rptfmt')
     parser.add_argument('--api',   help='Unused', type=int)
 
     args = parser.parse_args()
 
     if args.rptfmt and "TEXT" in args.rptfmt:
-        parse_text_files()
+        parse_text_files(args.ManageProject)
     else:
-        parse_html_files()
+        parse_html_files(args.ManageProject)
 

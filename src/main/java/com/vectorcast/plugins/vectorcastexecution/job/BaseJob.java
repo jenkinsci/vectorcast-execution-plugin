@@ -139,6 +139,12 @@ abstract public class BaseJob {
             waitLoops = json.optLong("waitLoops", 2);
             
             jobName = json.optString("jobName", null);
+            
+            if (jobName != null) {
+                // Remove all non-alphanumeric characters from the Jenkins Job name
+                jobName = jobName.replaceAll("[^a-zA-Z0-9_]","_");
+            }
+            
             nodeLabel = json.optString("nodeLabel", "");
         }
     }

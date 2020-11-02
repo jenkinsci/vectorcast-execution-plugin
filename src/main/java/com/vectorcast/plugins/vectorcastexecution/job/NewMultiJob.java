@@ -351,12 +351,11 @@ getEnvironmentSetupWin() + "\n";
         }
         if (getOptionUseReporting()) {
             win +=
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py\" --rptfmt " + report_format + "\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\incremental_build_report_aggregator.py\" @PROJECT_BASE@ --rptfmt " + report_format + "\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=@PROJECT_BASE@_full_report.html\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" @PROJECT_BASE@ --final\n" +
 "\n";
         }
         win +=
@@ -374,12 +373,11 @@ getEnvironmentSetupUnix() + "\n";
         }
         if (getOptionUseReporting()) {
             unix +=
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/incremental_build_report_aggregator.py\" --rptfmt " + report_format + "\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/incremental_build_report_aggregator.py\" @PROJECT_BASE@ --rptfmt " + report_format + "\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=@PROJECT_BASE@_full_report.html\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" @PROJECT_BASE@ --final\n" +
 "\n";
         }
         unix +=
@@ -407,15 +405,15 @@ getEnvironmentTeardownUnix() + "\n";
         String script =
 "import hudson.FilePath\n" +
 "\n" +
-"FilePath fp_c = new FilePath(manager.build.getWorkspace(),'CombinedReport" + html_text + "')\n" +
+"FilePath fp_r = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_rebuild" + html_text + "')\n" +
 "FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report" + html_text + "')\n" +
 "\n" +
-"if (fp_c.exists() && fp_f.exists())\n" +
+"if (fp_r.exists() && fp_f.exists())\n" +
 // Must put HTML in createSummary and not description. Description will be truncated
 // and shown in Build history on left and cause corruption in the display, particularly
 // if using 'anything-goes-formatter'
 "{\n" +
-"    manager.createSummary(\"monitor.png\").appendText(fp_c.readToString() + \"" + html_newline + "\" + fp_f.readToString(), false)\n" +
+"    manager.createSummary(\"monitor.png\").appendText(fp_r.readToString() + \"" + html_newline + "\" + fp_f.readToString(), false)\n" +
 "}\n" +
 "else\n" +
 "{\n" +
@@ -456,11 +454,9 @@ getEnvironmentTeardownUnix() + "\n";
             if (getOptionUseReporting()) {
                 addReportingCommands(p, detail, baseName);
                 addArchiveArtifacts(p);
-                //addXunit(p);
                 addJunit(p);
                 addVCCoverage(p);
                 addPostReportingGroovy(p);
-                // RMK : TODO - fixup/combine groovy
             } else {
                 addPostbuildGroovy(p, detail, baseName);
             }
@@ -744,11 +740,11 @@ getEnvironmentTeardownUnix() + "\n" +
 "    manager.buildUnstable()\n" +
 "}\n" +
 "\n" +
-"FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@NAME@_rebuild" + html_text + "')\n" +
+"FilePath fp_r = new FilePath(manager.build.getWorkspace(),'@NAME@_rebuild" + html_text + "')\n" +
 "\n" +
-"if (!fp_i.exists())\n" +
+"if (!fp_r.exists())\n" +
 "{\n" +
-"    manager.build.description = \"General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\"\n" +
+"    manager.build.description = \"General Failure, Incremental Build Report Not Present. Please see the console for more information\"\n" +
 "}\n" +
 "\n";
         script = StringUtils.replace(script, "@BASENAME@", baseName);

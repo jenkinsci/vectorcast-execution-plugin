@@ -66,67 +66,6 @@ global wait_loops
 
 verbose = False
 
-#
-# Internal - jUnit works best with one overall file for all test results
-#
-def writeJunitFinalCombinedTestResults(manageProjectName):
-    fname = manageProjectName
-    totalFailed = 0
-    
-    f=open("xml_data/test_results_"+fname+"_combined_final.xml","w")
-    f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-    f.write("<testsuites>\n")
-
-    for testResults in glob.glob('xml_data/test_results*.xml'):
-        if testResults.endswith("_combined_final.xml"):
-            continue
-        if not testResults.endswith("_combined.xml"):
-            os.remove(testResults)
-            continue
-            
-        data = open(testResults,"r").readlines()[2:-1]
-        for line in data:
-            if "<testsuite errors=" in line:
-                totalFailed += int(line.split("\"")[5])
-        os.remove(testResults)
-        wrData = "".join(data)
-        f.write(wrData)
-     
-    f.write("\n</testsuites>\n")
-    f.close()
-    
-    open("unit_test_fail_count.txt","w").write(str(totalFailed))
-
-#
-# Internal - jUnit works best with one overall file for all test results
-#
-def writeJunitCombinedTestResults(manageProjectName,orig_level,envName):
-    fname = manageProjectName
-    if orig_level:
-        level = orig_level.split("/")
-        if len(level) == 2:
-            # Level does not include source and platform
-            jobName = level[0] + "_" + level[1].rstrip()
-        else:
-            # Level includes source and platform
-            jobName = level[2] + "_" + level[3].rstrip()
-        fname = manageProjectName + "_" + jobName + "_" + envName
-        
-    f=open("xml_data/test_results_"+fname+"_combined.xml","w")
-    f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-    f.write("<testsuites>\n")
-
-    for testResults in glob.glob('xml_data/test_results*.xml'):
-        if  "combined" in testResults:
-            continue
-        data = open(testResults,"r").readlines()[2:-1]
-        os.remove(testResults)
-        wrData =  "".join(data)
-        f.write(wrData)
-     
-    f.write("\n</testsuites>\n")
-    f.close()
-
 def runManageWithWait(command_line, silent=False):
     global verbose
     global wait_time
@@ -223,7 +162,7 @@ def delete_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
         
-def genDataApiReports(entry, jUnit, cbtDict):
+def genDataApiReports(FullManageProjectName, entry, cbtDict):
     xml_file = ""
     
     try:
@@ -239,7 +178,8 @@ def genDataApiReports(entry, jUnit, cbtDict):
         xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + level + "_" + env + ".xml"
         xmlCoverReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "coverage_results_" + level + "_" + env + ".xml"
 
-        xml_file = GenerateXml(entry["build_dir"],
+        xml_file = GenerateXml(FullManageProjectName,
+                               entry["build_dir"],
                                entry["env"],entry["compiler"],entry["testsuite"],
                                xmlCoverReportName,
                                jenkins_name,
@@ -247,7 +187,6 @@ def genDataApiReports(entry, jUnit, cbtDict):
                                jenkins_link,
                                jobNameDotted, 
                                verbose, 
-                               jUnit,
                                cbtDict)
                                
         if xml_file.api != None:
@@ -261,13 +200,16 @@ def genDataApiReports(entry, jUnit, cbtDict):
         else:
             print("   Skipping environment: " + jobNameDotted)
             
+    
     except Exception as e:
         print("ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"])
-        if verbose:
-            traceback.print_exc()
+        traceback.print_exc()
+    try:       
+        return xml_file.failed_count
+    except:
+        return 0
         
-    return xml_file
-    
+        
 def fixup_css(report_name):
     # Needed for VC19 and VC19 SP1.
     # From VC19 SP2 onwards a new option VCAST_RPTS_SELF_CONTAINED is used instead
@@ -314,8 +256,7 @@ def generateCoverReport(path, env, level ):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ": ")
-        if verbose:
-            traceback.print_exc()
+        traceback.print_exc()
 
 def generateUTReport(path, env, level): 
     global verbose
@@ -331,8 +272,7 @@ def generateUTReport(path, env, level):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ".")
-        if verbose:
-            traceback.print_exc()
+        traceback.print_exc()
 
 def generateIndividualReports(entry, envName):
     global verbose
@@ -351,25 +291,29 @@ def generateIndividualReports(entry, envName):
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
 
-def useNewAPI(manageEnvs, level, envName, jUnit, cbtDict):
+def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict):
+    failed_count = 0 
         
     for currentEnv in manageEnvs:
         if envName == None:
-            genDataApiReports(manageEnvs[currentEnv], jUnit, cbtDict)
+            failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict)
             generateIndividualReports(manageEnvs[currentEnv], envName)
             
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
             if env_level.upper() == level.upper():
-                genDataApiReports(manageEnvs[currentEnv], jUnit, cbtDict)
+                failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict)
                 generateIndividualReports(manageEnvs[currentEnv], envName)
+    f = open("unit_test_fail_count.txt","w")
+    f.write(str(failed_count))
+    f.close()
 
 
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
-def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, jUnit = True, cbtDict = None):
+def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None):
 
     if timing:
         print("Start: " + str(time.time()))
@@ -427,7 +371,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     ### Using new data API - 2019 and beyond
     if timing:
         print("Cleanup: " + str(time.time()))
-    if useNewReport:
+    if useNewReport and not legacy:
 
         try:
             shutil.rmtree("execution") 
@@ -437,7 +381,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         if timing:
             print("Using DataAPI for reporting")
             print("Get Info: " + str(time.time()))
-        useNewAPI(manageEnvs, level, envName, jUnit, cbtDict)
+        useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict)
         if timing:
             print("XML and Individual reports: " + str(time.time()))
 
@@ -464,12 +408,12 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         # capture the output of the manage call
         out_mgt = runManageWithWait(callStr)
 
-        missing = False
+        coverProjectInManageProject = False
         if "database missing or inaccessible" in out_mgt:
-            missing = True
+            coverProjectInManageProject = True
         elif re.search('Environment directory.*is missing', out_mgt):
-            missing = True
-        if missing:
+            coverProjectInManageProject = True
+        if coverProjectInManageProject:
             callStr = callStr.replace("report custom","cover report")
             print(callStr)
             out_mgt2 = runManageWithWait(callStr)
@@ -557,7 +501,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                     # Create the test_results_ and coverage_results_ csv files
                     testResultName, coverageResultsName = tcmr2csv.run(reportName, level, version)
 
-                    vcastcsv2jenkins.run  (test = testResultName, coverage = coverageResultsName, useExecRpt=generate_individual_reports, version=version, junit=junit)
+                    vcastcsv2jenkins.run  (test = testResultName, coverage = coverageResultsName, useExecRpt=generate_individual_reports, version=version)
 
                     if envName:
                         adjustedReportName = "management" + os.sep + jobName + "_" + envName + ".html"
@@ -568,6 +512,24 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 copyList.append([reportName,adjustedReportName])
                 # Reset env
                 env = None
+        
+        if coverProjectInManageProject:
+            generate_qa_results_xml.genQATestResults(FullManageProjectName,saved_level,saved_envName)
+            
+        failed_count = 0
+        try:
+            for file in glob.glob("xml_data/test_results_*.xml"):
+                lines = open(file,"r").readlines()
+                for line in lines:
+                    if "failures" in line:
+                        failed_count += int(line.split("\"")[5])
+                        break
+        except:
+            print ("   *Problem parsing file " + file + " to parse for unit testcase failures")
+            traceback.print_exc()
+        f = open("unit_test_fail_count.txt","w")
+        f.write(str(failed_count))
+        f.close()
                 
 
         for file in copyList:
@@ -580,14 +542,11 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if timing:
         print("QA Results reports: " + str(time.time()))
             
-    if junit:   
-        if verbose:
-            print("Writing combined test data for JUnit")
-        generate_qa_results_xml.genQATestResults(FullManageProjectName, saved_level, saved_envName)
-        writeJunitCombinedTestResults(manageProjectName,saved_level,saved_envName)
 
     if timing:
         print("Complete: " + str(time.time()))
+        
+        
         
 if __name__ == '__main__':
 
@@ -600,17 +559,14 @@ if __name__ == '__main__':
     parser.add_argument('--wait_time',   help='Time (in seconds) to wait between execution attempts', type=int, default=30)
     parser.add_argument('--wait_loops',   help='Number of times to retry execution', type=int, default=1)
     parser.add_argument('--timing',   help='Display timing information for report generation', action="store_true")
-    parser.add_argument('--junit',   help='Output test resutls in junit format', action="store_true")
+    parser.add_argument('--junit',   help='Output test resutls in JUnit format', action="store_true")
     parser.add_argument('--api',   help='Unused', type=int)
-    parser.add_argument('--final',   help='Write Final JUnit Test Results file',  action="store_true")
+
+    parser.add_argument('--legacy',   help='Force legacy reports for testing only', action="store_true", default = False)
     parser.add_argument('--buildlog',   help='Build Log for CBT Statitics')
 
     args = parser.parse_args()
     
-    if args.final:
-        generate_qa_results_xml.genQATestResults(args.ManageProject)
-        writeJunitFinalCombinedTestResults(os.path.basename(args.ManageProject))
-        sys.exit(0)
     try:
         if "19.sp1" in open(os.path.join(os.environ['VECTORCAST_DIR'],"DATA/tools_version.txt").read):
             # custom report patch for SP1 problem - should be fixed in future release      
@@ -642,11 +598,12 @@ if __name__ == '__main__':
     if args.junit:
         junit = True
     else:
-        junit = False
+        print ("Test results reporting has been migrated to JUnit.  If you are using older xUnit plugin with Single Jobs, please switch to using JUnit.  If you need assistance with that, contact support@us.vector.com")
+        junit = True
         
     if args.buildlog and os.path.exists(args.buildlog):
         buildLogData = open(args.buildlog,"r").readlines()
-        cbt = ParseConsoleForCBT()
+        cbt = ParseConsoleForCBT(verbose)
         cbtDict = cbt.parse(buildLogData)
         
     else:
@@ -658,5 +615,17 @@ if __name__ == '__main__':
     # Used for VC19 SP2 onwards
     os.environ['VCAST_RPTS_SELF_CONTAINED'] = 'FALSE'
 
-    buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, junit, cbtDict)
+
+
+
+
+
+
+
+
+
+
+    legacy = args.legacy
+        
+    buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict)
 

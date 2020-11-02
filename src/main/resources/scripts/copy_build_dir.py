@@ -66,8 +66,12 @@ def updateDatabase(conn, nocase, workspace, updateWhat, updateFrom):
         sql = "UPDATE %s SET %s = '%s' WHERE id=%s COLLATE NOCASE" % (updateFrom, updateWhat, relative, id_)
         conn.execute(sql)
         
-def addFile(tf, file):
+def addFile(tf, file, backOneDir = False):
     global build_dir
+    
+    if backOneDir:
+        build_dir = os.sep.join(build_dir.split(os.sep)[:-1])
+        
     for f in os.listdir(build_dir):
         if fnmatch.fnmatch(f, file):
             tf.add(os.path.join(build_dir, f))
@@ -147,6 +151,7 @@ if __name__ == '__main__':
             addFile(tf, "UNITDATA.VCD")
             addFile(tf, "UNITDYNA.VCD")
             addFile(tf, "manage.xml")
-            addFile(tf, "*.LIS")
+            addFile(tf, Env + ".vce", backOneDir=True)
+            addFile(tf, Env + ".vcp", backOneDir=True)
         finally:
             tf.close()
