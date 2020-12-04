@@ -43,7 +43,10 @@ public class VcastUtils
             
         } catch ( IOException e ) {
             e.printStackTrace();
+        } catch ( NullPointerException e ) {
+            e.printStackTrace();
         }
+
 
         return version;
     }    

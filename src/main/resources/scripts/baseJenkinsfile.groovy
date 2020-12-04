@@ -104,7 +104,7 @@ def runCommands(cmds) {
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
         println "Running commands: " + cmds
-        log = sh label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
+        sh label: 'Running VectorCAST Commands', returnStdout: false, script: cmds
         
     } else {
         localCmds = """
@@ -116,8 +116,10 @@ def runCommands(cmds) {
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
         println "Running commands: " + cmds
-        log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
+        bat label: 'Running VectorCAST Commands', returnStdout: false, script: cmds
     }
+    
+    log = readFile "command.log"
     
     println "Commands Output: " + log        
        

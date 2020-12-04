@@ -40,6 +40,7 @@ class ManageWait(object):
         self.wait_loops = wait_loops
         self.verbose = verbose
         self.command_line = command_line
+        self.fp = open("command.log","w")
 
     def exec_manage(self, silent=False):
         callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
@@ -92,6 +93,10 @@ class ManageWait(object):
                     sys.exit(-1) # we could equally well break here 
             else :
                 break #leave outer while loop
+                
+        self.fp.write(output)
+        self.fp.close()
+        
         return output # checked in generate-results.py
  
 ## main
