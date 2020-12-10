@@ -54,6 +54,19 @@ def setupManageProject() {
     runCommands(cmds)
 }
 
+// gets the manage project name without the .vcm if present
+
+def getMPname() {
+    // get the manage projects full name and base name
+    def mpFullName = VC_Manage_Project.split("/")[-1]
+    def mpName = ""
+    if (mpFullName.toLowerCase().endsWith(".vcm")) {
+        mpName = mpFullName.take(mpFullName.lastIndexOf('.'))
+    } else {
+        mpName = mpFullName
+    }
+    return mpName
+}
 // check log for errors
 def checkLogsForErrors(log) {
 
@@ -180,9 +193,6 @@ def transformIntoStep(inputString) {
                     setupManageProject()
                 }
 
-                // get the manage projects full name and base name
-                def mpFullName = VC_Manage_Project.split("/")[-1]
-                def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
                 
                 // setup the commands for building, executing, and transferring information
                 cmds =  """
@@ -293,9 +303,20 @@ pipeline {
                             VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
                         } else {
                             VC_OriginalWorkspace = VC_OriginalWorkspace.replace('\\','/')
-                            VC_EnvSetup = VC_EnvSetup.replace("%WORKSPACE%",VC_OriginalWorkspace)
-                            VC_EnvTeardown = VC_EnvTeardown.replace("%WORKSPACE%",VC_OriginalWorkspace)
-                            VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
+                            
+                            def tmpInfo = ""
+                            
+                            // replace case insensitive workspace with WORKSPACE
+                            tmpInfo = VC_EnvSetup.replaceAll("(?i)WORKSPACE","WORKSPACE")
+                            VC_EnvSetup = tmpInfo.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                            
+                            // replace case insensitive workspace with WORKSPACE
+                            tmpInfo = VC_EnvTeardown.replaceAll("(?i)WORKSPACE","WORKSPACE")
+                            VC_EnvTeardown = tmpInfo.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                            
+                            // replace case insensitive workspace with WORKSPACE
+                            tmpInfo = VC_sharedArtifactDirectory.replaceAll("(?i)WORKSPACE","WORKSPACE")
+                            VC_sharedArtifactDirectory = tmpInfo.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
                         }
                         print "Updating setup script " + origSetup + " \nto: " + VC_EnvSetup
                         print "Updating teardown script " + origTeardown + " \nto: " + origTeardown
@@ -392,8 +413,8 @@ pipeline {
                         } 
                         
                         // get the manage projects full name and base name
-                        def mpFullName = VC_Manage_Project.split("/")[-1]
-                        def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
+                        def mpName = getMPname()
+                                                
                         def buildLogText = ""
                         
                         // if we are using SCM and not using a shared artifact directory...
@@ -451,8 +472,7 @@ pipeline {
                         // get the console log - this requires running outside of the Groovy Sandbox
                         def logContent = readFile 'complete_build.log'
                             
-                        def mpFullName = VC_Manage_Project.split("/")[-1]
-                        def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
+                        def mpName = getMPname()
                         
                         def foundKeywords = ""
                         def boolean failure = false

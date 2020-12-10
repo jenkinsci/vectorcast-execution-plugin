@@ -211,11 +211,30 @@ with no test results. If you have an environment with no test results,
 you will manually need to check the box "Do not fail the build on empty test
 results" in the Publish JUnit test result report configuration.
 
-### Multi-branch Pipelines not supported
-
-The current pipeline implementation will not work in a multi-branch pipeline job.
-
 ## Change Log
+
+### Version 0.65 (17 Dec 2020)
+- Single jobs not displaying full report and rebuild report correctly in summary (VC2020)
+- Capturing stdout for skipped analysis causing console output to be delayed
+- Pipeline job fails unless user specific .vcm for manage project
+- Problem with CBT analysis when not using single checkout directory
+- Using lowercase %workspace% causes single checkout directory error
+
+### Version 0.64 (17 Nov 2020)
+- Skipped tests not detected for cover environments 
+- Check for illegal characters in pipeline job names 
+- Add Option to not use CBT in Jenkins pipeline plugin 
+- VC2020 Manage reports have no formatting in Jenkins job summary 
+- Remove xUnit reporting 
+- Remove truncated output during the build 
+- "Could not acquire a read lock on the project's vcm file" should raise an error, but it does not 
+- Add option to active CI licenses 
+- Regression Scripts with identical ending directories show testcase as skipped 
+- Add option to make job parameterized for Manage project location and Force Node Execution rather than compiler 
+- Update error thrown when user creates absolute path with SCM snippet 
+- Need to add more error detection 
+- Expand JUnit test case name display to include file.subprogram 
+- Change reports to not use VCAST_RPTS_SELF_CONTAINED=FALSE 
 
 ### Version 0.63 (30 April 2020)
 

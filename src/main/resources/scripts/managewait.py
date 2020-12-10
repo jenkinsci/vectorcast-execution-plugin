@@ -45,6 +45,7 @@ class ManageWait(object):
     def exec_manage(self, silent=False):
         callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
         output = ''
+        ret_out = ''
         if self.verbose:
             output += "\nVerbose: %s\n" % callStr
 
@@ -73,7 +74,8 @@ class ManageWait(object):
                         edited_license_outage_msg = out_mgt
                     if not silent:
                         print (datetime.now().strftime("%H:%M:%S.%f") + "  " + out_mgt)
-                    output += ( out_mgt + "\n" )
+                    output += ( datetime.now().strftime("%H:%M:%S.%f") + "  " + out_mgt + "\n" )
+                    ret_out +=  out_mgt + "\n"
  
             if not silent:
                 print("Manage has finished")
@@ -97,7 +99,7 @@ class ManageWait(object):
         self.fp.write(output)
         self.fp.close()
         
-        return output # checked in generate-results.py
+        return ret_out # checked in generate-results.py
  
 ## main
 if __name__ == '__main__':
