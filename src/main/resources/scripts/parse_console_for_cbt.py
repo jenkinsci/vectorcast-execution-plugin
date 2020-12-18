@@ -55,7 +55,7 @@ class ParseConsoleForCBT(object):
 
                 hashCode = hashlib.md5(build_dir).hexdigest()
                 
-                if True or self.verbose:
+                if self.verbose:
                     print ("Parse Dir: " + build_dir+ " Hash: " +hashCode)
                 
                 started = True
