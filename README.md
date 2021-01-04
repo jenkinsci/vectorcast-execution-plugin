@@ -219,6 +219,7 @@ results" in the Publish JUnit test result report configuration.
 - Pipeline job fails unless user specific .vcm for manage project
 - Problem with CBT analysis when not using single checkout directory
 - Using lowercase %workspace% causes single checkout directory error
+- Updated managewait.py to overcome race condition causing script to hang on readline()
 
 ### Version 0.64 (17 Nov 2020)
 - Skipped tests not detected for cover environments 
