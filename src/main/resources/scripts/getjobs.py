@@ -7,7 +7,7 @@ import sys
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
 
 
-def printEnvironmentInfo(ManageProjectName):
+def printEnvironmentInfo(ManageProjectName, printData = True):
 
     somethingPrinted = False
     output = ""
@@ -33,7 +33,8 @@ def printEnvironmentInfo(ManageProjectName):
             
             output += "%s %s %s\n" % (compiler , testsuite , env_name)
                 
-            print ("%s %s %s" % (compiler , testsuite , env_name))
+            if printData:
+                print ("%s %s %s" % (compiler , testsuite , env_name))
             
             somethingPrinted = True;
             
@@ -41,7 +42,8 @@ def printEnvironmentInfo(ManageProjectName):
         print ("No environments found in " + ManageProjectName + ". Please check configuration", file=sys.stderr)
     
     open("command.log","w").write(output)
-    
+
+    return output
     
 if __name__ == "__main__":
     printEnvironmentInfo(sys.argv[1])

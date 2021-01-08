@@ -38,14 +38,13 @@ try:
 except ImportError:
         from queue import Queue, Empty  # python 3.x
  
-
-
 class ManageWait(object):
     def __init__(self, verbose, command_line, wait_time, wait_loops):
         self.wait_time = wait_time
         self.wait_loops = wait_loops
         self.verbose = verbose
         self.command_line = command_line
+        self.logfile = open("command.log", 'w')
         
     def __del__(self):
         try:
@@ -54,14 +53,15 @@ class ManageWait(object):
             pass
             
     def enqueueOutput(self, io_target, queue):
-        self.logfile = open("command.log", 'w')
         while True:
             line = io_target.readline()
             line = line.rstrip()
             if line == '':
                 continue
-            print(line)
-            self.logfile.write(line)
+            output = ( datetime.now().strftime("%H:%M:%S.%f") + "  " + line + "\n" )
+            if not self.silent:
+                print(line)
+                self.logfile.write(output)
             queue.put(line)
 
     def startOutputThread(self, io_target,logToFile=False):
@@ -71,31 +71,31 @@ class ManageWait(object):
         self.io_t.start()
 
     def exec_manage(self, silent=False):
+        self.silent = silent
         callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
-        output = ''
         ret_out = ''
+        
         if self.verbose:
-            output = "\nVerbose: %s\n" % callStr
-
+            self.logfile.write( "\nVerbose: %s\n" % callStr)
+            
         # capture the output of the manage call
         loop_count = 0
         while 1:
-            output = ''
             loop_count += 1
             p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
             
             self.startOutputThread(p.stdout)
             
-            if not silent:
+            if not self.silent:
                 print("Manage started")
+                
             license_outage = False
             edited_license_outage_msg = ""
             actual_license_outage_msg = ""
             
             while p.poll() is None:
-                out_mgt = ""
                 try:
-                    out_mgt = self.q.get(False) ##self.readSingleLine()
+                    out_mgt = self.q.get(False) 
                     
                     if len(out_mgt) > 0:
      
@@ -106,13 +106,12 @@ class ManageWait(object):
                             actual_license_outage_msg = out_mgt
                             out_mgt = out_mgt.replace("FLEXlm Error", "FLEXlm Err..")
                             edited_license_outage_msg = out_mgt
-                        output = ( datetime.now().strftime("%H:%M:%S.%f") + "  " + out_mgt + "\n" )
 
                         ret_out +=  out_mgt + "\n"
                 except Empty:
                     pass
 
-            if not silent:
+            if not self.silent:
                 print("Manage has finished")
                 
             # manage finished. Was there a license outage?

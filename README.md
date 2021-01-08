@@ -220,6 +220,8 @@ results" in the Publish JUnit test result report configuration.
 - Problem with CBT analysis when not using single checkout directory
 - Using lowercase %workspace% causes single checkout directory error
 - Updated managewait.py to overcome race condition causing script to hang on readline()
+- Added skipped test analysis to Single Jobs
+- Added detection of disabled environment to DataAPI generated results
 
 ### Version 0.64 (17 Nov 2020)
 - Skipped tests not detected for cover environments 

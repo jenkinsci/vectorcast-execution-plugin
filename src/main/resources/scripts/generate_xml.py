@@ -794,19 +794,21 @@ class GenerateXml(BaseGenerateXml):
 
         report_name = hashlib.md5(report_name_hash).hexdigest()
 
-        self.api.report(
-            testcases=[tc],
-            single_testcase=True,
-            report_type="Demo",
-            formats=["TEXT"],
-            output_file=report_name,
-            sections=[ "TESTCASE_SECTIONS"],
-            testcase_sections=["EXECUTION_RESULTS"])
+        try:
+            self.api.report(
+                testcases=[tc],
+                single_testcase=True,
+                report_type="Demo",
+                formats=["TEXT"],
+                output_file=report_name,
+                sections=[ "TESTCASE_SECTIONS"],
+                testcase_sections=["EXECUTION_RESULTS"])
+            with open(report_name,"r") as f:
+                out = f.read()
 
-        with open(report_name,"r") as f:
-            out = f.read()
-
-        os.remove(report_name)
+            os.remove(report_name)
+        except:
+            out = "No execution results found"
 
         return out
 
