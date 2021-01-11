@@ -213,7 +213,7 @@ results" in the Publish JUnit test result report configuration.
 
 ## Change Log
 
-### Version 0.65 (17 Dec 2020)
+### Version 0.65 (20 Jan 2021)
 - Single jobs not displaying full report and rebuild report correctly in summary (VC2020)
 - Capturing stdout for skipped analysis causing console output to be delayed
 - Pipeline job fails unless user specific .vcm for manage project
