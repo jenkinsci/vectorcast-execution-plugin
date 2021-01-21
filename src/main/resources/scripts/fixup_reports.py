@@ -101,7 +101,11 @@ def fixup_2020_soup(main_soup):
     return main_soup
 
 def fixup_2020_reports(report_name):
-    main_soup = BeautifulSoup(open(report_name),features="lxml")
+    try:
+        main_soup = BeautifulSoup(open(report_name),features="lxml")
+    except:
+        main_soup = BeautifulSoup(open(report_name))
+        
     main_soup = fixup_2020_soup(main_soup)
     f = open(report_name,"w", encoding="utf-8")
     f.write(main_soup.prettify(formatter="html"))
