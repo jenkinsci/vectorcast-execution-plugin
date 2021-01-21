@@ -307,15 +307,15 @@ pipeline {
                             def tmpInfo = ""
                             
                             // replace case insensitive workspace with WORKSPACE
-                            tmpInfo = VC_EnvSetup.replaceAll("(?i)%WORKSPACE","%WORKSPACE")
+                            tmpInfo = VC_EnvSetup.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
                             VC_EnvSetup = tmpInfo.replace("%WORKSPACE%",VC_OriginalWorkspace)
                             
                             // replace case insensitive workspace with WORKSPACE
-                            tmpInfo = VC_EnvTeardown.replaceAll("(?i)WORKSPACE","WORKSPACE")
+                            tmpInfo = VC_EnvTeardown.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
                             VC_EnvTeardown = tmpInfo.replace("%WORKSPACE%",VC_OriginalWorkspace)
                             
                             // replace case insensitive workspace with WORKSPACE
-                            tmpInfo = VC_sharedArtifactDirectory.replaceAll("(?i)WORKSPACE","WORKSPACE")
+                            tmpInfo = VC_sharedArtifactDirectory.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
                             VC_sharedArtifactDirectory = tmpInfo.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
                         }
                         print "Updating setup script " + origSetup + " \nto: " + VC_EnvSetup
