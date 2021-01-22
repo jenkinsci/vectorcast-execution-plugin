@@ -73,7 +73,7 @@ import getjobs
 enabledEnvironmentArray = []
 
 def getEnabledEnvironments(MPname):
-    output = getjobs.printEnvironmentInfo(MPname, False)
+    output = getjobs.printEnvironmentInfo(MPname, True)
 
     for line in output.split("\n"):
         if line.strip():
@@ -83,7 +83,9 @@ def getEnabledEnvironments(MPname):
 def environmentEnabled(comp,ts,env):
     for c,t,e in enabledEnvironmentArray:
         if comp == c and ts == t and env == e:
+            print(comp + "/" + ts + "/" + env  + ": Enable")
             return True
+    print(comp + "/" + ts + "/" + env + ": Disabled")
     return False 
 
 def runManageWithWait(command_line, silent=False):
