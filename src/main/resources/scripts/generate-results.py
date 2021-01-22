@@ -147,6 +147,7 @@ def getManageEnvs(FullManageProjectName):
         print(out_mgt)
         
     for line in out_mgt.split('\n'):
+        print ("*** " + line)
         if "Compiler:" in line:
             compiler = line.split(":",1)[-1].strip()
         elif "Testsuite ID:" in line:
