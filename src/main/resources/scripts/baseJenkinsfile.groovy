@@ -212,11 +212,10 @@ def transformIntoStep(inputString) {
                 (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
                 if (!failure && VC_sharedArtifactDirectory.length() == 0) {
-                    writeFile file: "build.log", text: buildLogText
 
                     if (VC_usingSCM && !VC_useOneCheckoutDir) {
                         def fixedJobName = fixUpName("${env.JOB_NAME}")
-                        buildLogText = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} ${compiler}/${test_suite} ${fixedJobName}_${compiler}_${test_suite}_${environment} ${environment}""" )
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} ${compiler}/${test_suite} ${fixedJobName}_${compiler}_${test_suite}_${environment} ${environment}""" )
                     }
                 }
                 
