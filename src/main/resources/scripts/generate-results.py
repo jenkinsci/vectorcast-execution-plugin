@@ -61,10 +61,31 @@ except:
     
 #global variables
 global verbose
+global print_exc
 global wait_time
 global wait_loops
 
 verbose = False
+print_exc = False
+
+import getjobs
+
+enabledEnvironmentArray = []
+
+def getEnabledEnvironments(MPname):
+    output = getjobs.printEnvironmentInfo(MPname, False)
+
+    for line in output.split("\n"):
+        if line.strip():
+            compiler, testsuite, environment = line.split()
+            enabledEnvironmentArray.append([compiler, testsuite, environment])
+                       
+def environmentEnabled(comp,ts,env):
+    for c,t,e in enabledEnvironmentArray:
+        if comp == c and ts == t and env == e:
+            return True
+    print(comp + "/" + ts + "/" + env + ": Disabled")
+    return False 
 
 def runManageWithWait(command_line, silent=False):
     global verbose
@@ -138,6 +159,8 @@ def getManageEnvs(FullManageProjectName):
             #rare case where there's a problem with the environment
             if build_dir == "":
                 continue
+            if not environmentEnabled(compiler,testsuite,env_name):
+                continue
             build_dir_number = build_dir.split("/")[-1]
             level = compiler + "/" + testsuite + "/" + env_name # env_name.upper()
             entry = {}
@@ -203,7 +226,7 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict):
     
     except Exception as e:
         print("ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"])
-        traceback.print_exc()
+        if print_exc: traceback.print_exc()
     try:       
         return xml_file.failed_count
     except:
@@ -256,7 +279,7 @@ def generateCoverReport(path, env, level ):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ": ")
-        traceback.print_exc()
+        if print_exc:  traceback.print_exc()
 
 def generateUTReport(path, env, level): 
     global verbose
@@ -272,7 +295,7 @@ def generateUTReport(path, env, level):
         fixup_css(report_name)
     except Exception as e:
         print("   *Problem generating custom report for " + env + ".")
-        traceback.print_exc()
+        if print_exc:  traceback.print_exc()
 
 def generateIndividualReports(entry, envName):
     global verbose
@@ -526,7 +549,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                         break
         except:
             print ("   *Problem parsing file " + file + " to parse for unit testcase failures")
-            traceback.print_exc()
+            if print_exc:  traceback.print_exc()
         f = open("unit_test_fail_count.txt","w")
         f.write(str(failed_count))
         f.close()
@@ -560,6 +583,7 @@ if __name__ == '__main__':
     parser.add_argument('--wait_loops',   help='Number of times to retry execution', type=int, default=1)
     parser.add_argument('--timing',   help='Display timing information for report generation', action="store_true")
     parser.add_argument('--junit',   help='Output test resutls in JUnit format', action="store_true")
+    parser.add_argument('--print_exc',   help='Output test resutls in JUnit format', action="store_true")
     parser.add_argument('--api',   help='Unused', type=int)
 
     parser.add_argument('--legacy',   help='Force legacy reports for testing only', action="store_true", default = False)
@@ -582,6 +606,8 @@ if __name__ == '__main__':
 
     if args.verbose:
         verbose = True
+    if args.print_exc:
+        print_exc = True
     wait_time = args.wait_time
     wait_loops = args.wait_loops
 
@@ -608,22 +634,13 @@ if __name__ == '__main__':
         
     else:
         cbtDict = None
-
-
+        
+    getEnabledEnvironments(args.ManageProject)
+    
     # Used for pre VC19
     os.environ['VCAST_RPTS_PRETTY_PRINT_HTML'] = 'FALSE'
     # Used for VC19 SP2 onwards
     os.environ['VCAST_RPTS_SELF_CONTAINED'] = 'FALSE'
-
-
-
-
-
-
-
-
-
-
 
     legacy = args.legacy
         

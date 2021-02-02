@@ -335,13 +335,15 @@ class GenerateXml(BaseGenerateXml):
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         
         build_dir_4hash = build_dir.upper()
+        build_dir_4hash = "/".join(build_dir_4hash.split("/")[-2:])
+        
         # Unicode-objects must be encoded before hashing in Python 3
         if sys.version_info[0] >= 3:
             build_dir_4hash = build_dir_4hash.encode('utf-8')
 
         self.hashCode = hashlib.md5(build_dir_4hash).hexdigest()
         if verbose:
-            print ("Dir: " + build_dir_4hash+ " Hash: " +self.hashCode)
+            print ("gen Dir: " + build_dir_4hash+ " Hash: " +self.hashCode)
 
         #self.hashCode = build_dir.split("/")[-1].upper()
         self.build_dir = build_dir
@@ -792,19 +794,21 @@ class GenerateXml(BaseGenerateXml):
 
         report_name = hashlib.md5(report_name_hash).hexdigest()
 
-        self.api.report(
-            testcases=[tc],
-            single_testcase=True,
-            report_type="Demo",
-            formats=["TEXT"],
-            output_file=report_name,
-            sections=[ "TESTCASE_SECTIONS"],
-            testcase_sections=["EXECUTION_RESULTS"])
+        try:
+            self.api.report(
+                testcases=[tc],
+                single_testcase=True,
+                report_type="Demo",
+                formats=["TEXT"],
+                output_file=report_name,
+                sections=[ "TESTCASE_SECTIONS"],
+                testcase_sections=["EXECUTION_RESULTS"])
+            with open(report_name,"r") as f:
+                out = f.read()
 
-        with open(report_name,"r") as f:
-            out = f.read()
-
-        os.remove(report_name)
+            os.remove(report_name)
+        except:
+            out = "No execution results found"
 
         return out
 

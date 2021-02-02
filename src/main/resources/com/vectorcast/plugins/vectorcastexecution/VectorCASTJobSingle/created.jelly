@@ -34,7 +34,7 @@
   <l:layout permission="${permission}" title="${%Created.Title}">
     <l:main-panel>
       <h1>${%Created.Title}</h1>
-      <h2>${it.projectName}</h2>
+      <h2><a href="/job/${it.getProjectName()}">${it.getProjectName()}</a></h2>
       <p>${%Created.Description}</p>
     </l:main-panel>
   </l:layout>

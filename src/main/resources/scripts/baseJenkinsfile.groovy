@@ -54,6 +54,19 @@ def setupManageProject() {
     runCommands(cmds)
 }
 
+// gets the manage project name without the .vcm if present
+
+def getMPname() {
+    // get the manage projects full name and base name
+    def mpFullName = VC_Manage_Project.split("/")[-1]
+    def mpName = ""
+    if (mpFullName.toLowerCase().endsWith(".vcm")) {
+        mpName = mpFullName.take(mpFullName.lastIndexOf('.'))
+    } else {
+        mpName = mpFullName
+    }
+    return mpName
+}
 // check log for errors
 def checkLogsForErrors(log) {
 
@@ -104,7 +117,7 @@ def runCommands(cmds) {
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
         println "Running commands: " + cmds
-        log = sh label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
+        sh label: 'Running VectorCAST Commands', returnStdout: false, script: cmds
         
     } else {
         localCmds = """
@@ -116,8 +129,10 @@ def runCommands(cmds) {
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
         println "Running commands: " + cmds
-        log = bat label: 'Running VectorCAST Commands', returnStdout: true, script: cmds
+        bat label: 'Running VectorCAST Commands', returnStdout: false, script: cmds
     }
+    
+    log = readFile "command.log"
     
     println "Commands Output: " + log        
        
@@ -178,9 +193,6 @@ def transformIntoStep(inputString) {
                     setupManageProject()
                 }
 
-                // get the manage projects full name and base name
-                def mpFullName = VC_Manage_Project.split("/")[-1]
-                def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
                 
                 // setup the commands for building, executing, and transferring information
                 cmds =  """
@@ -200,11 +212,10 @@ def transformIntoStep(inputString) {
                 (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
                 if (!failure && VC_sharedArtifactDirectory.length() == 0) {
-                    writeFile file: "build.log", text: buildLogText
 
                     if (VC_usingSCM && !VC_useOneCheckoutDir) {
                         def fixedJobName = fixUpName("${env.JOB_NAME}")
-                        buildLogText = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} ${compiler}/${test_suite} ${fixedJobName}_${compiler}_${test_suite}_${environment} ${environment}""" )
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} ${compiler}/${test_suite} ${fixedJobName}_${compiler}_${test_suite}_${environment} ${environment}""" )
                     }
                 }
                 
@@ -291,9 +302,20 @@ pipeline {
                             VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
                         } else {
                             VC_OriginalWorkspace = VC_OriginalWorkspace.replace('\\','/')
-                            VC_EnvSetup = VC_EnvSetup.replace("%WORKSPACE%",VC_OriginalWorkspace)
-                            VC_EnvTeardown = VC_EnvTeardown.replace("%WORKSPACE%",VC_OriginalWorkspace)
-                            VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
+                            
+                            def tmpInfo = ""
+                            
+                            // replace case insensitive workspace with WORKSPACE
+                            tmpInfo = VC_EnvSetup.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
+                            VC_EnvSetup = tmpInfo.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                            
+                            // replace case insensitive workspace with WORKSPACE
+                            tmpInfo = VC_EnvTeardown.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
+                            VC_EnvTeardown = tmpInfo.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                            
+                            // replace case insensitive workspace with WORKSPACE
+                            tmpInfo = VC_sharedArtifactDirectory.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
+                            VC_sharedArtifactDirectory = tmpInfo.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
                         }
                         print "Updating setup script " + origSetup + " \nto: " + VC_EnvSetup
                         print "Updating teardown script " + origTeardown + " \nto: " + origTeardown
@@ -390,8 +412,8 @@ pipeline {
                         } 
                         
                         // get the manage projects full name and base name
-                        def mpFullName = VC_Manage_Project.split("/")[-1]
-                        def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
+                        def mpName = getMPname()
+                                                
                         def buildLogText = ""
                         
                         // if we are using SCM and not using a shared artifact directory...
@@ -449,8 +471,7 @@ pipeline {
                         // get the console log - this requires running outside of the Groovy Sandbox
                         def logContent = readFile 'complete_build.log'
                             
-                        def mpFullName = VC_Manage_Project.split("/")[-1]
-                        def mpName = mpFullName.take(mpFullName.lastIndexOf('.'))  
+                        def mpName = getMPname()
                         
                         def foundKeywords = ""
                         def boolean failure = false

@@ -7,10 +7,10 @@ import sys
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
 
 
-def printEnvironmentInfo(ManageProjectName):
+def printEnvironmentInfo(ManageProjectName, printData = True):
 
     somethingPrinted = False
-    
+    output = ""
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --full-status",
                          shell=True,
                          stdout=subprocess.PIPE,
@@ -30,13 +30,20 @@ def printEnvironmentInfo(ManageProjectName):
         elif re.match("^      [^\s]",str) is not None and not str.startswith("      Disabled Environment"):
                 
             env_name = str.split()[0]
+            
+            output += "%s %s %s\n" % (compiler , testsuite , env_name)
                 
-            print ("%s %s %s" % (compiler , testsuite , env_name))
+            if printData:
+                print ("%s %s %s" % (compiler , testsuite , env_name))
             
             somethingPrinted = True;
             
     if not somethingPrinted:
         print ("No environments found in " + ManageProjectName + ". Please check configuration", file=sys.stderr)
-        
+    
+    open("command.log","w").write(output)
+
+    return output
+    
 if __name__ == "__main__":
     printEnvironmentInfo(sys.argv[1])
