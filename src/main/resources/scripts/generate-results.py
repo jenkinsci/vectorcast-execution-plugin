@@ -34,6 +34,9 @@ import glob
 import subprocess
 import time
 import traceback
+import parse_traceback
+import tee_print
+teePrint = tee_print.TeePrint()
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
@@ -225,8 +228,8 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict):
             
     
     except Exception as e:
-        print("ERROR: failed to generate XML reports using vpython and the Data API for ", entry["compiler"] + "_" + entry["testsuite"] + "_" + entry["env"], "in directory", entry["build_dir"])
-        if print_exc: traceback.print_exc()
+        parse_traceback.parse(traceback.format_exc(), print_exc, entry["compiler"] , entry["testsuite"],  entry["env"], entry["build_dir"])
+        
     try:       
         return xml_file.failed_count
     except:
@@ -278,8 +281,10 @@ def generateCoverReport(path, env, level ):
 
         fixup_css(report_name)
     except Exception as e:
-        print("   *Problem generating custom report for " + env + ": ")
-        if print_exc:  traceback.print_exc()
+        build_dir = path.replace("\\","/")
+        build_dir = build_dir.rsplit("/",1)[0]
+
+        parse_traceback.parse(traceback.format_exc(), print_exc, level.split("_")[0] , level.split("_")[2], env, build_dir)
 
 def generateUTReport(path, env, level): 
     global verbose
@@ -294,9 +299,11 @@ def generateUTReport(path, env, level):
         api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
         fixup_css(report_name)
     except Exception as e:
-        print("   *Problem generating custom report for " + env + ".")
-        if print_exc:  traceback.print_exc()
+        build_dir = path.replace("\\","/")
+        build_dir = build_dir.rsplit("/",1)[0]
 
+        parse_traceback.parse(traceback.format_exc(), print_exc, level.split("_")[0] , level.split("_")[2], env, build_dir)
+        
 def generateIndividualReports(entry, envName):
     global verbose
 
@@ -371,7 +378,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                     try:
                         os.remove(file);
                     except:
-                        print("Error removing file after failed to remove directory: " + path + "/" + file)
+                        teePrint.teePrint("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
+                        if print_exc:  traceback.print_exc()
                 pass
                 
         # we should either have an empty directory or no directory
@@ -379,17 +387,18 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             try:
                 os.mkdir(path)
             except:
-                print("Error creating directory: " + path)
-            
+                teePrint.teePrint("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
+                if print_exc:  traceback.print_exc()
+
     for file in glob.glob("*.csv"):
         try:
             os.remove(file);
             if verbose:
                 print("Removing file: " + file)
         except Exception as e:
-            print("Error removing " + file)
-            print(e)
-    
+            teePrint.teePrint("   *INFO: File System Error removing " + file + ".  Check console for environment build/execution errors")
+            if print_exc:  traceback.print_exc()
+   
     
     ### Using new data API - 2019 and beyond
     if timing:
@@ -548,7 +557,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                         failed_count += int(line.split("\"")[5])
                         break
         except:
-            print ("   *Problem parsing file " + file + " to parse for unit testcase failures")
+            teePrint.teePrint ("   *INFO: Problem parsing test results file for unit testcase failure count: " + file)
             if print_exc:  traceback.print_exc()
         f = open("unit_test_fail_count.txt","w")
         f.write(str(failed_count))
