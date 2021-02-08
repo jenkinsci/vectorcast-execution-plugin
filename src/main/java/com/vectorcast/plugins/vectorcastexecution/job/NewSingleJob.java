@@ -161,7 +161,25 @@ if (getOptionUseReporting()) {
 "Boolean buildFailed = false\n" +
 "Boolean buildUnstable = false\n" +
 "\n" +
-"if(manager.logContains(\".*py did not execute correctly.*\") || manager.logContains(\".*Traceback .most recent call last.*\"))\n" +
+"if(manager.logContains(\".*INFO: File System Error.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"File System Error\", false, false, false, \"red\")\n" +
+"    buildUnstable = true\n" +
+"    manager.addBadge(\"warning.gif\", \"File System Error\")\n" +
+"}\n" +
+"if(manager.logContains(\".*INFO: Problem parsing test results.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"Test Results Parse Error\", false, false, false, \"red\")\n" +
+"    buildUnstable = true\n" +
+"    manager.addBadge(\"warning.gif\", \"Test Results Parse Error\")\n" +
+"}\n" +
+"if(manager.logContains(\".*ERROR: Error accessing DataAPI for.*\"))\n" +
+"{\n" +
+"    manager.createSummary(\"warning.gif\").appendText(\"DataAPI Error\", false, false, false, \"red\")\n" +
+"    buildUnstable = true\n" +
+"    manager.addBadge(\"warning.gif\", \"VectorCAST DataAPI Error\")\n" +
+"}\n" +
+"else if(manager.logContains(\".*py did not execute correctly.*\") || manager.logContains(\".*Traceback .most recent call last.*\"))\n" +
 "{\n" +
 "    manager.createSummary(\"error.gif\").appendText(\"Jenkins Integration Script Failure\", false, false, false, \"red\")\n" +
 "    buildFailed = true\n" +

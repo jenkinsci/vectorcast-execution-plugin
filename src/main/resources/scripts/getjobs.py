@@ -3,6 +3,8 @@ import subprocess
 import os
 import re
 import sys
+import tee_print
+teePrint = tee_print.TeePrint()
 
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
 
@@ -32,16 +34,13 @@ def printEnvironmentInfo(ManageProjectName, printData = True):
             env_name = str.split()[0]
             
             output += "%s %s %s\n" % (compiler , testsuite , env_name)
-                
-            if printData:
-                print ("%s %s %s" % (compiler , testsuite , env_name))
-            
+                            
             somethingPrinted = True;
             
     if not somethingPrinted:
-        print ("No environments found in " + ManageProjectName + ". Please check configuration", file=sys.stderr)
+        teePrint.teePrint ("No environments found in " + ManageProjectName + ". Please check configuration", file=sys.stderr)
     
-    open("command.log","w").write(output)
+    teePrint.teePrint(output)
 
     return output
     

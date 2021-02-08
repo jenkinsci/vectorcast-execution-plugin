@@ -222,6 +222,7 @@ results" in the Publish JUnit test result report configuration.
 - Updated managewait.py to overcome race condition causing script to hang on readline()
 - Added skipped test analysis to Single Jobs
 - Added detection of disabled environment to DataAPI generated results
+- Added addition error detection
 
 ### Version 0.64 (17 Nov 2020)
 - Skipped tests not detected for cover environments 

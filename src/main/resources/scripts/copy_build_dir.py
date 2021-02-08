@@ -30,6 +30,8 @@ import subprocess
 import tarfile
 import sqlite3
 import shutil
+import tee_print
+teePrint = tee_print.TeePrint()
 
 global build_dir
 
@@ -51,7 +53,7 @@ def make_relative(path, workspace):
         path = path[workspaceIndex:].split("/",2)[2]
         
     else:
-        print("  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace)
+        teePrint.teePrint("  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace)
         # something went wildly wrong -- raise an exception
         # raise Exception ("Problem updating database path to remove workspace:\n\n   PATH: " + path + "\n   WORKSPACE: " + workspace)
     
@@ -79,7 +81,7 @@ def addFile(tf, file, backOneDir = False):
 def addConvertCoverFile(tf, file, workspace, nocase):
     global build_dir
     
-    print("Updating cover.db")
+    teePrint.teePrint("Updating cover.db")
     fullpath = build_dir + os.path.sep + file
     bakpath = fullpath + '.bk'
     if os.path.isfile(fullpath):
@@ -100,7 +102,7 @@ def addConvertCoverFile(tf, file, workspace, nocase):
 
 def addConvertMasterFile(tf, file, workspace, nocase):
     global build_dir
-    print("Updating master.db")
+    teePrint.teePrint("Updating master.db")
     fullpath = build_dir + os.path.sep + file
     bakpath = fullpath + '.bk'
     if os.path.isfile(fullpath):

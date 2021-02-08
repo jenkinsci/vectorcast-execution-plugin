@@ -43,6 +43,10 @@ from vector.apps.ReportBuilder.custom_report import fmt_percent
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
 import hashlib 
+import traceback
+import parse_traceback
+import tee_print
+teePrint = tee_print.TeePrint()
 
 def dummy(*args, **kwargs):
     return None
@@ -449,9 +453,7 @@ class GenerateXml(BaseGenerateXml):
                                             self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
 
             except AttributeError as e:
-                import traceback
-                traceback.print_exc()
-                pass
+                parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
                 
         self.end_test_results_file()
 #
@@ -739,7 +741,7 @@ class GenerateXml(BaseGenerateXml):
         try:
             cov_type = self.api.environment.coverage_type_text
         except Exception as e:
-            print("Couldn't access coverage information...skipping.  Check console for environment build/execution errors")
+            parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
             return
             
         self._generate_cover(cov_type)
@@ -749,7 +751,7 @@ class GenerateXml(BaseGenerateXml):
         self.end_cov_file_environment()
 
     def was_test_case_skipped(self, tc, searchName, isSystemTest):
-        import sys, traceback, pprint
+        import sys, pprint
         try:
             if isSystemTest:
                 compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
@@ -781,9 +783,9 @@ class GenerateXml(BaseGenerateXml):
             self.__print_test_case_was_skipped(searchName, tc.passed)
             return [True, None, None]
         except Exception as e: 
-            pprint.pprint (self.cbtDict, width = 132)
-            traceback.print_exc()
-            sys.exit()
+            parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
+            if self.print_exc:
+                pprint.pprint ("CBT Dictionary: \n" + self.cbtDict, width = 132)
 
     def __get_testcase_execution_results(self, tc, classname, tc_name):
         report_name_hash =  '.'.join(
@@ -851,12 +853,12 @@ if __name__ == '__main__':
                            None)
 
     if xml_file.api == None:
-        print ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
+        teePrint.teePrint ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
         
     elif xml_file.using_cover:
         xml_file.generate_cover()
-        print ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
+        teePrint.teePrint ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
 
     else:
         xml_file.generate_unit()
-        print ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)
+        teePrint.teePrint ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)

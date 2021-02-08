@@ -40,7 +40,7 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   "Error: That command is not permitted in continuous integration mode"
                   ]
                 
-VC_UnstablePhrases = ["Value Line Error - Command Ignored"]                       
+VC_UnstablePhrases = ["Value Line Error - Command Ignored", "INFO: Problem parsing test results file", "INFO: File System Error ", "ERROR: Error accessing DataAPI", "ERROR: Undefined Error"]                       
 
 // setup the manage project to have preset options
 def setupManageProject() {
@@ -483,7 +483,7 @@ pipeline {
                         // set the build description accordingly
                         currentBuild.description = ""
                         if (foundKeywords.size() > 0) {
-                            currentBuild.description = "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords + "\n"
+                            currentBuild.description += "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords + "\n"
                         }
                                             
                         // Make sure the build completed and we have two key reports
@@ -513,7 +513,7 @@ pipeline {
                                 // If not, something went wrong... Make the build as unstable 
                                 currentBuild.result = 'UNSTABLE'
                                 createSummary icon: "warning.gif", text: "General Failure"
-                                currentBuild.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
+                                currentBuild.description += "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
                             }                     
                         } else {
                             if (fileExists("${mpName}_full_report.html_tmp")) {
@@ -527,7 +527,7 @@ pipeline {
                                 // If not, something went wrong... Make the build as unstable 
                                 currentBuild.result = 'UNSTABLE'
                                 createSummary icon: "warning.gif", text: "General Failure"
-                                currentBuild.description = "General Failure, Full Report Not Present. Please see the console for more information\n"
+                                currentBuild.description += "General Failure, Full Report Not Present. Please see the console for more information\n"
                             }                                             
                         }
 
@@ -542,7 +542,7 @@ pipeline {
                         def unitTestErrorCount = ""
                         unitTestErrorCount = readFile "unit_test_fail_count.txt"
                         if (unitTestErrorCount != "0") {
-                            currentBuild.description += "Failed test cases, Junit will mark at least as UNSTABLE"
+                            currentBuild.description += "Failed test cases, Junit will mark at least as UNSTABLE\n"
                         }
                         if (failure) {
                             currentBuild.result = 'FAILURE'
