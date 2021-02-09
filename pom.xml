@@ -12,7 +12,7 @@
     <name>VectorCAST Execution</name>
     <description>Run VectorCAST manage jobs from Jenkins</description>
     <artifactId>vectorcast-execution</artifactId>
-    <version>0.65-SNAPSHOT</version>
+    <version>0.65</version>
     <packaging>hpi</packaging>
     <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
 
@@ -55,7 +55,7 @@
         <connection>scm:git:ssh://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
-        <tag>vectorcast-execution-0.62</tag>
+        <tag>vectorcast-execution-0.65</tag>
     </scm>
 
     <repositories>
