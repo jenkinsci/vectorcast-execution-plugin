@@ -38,7 +38,7 @@ def printEnvironmentInfo(ManageProjectName, printData = True):
             somethingPrinted = True;
             
     if not somethingPrinted:
-        teePrint.teePrint ("No environments found in " + ManageProjectName + ". Please check configuration", file=sys.stderr)
+        teePrint.teePrint ("No environments found in " + ManageProjectName + ". Please check configuration")
     
     teePrint.teePrint(output)
 
