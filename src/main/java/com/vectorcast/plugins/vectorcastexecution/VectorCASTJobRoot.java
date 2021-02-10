@@ -28,21 +28,40 @@ import hudson.model.RootAction;
 
 import java.util.List;
 import jenkins.model.Jenkins;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
+import hudson.security.PermissionScope;
 
 /**
  * Top level of VectorCAST job control
  */
 @Extension
 public class VectorCASTJobRoot implements RootAction {
-    /**
+    
+	public static final PermissionGroup PERMISSIONS_GROUP = new PermissionGroup(
+			VectorCASTJobRoot.class,Messages._VectorCASTRootAction_PermissionGroup());
+    public static final PermissionScope scope[] = {PermissionScope.JENKINS};
+ 	public static final Permission VIEW = new Permission(PERMISSIONS_GROUP,
+			"View", Messages._VectorCASTRootAction_ViewPermissionDescription(),
+            Jenkins.ADMINISTER, true, scope);
+            
+            
+   /**
      * Get the icon to use.
      * @return icon to use or null if user does not have permissions
      */
     public String getIconFileName() {
-        Jenkins instance = Jenkins.getInstance();
+
+        Boolean permission = false;
+        if (Jenkins.get().hasPermission(VIEW)) {
+            permission =  true;
+        }
+            
         // Always display - assume that Jenkins permission checking
         // will catch and report any permissions issues
-        if (instance != null) {
+        if (permission) {
             return "/plugin/vectorcast-execution/icons/vector_favicon.png";
         } else {
             return null;
