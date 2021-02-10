@@ -213,6 +213,9 @@ results" in the Publish JUnit test result report configuration.
 
 ## Change Log
 
+### Version 0.66 (10 Feb 2021)
+- Python 3 support
+
 ### Version 0.65 (20 Jan 2021)
 - Single jobs not displaying full report and rebuild report correctly in summary (VC2020)
 - Capturing stdout for skipped analysis causing console output to be delayed
