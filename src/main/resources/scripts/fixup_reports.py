@@ -39,7 +39,6 @@ if sys.version_info[0] < 3:
 from bs4 import BeautifulSoup
 from io import open
 import tee_print
-teePrint = tee_print.TeePrint()
 
     
 def fixup_2020_soup(main_soup):
@@ -90,7 +89,8 @@ def fixup_2020_soup(main_soup):
                 try:
                     style += class2style[item]
                 except:
-                    teePrint.teePrint ("unhandled class " + item)
+                    with tee_print.TeePrint() as teePrint:
+                        teePrint.teePrint ("unhandled class " + item)
         except:
             pass
 

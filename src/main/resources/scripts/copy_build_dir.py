@@ -31,11 +31,10 @@ import tarfile
 import sqlite3
 import shutil
 import tee_print
-teePrint = tee_print.TeePrint()
 
 global build_dir
 
-def make_relative(path, workspace):
+def make_relative(path, workspace, teePrint):
     path = path.replace("\\","/")
 
     # if the paths match
@@ -60,11 +59,11 @@ def make_relative(path, workspace):
     return path
 
     
-def updateDatabase(conn, nocase, workspace, updateWhat, updateFrom):
+def updateDatabase(conn, nocase, workspace, updateWhat, updateFrom, teePrint):
     sql = "SELECT id, %s FROM %s" % (updateWhat, updateFrom)
     files = conn.execute(sql)
     for id_, path in files:
-        relative = make_relative(path,workspace)    
+        relative = make_relative(path,workspace, teePrint)    
         sql = "UPDATE %s SET %s = '%s' WHERE id=%s COLLATE NOCASE" % (updateFrom, updateWhat, relative, id_)
         conn.execute(sql)
         
@@ -78,7 +77,7 @@ def addFile(tf, file, backOneDir = False):
         if fnmatch.fnmatch(f, file):
             tf.add(os.path.join(build_dir, f))
 
-def addConvertCoverFile(tf, file, workspace, nocase):
+def addConvertCoverFile(tf, file, workspace, nocase, teePrint):
     global build_dir
     
     teePrint.teePrint("Updating cover.db")
@@ -90,9 +89,9 @@ def addConvertCoverFile(tf, file, workspace, nocase):
             shutil.copyfile(fullpath, bakpath)
 
             # update the database paths to be relative from workspace
-            updateDatabase(conn, nocase, workspace, "LIS_file", "instrumented_files")
-            updateDatabase(conn, nocase, workspace, "display_path", "source_files")
-            updateDatabase(conn, nocase, workspace, "path", "source_files")
+            updateDatabase(conn, nocase, workspace, "LIS_file", "instrumented_files", teePrint)
+            updateDatabase(conn, nocase, workspace, "display_path", "source_files", teePrint)
+            updateDatabase(conn, nocase, workspace, "path", "source_files", teePrint)
             
             conn.commit()
             conn.close()
@@ -100,7 +99,7 @@ def addConvertCoverFile(tf, file, workspace, nocase):
             os.remove(fullpath)
             shutil.move(bakpath, fullpath)
 
-def addConvertMasterFile(tf, file, workspace, nocase):
+def addConvertMasterFile(tf, file, workspace, nocase, teePrint):
     global build_dir
     teePrint.teePrint("Updating master.db")
     fullpath = build_dir + os.path.sep + file
@@ -109,12 +108,17 @@ def addConvertMasterFile(tf, file, workspace, nocase):
         conn = sqlite3.connect(fullpath)
         if conn:
             shutil.copyfile(fullpath, bakpath)
-            updateDatabase(conn, nocase, workspace, "path", "sourcefiles")
+            updateDatabase(conn, nocase, workspace, "path", "sourcefiles", teePrint)
             conn.commit()
             conn.close()
             addFile(tf, file)
             os.remove(fullpath)
             shutil.move(bakpath, fullpath)
+
+def addConvertFiles(tf, workspace, nocase):
+    with tee_print.TeePrint() as teePrint:
+        addConvertCoverFile (tf, "cover.db", workspace, nocase, teePrint)
+        addConvertMasterFile(tf, "master.db", workspace, nocase, teePrint)
 
 if __name__ == '__main__':
                 
@@ -146,8 +150,7 @@ if __name__ == '__main__':
         build_dir = build_dir + os.path.sep + Env
         tf = tarfile.open(BaseName + "_build.tar", mode='w')
         try:
-            addConvertCoverFile (tf, "cover.db", workspace, nocase)
-            addConvertMasterFile(tf, "master.db", workspace, nocase)
+            addConvertFiles(tf, workspace, nocase)
             addFile(tf, "testcase.db")
             addFile(tf, "COMMONDB.VCD")
             addFile(tf, "UNITDATA.VCD")

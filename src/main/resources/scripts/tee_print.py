@@ -6,21 +6,23 @@ class TeePrint(object):
         self.verbose = verbose
         self.logfile = open(filename, 'w')
 
-    def __del__(self):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exct_type, exce_value, traceback):
         try:
             self.logfile.close()
         except:
             pass
+
     def teePrint(self, str):
         print (str)
         self.logfile.write(str + "\n")
         
 
 if __name__ == '__main__':
-    
-    teePrint = tee_print.TeePrint()
-    
-    teePrint.teePrint("Hello world")
-    teePrint.teePrint("Hello world")
-    teePrint.teePrint("Hello world")
-    
+
+    with TeePrint() as teePrint:
+        teePrint.teePrint("Hello world")
+        teePrint.teePrint("Hello world")
+        teePrint.teePrint("Hello world")

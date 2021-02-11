@@ -36,7 +36,6 @@ import time
 import traceback
 import parse_traceback
 import tee_print
-teePrint = tee_print.TeePrint()
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
@@ -340,6 +339,35 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict):
     f.close()
 
 
+def cleanupDirectory(path, teePrint):
+    # if the path exists, try to delete it
+    if os.path.isdir(path):
+        try:
+            shutil.rmtree(path)
+        except:
+            # if there was an error removing the directory...delete all the files
+            print("Error removing directory: " + path)
+            for file in glob.glob(path + "/*.*"):
+                try:
+                    os.remove(file);
+                except:
+                    teePrint.teePrint("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
+                    if print_exc:  traceback.print_exc()
+            pass
+
+    # we should either have an empty directory or no directory
+    if not os.path.isdir(path):
+        try:
+            os.mkdir(path)
+        except:
+            teePrint.teePrint("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
+            if print_exc:  traceback.print_exc()
+
+
+def cleanupOldBuilds(teePrint):
+    for path in ["xml_data","management","execution"]:
+        cleanupDirectory(path, teePrint)
+
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
@@ -365,30 +393,9 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if timing:
         print("Version Check: " + str(time.time()))
 
-    # cleaning up old builds
-    for path in ["xml_data","management","execution"]:
-        # if the path exists, try to delete it
-        if os.path.isdir(path):
-            try:
-                shutil.rmtree(path)
-            except:
-                # if there was an error removing the directory...delete all the files
-                print("Error removing directory: " + path)
-                for file in glob.glob(path + "/*.*"):
-                    try:
-                        os.remove(file);
-                    except:
-                        teePrint.teePrint("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
-                        if print_exc:  traceback.print_exc()
-                pass
-                
-        # we should either have an empty directory or no directory
-        if not os.path.isdir(path):
-            try:
-                os.mkdir(path)
-            except:
-                teePrint.teePrint("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
-                if print_exc:  traceback.print_exc()
+    with tee_print.TeePrint() as teePrint:
+        cleanupOldBuilds(teePrint)
+
 
     for file in glob.glob("*.csv"):
         try:
