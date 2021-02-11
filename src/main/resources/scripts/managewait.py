@@ -64,7 +64,7 @@ class ManageWait(object):
         self.io_t.start()
 
     def exec_manage(self, silent=False):
-        with open("command.log", 'w') as logfile:
+        with open("command.log", 'a') as logfile:
             return self.__exec_manage(silent, logfile)
 
     def __exec_manage(self, silent, logfile):

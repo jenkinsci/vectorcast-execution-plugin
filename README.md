@@ -214,7 +214,9 @@ results" in the Publish JUnit test result report configuration.
 ## Change Log
 
 ### Version 0.66 (10 Feb 2021)
-- Python 3 support
+- Fixed bug caught by updated to Python 3
+- Fixed command capture for processing later
+- Changed side panel display of VectorCAST to not be shown when anonymous user is using Jenkins
 
 ### Version 0.65 (20 Jan 2021)
 - Single jobs not displaying full report and rebuild report correctly in summary (VC2020)
