@@ -107,7 +107,7 @@ def runCommands(cmds) {
     def localCmds = """"""
     
     // clear that old command log
-    writeFile file: "command.log" text: ""
+    writeFile file: "command.log", text: ""
     
     // if its Linux run the sh command and save the stdout for analysis
     if (isUnix()) {
