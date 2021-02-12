@@ -111,7 +111,8 @@ abstract public class BaseJob {
         manageProjectName = json.optString("manageProjectName");
         if (!manageProjectName.isEmpty()) {
             // Force unix style path to avoid problems later
-            manageProjectName = manageProjectName.replace('\\','/').strip();
+            manageProjectName = manageProjectName.replace('\\','/');
+            manageProjectName = manageProjectName.replaceAll("^[ \t]+|[ \t]+$", "");
             if (! manageProjectName.endsWith(".vcm")) manageProjectName += ".vcm";
        }
         baseName = FilenameUtils.getBaseName(manageProjectName);
