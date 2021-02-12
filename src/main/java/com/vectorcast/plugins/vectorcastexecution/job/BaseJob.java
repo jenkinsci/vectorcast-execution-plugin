@@ -112,6 +112,7 @@ abstract public class BaseJob {
         if (!manageProjectName.isEmpty()) {
             // Force unix style path to avoid problems later
             manageProjectName = manageProjectName.replace('\\','/');
+            manageProjectName = manageProjectName.replaceAll("^[ \t]+|[ \t]+$", "");
             if (! manageProjectName.endsWith(".vcm")) manageProjectName += ".vcm";
        }
         baseName = FilenameUtils.getBaseName(manageProjectName);

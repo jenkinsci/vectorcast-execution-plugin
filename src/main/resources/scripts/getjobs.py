@@ -4,9 +4,16 @@ import os
 import re
 import sys
 import tee_print
-teePrint = tee_print.TeePrint()
+
 
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
+
+
+def printOutput(somethingPrinted, ManageProjectName, output, teePrint):
+    if not somethingPrinted:
+        teePrint.teePrint ("No environments found in " + ManageProjectName + ". Please check configuration")
+    
+    teePrint.teePrint(output)
 
 
 def printEnvironmentInfo(ManageProjectName, printData = True):
@@ -36,11 +43,9 @@ def printEnvironmentInfo(ManageProjectName, printData = True):
             output += "%s %s %s\n" % (compiler , testsuite , env_name)
                             
             somethingPrinted = True;
-            
-    if not somethingPrinted:
-        teePrint.teePrint ("No environments found in " + ManageProjectName + ". Please check configuration", file=sys.stderr)
-    
-    teePrint.teePrint(output)
+
+    with tee_print.TeePrint() as teePrint:
+        printOutput(somethingPrinted, ManageProjectName, output, teePrint)
 
     return output
     

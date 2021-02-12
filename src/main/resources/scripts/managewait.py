@@ -44,15 +44,8 @@ class ManageWait(object):
         self.wait_loops = wait_loops
         self.verbose = verbose
         self.command_line = command_line
-        self.logfile = open("command.log", 'w')
-        
-    def __del__(self):
-        try:
-            self.logfile.close()
-        except:
-            pass
-            
-    def enqueueOutput(self, io_target, queue):
+
+    def enqueueOutput(self, io_target, queue, logfile):
         while True:
             line = io_target.readline()
             line = line.rstrip()
@@ -61,22 +54,26 @@ class ManageWait(object):
             output = ( datetime.now().strftime("%H:%M:%S.%f") + "  " + line + "\n" )
             if not self.silent:
                 print(line)
-                self.logfile.write(output)
+                logfile.write(output)
             queue.put(line)
 
-    def startOutputThread(self, io_target,logToFile=False):
+    def startOutputThread(self, io_target, logfile):
         self.q = Queue()
-        self.io_t = Thread(target=self.enqueueOutput, args=(io_target, self.q))
+        self.io_t = Thread(target=self.enqueueOutput, args=(io_target, self.q, logfile))
         self.io_t.daemon = True # thread dies with the program
         self.io_t.start()
 
     def exec_manage(self, silent=False):
+        with open("command.log", 'a') as logfile:
+            return self.__exec_manage(silent, logfile)
+
+    def __exec_manage(self, silent, logfile):
         self.silent = silent
         callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
         ret_out = ''
         
         if self.verbose:
-            self.logfile.write( "\nVerbose: %s\n" % callStr)
+            logfile.write( "\nVerbose: %s\n" % callStr)
             
         # capture the output of the manage call
         loop_count = 0
@@ -84,7 +81,7 @@ class ManageWait(object):
             loop_count += 1
             p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
             
-            self.startOutputThread(p.stdout)
+            self.startOutputThread(p.stdout, logfile)
             
             if not self.silent:
                 print("Manage started")

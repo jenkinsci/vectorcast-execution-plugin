@@ -46,7 +46,6 @@ import hashlib
 import traceback
 import parse_traceback
 import tee_print
-teePrint = tee_print.TeePrint()
 
 def dummy(*args, **kwargs):
     return None
@@ -818,6 +817,18 @@ class GenerateXml(BaseGenerateXml):
         if self.verbose:
             print("skipping ", self.hashCode, searchName, passed)
 
+def __generate_xml(xml_file, envPath, env, xmlCoverReportName, xmlTestingReportName, teePrint):
+    if xml_file.api == None:
+        teePrint.teePrint ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
+        
+    elif xml_file.using_cover:
+        xml_file.generate_cover()
+        teePrint.teePrint ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
+
+    else:
+        xml_file.generate_unit()
+        teePrint.teePrint ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)
+
 if __name__ == '__main__':
 
     import argparse
@@ -852,13 +863,11 @@ if __name__ == '__main__':
                            args.verbose, 
                            None)
 
-    if xml_file.api == None:
-        teePrint.teePrint ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
-        
-    elif xml_file.using_cover:
-        xml_file.generate_cover()
-        teePrint.teePrint ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
-
-    else:
-        xml_file.generate_unit()
-        teePrint.teePrint ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)
+    with tee_print.TeePrint() as teePrint:
+        __generate_xml(
+            xml_file,
+            envPath,
+            env,
+            xmlCoverReportName,
+            xmlTestingReportName,
+            teePrint)
