@@ -484,7 +484,7 @@ class GenerateXml(BaseGenerateXml):
         self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
         self.fh.write("<testsuites>\n")
         self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
-            (errors,success+failed+errors, failed, cgi.escape(self.env)))
+            (errors,success+failed+errors, failed, html.escape(self.env)))
                 
     def start_unit_test_file(self):
         if self.verbose:
@@ -513,7 +513,7 @@ class GenerateXml(BaseGenerateXml):
         self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
         self.fh.write("<testsuites>\n")
         self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
-            (errors,success+failed+errors, failed, cgi.escape(self.env)))
+            (errors,success+failed+errors, failed, html.escape(self.env)))
 
 #
 # Internal - write a testcase to the jUnit XML file
@@ -556,12 +556,12 @@ class GenerateXml(BaseGenerateXml):
             </system-out>
         </testcase>
 """
-        unit_name = cgi.escape(unit_name)
-        func_name = cgi.escape(func_name).replace("\"","&quot;")
-        tc_name = cgi.escape(tc.name)
-        compiler = cgi.escape(self.compiler).replace(".","")
-        testsuite = cgi.escape(self.testsuite).replace(".","")
-        envName = cgi.escape(self.env).replace(".","")
+        unit_name = html.escape(unit_name)
+        func_name = html.escape(func_name).replace("\"","&quot;")
+        tc_name = html.escape(tc.name)
+        compiler = html.escape(self.compiler).replace(".","")
+        testsuite = html.escape(self.testsuite).replace(".","")
+        envName = html.escape(self.env).replace(".","")
         
         tc_name_full =  unit_name + "." + func_name + "." + tc_name
 
@@ -615,7 +615,7 @@ class GenerateXml(BaseGenerateXml):
 
         msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
         
-        msg = cgi.escape(msg)
+        msg = html.escape(msg)
         msg = msg.replace("\"","")
         msg = msg.replace("\n","&#xA;")
         
@@ -656,7 +656,7 @@ class GenerateXml(BaseGenerateXml):
         self.fh.write('      <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
         self.fh.write('\n')
 
-        self.fh.write('      <environment name="%s">\n' % cgi.escape(self.jenkins_name))
+        self.fh.write('      <environment name="%s">\n' % html.escape(self.jenkins_name))
         if self.coverage["statement"]:
             self.fh.write('        <coverage type="statement, %%" value="%s"/>\n' % self.coverage["statement"])
         if self.coverage["branch"]:
@@ -686,7 +686,7 @@ class GenerateXml(BaseGenerateXml):
 #
     def write_cov_units(self):
         for unit in self.our_units:
-            self.fh.write('        <unit name="%s">\n' % cgi.escape(unit["unit"].name))
+            self.fh.write('        <unit name="%s">\n' % html.escape(unit["unit"].name))
             if unit["coverage"]["statement"]:
                 self.fh.write('          <coverage type="statement, %%" value="%s"/>\n' % unit["coverage"]["statement"])
             if unit["coverage"]["branch"]:
@@ -703,10 +703,10 @@ class GenerateXml(BaseGenerateXml):
 
             for func in unit["functions"]:
                 if self.using_cover:
-                    func_name = cgi.escape(func["func"].name).replace("\"","&quot;")
+                    func_name = html.escape(func["func"].name).replace("\"","&quot;")
                     self.fh.write('          <subprogram name="%s">\n' % func_name)
                 else:
-                    func_name = cgi.escape(func["func"].display_name).replace("\"","&quot;")
+                    func_name = html.escape(func["func"].display_name).replace("\"","&quot;")
                     self.fh.write('          <subprogram name="%s">\n' % func_name)
                 if func["coverage"]["statement"]:
                     self.fh.write('            <coverage type="statement, %%" value="%s"/>\n' % func["coverage"]["statement"])

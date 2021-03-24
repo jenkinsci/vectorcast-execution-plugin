@@ -46,8 +46,8 @@ def generateJunitTestCase(jobname, tc_name, passFail):
     </testcase>
     """
     
-    jobname = cgi.escape(jobname)
-    tc_name = cgi.escape(tc_name)
+    jobname = html.escape(jobname)
+    tc_name = html.escape(tc_name)
     
     if 'PASS' in passFail:
         successFailure = 'success'
