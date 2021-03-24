@@ -1,3 +1,4 @@
+from __future__ import print_function
 import datetime
 import cgi
 import sys, subprocess, os
@@ -156,7 +157,7 @@ def processSystemTestResultsData(lines):
                     
                 compiler = compiler.replace(".","").replace(" ", "")
                 
-                unit_report_name = "_".join(["test_results",envName,compiler, testsuite]) + ".xml"
+                unit_report_name = "_".join(["test_results",compiler, testsuite, envName]) + ".xml"
                 jobNameDotted = ".".join([compiler, testsuite, envName])
                 
             if tc_percent != "N/A":
@@ -177,10 +178,18 @@ def processSystemTestResultsData(lines):
         
 def saveQATestStatus(mp):
     callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status=" + os.path.basename(mp)[:-4] + "_system_tests_status.html"
-    p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     out, err = p.communicate()
 
-def genQATestResults(mp, level = None, envName = None):
+def genQATestResults(mp, level = None, envName = None, verbose = False):
+    try:
+        from vector.apps.DataAPI.manage_models import SystemTest
+        if verbose:
+            print("No need to process system test results using --system-tests-status")
+        return
+    except:
+        pass
+
     print("   Processing QA test results for " + mp)
     callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status"
     if level:
@@ -188,12 +197,12 @@ def genQATestResults(mp, level = None, envName = None):
         if envName:
             callStr += " -e " + envName
         
-    p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     out, err = p.communicate()
         
     if err:
         print(out, err)
-    processSystemTestResultsData(out.split("\n"))
+    processSystemTestResultsData(out.splitlines())
     
     saveQATestStatus(mp)
         

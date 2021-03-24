@@ -23,6 +23,9 @@
 #
 #vcastcsv2jenkins.py
 
+from __future__ import division
+from __future__ import print_function
+
 import argparse
 import glob
 import os
@@ -36,8 +39,10 @@ import cgi
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
-python_path_updates += os.sep + "vpython-addons"
-sys.path.append(python_path_updates)
+# needed because vc18 vpython does not have bs4 package
+if sys.version_info[0] < 3:
+    python_path_updates += os.sep + 'vpython-addons'
+    sys.path.append(python_path_updates)
 
 from xml.sax.saxutils import escape
 
@@ -101,7 +106,8 @@ def readCsvFile(csvFilename):
     global jobNamePrefix
     global jobNameDotted
 
-    csvfile = open(csvFilename, 'rb')
+    mode = 'r' if sys.version_info[0] >= 3 else 'rb'
+    csvfile = open(csvFilename, mode)
     csvList = csvfile.read().split('\n')
     csvfile.close()
     os.remove(csvFilename)
@@ -142,52 +148,6 @@ def readCsvFile(csvFilename):
             dataArray.append(data)
 
     return dataArray;
-
-def writeXunitHeader(xunitfile):
-    global jobNameDotted
-    xunitfile.write("<testsuites xmlns=\"http://check.sourceforge.net/ns\">\n")
-    time_tuple = time.localtime()
-    date_string = time.strftime("%m/%d/%Y", time_tuple)
-    time_string = time.strftime("%I:%M %p", time_tuple)
-    datetime_str = date_string + "\t" + time_string
-    xunitfile.write("    <datetime>" + datetime_str + "</datetime>\n")
-    xunitfile.write("    <suite>\n")
-    xunitfile.write("    <title>" + jobNameDotted + "</title>\n")
-
-def writeXunitTestCase(xunitFile, unit, subp, tc_name, passFail):
-    global jobNamePrefix
-    global testCaseCount
-    testCaseCount += 1
-    
-    tc_name = '.'.join([unit, subp, tc_name])
-
-    if 'PASS' in passFail:
-        successFailure = 'success'
-    else:
-        successFailure = 'failure'
-    if gUseExecRpt:
-        if None is os.environ.get('BUILD_URL'):
-            print("ERROR: Jenkins environment variable BUILD_URL not set\n")
-            print("       Check Jenkins configuration - JENKINS_URL is probably not set\n")
-            exec_link = "undefined"
-        else:
-            exec_link = os.getenv('BUILD_URL') + "artifact/execution/" + envName + "_" + jobName + ".html#section" + str(1+testCaseCount*2)
-        additional_msg = " See Execution Report: \n\t" + exec_link
-        passFail += additional_msg
-
-    if 'ABNORMAL' in passFail:
-        print("Abnormal Termination on Environment\n")
-
-    unit_subp = unit + "." + subp
-
-    xunitFile.write(testCaseString % (successFailure, unit_subp, tc_name, passFail.strip()))
-
-
-def writeXunitFooter(xunitfile):
-
-    xunitfile.write("   </suite>\n")
-    xunitfile.write("   <duration>33</duration>\n\n")
-    xunitfile.write("</testsuites>\n")
     
 def writeJunitHeader(junitfile,dataArray):
     
@@ -245,39 +205,22 @@ def writeJunitFooter(junitfile):
 def runCsv2JenkinsTestResults(csvFilename, junit):
 
     dataArray = readCsvFile(csvFilename)
-
-    if junit:
         
-        titles = dataArray[0]
+    titles = dataArray[0]
 
-        junitfile = open(csvFilename[:-4]+".xml","w")
-                
-        writeJunitHeader(junitfile,dataArray[1:])
+    junitfile = open(csvFilename[:-4]+".xml","w")
+            
+    writeJunitHeader(junitfile,dataArray[1:])
 
-        for data in dataArray[1:]:
-            data[UNIT_NAME_COL] = escape(data[UNIT_NAME_COL])
-            data[SUBPROG_COL] = escape(data[SUBPROG_COL])
-            data[TEST_CASE_COL] = escape(data[TEST_CASE_COL])
-            writeJunitTestCase(junitfile, data[UNIT_NAME_COL],data[SUBPROG_COL].replace("%2C",","),data[TEST_CASE_COL].replace("%2C",","),data[TC_STATUS_COL])
+    for data in dataArray[1:]:
+        data[UNIT_NAME_COL] = escape(data[UNIT_NAME_COL])
+        data[SUBPROG_COL] = escape(data[SUBPROG_COL])
+        data[TEST_CASE_COL] = escape(data[TEST_CASE_COL])
+        writeJunitTestCase(junitfile, data[UNIT_NAME_COL],data[SUBPROG_COL].replace("%2C",","),data[TEST_CASE_COL].replace("%2C",","),data[TC_STATUS_COL])
 
-        writeJunitFooter(junitfile)
-        
-        junitfile.close()
-    else:
-
-        xunitfile = open(csvFilename[:-4]+".xml","w")
-
-        writeXunitHeader(xunitfile)
-
-        for data in dataArray[1:]:
-            data[UNIT_NAME_COL] = escape(data[UNIT_NAME_COL])
-            data[SUBPROG_COL] = escape(data[SUBPROG_COL])
-            data[TEST_CASE_COL] = escape(data[TEST_CASE_COL])
-            writeXunitTestCase(xunitfile, data[UNIT_NAME_COL],data[SUBPROG_COL].replace("%2C",","),data[TEST_CASE_COL].replace("%2C",","),data[TC_STATUS_COL])
-
-        writeXunitFooter(xunitfile)
-
-        xunitfile.close()
+    writeJunitFooter(junitfile)
+    
+    junitfile.close()
 
 def determineCoverage(titles):
     global stIndex,brIndex,pairIndex,pathIndex,baIndex,fncIndex,fncCallIndex,VgIndex
@@ -345,31 +288,31 @@ def countUnitSubp(data):
 
 def calulatePercentages(statement,branch,pair,path,byAnalysis,function,functionCall,complexity):
     try:
-        statement [PERCENT_INDEX] = 100 * statement [COVERED_INDEX] / statement[TOTAL_INDEX]
+        statement [PERCENT_INDEX] = 100 * statement [COVERED_INDEX] // statement[TOTAL_INDEX]
     except:
         pass
     try:
-        branch    [PERCENT_INDEX] = 100 * branch    [COVERED_INDEX] / branch[TOTAL_INDEX]
+        branch    [PERCENT_INDEX] = 100 * branch    [COVERED_INDEX] // branch[TOTAL_INDEX]
     except:
         pass
     try:
-        pair      [PERCENT_INDEX] = 100 * pair      [COVERED_INDEX] / pair[TOTAL_INDEX]
+        pair      [PERCENT_INDEX] = 100 * pair      [COVERED_INDEX] // pair[TOTAL_INDEX]
     except:
         pass
     try:
-        path      [PERCENT_INDEX] = 100 * path      [COVERED_INDEX] / path[TOTAL_INDEX]
+        path      [PERCENT_INDEX] = 100 * path      [COVERED_INDEX] // path[TOTAL_INDEX]
     except:
         pass
     try:
-        byAnalysis[PERCENT_INDEX] = 100 * byAnalysis[COVERED_INDEX] / byAnalysis[TOTAL_INDEX]
+        byAnalysis[PERCENT_INDEX] = 100 * byAnalysis[COVERED_INDEX] // byAnalysis[TOTAL_INDEX]
     except:
         pass
     try:
-        function[PERCENT_INDEX] = 100 * function[COVERED_INDEX] / function[TOTAL_INDEX]
+        function[PERCENT_INDEX] = 100 * function[COVERED_INDEX] // function[TOTAL_INDEX]
     except:
         pass
     try:
-        functionCall[PERCENT_INDEX] = 100 * functionCall[COVERED_INDEX] / functionCall[TOTAL_INDEX]
+        functionCall[PERCENT_INDEX] = 100 * functionCall[COVERED_INDEX] // functionCall[TOTAL_INDEX]
     except:
         pass
 

@@ -112,7 +112,9 @@ abstract public class BaseJob {
         if (!manageProjectName.isEmpty()) {
             // Force unix style path to avoid problems later
             manageProjectName = manageProjectName.replace('\\','/');
-        }
+            manageProjectName = manageProjectName.replaceAll("^[ \t]+|[ \t]+$", "");
+            if (! manageProjectName.endsWith(".vcm")) manageProjectName += ".vcm";
+       }
         baseName = FilenameUtils.getBaseName(manageProjectName);
 
         this.useSavedData = useSavedData;
@@ -139,6 +141,12 @@ abstract public class BaseJob {
             waitLoops = json.optLong("waitLoops", 2);
             
             jobName = json.optString("jobName", null);
+            
+            if (jobName != null) {
+                // Remove all non-alphanumeric characters from the Jenkins Job name
+                jobName = jobName.replaceAll("[^a-zA-Z0-9_]","_");
+            }
+            
             nodeLabel = json.optString("nodeLabel", "");
         }
     }

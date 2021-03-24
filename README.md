@@ -31,7 +31,7 @@ There are 2 types of supported jobs and 1 deprecated job type
 
 -   **Single Job**
 -   **Pipeline Job**
--   **Multi Job (Deprecated)**
+-   **Multi-Job (Deprecated)**
 
 ### Single Job
 
@@ -46,6 +46,8 @@ There are 2 types of supported jobs and 1 deprecated job type
 (optionally) report on all environments in a VectorCAST/Manage project
 in parallel.
 
+:warning:*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel exeuction on a single VectorCAST Project*
+
 ![](docs/images/pipeline_create.png)
 
 There are 2 options for running tests
@@ -56,7 +58,7 @@ There are 2 options for running tests
         results from all these individual machines/nodes
     -   In this case, the VectorCAST/Manage project should be specified
         as relative to the root of the checkout
-    - There is now an option for the user can choose to use the main Pipeline Job's Workspace as 
+    - There is now an option to use the main Pipeline Job's Workspace as 
         a dedicated single checkout directory.  This checkout directory must be available
         to all executors across all nodes either by having all executors running on the same
         computer or have the main Pipeline Job's Workspace on a shared network drive.
@@ -69,6 +71,30 @@ There are 2 options for running tests
     -   The reports are generated into the workspace and archived as
         part of the Jenkins job
  
+The user will be able to disable the use of Change Based Testing to perform a 
+complete run of their VectorCAST Project.  By default Change Based Testing is enabled, but 
+this option can be disabled by unchecking the Use Change Based Testing box
+
+For users with Continuous Integration Licneses, you will be able to access those licenses by
+checking the Use Continuous Integration License checkbox.  If you do not have 
+Continuous Integration License, do not check this box as you will encounter licensing errors.
+
+If the user wishes to call the Jenkins job from another Pipeline job, check the box to 
+parameterize the Jenkinsfile.  This will add parameters to the pipeline job  
+that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage project (VCAST_PROJECT_DIR)
+and for forcing the VectorCAST Jobs to be executed on a specific node (VCAST_FORCE_NODE_EXEC_NAME) instead of using 
+the compiler as a node label.
+
+Calling the build command will return Failed, Unstable, Success cooresponding to the results of the VectorCAST
+Pipeline job.  To enabled the main pipeline job to continue, the user can surround the build command without
+a _catchError_ block as demonstrated below
+
+```
+catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : false ) {
+   build job: 'UnitTestingProject_vcast_pipeline', parameters: [string(name: 'VCAST_PROJECT_DIR', value: 'C:\\UnitTesting\\Project'), string(name: 'VCAST_FORCE_NODE_EXEC_NAME', value: 'MyTestNode')]
+}
+```
+
 Additionally, if a shared artifact directory is specified, VectorCAST/Manage
 will execute jobs independently, but have a central location for storing
 the build artifacts.  This option can be used to accelerate testing by use
@@ -128,7 +154,7 @@ tests
 
 ## Controlling Where Jobs Run
 
-When using Multi Jobs, the jobs are created to run on specific nodes
+When using Multi-Jobs, the jobs are created to run on specific nodes
 related to the compiler chosen for the environment. E.g.
 
 ![](docs/images/restrict.png)
@@ -185,11 +211,52 @@ with no test results. If you have an environment with no test results,
 you will manually need to check the box "Do not fail the build on empty test
 results" in the Publish JUnit test result report configuration.
 
-### Multi-branch Pipelines not supported
+## Change Log
 
-The current pipeline implementation will not work in a multi-branch pipeline job.
+### Version 0.66 (10 Feb 2021)
+- Fixed bug caught by updated to Python 3
+- Fixed command capture for processing later
+- Changed side panel display of VectorCAST to not be shown when anonymous user is using Jenkins
 
-## Changelog
+### Version 0.65 (20 Jan 2021)
+- Single jobs not displaying full report and rebuild report correctly in summary (VC2020)
+- Capturing stdout for skipped analysis causing console output to be delayed
+- Pipeline job fails unless user specific .vcm for manage project
+- Problem with CBT analysis when not using single checkout directory
+- Using lowercase %workspace% causes single checkout directory error
+- Updated managewait.py to overcome race condition causing script to hang on readline()
+- Added skipped test analysis to Single Jobs
+- Added detection of disabled environment to DataAPI generated results
+- Added addition error detection
+
+### Version 0.64 (17 Nov 2020)
+- Skipped tests not detected for cover environments 
+- Check for illegal characters in pipeline job names 
+- Add Option to not use CBT in Jenkins pipeline plugin 
+- VC2020 Manage reports have no formatting in Jenkins job summary 
+- Remove xUnit reporting 
+- Remove truncated output during the build 
+- "Could not acquire a read lock on the project's vcm file" should raise an error, but it does not 
+- Add option to active CI licenses 
+- Regression Scripts with identical ending directories show testcase as skipped 
+- Add option to make job parameterized for Manage project location and Force Node Execution rather than compiler 
+- Update error thrown when user creates absolute path with SCM snippet 
+- Need to add more error detection 
+- Expand JUnit test case name display to include file.subprogram 
+- Change reports to not use VCAST_RPTS_SELF_CONTAINED=FALSE 
+
+### Version 0.63 (30 April 2020)
+
+- Support Multi-Branch Pipelines
+- Include plugin version in Pipeline Job Jenkins Script and console log
+- Check for illegal characters in Pipeline Job names
+- Update Single and Multi-Jobs to use same reporting as Pipeline Jobs
+- Remove CombinedReport.html from previous Pipeline job build at beginning of new build
+- Make aggregate coverage results consistent with VectorCAST/Manage aggregate coverage results
+- Always use new VectorCAST report API for VectorCAST/2019 and later
+- Fix potential file access race condition when generating xml
+- Fix exception when building VectorCAST/Unit regression script environments
+- Support for VectorCAST/vpython 3
 
 ### Version 0.62 (10 March 2020)
 
@@ -375,7 +442,7 @@ The current pipeline implementation will not work in a multi-branch pipeline job
 
 ### Version 0.26 (1 Nov 2017
 
--   Option to set the name of the single job or multi job (name is
+-   Option to set the name of the single job or multi-job (name is
     pre-pended to sub-job in the case of multi-jobs)
 -   Option to configure (at creation/update time) the node to run the
     single job or top-level multi-job on

@@ -21,6 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+from __future__ import print_function
+
 import subprocess
 import os
 import sys
@@ -28,49 +31,87 @@ import argparse
 import shutil
 import re
 import time
-
-
-class ManageWait():
+from datetime import datetime
+from threading import Thread
+try:
+        from Queue import Queue, Empty
+except ImportError:
+        from queue import Queue, Empty  # python 3.x
+ 
+class ManageWait(object):
     def __init__(self, verbose, command_line, wait_time, wait_loops):
         self.wait_time = wait_time
         self.wait_loops = wait_loops
         self.verbose = verbose
         self.command_line = command_line
 
-    def exec_manage(self, silent=False):
-        callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
-        output = ''
-        if self.verbose:
-            output += "\nVerbose: %s\n" % callStr
+    def enqueueOutput(self, io_target, queue, logfile):
+        while True:
+            line = io_target.readline()
+            line = line.rstrip()
+            if line == '':
+                continue
+            output = ( datetime.now().strftime("%H:%M:%S.%f") + "  " + line + "\n" )
+            if not self.silent:
+                print(line)
+                logfile.write(output)
+            queue.put(line)
 
+    def startOutputThread(self, io_target, logfile):
+        self.q = Queue()
+        self.io_t = Thread(target=self.enqueueOutput, args=(io_target, self.q, logfile))
+        self.io_t.daemon = True # thread dies with the program
+        self.io_t.start()
+
+    def exec_manage(self, silent=False):
+        with open("command.log", 'a') as logfile:
+            return self.__exec_manage(silent, logfile)
+
+    def __exec_manage(self, silent, logfile):
+        self.silent = silent
+        callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
+        ret_out = ''
+        
+        if self.verbose:
+            logfile.write( "\nVerbose: %s\n" % callStr)
+            
         # capture the output of the manage call
         loop_count = 0
         while 1:
             loop_count += 1
-            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
-            if not silent:
+            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+            
+            self.startOutputThread(p.stdout, logfile)
+            
+            if not self.silent:
                 print("Manage started")
+                
             license_outage = False
             edited_license_outage_msg = ""
             actual_license_outage_msg = ""
-            while True:
-                out_mgt = p.stdout.readline().rstrip()
-                if len(out_mgt) == 0 and p.poll() is not None:
-                    break
-                if len(out_mgt) > 0 :
- 
-                    if "Licensed number of users already reached" in out_mgt or "License server system does not support this feature" in out_mgt:
-                        license_outage = True
-                        # Change FLEXlm Error to FLEXlm Err.. to avoid Groovy script from
-                        # marking retry attempts as overall job failure
-                        actual_license_outage_msg = out_mgt
-                        out_mgt = out_mgt.replace("FLEXlm Error", "FLEXlm Err..")
-                        edited_license_outage_msg = out_mgt
-                    if not silent:
-                        print (out_mgt)
-                    output += ( out_mgt + "\n" )
- 
-            if not silent:
+            
+            while p.poll() is None or not self.q.empty():
+                try:
+                    while not self.q.empty():
+                        out_mgt = self.q.get(False) 
+                        
+                        if len(out_mgt) > 0:
+         
+                            if "Licensed number of users already reached" in out_mgt or "License server system does not support this feature" in out_mgt:
+                                license_outage = True
+                                # Change FLEXlm Error to FLEXlm Err.. to avoid Groovy script from
+                                # marking retry attempts as overall job failure
+                                actual_license_outage_msg = out_mgt
+                                out_mgt = out_mgt.replace("FLEXlm Error", "FLEXlm Err..")
+                                edited_license_outage_msg = out_mgt
+
+                            ret_out +=  out_mgt + "\n"
+                    time.sleep(0.5)
+                    
+                except Empty:
+                    pass
+
+            if not self.silent:
                 print("Manage has finished")
                 
             # manage finished. Was there a license outage?
@@ -85,10 +126,12 @@ class ManageWait():
                     print(("Original license outage message : " + actual_license_outage_msg ))
                     msg = "ERROR: Failed to obtain a license after %d attempts, terminating" % self.wait_loops
                     print (msg)
-                    sys.exit(-1) # we could equally well break here 
+                    break
             else :
                 break #leave outer while loop
-        return output # checked in generate-results.py
+                
+        
+        return ret_out # checked in generate-results.py
  
 ## main
 if __name__ == '__main__':
