@@ -1,6 +1,10 @@
 from __future__ import print_function
 import datetime
-import cgi
+try:
+    from html import escape
+except ImportError:
+    # html not standard module in Python 2.
+    from cgi import escape
 import sys, subprocess, os
 global saved_compiler, saved_testsuite, saved_envname
 
@@ -46,8 +50,8 @@ def generateJunitTestCase(jobname, tc_name, passFail):
     </testcase>
     """
     
-    jobname = html.escape(jobname)
-    tc_name = html.escape(tc_name)
+    jobname = escape(jobname, quote=False)
+    tc_name = escape(tc_name, quote=False)
     
     if 'PASS' in passFail:
         successFailure = 'success'
