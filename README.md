@@ -213,6 +213,9 @@ results" in the Publish JUnit test result report configuration.
 
 ## Change Log
 
+### Version 0.67 (30 March 2021)
+- Add support for Python 3.9
+
 ### Version 0.66 (10 Feb 2021)
 - Fixed bug caught by updated to Python 3
 - Fixed command capture for processing later
