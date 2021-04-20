@@ -37,6 +37,8 @@ python_path_updates += os.sep + "vpython-addons"
 sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
+import get_encoding
+from io import open
 
 #global variables
 global manageProjectName
@@ -357,7 +359,7 @@ def run(HtmlReportName = "", jobName = "", version= 14):
         return
         
     # open the file and create BS4 object
-    html_file = open(HtmlReportName,"r")
+    html_file = open(HtmlReportName, encoding=get_encoding.get_file_encoding(HtmlReportName))
     html_doc = html_file.read()
     html_file.close()
     soup = BeautifulSoup(html_doc,'html.parser')

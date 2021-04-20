@@ -213,6 +213,10 @@ results" in the Publish JUnit test result report configuration.
 
 ## Change Log
 
+### Version 0.68 (5 April 2021)
+- Fixing new HTML reports to mactch current Jenkins CSP
+- Fixing encoding read for GBK characters
+
 ### Version 0.67 (30 March 2021)
 - Add support for Python 3.9
 

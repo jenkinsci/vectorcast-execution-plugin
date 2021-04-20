@@ -87,6 +87,7 @@ getEnvironmentSetupWin() + "\n" +
 "rem Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "set VCAST_NO_FILE_TRUNCATION=1\n" +
+"set VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --status\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --force --release-locks\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
@@ -117,6 +118,7 @@ getEnvironmentSetupUnix() + "\n" +
 "##Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "export VCAST_NO_FILE_TRUNCATION=1\n" +
+"export VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --status \"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --force --release-locks \"\n" +
 getExecutePreambleUnix() +

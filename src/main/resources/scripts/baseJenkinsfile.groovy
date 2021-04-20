@@ -115,6 +115,7 @@ def runCommands(cmds) {
             ${VC_EnvSetup}
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_NO_FILE_TRUNCATION=1
+            export VCAST_RPTS_SELF_CONTAINED=FALSE
             
             """.stripIndent()
         cmds = localCmds + cmds
@@ -128,6 +129,8 @@ def runCommands(cmds) {
             ${VC_EnvSetup}
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_NO_FILE_TRUNCATION=1
+            set VCAST_RPTS_SELF_CONTAINED=FALSE
+            
             """.stripIndent()
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")

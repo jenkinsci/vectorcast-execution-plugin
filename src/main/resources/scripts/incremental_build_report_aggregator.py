@@ -31,6 +31,8 @@ import sys
 import shutil
 from io import open
 
+import get_encoding
+
 # This script takes Manage Incremental Rebuild Reports and combines them
 #     into one comprehensive report.
 # 
@@ -141,9 +143,10 @@ def parse_html_files(mpName):
         return
         
     try:
-        main_soup = BeautifulSoup(open(report_file_list[0], encoding="utf-8"),features="lxml")
+        main_soup = BeautifulSoup(open(report_file_list[0], encoding=get_encoding.get_file_encoding(report_file_list[0])),features="lxml")
     except:
-        main_soup = BeautifulSoup(open(report_file_list[0], encoding="utf-8"))
+        main_soup = BeautifulSoup(open(report_file_list[0], encoding=get_encoding.get_file_encoding(report_file_list[0])))
+
     preserved_count = 0
     executed_count = 0
     total_count = 0

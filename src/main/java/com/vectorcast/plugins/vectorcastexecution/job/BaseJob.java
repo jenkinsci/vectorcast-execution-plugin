@@ -520,11 +520,7 @@ abstract public class BaseJob {
      */
     protected void addArchiveArtifacts(Project project) {
         ArtifactArchiver archiver = new ArtifactArchiver(
-                /*artifacts*/"*_rebuild*," +
-                             "*_report.html, " +
-                             "execution/**, " +
-                             "management/**, " +
-                             "xml_data/**",
+                /*artifacts*/"**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log",
                 /*excludes*/"",
                 /*latest only*/false,
                 /*allow empty archive*/false);
