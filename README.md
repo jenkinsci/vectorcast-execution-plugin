@@ -40,13 +40,13 @@ There are 2 types of supported jobs and 1 deprecated job type
 
 ![](docs/images/single.png)
 
-### Pipepline Job
+### Pipeline Job
 
 **Pipeline** creates a Jenkins Pipeline job to build/execute and
 (optionally) report on all environments in a VectorCAST/Manage project
 in parallel.
 
-:warning:*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel exeuction on a single VectorCAST Project*
+:warning:*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel execution on a single VectorCAST Project*
 
 ![](docs/images/pipeline_create.png)
 
@@ -75,9 +75,9 @@ The user will be able to disable the use of Change Based Testing to perform a
 complete run of their VectorCAST Project.  By default Change Based Testing is enabled, but 
 this option can be disabled by unchecking the Use Change Based Testing box
 
-For users with Continuous Integration Licneses, you will be able to access those licenses by
+For users with Continuous Integration Licenses, you will be able to access those licenses by
 checking the Use Continuous Integration License checkbox.  If you do not have 
-Continuous Integration License, do not check this box as you will encounter licensing errors.
+Continuous Integration Licenses, do not check this box as you will encounter licensing errors.
 
 If the user wishes to call the Jenkins job from another Pipeline job, check the box to 
 parameterize the Jenkinsfile.  This will add parameters to the pipeline job  
@@ -85,7 +85,7 @@ that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage
 and for forcing the VectorCAST Jobs to be executed on a specific node (VCAST_FORCE_NODE_EXEC_NAME) instead of using 
 the compiler as a node label.
 
-Calling the build command will return Failed, Unstable, Success cooresponding to the results of the VectorCAST
+Calling the build command will return Failed, Unstable, Success corresponding to the results of the VectorCAST
 Pipeline job.  To enabled the main pipeline job to continue, the user can surround the build command without
 a _catchError_ block as demonstrated below
 
@@ -223,7 +223,7 @@ results" in the Publish JUnit test result report configuration.
 ## Change Log
 
 ### Version 0.68 (5 April 2021)
-- Fixing new HTML reports to mactch current Jenkins CSP
+- Fixing new HTML reports to match current Jenkins CSP
 - Fixing encoding read for GBK characters
 
 ### Version 0.67 (30 March 2021)
