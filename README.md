@@ -222,7 +222,7 @@ results" in the Publish JUnit test result report configuration.
 
 ## Change Log
 
-### Version 0.68 (5 April 2021)
+### Version 0.68 (20 April 2021)
 - Fixing new HTML reports to match current Jenkins CSP
 - Fixing encoding read for GBK characters
 
