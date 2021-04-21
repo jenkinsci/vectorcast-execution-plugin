@@ -120,13 +120,6 @@ Environments Affected
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
         
-    # copy the CSS and PNG files for manage rebuild reports...if available
-    import glob        
-    for file in glob.glob("*.css"):
-        shutil.copy(file, "rebuild_reports/"+file)
-    for file in glob.glob("*.png"):
-        shutil.copy(file, "rebuild_reports/"+file)
-
 def parse_html_files(mpName):
 
     if os.path.exists(mpName + "_rebuild.html"):
@@ -249,6 +242,13 @@ def parse_html_files(mpName):
             continue
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
+
+    # copy the CSS and PNG files for manage rebuild reports...if available
+    import glob        
+    for file in glob.glob("*.css"):
+        shutil.copy(file, "rebuild_reports/"+file)
+    for file in glob.glob("*.png"):
+        shutil.copy(file, "rebuild_reports/"+file)
 
 if __name__ == "__main__":
 
