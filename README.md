@@ -188,8 +188,11 @@ Jenkins configuration.
 
 ### VectorCAST Reports and Jenkins Content Security Policy
 
-See [Configuring Content Security
-Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
+VectorCAST HTML reports for metrics were updated to use cascading style 
+sheets (CSS) in the 2019 release and 2020 for top level project metrics.  
+This was done to give users more flexibility in what and how metrics 
+are displayed.  To maintain single file HTML format, VectorCAST Reports 
+used inline CSS.  Inline CSS was disallowed under Jenkins more restrictive CSP.
 
 "Jenkins 1.641 / Jenkins 1.625.3 introduce
 the `Content-Security-Policy` header to static files served by Jenkins
@@ -198,12 +201,6 @@ restrictive default set of permissions to protect Jenkins users from
 malicious HTML/JS files in workspaces, `/userContent`, or archived
 artifacts."
 
-VectorCAST HTML reports for metrics were updated to use cascading style 
-sheets (CSS) in the 2019 release and 2020 for top level project metrics.  
-This was done to give users more flexibility in what and how metrics 
-are displayed.  To maintain single file HTML format, VectorCAST Reports 
-used inline CSS.  Inline CSS was disallowed under Jenkins more restrictive CSP.
-
 The result of this combination incorrectly formatted the VectorCAST reports.
 
 Numerous options are available to correct this:
@@ -211,6 +208,9 @@ Numerous options are available to correct this:
 - Enable anonymous reads from the Manage Jenkins > Configure Global Security > Authorization
 - Reconfigure the Jenkins Content Security Policy
 - Download the archives and view reports locally
+
+For more information on the Jenkins CSP, please see [Configuring Content Security
+Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
 
 ### JUnit publisher failing environment with no test cases
 
