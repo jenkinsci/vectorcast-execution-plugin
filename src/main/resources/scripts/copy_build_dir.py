@@ -89,7 +89,10 @@ def addConvertCoverFile(tf, file, workspace, nocase, teePrint):
             shutil.copyfile(fullpath, bakpath)
 
             # update the database paths to be relative from workspace
-            updateDatabase(conn, nocase, workspace, "LIS_file", "instrumented_files", teePrint)
+            try:
+                updateDatabase(conn, nocase, workspace, "LIS_file", "instrumented_files", teePrint)
+            except:
+                updateDatabase(conn, nocase, workspace, "path", "lis_files", teePrint)
             updateDatabase(conn, nocase, workspace, "display_path", "source_files", teePrint)
             updateDatabase(conn, nocase, workspace, "path", "source_files", teePrint)
             
