@@ -28,8 +28,7 @@ from __future__ import print_function
 from io import open
 import chardet
 
-def get_file_encoding(file):
-    cur_encoding = 'utf-8'
+def get_file_encoding(file, default_encoding = 'utf-8'):
     
     try:
         with open(file, "rb") as fd:
@@ -37,6 +36,7 @@ def get_file_encoding(file):
             if cur_encoding == 'GB2312':
                 cur_encoding = 'GBK'
     except:
-        print ("Problem detecting encoding of " + file + ".  Defaulting to utf-8")
+        print ("Problem detecting encoding of " + file + ".  Defaulting to " + default_encoding)
+        cur_encoding = default_encoding
 
     return cur_encoding
