@@ -29,11 +29,14 @@ from io import open
 import chardet
 
 def get_file_encoding(file):
+    cur_encoding = 'utf-8'
+    
     try:
         with open(file, "rb") as fd:
             cur_encoding = chardet.detect(fd.read())["encoding"]
             if cur_encoding == 'GB2312':
                 cur_encoding = 'GBK'
-            return cur_encoding
     except:
-        return 'utf-8'
+        print ("Problem detecting encoding of " + file + ".  Defaulting to utf-8")
+
+    return cur_encoding
