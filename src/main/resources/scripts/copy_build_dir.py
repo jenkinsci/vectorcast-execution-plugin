@@ -159,6 +159,7 @@ if __name__ == '__main__':
             addFile(tf, "UNITDATA.VCD")
             addFile(tf, "UNITDYNA.VCD")
             addFile(tf, "manage.xml")
+            addFile(tf, "*.LIS")
             addFile(tf, Env + ".vce", backOneDir=True)
             addFile(tf, Env + ".vcp", backOneDir=True)
         finally:
