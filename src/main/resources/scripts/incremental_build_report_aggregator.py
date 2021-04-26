@@ -84,7 +84,7 @@ Environments Affected
     for file in report_file_list:
         print("processing file: " + file)
         sepCount = 0
-        f = open(file,"r")
+        f = open(file,"rb")
         lines = f.readlines()
         f.close()
         for line in lines:
@@ -109,7 +109,7 @@ Environments Affected
     template = "\nTotals                  %3d%% (%4d / %4d)          %9d %9d %9d"
     totalStr += template%(percentage,rebuild_count,rebuild_total,preserved_count,executed_count,total_count)
 
-    f = open(mpName + "_rebuild.txt","w")
+    f = open(mpName + "_rebuild.txt","wb")
     f.write(header + outStr + totalStr)
     f.close()
 

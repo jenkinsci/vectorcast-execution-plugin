@@ -26,11 +26,11 @@ from __future__ import division
 from __future__ import print_function
 
 from io import open
-import chardet
 
 def get_file_encoding(file, default_encoding = 'utf-8'):
     
     try:
+        import chardet
         with open(file, "rb") as fd:
             cur_encoding = chardet.detect(fd.read())["encoding"]
             if cur_encoding == 'GB2312':
