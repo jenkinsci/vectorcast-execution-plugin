@@ -101,7 +101,7 @@ def procTestResults(HtmlReportName, table, level):
     #setup the filename
     CsvFileName = getCsvName(HtmlReportName,level,"test_results_")
     
-    csv_file = open(CsvFileName,"w")
+    csv_file = open(CsvFileName,"wb")
     
     #write out additional info
     csv_file.write("Project," + manageProjectName + "\n")
@@ -194,7 +194,7 @@ def procCoverageResults(HtmlReportName,table, level):
     
     #setup the filename
     CsvFileName = getCsvName(HtmlReportName,level,"coverage_results_")
-    csv_file = open(CsvFileName,"w")
+    csv_file = open(CsvFileName,"wb")
     
     #write out additional info
     csv_file.write("Project," + manageProjectName + "\n")
@@ -421,7 +421,7 @@ def processTotals(complexityIndex, columnTitles, info):
     if not os.path.exists("xml_data"):
         os.mkdir("xml_data")
     xml_file = os.path.join("xml_data", "coverage_results_top-level.xml")
-    f = open(xml_file,"w")
+    f = open(xml_file,"wb")
     time_tuple = time.localtime()
     date_string = time.strftime("%m/%d/%Y", time_tuple)
     time_string = time.strftime("%I:%M %p", time_tuple)

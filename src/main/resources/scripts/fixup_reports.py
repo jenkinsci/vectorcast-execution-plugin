@@ -39,8 +39,6 @@ if sys.version_info[0] < 3:
 from bs4 import BeautifulSoup
 from io import open
 import tee_print
-
-from io import open
 import get_encoding
     
 def fixup_2020_soup(main_soup):
