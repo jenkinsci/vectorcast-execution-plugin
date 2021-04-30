@@ -95,6 +95,7 @@ getExecutePreambleWin() +
 "del command.log > nul 2>&1\n"+
 " %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --build-execute --incremental --output \\\"@PROJECT_BASE@_rebuild" + html_text + "\\\" \"\n" +
 "copy command.log complete_build.log\n"+
+"copy \"@PROJECT_BASE@_rebuild" + html_text + "\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n"+
 "\n";
         if (getOptionUseReporting()) {
             win +=
@@ -102,7 +103,7 @@ getExecutePreambleWin() +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + " --buildlog complete_build.log\n" +
 
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\full_report_no_toc.py\" \"@PROJECT@\" \n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\fixup_reports.py\" \"@PROJECT_BASE@_rebuild" + html_text + "\"\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\fixup_reports.py\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n" +
 
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=\\\"@PROJECT_BASE@_full_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
@@ -124,8 +125,9 @@ getEnvironmentSetupUnix() + "\n" +
 getExecutePreambleUnix() +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
 "rm -f command.log\n"+
-" $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --build-execute --incremental --output \\\"@PROJECT_BASE@_rebuild.html\\\"\"\n" +
+" $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --build-execute --incremental  --output \\\"@PROJECT_BASE@_rebuild" + html_text + "\\\" \"\n" +
 "cp -p command.log complete_build.log\n"+
+"cp -p \"@PROJECT_BASE@_rebuild" + html_text + "\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n"+
 "\n";
 if (getOptionUseReporting()) {
             unix +=
@@ -133,7 +135,7 @@ if (getOptionUseReporting()) {
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + " --buildlog complete_build.log\n" +
 
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/full_report_no_toc.py\" \"@PROJECT@\" \n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/fixup_reports.py\" \"@PROJECT_BASE@_rebuild" + html_text + "\"\n" +
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/fixup_reports.py\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n" +
 
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
@@ -251,7 +253,7 @@ if (getOptionUseReporting()) {
 "    manager.addBadge(\"error.gif\", \"Abnormal Termination of at least one Environment\")\n" +
 "}\n" +
 "\n" +
-"FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_rebuild" + html_text + "')\n" +
+"FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_rebuild" + html_text + "_tmp')\n" +
 "FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report" + html_text + "_tmp')\n" +
 "if (fp_i.exists() && fp_f.exists())\n" +
 "{\n" +
