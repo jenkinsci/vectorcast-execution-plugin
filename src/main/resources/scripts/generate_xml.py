@@ -350,7 +350,7 @@ class GenerateXml(BaseGenerateXml):
 
         self.hashCode = hashlib.md5(build_dir_4hash).hexdigest()
         if verbose:
-            print ("gen Dir: " + build_dir_4hash+ " Hash: " +self.hashCode)
+            print ("gen Dir: " + str(build_dir_4hash) + " Hash: " + self.hashCode)
 
         #self.hashCode = build_dir.split("/")[-1].upper()
         self.build_dir = build_dir
