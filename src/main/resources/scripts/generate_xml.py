@@ -350,7 +350,7 @@ class GenerateXml(BaseGenerateXml):
 
         self.hashCode = hashlib.md5(build_dir_4hash).hexdigest()
         if verbose:
-            print ("gen Dir: " + build_dir_4hash+ " Hash: " +self.hashCode)
+            print ("gen Dir: " + str(build_dir_4hash)+ " Hash: " +self.hashCode)
 
         #self.hashCode = build_dir.split("/")[-1].upper()
         self.build_dir = build_dir
@@ -759,7 +759,7 @@ class GenerateXml(BaseGenerateXml):
             if isSystemTest:
                 compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
 				# use tc.name because system tests aren't for a specific unit/function
-                if searchName in simpleTestcases.keys():
+                if tc.name in simpleTestcases.keys():
                     return [False, simpleTestcases[searchName][0], simpleTestcases[searchName][1]]
                 else:
                     self.__print_test_case_was_skipped(searchName, tc.passed)
