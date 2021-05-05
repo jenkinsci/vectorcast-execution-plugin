@@ -760,7 +760,7 @@ class GenerateXml(BaseGenerateXml):
                 compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
 				# use tc.name because system tests aren't for a specific unit/function
                 if tc.name in simpleTestcases.keys():
-                    return [False, simpleTestcases[searchName][0], simpleTestcases[searchName][1]]
+                    return [False, simpleTestcases[tc.name][0], simpleTestcases[tc.name][1]]
                 else:
                     self.__print_test_case_was_skipped(searchName, tc.passed)
                     return [True, None, None]
@@ -783,7 +783,7 @@ class GenerateXml(BaseGenerateXml):
                     self.__print_test_case_was_skipped(searchName, tc.passed)
                     return [True, None, None]
         except KeyError:
-            self.__print_test_case_was_skipped(searchName, tc.passed)
+            self.__print_test_case_was_skipped(tc.name, tc.passed)
             return [True, None, None]
         except Exception as e: 
             parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
