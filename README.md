@@ -222,10 +222,11 @@ results" in the Publish JUnit test result report configuration.
 
 ## Change Log
 
-### Version 0.68 (20 April 2021)
-- Fixing new HTML reports to match current Jenkins CSP
-- Fixing encoding read for GBK characters
-- Updates for new cover database structure
+### Version 0.68 (6 May 2021)
+- New HTML reports match current Jenkins CSP
+- Encoding read for GBK characters
+- Bug fixes for compatibility issues with VectorCAST/2021
+- Bug fix for counting run system test cases as skipped
 
 ### Version 0.67 (30 March 2021)
 - Add support for Python 3.9
