@@ -67,6 +67,17 @@ def getMPname() {
     }
     return mpName
 }
+def getMPpath() {
+    // get the manage projects full name and base name
+    def mpFullName = VC_Manage_Project
+    def mpPath = ""
+    if (mpFullName.toLowerCase().endsWith(".vcm")) {
+        mpPath = mpFullName.take(mpFullName.lastIndexOf('.'))
+    } else {
+        mpPath = mpFullName
+    }
+    return mpPath
+}
 // check log for errors
 def checkLogsForErrors(log) {
 
@@ -99,6 +110,14 @@ def checkLogsForErrors(log) {
 
     return [foundKeywords, failure, unstable_flag]
 }
+
+def formatPath(inPath) {
+    def outPath = inPath
+    if (!isUnix()) {
+        outPath = inPath.replace("/","\\")
+    }
+    return outPath
+}
 // run commands on Unix (Linux) or Windows
 def runCommands(cmds) {
     def boolean failure = false;
@@ -115,6 +134,7 @@ def runCommands(cmds) {
             ${VC_EnvSetup}
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_NO_FILE_TRUNCATION=1
+            export VCAST_RPTS_SELF_CONTAINED=FALSE
             
             """.stripIndent()
         cmds = localCmds + cmds
@@ -128,6 +148,8 @@ def runCommands(cmds) {
             ${VC_EnvSetup}
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_NO_FILE_TRUNCATION=1
+            set VCAST_RPTS_SELF_CONTAINED=FALSE
+            
             """.stripIndent()
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
@@ -421,8 +443,17 @@ pipeline {
                         
                         // if we are using SCM and not using a shared artifact directory...
                         if (VC_usingSCM && !VC_useOneCheckoutDir && VC_sharedArtifactDirectory.length() == 0) {
-                            // run a script to extract stashed files and process data into xml reports                        
-                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py""" )
+                            // run a script to extract stashed files and process data into xml reports
+                            def mpPath = getMPpath()
+                            def coverDBpath = formatPath(mpPath + "/build/vcast_data/cover.db")
+                               
+                            cmds = """
+                                _RM ${coverDBpath}
+                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py
+                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --refresh"
+                            """
+                            buildLogText += runCommands(cmds)
+                            
                         }        
                         // use unstashed build logs to get the skipped data
                         writeFile file: "unstashed_build.log", text: unstashedBuildLogText

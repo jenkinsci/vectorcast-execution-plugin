@@ -180,6 +180,8 @@ def processSystemTestResultsData(lines):
     if firstEnvFound:
         write_tc_data(oldEnvName, unit_report_name, jobNameDotted, passed, failed, error, testcase_data)
         
+    return failed
+        
 def saveQATestStatus(mp):
     callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status=" + os.path.basename(mp)[:-4] + "_system_tests_status.html"
     p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -206,9 +208,11 @@ def genQATestResults(mp, level = None, envName = None, verbose = False):
         
     if err:
         print(out, err)
-    processSystemTestResultsData(out.splitlines())
+    failed_count = processSystemTestResultsData(out.splitlines())
     
     saveQATestStatus(mp)
+    
+    return failed_count
         
 if __name__ == '__main__':
     genQATestResults(sys.argv[1])

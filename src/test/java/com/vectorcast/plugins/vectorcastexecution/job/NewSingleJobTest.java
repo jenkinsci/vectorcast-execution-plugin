@@ -104,12 +104,7 @@ public class NewSingleJobTest extends TestCase {
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
-        Assert.assertEquals("*_rebuild*," +
-                             "*_report.html, " +
-                            "execution/**, " +
-                            "management/**, " +
-                            "xml_data/**",
-                            archiver.getArtifacts());
+        Assert.assertEquals("**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log",archiver.getArtifacts());
         Assert.assertFalse(archiver.getAllowEmptyArchive());
         // Publisher 1- JUnitResultArchiver
         Assert.assertTrue(publisherList.get(1) instanceof JUnitResultArchiver);

@@ -39,7 +39,7 @@ if sys.version_info[0] < 3:
 from bs4 import BeautifulSoup
 from io import open
 import tee_print
-
+import get_encoding
     
 def fixup_2020_soup(main_soup):
 
@@ -104,9 +104,9 @@ def fixup_2020_soup(main_soup):
 
 def fixup_2020_reports(report_name):
     try:
-        main_soup = BeautifulSoup(open(report_name),features="lxml")
+        main_soup = BeautifulSoup(open(report_name, encoding=get_encoding.get_file_encoding(report_name)),features="lxml")
     except:
-        main_soup = BeautifulSoup(open(report_name))
+        main_soup = BeautifulSoup(open(report_name, encoding=get_encoding.get_file_encoding(report_name)))
         
     main_soup = fixup_2020_soup(main_soup)
     f = open(report_name,"w", encoding="utf-8")
