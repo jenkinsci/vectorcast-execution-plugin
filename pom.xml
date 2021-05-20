@@ -52,8 +52,8 @@
     </developers>
 
     <scm>
-        <connection>scm:git:ssh://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
+        <connection>scm:git:https://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
+        <developerConnection>scm:git:https://github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
         <tag>vectorcast-execution-0.62</tag>
     </scm>
