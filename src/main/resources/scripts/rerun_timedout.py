@@ -36,5 +36,5 @@ for line in lines:
         tc_name = esc_quote + line.split(": ")[-1].strip() + esc_quote
     if "Timed out: The process was terminated because the TEST_CASE_TIMEOUT value was exceeded" in line:
         if tc_name and tc_unit and tc_subp:
-            print "-u " + tc_unit + " -s " + tc_subp + " -t " + tc_name + " execute run"
+            print ("-u " + tc_unit + " -s " + tc_subp + " -t " + tc_name + " execute run")
 
