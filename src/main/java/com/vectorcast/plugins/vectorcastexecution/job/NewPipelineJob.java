@@ -144,7 +144,7 @@ public class NewPipelineJob extends BaseJob {
         if (MPName.startsWith("/"))      absPath = true;
         if (MPName.matches("[a-zA-Z]:.*")) absPath = true;
         
-        if (! MPName.endsWith(".vcm")) MPName += ".vcm";
+        if (! MPName.toLowerCase().endsWith(".vcm")) MPName += ".vcm";
         
         Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "MPName: " + MPName + "   scmSnippet: " + pipelineSCM,  "MPName: " + MPName + "   scmSnippet: " + pipelineSCM);
 

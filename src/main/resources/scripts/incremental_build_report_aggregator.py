@@ -31,6 +31,8 @@ import sys
 import shutil
 from io import open
 
+import get_encoding
+
 # This script takes Manage Incremental Rebuild Reports and combines them
 #     into one comprehensive report.
 # 
@@ -82,7 +84,7 @@ Environments Affected
     for file in report_file_list:
         print("processing file: " + file)
         sepCount = 0
-        f = open(file,"r")
+        f = open(file,"rb")
         lines = f.readlines()
         f.close()
         for line in lines:
@@ -107,7 +109,7 @@ Environments Affected
     template = "\nTotals                  %3d%% (%4d / %4d)          %9d %9d %9d"
     totalStr += template%(percentage,rebuild_count,rebuild_total,preserved_count,executed_count,total_count)
 
-    f = open(mpName + "_rebuild.txt","w")
+    f = open(mpName + "_rebuild.txt","wb")
     f.write(header + outStr + totalStr)
     f.close()
 
@@ -118,13 +120,6 @@ Environments Affected
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
         
-    # copy the CSS and PNG files for manage rebuild reports...if available
-    import glob        
-    for file in glob.glob("*.css"):
-        shutil.copy(file, "rebuild_reports/"+file)
-    for file in glob.glob("*.png"):
-        shutil.copy(file, "rebuild_reports/"+file)
-
 def parse_html_files(mpName):
 
     if os.path.exists(mpName + "_rebuild.html"):
@@ -141,9 +136,10 @@ def parse_html_files(mpName):
         return
         
     try:
-        main_soup = BeautifulSoup(open(report_file_list[0], encoding="utf-8"),features="lxml")
+        main_soup = BeautifulSoup(open(report_file_list[0], encoding=get_encoding.get_file_encoding(report_file_list[0])),features="lxml")
     except:
-        main_soup = BeautifulSoup(open(report_file_list[0], encoding="utf-8"))
+        main_soup = BeautifulSoup(open(report_file_list[0], encoding=get_encoding.get_file_encoding(report_file_list[0])))
+
     preserved_count = 0
     executed_count = 0
     total_count = 0
@@ -246,6 +242,13 @@ def parse_html_files(mpName):
             continue
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
+
+    # copy the CSS and PNG files for manage rebuild reports...if available
+    import glob        
+    for file in glob.glob("*.css"):
+        shutil.copy(file, "rebuild_reports/"+file)
+    for file in glob.glob("*.png"):
+        shutil.copy(file, "rebuild_reports/"+file)
 
 if __name__ == "__main__":
 

@@ -90,21 +90,24 @@ class ManageWait(object):
             edited_license_outage_msg = ""
             actual_license_outage_msg = ""
             
-            while p.poll() is None:
+            while p.poll() is None or not self.q.empty():
                 try:
-                    out_mgt = self.q.get(False) 
-                    
-                    if len(out_mgt) > 0:
-     
-                        if "Licensed number of users already reached" in out_mgt or "License server system does not support this feature" in out_mgt:
-                            license_outage = True
-                            # Change FLEXlm Error to FLEXlm Err.. to avoid Groovy script from
-                            # marking retry attempts as overall job failure
-                            actual_license_outage_msg = out_mgt
-                            out_mgt = out_mgt.replace("FLEXlm Error", "FLEXlm Err..")
-                            edited_license_outage_msg = out_mgt
+                    while not self.q.empty():
+                        out_mgt = self.q.get(False) 
+                        
+                        if len(out_mgt) > 0:
+         
+                            if "Licensed number of users already reached" in out_mgt or "License server system does not support this feature" in out_mgt:
+                                license_outage = True
+                                # Change FLEXlm Error to FLEXlm Err.. to avoid Groovy script from
+                                # marking retry attempts as overall job failure
+                                actual_license_outage_msg = out_mgt
+                                out_mgt = out_mgt.replace("FLEXlm Error", "FLEXlm Err..")
+                                edited_license_outage_msg = out_mgt
 
-                        ret_out +=  out_mgt + "\n"
+                            ret_out +=  out_mgt + "\n"
+                    time.sleep(0.5)
+                    
                 except Empty:
                     pass
 

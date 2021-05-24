@@ -40,13 +40,13 @@ There are 2 types of supported jobs and 1 deprecated job type
 
 ![](docs/images/single.png)
 
-### Pipepline Job
+### Pipeline Job
 
 **Pipeline** creates a Jenkins Pipeline job to build/execute and
 (optionally) report on all environments in a VectorCAST/Manage project
 in parallel.
 
-:warning:*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel exeuction on a single VectorCAST Project*
+:warning:*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel execution on a single VectorCAST Project*
 
 ![](docs/images/pipeline_create.png)
 
@@ -75,9 +75,9 @@ The user will be able to disable the use of Change Based Testing to perform a
 complete run of their VectorCAST Project.  By default Change Based Testing is enabled, but 
 this option can be disabled by unchecking the Use Change Based Testing box
 
-For users with Continuous Integration Licneses, you will be able to access those licenses by
+For users with Continuous Integration Licenses, you will be able to access those licenses by
 checking the Use Continuous Integration License checkbox.  If you do not have 
-Continuous Integration License, do not check this box as you will encounter licensing errors.
+Continuous Integration Licenses, do not check this box as you will encounter licensing errors.
 
 If the user wishes to call the Jenkins job from another Pipeline job, check the box to 
 parameterize the Jenkinsfile.  This will add parameters to the pipeline job  
@@ -85,7 +85,7 @@ that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage
 and for forcing the VectorCAST Jobs to be executed on a specific node (VCAST_FORCE_NODE_EXEC_NAME) instead of using 
 the compiler as a node label.
 
-Calling the build command will return Failed, Unstable, Success cooresponding to the results of the VectorCAST
+Calling the build command will return Failed, Unstable, Success corresponding to the results of the VectorCAST
 Pipeline job.  To enabled the main pipeline job to continue, the user can surround the build command without
 a _catchError_ block as demonstrated below
 
@@ -186,10 +186,13 @@ Jenkins configuration.
 
 ## Known Issues
 
-### Colors not showing in downloaded VectorCAST reports
+### VectorCAST Reports and Jenkins Content Security Policy
 
-See [Configuring Content Security
-Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
+VectorCAST HTML reports for metrics were updated to use cascading style 
+sheets (CSS) in the 2019 release and 2020 for top level project metrics. This 
+was done to give users more flexibility in what and how metrics are 
+displayed.  To maintain single file HTML format, VectorCAST Reports used inline 
+CSS.  Inline CSS was disallowed under Jenkins more restrictive CSP.
 
 "Jenkins 1.641 / Jenkins 1.625.3 introduce
 the `Content-Security-Policy` header to static files served by Jenkins
@@ -198,11 +201,17 @@ restrictive default set of permissions to protect Jenkins users from
 malicious HTML/JS files in workspaces, `/userContent`, or archived
 artifacts."
 
-What this means is that the aggregate coverage report will show
-everything as black rather than red/green/amber coverage colors.
+The result of this combination incorrectly formatted the VectorCAST reports.
 
-The link above gives details of how to configure Jenkins to relax its
-security.
+Numerous options are available to correct this:
+- Use the Jenkins Resource Root URL (Manage Jenkins > Configure System)
+- Reconfigure VectorCAST Jobs to use external CSS (VCAST_RPTS_SELF_CONTAINED=FALSE)
+combined with enabling anonymous reads from the Manage Jenkins > Configure Global Security > Authorization
+- Reconfigure the Jenkins Content Security Policy
+- Download the archives and view reports locally
+
+For more information on the Jenkins CSP, please see [Configuring Content Security
+Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
 
 ### JUnit publisher failing environment with no test cases
 
@@ -212,6 +221,15 @@ you will manually need to check the box "Do not fail the build on empty test
 results" in the Publish JUnit test result report configuration.
 
 ## Change Log
+
+### Version 0.68 (6 May 2021)
+- New HTML reports match current Jenkins CSP
+- Encoding read for GBK characters
+- Bug fixes for compatibility issues with VectorCAST/2021
+- Bug fix for counting run system test cases as skipped
+
+### Version 0.67 (30 March 2021)
+- Add support for Python 3.9
 
 ### Version 0.66 (10 Feb 2021)
 - Fixed bug caught by updated to Python 3

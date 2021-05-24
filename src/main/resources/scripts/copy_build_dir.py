@@ -70,12 +70,23 @@ def updateDatabase(conn, nocase, workspace, updateWhat, updateFrom, teePrint):
 def addFile(tf, file, backOneDir = False):
     global build_dir
     
+    local_build_dir = build_dir 
+    
     if backOneDir:
-        build_dir = os.sep.join(build_dir.split(os.sep)[:-1])
+        local_build_dir = os.sep.join(build_dir.split(os.sep)[:-1])
         
-    for f in os.listdir(build_dir):
+    for f in os.listdir(local_build_dir):
         if fnmatch.fnmatch(f, file):
-            tf.add(os.path.join(build_dir, f))
+            tf.add(os.path.join(local_build_dir, f))
+
+def addDirectory(tf, dir):
+    global build_dir
+    
+    rootDir = os.path.join(build_dir,dir)
+             
+    for dirName, subdirList, fileList in os.walk(rootDir):
+        for fname in fileList:
+            tf.add(os.path.join(dirName, fname))
 
 def addConvertCoverFile(tf, file, workspace, nocase, teePrint):
     global build_dir
@@ -89,7 +100,10 @@ def addConvertCoverFile(tf, file, workspace, nocase, teePrint):
             shutil.copyfile(fullpath, bakpath)
 
             # update the database paths to be relative from workspace
-            updateDatabase(conn, nocase, workspace, "LIS_file", "instrumented_files", teePrint)
+            try:
+                updateDatabase(conn, nocase, workspace, "LIS_file", "instrumented_files", teePrint)
+            except:
+                updateDatabase(conn, nocase, workspace, "path", "lis_files", teePrint)
             updateDatabase(conn, nocase, workspace, "display_path", "source_files", teePrint)
             updateDatabase(conn, nocase, workspace, "path", "source_files", teePrint)
             
@@ -156,6 +170,9 @@ if __name__ == '__main__':
             addFile(tf, "UNITDATA.VCD")
             addFile(tf, "UNITDYNA.VCD")
             addFile(tf, "manage.xml")
+            addFile(tf, "testcase_data.xml")
+            addFile(tf, "*.LIS")
+            addDirectory(tf, "TESTCASES")
             addFile(tf, Env + ".vce", backOneDir=True)
             addFile(tf, Env + ".vcp", backOneDir=True)
         finally:

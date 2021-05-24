@@ -42,6 +42,12 @@
         </f:entry>
         
         <vc:jobOptionsLabelMaster></vc:jobOptionsLabelMaster>
+        
+        <f:entry title="${%VCJob.JobOptions.ParallelBuildCount.title}" description="${%VCJob.JobOptions.ParallelBuildCount.description}"
+                 help="/plugin/vectorcast-execution/help-sharedArtifactDir.html">
+           <f:number clazz="positive-number" min="1" step="1" default="1" name="parallelJobCount" value="${instance.parallelJobCount}"/>
+        </f:entry>
+        
       </f:optionalBlock>
     </f:section>
 </j:jelly>

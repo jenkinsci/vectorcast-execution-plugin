@@ -44,50 +44,6 @@
             <j:out value="${%VCJob.Control.Pipeline.Description}"/>
           </div>
         </t:summary>
-
-       </table>
-       
-      <h3>${%VCJob.Deprecated.Title}</h3>
-      <p>${%VCJob.Deprecated.Description}</p>
-
-      <table>
-        <t:summary icon="${it.iconFileName}"
-                   href="multi-job" iconOnly="true">
-          <div class="link"><a href="${href}">${%VCJob.Control.Multi.Title}</a></div>
-          <div style="color:gray; text-decoration:none;">
-            <j:out value="${%VCJob.Control.Multi.Description}"/>
-          </div>
-        </t:summary>
-      
-        <t:summary icon="${it.iconFileName}"
-                   href="job-update" iconOnly="true">
-          <div class="link"><a href="${href}">${%VCJob.Control.Update.Title}</a></div>
-          <div style="color:gray; text-decoration:none;">
-            <j:out value="${%VCJob.Control.Update.Description}"/>
-          </div>
-        </t:summary>
-
-        <t:summary icon="${it.iconFileName}"
-                   href="job-auto-update" iconOnly="true">
-          <div class="link"><a href="${href}">${%VCJob.Control.AutoUpdate.Title}</a></div>
-          <div style="color:gray; text-decoration:none;">
-            <j:out value="${%VCJob.Control.AutoUpdate.Description}"/>
-          </div>
-        </t:summary>
-
-        <t:summary icon="${it.iconFileName}"
-                   href="delete-jobs" iconOnly="true">
-          <div class="link"><a href="${href}">${%VCJob.Control.Delete.Title}</a></div>
-          <div style="color:gray; text-decoration:none;">
-            <j:out value="${%VCJob.Control.Delete.Description}"/>
-          </div>
-        </t:summary>
-
-      </table>
-      
-      <h3>${%VCJob.Options.Title}</h3>
-      <table>
-
           <t:summary icon="${it.iconFileName}"
                    href="diag-job" iconOnly="true">
           <div class="link"><a href="${href}">${%VCJob.Control.Diag.Title}</a></div>
@@ -95,8 +51,8 @@
             <j:out value="${%VCJob.Control.Diag.Description}"/>
           </div>
         </t:summary>
-
-      </table>
+       </table>       
+      <h6>${%VCJob.Options.Version}${it.version}</h6>
     </l:main-panel>
   </l:layout>
 </j:jelly>

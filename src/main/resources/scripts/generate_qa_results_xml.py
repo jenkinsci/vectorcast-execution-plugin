@@ -1,6 +1,10 @@
 from __future__ import print_function
 import datetime
-import cgi
+try:
+    from html import escape
+except ImportError:
+    # html not standard module in Python 2.
+    from cgi import escape
 import sys, subprocess, os
 global saved_compiler, saved_testsuite, saved_envname
 
@@ -46,8 +50,8 @@ def generateJunitTestCase(jobname, tc_name, passFail):
     </testcase>
     """
     
-    jobname = cgi.escape(jobname)
-    tc_name = cgi.escape(tc_name)
+    jobname = escape(jobname, quote=False)
+    tc_name = escape(tc_name, quote=False)
     
     if 'PASS' in passFail:
         successFailure = 'success'
@@ -176,6 +180,8 @@ def processSystemTestResultsData(lines):
     if firstEnvFound:
         write_tc_data(oldEnvName, unit_report_name, jobNameDotted, passed, failed, error, testcase_data)
         
+    return failed
+        
 def saveQATestStatus(mp):
     callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status=" + os.path.basename(mp)[:-4] + "_system_tests_status.html"
     p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -202,9 +208,11 @@ def genQATestResults(mp, level = None, envName = None, verbose = False):
         
     if err:
         print(out, err)
-    processSystemTestResultsData(out.splitlines())
+    failed_count = processSystemTestResultsData(out.splitlines())
     
     saveQATestStatus(mp)
+    
+    return failed_count
         
 if __name__ == '__main__':
     genQATestResults(sys.argv[1])

@@ -44,6 +44,17 @@
           <f:textbox name="jobName" size="50" value="${instance.jobName}"/>
         </f:entry>
         <vc:jobOptionsLabelNoDefault></vc:jobOptionsLabelNoDefault>
+
+      <f:optionalBlock title="Enable Parallel Build" checked="${instance.showParallelBuildOptions}" inline="true" 
+                       help="/plugin/vectorcast-execution/help-jobParallelBuildOptions.html">
+            <f:entry title="${%VCJob.JobOptions.ParallelBuildCount.title}" description="${%VCJob.JobOptions.ParallelBuildCount.description}"
+                     help="/plugin/vectorcast-execution/help-ParallelBuildCount.html">
+               <f:number clazz="positive-number" min="1" step="1" default="1" name="parallelJobCount" value="${instance.parallelJobCount}"/>
+            </f:entry>
+                       
+      </f:optionalBlock>
+
+
       </f:optionalBlock>
     </f:section>
 </j:jelly>
