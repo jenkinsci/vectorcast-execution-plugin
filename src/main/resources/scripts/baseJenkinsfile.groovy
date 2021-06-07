@@ -137,6 +137,13 @@ def runCommands(cmds) {
             export VCAST_RPTS_SELF_CONTAINED=FALSE
             
             """.stripIndent()
+            
+        if (VC_UseCILicense.length() != 0) {
+            localCmds += """
+                export VCAST_USING_HEADLESS_MODE=1
+                export VCAST_USE_CI_LICENSES =1
+            """.stripIndent()
+        }
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
         println "Running commands: " + cmds
@@ -151,6 +158,13 @@ def runCommands(cmds) {
             set VCAST_RPTS_SELF_CONTAINED=FALSE
             
             """.stripIndent()
+            
+         if (VC_UseCILicense.length() != 0) {
+            localCmds += """
+                set VCAST_USING_HEADLESS_MODE=1
+                set VCAST_USE_CI_LICENSES =1
+            """.stripIndent()
+        }
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
         println "Running commands: " + cmds

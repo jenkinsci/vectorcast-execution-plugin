@@ -31,7 +31,6 @@ import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 
 import jenkins.model.Jenkins;
-import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
 /**
  * Base job
@@ -68,13 +67,6 @@ public abstract class JobBase implements ExtensionPoint, Action, Describable<Job
         return "/plugin/vectorcast-execution/icons/vector_favicon.png";
     }
     
-    /**
-     * Default version.
-     * @return version
-     */
-    public String getVersion() {
-        return "VERSION XYZ"; //VcastUtils.getVersion().orElse( "Error - Could not determine version" );
-    }
     /**
      * Default URL name
      * @return url name

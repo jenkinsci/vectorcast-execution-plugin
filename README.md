@@ -222,6 +222,9 @@ results" in the Publish JUnit test result report configuration.
 
 ## Change Log
 
+### Version 0.69 (7 Jun 2021)
+- Updated pipeline job to handle continuouis integration licenses
+
 ### Version 0.68 (6 May 2021)
 - New HTML reports match current Jenkins CSP
 - Encoding read for GBK characters

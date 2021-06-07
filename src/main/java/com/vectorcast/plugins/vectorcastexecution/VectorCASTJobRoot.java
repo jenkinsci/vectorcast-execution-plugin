@@ -34,6 +34,8 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
+
 /**
  * Top level of VectorCAST job control
  */
@@ -82,6 +84,13 @@ public class VectorCASTJobRoot implements RootAction {
     @Override
     public String getUrlName() {
         return "VectorCAST";
+    }
+    /**
+     * Default version.
+     * @return version
+     */
+    public String getVersion() {
+        return VcastUtils.getVersion().orElse( "Error - Could not determine version" );
     }
     /**
      * Get dynamic 'job' - used by Stapler
