@@ -141,7 +141,7 @@ def runCommands(cmds) {
         if (VC_UseCILicense.length() != 0) {
             localCmds += """
                 export VCAST_USING_HEADLESS_MODE=1
-                export VCAST_USE_CI_LICENSES =1
+                export VCAST_USE_CI_LICENSES=1
             """.stripIndent()
         }
         cmds = localCmds + cmds
