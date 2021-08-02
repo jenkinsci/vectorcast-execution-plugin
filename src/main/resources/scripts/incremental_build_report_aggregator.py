@@ -166,9 +166,9 @@ def parse_html_files(mpName):
     insert_idx = 2
     for file in report_file_list[1:]:
         try:
-            soup = BeautifulSoup(open(file, encoding="utf-8"),features="lxml")
+            soup = BeautifulSoup(open(file, encoding=get_encoding.get_file_encoding(file)),features="lxml")
         except:
-            soup = BeautifulSoup(open(file, encoding="utf-8"))
+            soup = BeautifulSoup(open(file, encoding=get_encoding.get_file_encoding(file)))
             
         if soup.find(id="report-title"):
             manage_api_report = True

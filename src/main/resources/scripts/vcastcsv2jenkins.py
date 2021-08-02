@@ -34,6 +34,7 @@ import time
 import shutil
 
 import cgi
+from io import open
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
@@ -107,7 +108,7 @@ def readCsvFile(csvFilename):
     global jobNameDotted
 
     mode = 'r' if sys.version_info[0] >= 3 else 'rb'
-    csvfile = open(csvFilename, mode)
+    csvfile = open(csvFilename, mode, encoding=get_encoding.get_file_encoding(csvfile))
     csvList = csvfile.read().split('\n')
     csvfile.close()
     os.remove(csvFilename)

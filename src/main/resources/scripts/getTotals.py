@@ -24,6 +24,8 @@
 import argparse
 import sys
 import re
+from io import open
+import get_encoding
 
 parser = argparse.ArgumentParser()
 parser.add_argument('fullReportName')
@@ -31,7 +33,7 @@ parser.add_argument('--api',   help='Unused', type=int)
 
 args = parser.parse_args()
 
-f = open(args.fullReportName,"r")
+f = open(args.fullReportName,"r", encoding=get_encoding.get_file_encoding(args.fullReportName))
 lines = f.read().split("\n")
 f.close()
 

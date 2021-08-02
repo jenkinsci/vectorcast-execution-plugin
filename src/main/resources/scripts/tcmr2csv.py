@@ -535,7 +535,7 @@ def runCombinedCov(HtmlReportName = ""):
         return
         
     # open the file and create BS4 object
-    html_file = open(HtmlReportName,"r")
+    html_file = open(HtmlReportName,"r", encoding=get_encoding.get_file_encoding(HtmlReportName))
     html_doc = html_file.read()
     html_file.close()
     soup = BeautifulSoup(html_doc,'html.parser')

@@ -5,6 +5,10 @@ import sys
 import hashlib
 from datetime import datetime
 
+import get_encoding
+
+from io import open
+
 compoundTestIndex = 0
 initTestIndex = 1
 simpleTestIndex = 2
@@ -160,8 +164,8 @@ class ParseConsoleForCBT(object):
         return self.environmentDict           
 
 if __name__ == '__main__':
-    
-    buildLogData = open(sys.argv[1],"r").readlines()
+    from io import open
+    buildLogData = open(sys.argv[1],"r", encoding=get_encoding.get_file_encoding(sys.argv[1])).readlines()
     parser = ParseConsoleForCBT(True)
     parser.parse(buildLogData)
     #pprint(parser.parse(buildLogData), width=132)

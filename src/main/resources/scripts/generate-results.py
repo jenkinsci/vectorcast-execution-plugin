@@ -36,6 +36,9 @@ import time
 import traceback
 import parse_traceback
 import tee_print
+import get_encoding
+
+from io import open
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
@@ -127,7 +130,7 @@ def readManageVersion(ManageFile):
     version = 14
     if os.path.isfile(ManageFile + ".vcm"):
         ManageFile = ManageFile + '.vcm'
-    with open(ManageFile, 'r') as projFile:
+    with open(ManageFile, 'r', encoding=get_encoding.get_file_encoding(ManageFile)) as projFile:
         for line in projFile:
             if 'version' in line and 'project' in line:
                 version = int(re.findall(r'\d+', line)[0])
@@ -238,7 +241,7 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict):
 def fixup_css(report_name):
     # Needed for VC19 and VC19 SP1.
     # From VC19 SP2 onwards a new option VCAST_RPTS_SELF_CONTAINED is used instead
-    data = open(report_name,"r").read()
+    data = open(report_name,"r",encoding=get_encoding.get_file_encoding(report_name)).read()
  
     # When using new option, there will be an <img src="vector_log.png"/> in the
     # generated HTML. If present, no need to do anything else.
@@ -558,7 +561,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         failed_count = 0
         try:
             for file in glob.glob("xml_data/test_results_*.xml"):
-                lines = open(file,"r").readlines()
+                lines = open(file,"r", encoding=get_encoding.get_file_encoding(file)).readlines()
                 for line in lines:
                     if "failures" in line:
                         failed_count += int(line.split("\"")[5])
@@ -608,7 +611,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     try:
-        if "19.sp1" in open(os.path.join(os.environ['VECTORCAST_DIR'],"DATA/tools_version.txt").read):
+        tool_version = os.path.join(os.environ['VECTORCAST_DIR'],"DATA/tool_version.txt")
+        if "19.sp1" in open(tool_version,"r",encoding=get_encoding.get_file_encoding(tool_version)).read():
             # custom report patch for SP1 problem - should be fixed in future release      
             old_init = CustomReport._post_init
             def new_init(self):
@@ -644,7 +648,7 @@ if __name__ == '__main__':
         junit = True
         
     if args.buildlog and os.path.exists(args.buildlog):
-        buildLogData = open(args.buildlog,"r").readlines()
+        buildLogData = open(args.buildlog,"r",encoding=get_encoding.get_file_encoding(args.buildlog)).readlines()
         cbt = ParseConsoleForCBT(verbose)
         cbtDict = cbt.parse(buildLogData)
         
@@ -661,4 +665,5 @@ if __name__ == '__main__':
     legacy = args.legacy
         
     buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict)
+
 

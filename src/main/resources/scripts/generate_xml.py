@@ -50,6 +50,7 @@ import hashlib
 import traceback
 import parse_traceback
 import tee_print
+from io import open
 
 def dummy(*args, **kwargs):
     return None
@@ -808,7 +809,7 @@ class GenerateXml(BaseGenerateXml):
                 output_file=report_name,
                 sections=[ "TESTCASE_SECTIONS"],
                 testcase_sections=["EXECUTION_RESULTS"])
-            with open(report_name,"r") as f:
+            with open(report_name,"r", encoding=get_encoding.get_file_encoding(report_name)) as f:
                 out = f.read()
 
             os.remove(report_name)
