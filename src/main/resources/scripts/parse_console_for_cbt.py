@@ -164,7 +164,7 @@ class ParseConsoleForCBT(object):
         return self.environmentDict           
 
 if __name__ == '__main__':
-    from io import open
+    
     buildLogData = open(sys.argv[1],"r", encoding=get_encoding.get_file_encoding(sys.argv[1])).readlines()
     parser = ParseConsoleForCBT(True)
     parser.parse(buildLogData)

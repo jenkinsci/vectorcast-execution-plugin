@@ -666,4 +666,3 @@ if __name__ == '__main__':
         
     buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict)
 
-
