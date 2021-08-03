@@ -51,6 +51,7 @@ import traceback
 import parse_traceback
 import tee_print
 from io import open
+import get_encoding
 
 def dummy(*args, **kwargs):
     return None

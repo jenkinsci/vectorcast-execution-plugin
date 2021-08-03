@@ -35,6 +35,7 @@ import shutil
 
 import cgi
 from io import open
+import get_encoding
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
