@@ -37,8 +37,7 @@ python_path_updates += os.sep + "vpython-addons"
 sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
-import get_encoding
-from io import open
+from safe_open import open
 
 #global variables
 global manageProjectName
@@ -101,13 +100,12 @@ def procTestResults(HtmlReportName, table, level):
     #setup the filename
     CsvFileName = getCsvName(HtmlReportName,level,"test_results_")
     
-    csv_file = open(CsvFileName,"wb")
-    
     #write out additional info
-    csv_file.write("Project," + manageProjectName + "\n")
-    csv_file.write("Environment," + envName + "\n")
-    csv_file.write("Level," + "/".join(level).rstrip() + "\n")
-    csv_file.write("HtmlFilename," + HtmlReportName + "\n")
+    csv_file_data = ""
+    csv_file_data += ("Project," + manageProjectName + "\n")
+    csv_file_data += ("Environment," + envName + "\n")
+    csv_file_data += ("Level," + "/".join(level).rstrip() + "\n")
+    csv_file_data += ("HtmlFilename," + HtmlReportName + "\n")
 
     # setup BeautifulSoup processor for input table
     tableSoup = BeautifulSoup(table.encode('ascii'),'html.parser')
@@ -127,7 +125,7 @@ def procTestResults(HtmlReportName, table, level):
         columnTitles.append(child.string.encode('ascii','ignore'))
         
     # write the titles to the CSV file
-    csv_file.write(columnTitles[UNIT_NAME_COL] + "," + columnTitles[SUBPROG_COL] + "," + columnTitles[TEST_CASE_COL] + "," + columnTitles[TC_STATUS_COL] + "\n")
+    csv_file_data += (columnTitles[UNIT_NAME_COL] + "," + columnTitles[SUBPROG_COL] + "," + columnTitles[TEST_CASE_COL] + "," + columnTitles[TC_STATUS_COL] + "\n")
 
     unitName = ""
     subpName = ""
@@ -180,10 +178,14 @@ def procTestResults(HtmlReportName, table, level):
             info[TEST_CASE_COL] = info[TEST_CASE_COL].replace(",","%2C")
             
         # write data to the CSV file
-        csv_file.write(info[UNIT_NAME_COL] + "," + info[SUBPROG_COL] + "," + info[TEST_CASE_COL] + "," + info[TC_STATUS_COL] + "\n")
-   
-    csv_file.close()
-    
+        csv_file_data += (info[UNIT_NAME_COL] + "," + info[SUBPROG_COL] + "," + info[TEST_CASE_COL] + "," + info[TC_STATUS_COL] + "\n")
+
+    with open(CsvFileName,"w") as fd:
+        try:
+            fd.write(unicode(csv_file_data,"utf-8"))
+        except:
+            fd.write(csv_file_data)
+            
     return CsvFileName
 
 ## Process the Coverage Results Section of the Test Case Management Report
@@ -194,13 +196,13 @@ def procCoverageResults(HtmlReportName,table, level):
     
     #setup the filename
     CsvFileName = getCsvName(HtmlReportName,level,"coverage_results_")
-    csv_file = open(CsvFileName,"wb")
     
     #write out additional info
-    csv_file.write("Project," + manageProjectName + "\n")
-    csv_file.write("Environment," + envName + "\n")
-    csv_file.write("Level," + "/".join(level).rstrip() + "\n")
-    csv_file.write("HtmlFilename," + HtmlReportName + "\n")
+    csv_file_data = ""
+    csv_file_data += ("Project," + manageProjectName + "\n")
+    csv_file_data += ("Environment," + envName + "\n")
+    csv_file_data += ("Level," + "/".join(level).rstrip() + "\n")
+    csv_file_data += ("HtmlFilename," + HtmlReportName + "\n")
 
     # setup BeautifulSoup processor for input table
     tableSoup = BeautifulSoup(table.encode('ascii'),'html.parser')
@@ -221,8 +223,7 @@ def procCoverageResults(HtmlReportName,table, level):
         else:
             dataTable = tableSoup.tr.next_sibling.next_sibling.tr        
     except AttributeError:
-        csv_file.write("No Coverage Found\n")
-        csv_file.close()
+
         print("No Coverage Found")
         if os.path.isfile(CsvFileName):
             os.remove(CsvFileName)
@@ -254,14 +255,12 @@ def procCoverageResults(HtmlReportName,table, level):
             idx += 1
     except AttributeError as e:
         print("Error with Test Case Management Report: " + HtmlReportName)
-        csv_file.write("Error with Test Case Management Report:\n")
-        csv_file.close()
         if os.path.isfile(CsvFileName):
             os.remove(CsvFileName)
         return None
         
     # write out the title information except for the trailing comma
-    csv_file.write(titleStr[:-1] + "\n")
+    csv_file_data += (titleStr[:-1] + "\n")
 
     # navigate to Table's 3rd <tr> tag then to the <tr> tag inside that
     # Input Table
@@ -340,9 +339,13 @@ def procCoverageResults(HtmlReportName,table, level):
             
         if not ', , ,' in dataStr:
             # write data to CSV file
-            csv_file.write(dataStr[:-1] + "\n")
+            csv_file_data += (dataStr[:-1] + "\n")
         
-    csv_file.close()
+    with open(CsvFileName,"w") as fd:
+        try:
+            fd.write(unicode(csv_file_data,"utf-8"))
+        except:
+            fd.write(csv_file_data)
     return CsvFileName
     
     
@@ -359,10 +362,9 @@ def run(HtmlReportName = "", jobName = "", version= 14):
         return
         
     # open the file and create BS4 object
-    html_file = open(HtmlReportName, encoding=get_encoding.get_file_encoding(HtmlReportName))
-    html_doc = html_file.read()
-    html_file.close()
-    soup = BeautifulSoup(html_doc,'html.parser')
+    with open(HtmlReportName,"r") as fd:
+        html_doc = fd.read()
+        soup = BeautifulSoup(html_doc,'html.parser')
 
     # find all tables and loop over
     tables = soup.findAll('table')
@@ -377,12 +379,12 @@ def run(HtmlReportName = "", jobName = "", version= 14):
             continue
             
         # if the title contains Testcase*Management in the title
-        if re.search("Testcase.*Management",title.encode('ascii')) is not None:
+        if re.search("Testcase.*Management",str(title)) is not None:
             #print "   Processing Test Case Results from: " + os.path.basename(HtmlReportName)
             TestResultsName = procTestResults(HtmlReportName,table, jobName)
 
         # if the title contains Metrics in the title
-        if re.search("Metrics",title.encode('ascii')) is not None:
+        if re.search("Metrics",str(title)) is not None:
             #print "   Processing Coverage Results from: " + os.path.basename(HtmlReportName)
             CoverageResultsName = procCoverageResults(HtmlReportName,table, jobName)
             
@@ -421,17 +423,17 @@ def processTotals(complexityIndex, columnTitles, info):
     if not os.path.exists("xml_data"):
         os.mkdir("xml_data")
     xml_file = os.path.join("xml_data", "coverage_results_top-level.xml")
-    f = open(xml_file,"wb")
-    time_tuple = time.localtime()
-    date_string = time.strftime("%m/%d/%Y", time_tuple)
-    time_string = time.strftime("%I:%M %p", time_tuple)
-    datetime_str = date_string + "\t" + time_string
-    f.write("<!-- VectorCAST/Jenkins Integration, Generated " + datetime_str+ " -->\n")
-    f.write("<report>\n")
-    f.write("  <version value=\"3\"/>\n")
-    f.write(dataStr)
-    f.write("</report>\n\n")
-    f.close()
+    
+    with open(xml_file,"w") as fd:
+        time_tuple = time.localtime()
+        date_string = time.strftime("%m/%d/%Y", time_tuple)
+        time_string = time.strftime("%I:%M %p", time_tuple)
+        datetime_str = date_string + "\t" + time_string
+        fd.write("<!-- VectorCAST/Jenkins Integration, Generated " + datetime_str+ " -->\n")
+        fd.write("<report>\n")
+        fd.write("  <version value=\"3\"/>\n")
+        fd.write(dataStr)
+        fd.write("</report>\n\n")
 
 def procCombinedCoverageResults(HtmlReportName,table):
 
@@ -535,9 +537,9 @@ def runCombinedCov(HtmlReportName = ""):
         return
         
     # open the file and create BS4 object
-    html_file = open(HtmlReportName,"r", encoding=get_encoding.get_file_encoding(HtmlReportName))
-    html_doc = html_file.read()
-    html_file.close()
+    with open(HtmlReportName,"r") as fd:
+        html_doc = fd.read()
+        
     soup = BeautifulSoup(html_doc,'html.parser')
 
     # find all tables and loop over
@@ -555,7 +557,7 @@ def runCombinedCov(HtmlReportName = ""):
         if str(title) == "None":
             continue
         # if the title contains Metrics in the title
-        if re.search("Metrics",title.encode('ascii')) is not None:
+        if re.search("Metrics",str(title)) is not None:
             #print "   Processing Coverage Results from: " + os.path.basename(HtmlReportName)
             procCombinedCoverageResults(HtmlReportName, table)
 

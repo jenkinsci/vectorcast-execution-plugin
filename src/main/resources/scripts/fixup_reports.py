@@ -27,7 +27,7 @@ from __future__ import print_function
 
 import sys, os
 # adding path
-jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
+jenkinsScriptHome = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
 
@@ -37,9 +37,9 @@ if sys.version_info[0] < 3:
     sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
-from io import open
+from safe_open import open
+
 import tee_print
-import get_encoding
     
 def fixup_2020_soup(main_soup):
 
@@ -103,15 +103,16 @@ def fixup_2020_soup(main_soup):
     return main_soup
 
 def fixup_2020_reports(report_name):
-    try:
-        main_soup = BeautifulSoup(open(report_name, encoding=get_encoding.get_file_encoding(report_name)),features="lxml")
-    except:
-        main_soup = BeautifulSoup(open(report_name, encoding=get_encoding.get_file_encoding(report_name)))
+    with open(report_name,"r") as fd:    
+        try:
+            main_soup = BeautifulSoup(fd,features="lxml")
+        except:
+            main_soup = BeautifulSoup(fd)
         
     main_soup = fixup_2020_soup(main_soup)
-    f = open(report_name,"w", encoding="utf-8")
-    f.write(main_soup.prettify(formatter="html"))
-    f.close()
+    
+    with open(report_name,"w") as fd:    
+        fd.write(main_soup.prettify(formatter="html"))
         
 if __name__ == '__main__':
     report_name = sys.argv[1]

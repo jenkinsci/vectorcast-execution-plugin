@@ -130,7 +130,11 @@ class ManageWait(object):
             else :
                 break #leave outer while loop
                 
-        
+        try:
+            ret_out = unicode(ret_out,"utf-8")
+        except:
+            pass
+            
         return ret_out # checked in generate-results.py
  
 ## main
