@@ -486,6 +486,7 @@ class GenerateXml(BaseGenerateXml):
                         self.failed_count += 1
         api.close()            
 		
+        self.fh_data = ""
         self.fh_data += ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
         self.fh_data += ("<testsuites>\n")
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
