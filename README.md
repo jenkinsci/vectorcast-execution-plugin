@@ -224,6 +224,7 @@ results" in the Publish JUnit test result report configuration.
 
 ### Version 0.70 (2 Aug 2021)
 - Updated scripts to use io.open for all opens
+- Updated parse_traceback to display all tracebacks
 
 ### Version 0.69 (7 Jun 2021)
 - Updated pipeline job to handle continuouis integration licenses
