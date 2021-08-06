@@ -264,7 +264,7 @@ def fixup_css(report_name):
     newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
     
     with open(report_name, "w") as fd:
-        fd.write(write)
+        fd.write(newData)
    
     vc_scripts = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
     
