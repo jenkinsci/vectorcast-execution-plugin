@@ -50,6 +50,7 @@ import hashlib
 import traceback
 import parse_traceback
 import tee_print
+from safe_open import open
 
 def dummy(*args, **kwargs):
     return None
@@ -172,17 +173,17 @@ class BaseGenerateXml(object):
     def start_cov_file(self):
         if self.verbose:
             print("  Writing coverage xml file:        {}".format(self.cover_report_name))
-        self.fh = open(self.cover_report_name, "w")
-        self.fh.write('<!-- VectorCAST/Jenkins Integration, Generated %s -->\n' % self.get_timestamp())
-        self.fh.write('<report>\n')
-        self.fh.write('  <version value="3"/>\n')
+        self.fh_data = ('<!-- VectorCAST/Jenkins Integration, Generated %s -->\n' % self.get_timestamp())
+        self.fh_data += ('<report>\n')
+        self.fh_data += ('  <version value="3"/>\n')
 
 #
 # Internal - write the end of the coverage file and close it
 #
     def end_cov_file(self):
-        self.fh.write('</report>')
-        self.fh.close()
+        self.fh_data += ('</report>')
+        with open(self.cover_report_name,"w") as fd:
+            fd.write(self.fh_data)
 
 #
 # Generate the XML Modified 'Emma' coverage data
@@ -303,19 +304,19 @@ class GenerateManageXml(BaseGenerateXml):
         self.api = ManageApi(manage_path)
 
     def write_coverage_data(self):
-        self.fh.write('  <combined-coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
+        self.fh_data += ('  <combined-coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
         if self.coverage["statement"]:
-            self.fh.write('  <combined-coverage type="statement, %%" value="%s"/>\n' % self.coverage["statement"])
+            self.fh_data += ('  <combined-coverage type="statement, %%" value="%s"/>\n' % self.coverage["statement"])
         if self.coverage["branch"]:
-            self.fh.write('  <combined-coverage type="branch, %%" value="%s"/>\n' % self.coverage["branch"])
+            self.fh_data += ('  <combined-coverage type="branch, %%" value="%s"/>\n' % self.coverage["branch"])
         if self.coverage["mcdc"]:
-            self.fh.write('  <combined-coverage type="mcdc, %%" value="%s"/>\n' % self.coverage["mcdc"])
+            self.fh_data += ('  <combined-coverage type="mcdc, %%" value="%s"/>\n' % self.coverage["mcdc"])
         if self.coverage["basispath"]:
-            self.fh.write('  <combined-coverage type="basispath, %%" value="%s"/>\n' % self.coverage["basispath"])
+            self.fh_data += ('  <combined-coverage type="basispath, %%" value="%s"/>\n' % self.coverage["basispath"])
         if self.coverage["function"]:
-            self.fh.write('  <combined-coverage type="function, %%" value="%s"/>\n' % self.coverage["function"])
+            self.fh_data += ('  <combined-coverage type="function, %%" value="%s"/>\n' % self.coverage["function"])
         if self.coverage["functioncall"]:
-            self.fh.write('  <combined-coverage type="functioncall, %%" value="%s"/>\n' % self.coverage["functioncall"])
+            self.fh_data += ('  <combined-coverage type="functioncall, %%" value="%s"/>\n' % self.coverage["functioncall"])
 
     def generate_cover(self):
         self.units = self.api.project.cover_api.File.all()
@@ -456,7 +457,7 @@ class GenerateXml(BaseGenerateXml):
                                             self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
 
             except AttributeError as e:
-                parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
+                parse_traceback.parse(traceback.format_exc(), self.verbose, self.compiler,  self.testsuite,  self.env,  self.build_dir)
                 
         self.end_test_results_file()
 #
@@ -466,7 +467,7 @@ class GenerateXml(BaseGenerateXml):
         if self.verbose:
             print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
-        self.fh = open(self.unit_report_name, "w")
+        #self.fh = open(self.unit_report_name, "w")
         errors = 0
         failed = 0
         success = 0                                            
@@ -485,16 +486,16 @@ class GenerateXml(BaseGenerateXml):
                         self.failed_count += 1
         api.close()            
 		
-        self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-        self.fh.write("<testsuites>\n")
-        self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
+        self.fh_data = ""
+        self.fh_data += ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        self.fh_data += ("<testsuites>\n")
+        self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
                 
     def start_unit_test_file(self):
         if self.verbose:
             print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
-        self.fh = open(self.unit_report_name, "w")
         errors = 0
         failed = 0
         success = 0                                            
@@ -513,10 +514,10 @@ class GenerateXml(BaseGenerateXml):
                         errors += 1
                 else:
                     success += 1
-                    
-        self.fh.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-        self.fh.write("<testsuites>\n")
-        self.fh.write("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
+        self.fh_data = ""            
+        self.fh_data += ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        self.fh_data += ("<testsuites>\n")
+        self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
 
 #
@@ -623,66 +624,67 @@ class GenerateXml(BaseGenerateXml):
         msg = msg.replace("\"","")
         msg = msg.replace("\n","&#xA;")
         
-        self.fh.write(testcaseString % (tc_name_full, classname, deltaTimeStr, extraStatus, msg))
+        self.fh_data += (testcaseString % (tc_name_full, classname, deltaTimeStr, extraStatus, msg))
 
 #
 # Internal - write the end of the jUnit XML file and close it
 #
     def end_test_results_file(self):
-        self.fh.write("   </testsuite>\n")
-        self.fh.write("</testsuites>\n")
-        self.fh.close()
+        self.fh_data += ("   </testsuite>\n")
+        self.fh_data += ("</testsuites>\n")
+        with open(self.unit_report_name, "w") as fd:
+            fd.write(self.fh_data)
 
 #
 # Internal - write the start of the coverage file for and environment
 #
     def start_cov_file_environment(self):
         self.start_cov_file()
-        self.fh.write('  <stats>\n')
-        self.fh.write('    <environments value="1"/>\n')
-        self.fh.write('    <units value="%d"/>\n' % self.num_units)
-        self.fh.write('    <subprograms value="%d"/>\n' % self.num_functions)
-        self.fh.write('  </stats>\n')
-        self.fh.write('  <data>\n')
-        self.fh.write('    <all name="all environments">\n')
+        self.fh_data += ('  <stats>\n')
+        self.fh_data += ('    <environments value="1"/>\n')
+        self.fh_data += ('    <units value="%d"/>\n' % self.num_units)
+        self.fh_data += ('    <subprograms value="%d"/>\n' % self.num_functions)
+        self.fh_data += ('  </stats>\n')
+        self.fh_data += ('  <data>\n')
+        self.fh_data += ('    <all name="all environments">\n')
         if self.coverage["statement"]:
-            self.fh.write('      <coverage type="statement, %%" value="%s"/>\n' % self.coverage["statement"])
+            self.fh_data += ('      <coverage type="statement, %%" value="%s"/>\n' % self.coverage["statement"])
         if self.coverage["branch"]:
-            self.fh.write('      <coverage type="branch, %%" value="%s"/>\n' % self.coverage["branch"])
+            self.fh_data += ('      <coverage type="branch, %%" value="%s"/>\n' % self.coverage["branch"])
         if self.coverage["mcdc"]:
-            self.fh.write('      <coverage type="mcdc, %%" value="%s"/>\n' % self.coverage["mcdc"])
+            self.fh_data += ('      <coverage type="mcdc, %%" value="%s"/>\n' % self.coverage["mcdc"])
         if self.coverage["basispath"]:
-            self.fh.write('      <coverage type="basispath, %%" value="%s"/>\n' % self.coverage["basispath"])
+            self.fh_data += ('      <coverage type="basispath, %%" value="%s"/>\n' % self.coverage["basispath"])
         if self.coverage["function"]:
-            self.fh.write('      <coverage type="function, %%" value="%s"/>\n' % self.coverage["function"])
+            self.fh_data += ('      <coverage type="function, %%" value="%s"/>\n' % self.coverage["function"])
         if self.coverage["functioncall"]:
-            self.fh.write('      <coverage type="functioncall, %%" value="%s"/>\n' % self.coverage["functioncall"])
-        self.fh.write('      <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
-        self.fh.write('\n')
+            self.fh_data += ('      <coverage type="functioncall, %%" value="%s"/>\n' % self.coverage["functioncall"])
+        self.fh_data += ('      <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
+        self.fh_data += ('\n')
 
-        self.fh.write('      <environment name="%s">\n' % escape(self.jenkins_name, quote=False))
+        self.fh_data += ('      <environment name="%s">\n' % escape(self.jenkins_name, quote=False))
         if self.coverage["statement"]:
-            self.fh.write('        <coverage type="statement, %%" value="%s"/>\n' % self.coverage["statement"])
+            self.fh_data += ('        <coverage type="statement, %%" value="%s"/>\n' % self.coverage["statement"])
         if self.coverage["branch"]:
-            self.fh.write('        <coverage type="branch, %%" value="%s"/>\n' % self.coverage["branch"])
+            self.fh_data += ('        <coverage type="branch, %%" value="%s"/>\n' % self.coverage["branch"])
         if self.coverage["mcdc"]:
-            self.fh.write('        <coverage type="mcdc, %%" value="%s"/>\n' % self.coverage["mcdc"])
+            self.fh_data += ('        <coverage type="mcdc, %%" value="%s"/>\n' % self.coverage["mcdc"])
         if self.coverage["basispath"]:
-            self.fh.write('        <coverage type="basispath, %%" value="%s"/>\n' % self.coverage["basispath"])
+            self.fh_data += ('        <coverage type="basispath, %%" value="%s"/>\n' % self.coverage["basispath"])
         if self.coverage["function"]:
-            self.fh.write('        <coverage type="function, %%" value="%s"/>\n' % self.coverage["function"])
+            self.fh_data += ('        <coverage type="function, %%" value="%s"/>\n' % self.coverage["function"])
         if self.coverage["functioncall"]:
-            self.fh.write('        <coverage type="functioncall, %%" value="%s"/>\n' % self.coverage["functioncall"])
-        self.fh.write('        <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
-        self.fh.write('\n')
+            self.fh_data += ('        <coverage type="functioncall, %%" value="%s"/>\n' % self.coverage["functioncall"])
+        self.fh_data += ('        <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
+        self.fh_data += ('\n')
 
 #
 # Internal - write the end of the coverage file and close it
 #
     def end_cov_file_environment(self):
-        self.fh.write('      </environment>\n')
-        self.fh.write('    </all>\n')
-        self.fh.write('  </data>\n')
+        self.fh_data += ('      </environment>\n')
+        self.fh_data += ('    </all>\n')
+        self.fh_data += ('  </data>\n')
         self.end_cov_file()
 
 #
@@ -690,44 +692,44 @@ class GenerateXml(BaseGenerateXml):
 #
     def write_cov_units(self):
         for unit in self.our_units:
-            self.fh.write('        <unit name="%s">\n' % escape(unit["unit"].name, quote=False))
+            self.fh_data += ('        <unit name="%s">\n' % escape(unit["unit"].name, quote=False))
             if unit["coverage"]["statement"]:
-                self.fh.write('          <coverage type="statement, %%" value="%s"/>\n' % unit["coverage"]["statement"])
+                self.fh_data += ('          <coverage type="statement, %%" value="%s"/>\n' % unit["coverage"]["statement"])
             if unit["coverage"]["branch"]:
-                self.fh.write('          <coverage type="branch, %%" value="%s"/>\n' % unit["coverage"]["branch"])
+                self.fh_data += ('          <coverage type="branch, %%" value="%s"/>\n' % unit["coverage"]["branch"])
             if unit["coverage"]["mcdc"]:
-                self.fh.write('          <coverage type="mcdc, %%" value="%s"/>\n' % unit["coverage"]["mcdc"])
+                self.fh_data += ('          <coverage type="mcdc, %%" value="%s"/>\n' % unit["coverage"]["mcdc"])
             if unit["coverage"]["basispath"]:
-                self.fh.write('          <coverage type="basispath, %%" value="%s"/>\n' % unit["coverage"]["basispath"])
+                self.fh_data += ('          <coverage type="basispath, %%" value="%s"/>\n' % unit["coverage"]["basispath"])
             if unit["coverage"]["function"]:
-                self.fh.write('          <coverage type="function, %%" value="%s"/>\n' % unit["coverage"]["function"])
+                self.fh_data += ('          <coverage type="function, %%" value="%s"/>\n' % unit["coverage"]["function"])
             if unit["coverage"]["functioncall"]:
-                self.fh.write('          <coverage type="functioncall, %%" value="%s"/>\n' % unit["coverage"]["functioncall"])
-            self.fh.write('          <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % unit["complexity"])
+                self.fh_data += ('          <coverage type="functioncall, %%" value="%s"/>\n' % unit["coverage"]["functioncall"])
+            self.fh_data += ('          <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % unit["complexity"])
 
             for func in unit["functions"]:
                 if self.using_cover:
                     func_name = escape(func["func"].name, quote=True)
-                    self.fh.write('          <subprogram name="%s">\n' % func_name)
+                    self.fh_data += ('          <subprogram name="%s">\n' % func_name)
                 else:
                     func_name = escape(func["func"].display_name, quote=True)
-                    self.fh.write('          <subprogram name="%s">\n' % func_name)
+                    self.fh_data += ('          <subprogram name="%s">\n' % func_name)
                 if func["coverage"]["statement"]:
-                    self.fh.write('            <coverage type="statement, %%" value="%s"/>\n' % func["coverage"]["statement"])
+                    self.fh_data += ('            <coverage type="statement, %%" value="%s"/>\n' % func["coverage"]["statement"])
                 if func["coverage"]["branch"]:
-                    self.fh.write('            <coverage type="branch, %%" value="%s"/>\n' % func["coverage"]["branch"])
+                    self.fh_data += ('            <coverage type="branch, %%" value="%s"/>\n' % func["coverage"]["branch"])
                 if func["coverage"]["mcdc"]:
-                    self.fh.write('            <coverage type="mcdc, %%" value="%s"/>\n' % func["coverage"]["mcdc"])
+                    self.fh_data += ('            <coverage type="mcdc, %%" value="%s"/>\n' % func["coverage"]["mcdc"])
                 if func["coverage"]["basispath"]:
-                    self.fh.write('            <coverage type="basispath, %%" value="%s"/>\n' % func["coverage"]["basispath"])
+                    self.fh_data += ('            <coverage type="basispath, %%" value="%s"/>\n' % func["coverage"]["basispath"])
                 if func["coverage"]["function"]:
-                    self.fh.write('            <coverage type="function, %%" value="%s"/>\n' % func["coverage"]["function"])
+                    self.fh_data += ('            <coverage type="function, %%" value="%s"/>\n' % func["coverage"]["function"])
                 if func["coverage"]["functioncall"]:
-                    self.fh.write('            <coverage type="functioncall, %%" value="%s"/>\n' % func["coverage"]["functioncall"])
-                self.fh.write('            <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % func["complexity"])
+                    self.fh_data += ('            <coverage type="functioncall, %%" value="%s"/>\n' % func["coverage"]["functioncall"])
+                self.fh_data += ('            <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % func["complexity"])
 
-                self.fh.write('          </subprogram>\n')
-            self.fh.write('        </unit>\n')
+                self.fh_data += ('          </subprogram>\n')
+            self.fh_data += ('        </unit>\n')
 
 #
 # Generate the XML Modified 'Emma' coverage data
@@ -808,8 +810,9 @@ class GenerateXml(BaseGenerateXml):
                 output_file=report_name,
                 sections=[ "TESTCASE_SECTIONS"],
                 testcase_sections=["EXECUTION_RESULTS"])
-            with open(report_name,"r") as f:
-                out = f.read()
+                
+            with open(report_name,"r") as fd:
+                out = fd.read()
 
             os.remove(report_name)
         except:

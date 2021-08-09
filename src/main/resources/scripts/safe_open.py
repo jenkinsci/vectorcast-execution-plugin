@@ -21,22 +21,46 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+import contextlib
+import os
 
-from __future__ import division
-from __future__ import print_function
+from io import open as _open
 
-from io import open
 
-def get_file_encoding(file, default_encoding = 'utf-8'):
-    
+def get_file_encoding(file, default_encoding="utf-8"):
     try:
         import chardet
-        with open(file, "rb") as fd:
-            cur_encoding = chardet.detect(fd.read())["encoding"]
-            if cur_encoding == 'GB2312':
-                cur_encoding = 'GBK'
     except:
-        print ("Problem detecting encoding of " + file + ".  Defaulting to " + default_encoding)
+        return default_encoding
+        
+    try:
+        with _open(file, "rb") as fd:
+            cur_encoding = chardet.detect(fd.read())["encoding"]
+            if cur_encoding == "GB2312":
+                cur_encoding = "GBK"
+    except:
+        print(
+            "Problem detecting encoding of "
+            + file
+            + ".  Defaulting to "
+            + default_encoding
+        )
         cur_encoding = default_encoding
 
     return cur_encoding
+
+
+@contextlib.contextmanager
+def open(file, mode="r"):
+    try:
+        if os.path.exists(file):
+            encoding = get_file_encoding(file)
+        else:
+            encoding = "utf-8"
+        fd = _open(file, mode, encoding=encoding)
+        yield fd
+    finally:
+        fd.close()
+
+
+# EOF
