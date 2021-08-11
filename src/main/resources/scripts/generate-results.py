@@ -37,8 +37,11 @@ import traceback
 import parse_traceback
 import tee_print
 
+from safe_open import open
+
 # adding path
-jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
+jenkinsScriptHome = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
+
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
 # needed because vc18 vpython does not have bs4 package
@@ -79,7 +82,7 @@ def getEnabledEnvironments(MPname):
 
     for line in output.split("\n"):
         if line.strip():
-            compiler, testsuite, environment = line.split()
+            type, compiler, testsuite, environment = line.split()
             enabledEnvironmentArray.append([compiler, testsuite, environment])
                        
 def environmentEnabled(comp,ts,env):
@@ -238,7 +241,9 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict):
 def fixup_css(report_name):
     # Needed for VC19 and VC19 SP1.
     # From VC19 SP2 onwards a new option VCAST_RPTS_SELF_CONTAINED is used instead
-    data = open(report_name,"r").read()
+    
+    with open(report_name,"r") as fd:
+        data = fd.read()
  
     # When using new option, there will be an <img src="vector_log.png"/> in the
     # generated HTML. If present, no need to do anything else.
@@ -258,13 +263,14 @@ def fixup_css(report_name):
     regex_str = r"<img alt=\"Vector\".*"
     newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
     
-    open(report_name,"w").write(newData)
+    with open(report_name, "w") as fd:
+        fd.write(newData)
+   
+    vc_scripts = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
     
-    vc_scripts = os.getenv("WORKSPACE")+"/vc_scripts/"
-    
-    shutil.copy(vc_scripts+"normalize.css", "management/normalize.css")
-    shutil.copy(vc_scripts+"default-style.css", "management/default-style.css")
-    shutil.copy(vc_scripts+"vectorcast.png", "management/vectorcast.png")
+    shutil.copy(os.path.join(vc_scripts,"normalize.css"), "management/normalize.css")
+    shutil.copy(os.path.join(vc_scripts,"default-style.css"), "management/default-style.css")
+    shutil.copy(os.path.join(vc_scripts,"vectorcast.png"), "management/vectorcast.png")
 
 def generateCoverReport(path, env, level ):
 
@@ -334,10 +340,13 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict):
             if env_level.upper() == level.upper():
                 failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict)
                 generateIndividualReports(manageEnvs[currentEnv], envName)
-    f = open("unit_test_fail_count.txt","w")
-    f.write(str(failed_count))
-    f.close()
-
+                
+    with open("unit_test_fail_count.txt", "w") as fd:
+        failed_str = str(failed_count)
+        try:
+            fd.write(unicode(failed_str))
+        except:
+            fd.write(failed_str)    
 
 def cleanupDirectory(path, teePrint):
     # if the path exists, try to delete it
@@ -476,9 +485,9 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             print(out)
 
         # save the output of the manage command for debug purposes
-        outFile = open("build.log", "w")
-        outFile.write(out)
-        outFile.close()
+        with open("build.log","w") as fd:
+            fd.write(out)
+        
         copyList = []
         jobName = ""
         level = ""
@@ -558,7 +567,9 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         failed_count = 0
         try:
             for file in glob.glob("xml_data/test_results_*.xml"):
-                lines = open(file,"r").readlines()
+                with open(file,"r") as fd:
+                    lines = fd.readlines()
+            
                 for line in lines:
                     if "failures" in line:
                         failed_count += int(line.split("\"")[5])
@@ -566,10 +577,13 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         except:
             teePrint.teePrint ("   *INFO: Problem parsing test results file for unit testcase failure count: " + file)
             if print_exc:  traceback.print_exc()
-        f = open("unit_test_fail_count.txt","w")
-        f.write(str(failed_count))
-        f.close()
-                
+            
+        with open("unit_test_fail_count.txt", "w") as fd:
+            failed_str = str(failed_count)
+            try:
+                fd.write(unicode(failed_str))
+            except:
+                fd.write(failed_str)    
 
         for file in copyList:
 
@@ -607,8 +621,18 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
+    legacy = args.legacy
+    
+    if legacy and sys.version_info[0] >= 3:
+        print ("Legacy mode testing not support with Python3 (VectorCAST 2021 and above)")
+        sys.exit(-1)
+        
     try:
-        if "19.sp1" in open(os.path.join(os.environ['VECTORCAST_DIR'],"DATA/tools_version.txt").read):
+        tool_version = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "tool_version.txt")
+        with open(tool_version,"r") as fd:
+            ver = fd.read()
+            
+        if "19.sp1" in ver:
             # custom report patch for SP1 problem - should be fixed in future release      
             old_init = CustomReport._post_init
             def new_init(self):
@@ -644,7 +668,8 @@ if __name__ == '__main__':
         junit = True
         
     if args.buildlog and os.path.exists(args.buildlog):
-        buildLogData = open(args.buildlog,"r").readlines()
+        with open(args.buildlog,"r") as fd:
+            buildLogData = fd.readlines()
         cbt = ParseConsoleForCBT(verbose)
         cbtDict = cbt.parse(buildLogData)
         
@@ -658,7 +683,5 @@ if __name__ == '__main__':
     # Used for VC19 SP2 onwards
     os.environ['VCAST_RPTS_SELF_CONTAINED'] = 'FALSE'
 
-    legacy = args.legacy
-        
     buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict)
 

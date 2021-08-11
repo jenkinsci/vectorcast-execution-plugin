@@ -141,7 +141,7 @@ def runCommands(cmds) {
         if (VC_UseCILicense.length() != 0) {
             localCmds += """
                 export VCAST_USING_HEADLESS_MODE=1
-                export VCAST_USE_CI_LICENSES =1
+                export VCAST_USE_CI_LICENSES=1
             """.stripIndent()
         }
         cmds = localCmds + cmds
@@ -295,6 +295,8 @@ def stepsForParallel(localEnvList) {
 
 // global environment list used to create pipeline jobs
 EnvList = []
+UtEnvList = []
+StEnvList = []
  
 pipeline {
 
@@ -396,15 +398,32 @@ pipeline {
                                         
                     // for a groovy list that is stored in a global variable EnvList to be use later in multiple places
                     def lines = EnvData.split('\n')
+                    
                     lines.each { line ->
                         def trimmedString = line.trim()
                         boolean containsData = trimmedString?.trim()
                         if (containsData) {
+                            (type, compiler, test_suite, environment) = trimmedString.split()
+                            if (type == "ST:") {
+                                trimmedString = compiler + " " + test_suite + " " + environment
+                                // print("ST:" + trimmedString)
+                                StEnvList = StEnvList + [trimmedString]
+                            }
+                            else if (type == "UT:") {
+                                trimmedString = compiler + " " + test_suite + " " + environment
+                                // print("UT:" + trimmedString)
+                                UtEnvList = UtEnvList + [trimmedString]
+                            }
+                            else {
+                                trimmedString = compiler + " " + test_suite + " " + environment
+                                print("??:" + trimmedString)
+                                continue
+                            }
+                            
                             print ("++ " + trimmedString)
                             EnvList = EnvList + [trimmedString]
                         }                        
                     }
-                    
                     // down to here                                                                            ^^^
                     // -------------------------------------------------------------------------------------------                    
                 }
@@ -412,12 +431,24 @@ pipeline {
         }
 
         // This is the stage that we use the EnvList via stepsForParallel >> transformIntoStep 
-        stage('Build-Execute Stage') {
+        stage('System Test Build-Execute Stage') {
             steps {
                 script {
                     setupManageProject()
                     
-                    jobs = stepsForParallel(EnvList)
+                    jobs = stepsForParallel(StEnvList)
+                    parallel jobs
+                }
+            }
+        }
+
+        // This is the stage that we use the EnvList via stepsForParallel >> transformIntoStep 
+        stage('Unit Test Build-Execute Stage') {
+            steps {
+                script {
+                    setupManageProject()
+                    
+                    jobs = stepsForParallel(UtEnvList)
                     parallel jobs
                 }
             }

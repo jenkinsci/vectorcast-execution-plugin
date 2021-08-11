@@ -27,6 +27,8 @@ from __future__ import absolute_import
 
 import os
 import sys
+import get_encoding
+from io import open
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
@@ -67,7 +69,8 @@ def generate_with_api():
 # From VC19 ?, use the Manage Data API to generate the XML file directly
 using_api = False
 try:
-    data = open(sys.argv[1],"r").read()
+    
+    data = open(sys.argv[1],"r", encoding=get_encoding.get_file_encoding(sys.argv[1])).read()
     if "<!-- VectorCAST Report header -->" in data:
         # Test to see if this version of VectorCAST has the required API
         # ... It is loaded as a result of this import

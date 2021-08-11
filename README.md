@@ -222,14 +222,25 @@ results" in the Publish JUnit test result report configuration.
 
 ## Change Log
 
-### Version 0.69 (7 Jun 2021)
-- Updated pipeline job to handle continuouis integration licenses
+### Version 0.71 (10 1Sep 2021)
+- Removal of Multi-Job option - use VectorCAST Pipeline job instead
+- Added VectorCAST Execution Plugin version to VectorCAST top level screen
+- Added option to parallelize environment build
+- Restructed some of the pipeline options into different groups
 
-### Version 0.68 (6 May 2021)
+### Version 0.70 (2 Aug 2021)
+- Updated scripts to use io.open for all opens
+- Updated parse_traceback to display all tracebacks
+
+### Version 0.69 (7 Jun 2021)
+- Updated pipeline job to handle continuous integration licenses
+
+### Version 0.68 (14 May 2021)
 - New HTML reports match current Jenkins CSP
 - Encoding read for GBK characters
 - Bug fixes for compatibility issues with VectorCAST/2021
 - Bug fix for counting run system test cases as skipped
+- Handle uppercase Manage project .vcm extension
 
 ### Version 0.67 (30 March 2021)
 - Add support for Python 3.9

@@ -15,7 +15,26 @@ def printOutput(somethingPrinted, ManageProjectName, output, teePrint):
     
     teePrint.teePrint(output)
 
+def checkForSystemTest(compiler , testsuite , env_name, buildDirInfo):
 
+    for line in buildDirInfo:
+        if "Compiler:" in line:
+            build_comp = line.split(":",1)[-1].strip()
+        elif "Testsuite ID:" in line:
+            pass
+        elif "TestSuite:" in line:
+            build_ts = line.split(":",1)[-1].strip()
+        elif "Environment:" in line:
+            build_env = line.split(":",1)[-1].strip()
+        elif "Build Directory:" in line:
+            build_dir = line.split(":",1)[-1].strip()
+            if build_comp == compiler and build_ts == testsuite and build_env == env_name:
+                if os.path.exists(os.path.join(build_dir,env_name+".vcp")):
+                    return "ST: "
+
+    return "UT: "
+    
+    
 def printEnvironmentInfo(ManageProjectName, printData = True):
 
     somethingPrinted = False
@@ -25,13 +44,17 @@ def printEnvironmentInfo(ManageProjectName, printData = True):
                          stdout=subprocess.PIPE,
                          universal_newlines=True)
     out, err = p.communicate()
+    enabledList = out.splitlines()
+
+    p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name",
+                         shell=True,
+                         stdout=subprocess.PIPE,
+                         universal_newlines=True)
+                         
+    out, err = p.communicate()
+    buildDirInfo = out.splitlines()
     
-    job_list = []
-    level_list = []
-
-    list = out.splitlines()
-
-    for str in list:
+    for str in enabledList:
         if re.match("^   [^\s]",str) is not None:
             compiler = str.split()[0]
         elif re.match("^    [^\s]",str) is not None:
@@ -40,7 +63,9 @@ def printEnvironmentInfo(ManageProjectName, printData = True):
                 
             env_name = str.split()[0]
             
-            output += "%s %s %s\n" % (compiler , testsuite , env_name)
+            st_ut = checkForSystemTest(compiler , testsuite , env_name, buildDirInfo)
+
+            output += "%s %s %s %s\n" % (st_ut, compiler , testsuite , env_name)
                             
             somethingPrinted = True;
 

@@ -40,3 +40,7 @@ def get_file_encoding(file, default_encoding = 'utf-8'):
         cur_encoding = default_encoding
 
     return cur_encoding
+
+if __name__ == '__main__':
+    import sys
+    print(get_file_encoding(sys.argv[1]))

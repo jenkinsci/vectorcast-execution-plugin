@@ -66,7 +66,6 @@ public abstract class JobBase implements ExtensionPoint, Action, Describable<Job
     public String getIconFileName() {
         return "/plugin/vectorcast-execution/icons/vector_favicon.png";
     }
-    
     /**
      * Default URL name
      * @return url name

@@ -52,7 +52,7 @@
           </div>
         </t:summary>
        </table>       
-      <h6>${%VCJob.Options.Version}: v${it.version} Yeah!</h6>
+      <br><small><i>${%VCJob.Options.Version}: v${it.version}!</i></small></br>
     </l:main-panel>
   </l:layout>
 </j:jelly>

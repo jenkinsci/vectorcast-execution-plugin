@@ -34,6 +34,7 @@ import time
 import shutil
 
 import cgi
+from safe_open import open
 
 # adding path
 jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
@@ -106,10 +107,9 @@ def readCsvFile(csvFilename):
     global jobNamePrefix
     global jobNameDotted
 
-    mode = 'r' if sys.version_info[0] >= 3 else 'rb'
-    csvfile = open(csvFilename, mode)
-    csvList = csvfile.read().split('\n')
-    csvfile.close()
+    #mode = 'r' if sys.version_info[0] >= 3 else 'rb'
+    with open(csvFilename, "r") as fd:
+        csvList = fd.readlines()
     os.remove(csvFilename)
 
     fullManageProject = csvList[0].split(",")[1].rstrip()
@@ -149,13 +149,15 @@ def readCsvFile(csvFilename):
 
     return dataArray;
     
-def writeJunitHeader(junitfile,dataArray):
+def writeJunitHeader(dataArray):
     
     global jobNameDotted
     global envName
+    
+    junitData = ""
 
-    junitfile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-    junitfile.write("<testsuites>\n")
+    junitData += ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+    junitData += ("<testsuites>\n")
     
     errors = 0
     failed = 0
@@ -167,13 +169,18 @@ def writeJunitHeader(junitfile,dataArray):
         elif not 'PASS' in data[TC_STATUS_COL]:
             failed += 1
             
-    junitfile.write("   <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
+    junitData += ("   <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
         (errors,len(dataArray), failed, envName))
+        
+    return junitData 
+
  
-def writeJunitTestCase(junitfile,  unit, subp, tc_name, passFail):
+def writeJunitTestCase(unit, subp, tc_name, passFail):
     global jobNamePrefix
     global testCaseCount
     
+    junitData = ""
+
     testCasePassString ="        <testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
     testCaseFailString ="""
             <testcase name="%s" classname="%s" time="0">
@@ -193,34 +200,40 @@ def writeJunitTestCase(junitfile,  unit, subp, tc_name, passFail):
     unit_subp = unit + "." + subp
    
     if 'PASS' in passFail:
-        junitfile.write(testCasePassString % (tc_name, unit_subp))
+        junitData += (testCasePassString % (tc_name, unit_subp))
     else:   
-        junitfile.write(testCaseFailString % (tc_name, unit_subp, passFail))
+        junitData += (testCaseFailString % (tc_name, unit_subp, passFail))
+       
+    return junitData
     
-def writeJunitFooter(junitfile):
+def writeJunitFooter():
 
-    junitfile.write("   </testsuite>\n")
-    junitfile.write("</testsuites>\n")
+    junitData = ""
+    junitData += ("   </testsuite>\n")
+    junitData += ("</testsuites>\n")
+    
+    return junitData
 
 def runCsv2JenkinsTestResults(csvFilename, junit):
 
     dataArray = readCsvFile(csvFilename)
         
     titles = dataArray[0]
-
-    junitfile = open(csvFilename[:-4]+".xml","w")
-            
-    writeJunitHeader(junitfile,dataArray[1:])
+       
+    junitData = ""
+    
+    junitData += writeJunitHeader(dataArray[1:])
 
     for data in dataArray[1:]:
         data[UNIT_NAME_COL] = escape(data[UNIT_NAME_COL])
         data[SUBPROG_COL] = escape(data[SUBPROG_COL])
         data[TEST_CASE_COL] = escape(data[TEST_CASE_COL])
-        writeJunitTestCase(junitfile, data[UNIT_NAME_COL],data[SUBPROG_COL].replace("%2C",","),data[TEST_CASE_COL].replace("%2C",","),data[TC_STATUS_COL])
+        junitData += writeJunitTestCase(data[UNIT_NAME_COL],data[SUBPROG_COL].replace("%2C",","),data[TEST_CASE_COL].replace("%2C",","),data[TC_STATUS_COL])
 
-    writeJunitFooter(junitfile)
+    junitData += writeJunitFooter()
     
-    junitfile.close()
+    with open(csvFilename[:-4]+".xml","w") as fd:
+        fd.write(junitData)
 
 def determineCoverage(titles):
     global stIndex,brIndex,pairIndex,pathIndex,baIndex,fncIndex,fncCallIndex,VgIndex
@@ -266,13 +279,14 @@ def determineCoverage(titles):
     except ValueError:
         VgIndex = -1
 
-def writeEmmaHeader(emmafile):
+def writeEmmaHeader():
+    
     time_tuple = time.localtime()
     date_string = time.strftime("%m/%d/%Y", time_tuple)
     time_string = time.strftime("%I:%M %p", time_tuple)
     datetime_str = date_string + "\t" + time_string
-    emmafile.write("<!-- VectorCAST/Jenkins Integration, Generated " + datetime_str+ " -->\n<report>\n  <version value=\"3\"/>\n")
-    pass
+    
+    return ("<!-- VectorCAST/Jenkins Integration, Generated " + datetime_str+ " -->\n<report>\n  <version value=\"3\"/>\n")
 
 def countUnitSubp(data):
     unitName   = ""
@@ -435,56 +449,68 @@ def getFunctionData(data):
             pass
     return calulatePercentages(statement,branch,pair,path,byAnalysis,function,functionCall,complexity)
 
-def writeEmmaStatSummary(emmafile,data):
+def writeEmmaStatSummary(data):
     unitCount, subpCount = countUnitSubp(data)
 
-    emmafile.write ("""  <stats>
+    emmaData =  ("""  <stats>
     <environments   value=\"1\"/>
     <units    value=\"""" + str(unitCount)              + """\"/>
     <subprograms value=\"""" + str(subpCount)              + """\"/>
   </stats>
 """)
 
-def writeEmmaSummaryData(emmafile,indent, xxx_todo_changeme):
+    return emmaData
+
+def writeEmmaSummaryData(indent, xxx_todo_changeme):
+
     (statement,branch,pair,path,byAnalysis,function,functionCall,complexity) = xxx_todo_changeme
     global stIndex,brIndex,pairIndex,pathIndex,baIndex,fncIndex,fncCallIndex,VgIndex
 
     myStr = " " * indent + "<coverage type=\"%s, %%\" value=\"%d%% (%d / %d)\"/>\n"
 
+    emmaData = ""
+    
     if stIndex != -1 and statement[TOTAL_INDEX] != 0:
-        emmafile.write (myStr % ("statement", statement[PERCENT_INDEX], statement[COVERED_INDEX], statement[TOTAL_INDEX]))
+        emmaData += (myStr % ("statement", statement[PERCENT_INDEX], statement[COVERED_INDEX], statement[TOTAL_INDEX]))
 
     if brIndex != -1 and branch[TOTAL_INDEX] != 0:
-        emmafile.write (myStr % ("branch", branch[PERCENT_INDEX], branch[COVERED_INDEX], branch[TOTAL_INDEX]))
+        emmaData += (myStr % ("branch", branch[PERCENT_INDEX], branch[COVERED_INDEX], branch[TOTAL_INDEX]))
 
     if pairIndex != -1 and pair[TOTAL_INDEX] != 0:
-        emmafile.write (myStr % ("mcdc", pair[PERCENT_INDEX], pair[COVERED_INDEX], pair[TOTAL_INDEX]))
+        emmaData += (myStr % ("mcdc", pair[PERCENT_INDEX], pair[COVERED_INDEX], pair[TOTAL_INDEX]))
 
     if pathIndex != -1 and path[TOTAL_INDEX] != 0:
-        emmafile.write (myStr % ("basispath", path[PERCENT_INDEX], path[COVERED_INDEX], path[TOTAL_INDEX]))
+        emmaData += (myStr % ("basispath", path[PERCENT_INDEX], path[COVERED_INDEX], path[TOTAL_INDEX]))
 
     if fncIndex != -1 and function[TOTAL_INDEX] != 0:
-        emmafile.write (myStr % ("function", function[PERCENT_INDEX], function[COVERED_INDEX], function[TOTAL_INDEX]))
+        emmaData += (myStr % ("function", function[PERCENT_INDEX], function[COVERED_INDEX], function[TOTAL_INDEX]))
 
     if fncCallIndex != -1 and functionCall[TOTAL_INDEX] != 0:
-        emmafile.write (myStr % ("functioncall", functionCall[PERCENT_INDEX], functionCall[COVERED_INDEX], functionCall[TOTAL_INDEX]))
+        emmaData += (myStr % ("functioncall", functionCall[PERCENT_INDEX], functionCall[COVERED_INDEX], functionCall[TOTAL_INDEX]))
 
     if VgIndex != -1 and complexity[COVERED_INDEX] != 0:
-        emmafile.write (myStr % ("complexity", 0, complexity[COVERED_INDEX], 0))
+        emmaData += (myStr % ("complexity", 0, complexity[COVERED_INDEX], 0))
 
-def writeEmmaDataHeader(emmafile,data):
-    emmafile.write ("    <all name=\"all environments\">\n")
+    return emmaData
+    
+def writeEmmaDataHeader(data):
+    emmaData = ""
+    
+    emmaData += ("    <all name=\"all environments\">\n")
 
-    writeEmmaSummaryData(emmafile,6,getCoverageTotals(data,'all'))
+    emmaData += writeEmmaSummaryData(6,getCoverageTotals(data,'all'))
 
+    return emmaData
 
-def writeEmmaData(emmafile,data):
+def writeEmmaData(data):
     global jobNamePrefix
     unit_found = False
-    emmafile.write ("  <data>\n")
-    writeEmmaDataHeader(emmafile,data)
-    emmafile.write ("\n      <environment name =\"" + jobNamePrefix + "\">\n")
-    writeEmmaSummaryData(emmafile,8,getCoverageTotals(data,'all'))
+    
+    emmaData = ""
+    emmaData += ("  <data>\n")
+    emmaData += writeEmmaDataHeader(data)
+    emmaData += ("\n      <environment name =\"" + jobNamePrefix + "\">\n")
+    emmaData += writeEmmaSummaryData(8,getCoverageTotals(data,'all'))
 
     unitName   = ""
     for row in data:
@@ -496,27 +522,30 @@ def writeEmmaData(emmafile,data):
         # if we have a different unit name -- bump up the unit count
         if row[UNIT_INDEX] != unitName:
             if unitName:
-                #emmafile.write("          </subprogram>\n")
-                emmafile.write("        </unit>\n")
+                emmaData += ("        </unit>\n")
 
             unitName = row[UNIT_INDEX]
-            emmafile.write("\n        <unit name=\"" + unitName + "\">\n")
+            emmaData += ("\n        <unit name=\"" + unitName + "\">\n")
 
-            writeEmmaSummaryData(emmafile,10,getCoverageTotals(data,unitName))
+            emmaData += writeEmmaSummaryData(10,getCoverageTotals(data,unitName))
 
-        emmafile.write("          <subprogram name=\"" + row[SUBP_INDEX] + "\">\n")
-        writeEmmaSummaryData(emmafile,12,getFunctionData(row))
-        emmafile.write("          </subprogram>\n")
+        emmaData += ("          <subprogram name=\"" + row[SUBP_INDEX] + "\">\n")
+        emmaData += writeEmmaSummaryData(12,getFunctionData(row))
+        emmaData += ("          </subprogram>\n")
 
     if unit_found:
-        emmafile.write("        </unit>\n")
+        emmaData += ("        </unit>\n")
 
-def writeEmmaFooter(emmafile):
-    emmafile.write ("      </environment>\n")
-    emmafile.write ("    </all>\n")
-    emmafile.write ("  </data>\n")
-    emmafile.write ("</report>\n")
+    return emmaData
+    
+def writeEmmaFooter():
 
+    emmaData = ""
+    emmaData +=  ("      </environment>\n")
+    emmaData +=  ("    </all>\n")
+    emmaData +=  ("  </data>\n")
+    emmaData +=  ("</report>\n")
+    return emmaData
 
 def runCsv2JenkinsCoverageResults(csvFilename):
 
@@ -528,25 +557,26 @@ def runCsv2JenkinsCoverageResults(csvFilename):
     determineCoverage(titles)
 
     #open the emma format file
-    emmafile = open(csvFilename[:-4]+".xml","w")
+    emmaData = ""
 
     #write out the header information for emma format
-    writeEmmaHeader(emmafile)
+    emmaData += writeEmmaHeader()
 
     #write out the stat summary
-    writeEmmaStatSummary(emmafile,dataArray[1:])
+    emmaData += writeEmmaStatSummary(dataArray[1:])
 
     #write out the data for the emma file
-    writeEmmaData(emmafile, dataArray[1:])
-
+    emmaData += writeEmmaData(dataArray[1:])
+    
     #write out the footer information for emma format
-    writeEmmaFooter(emmafile)
+    emmaData += writeEmmaFooter()
 
-    emmafile.close()
+    with open(csvFilename[:-4]+".xml","w") as fd:
+        fd.write(emmaData)
 
 def writeBlankCCFile():
-    f = open("coverage_results_blank.xml","w")
-    f.write("""<report>
+    with open("coverage_results_blank.xml","w") as fd:
+        fd.write("""<report>
   <version value="3"/>
 <data>
 <all name="environments">
@@ -554,7 +584,6 @@ def writeBlankCCFile():
 </all>
 </data>
 </report>""")
-    f.close()
     print("Generating a blank coverage report\n")
 
 def run(test = "",coverage="", useExecRpt = True, version=14, junit = True):
