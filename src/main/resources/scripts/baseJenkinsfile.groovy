@@ -437,8 +437,14 @@ pipeline {
                     setupManageProject()
                     
                     jobs = stepsForParallel(StEnvList)
-                    parallel jobs
-                }
+                    print ("got St job list")
+                    print ("starting St job list")
+                    jobs.each { job ->
+                        print ("running st job" + job) 
+                        parallel job
+                    }
+                     print ("completed St job list")
+               }
             }
         }
 

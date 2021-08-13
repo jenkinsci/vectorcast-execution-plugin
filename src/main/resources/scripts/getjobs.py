@@ -29,14 +29,36 @@ def checkForSystemTest(compiler , testsuite , env_name, buildDirInfo):
         elif "Build Directory:" in line:
             build_dir = line.split(":",1)[-1].strip()
             if build_comp == compiler and build_ts == testsuite and build_env == env_name:
-                if os.path.exists(os.path.join(build_dir,env_name+".vcp")):
+                if os.path.exists(os.path.join(build_dir,env_name+".vcp")) or os.path.exists(os.path.join(build_dir,env_name+".enc")):
                     return "ST: "
 
     return "UT: "
     
     
-def printEnvironmentInfo(ManageProjectName, printData = True):
+def printEnvInfoDataAPI(api, printData = True):
+    print ("Using data api")
+    somethingPrinted = False
+    output = ""
+    
+    for env in api.Environment.all():
+        somethingPrinted = True
 
+        if env.system_tests:
+            st_ut = "ST: "
+        else:
+            st_ut = "UT: "
+        
+        output += "%s %s %s %s\n" % (st_ut, env.compiler.name , env.testsuite.name , env.name)
+        
+    if printData:
+        with tee_print.TeePrint() as teePrint:
+            printOutput(somethingPrinted, api.vcm_file, output, teePrint)
+
+    return output
+
+def printEnvInfoNoDataAPI(ManageProjectName, printData = True):
+
+    print ("Old Method")
     somethingPrinted = False
     output = ""
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --full-status",
@@ -69,10 +91,26 @@ def printEnvironmentInfo(ManageProjectName, printData = True):
                             
             somethingPrinted = True;
 
-    with tee_print.TeePrint() as teePrint:
-        printOutput(somethingPrinted, ManageProjectName, output, teePrint)
+    if printData:
+        with tee_print.TeePrint() as teePrint:
+            printOutput(somethingPrinted, ManageProjectName, output, teePrint)
 
     return output
+ 
+def printEnvironmentInfo(ManageProjectName, printData = True):
+    try:
+        from vector.apps.DataAPI.vcproject_api import VCProjectApi
+        api = VCProjectApi(ManageProjectName)
+        return printEnvInfoDataAPI(api, printData)
     
+    except:
+        import parse_traceback
+        import traceback
+        print (parse_traceback.parse(traceback.format_exc()))
+        return printEnvInfoNoDataAPI(ManageProjectName, printData)
+        
+        
 if __name__ == "__main__":
-    printEnvironmentInfo(sys.argv[1])
+    ManageProjectName = sys.argv[1]
+    
+    printEnvironmentInfo(ManageProjectName)
