@@ -82,6 +82,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private Long waitLoops;
     /** Wait time */
     private Long waitTime;
+    /** parallel job count */
+    private Long parallelJobCount;
     /** Using some form of SCM */
     private boolean usingSCM;
     /** SCM if using */
@@ -105,6 +107,13 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setWaitLoops(Long waitLoops) {
         this.waitLoops = waitLoops;
+    }
+    /**
+     * Get the parallel job count for parallel build
+     * @return the wait time
+     */
+    public Long getParallelJobCount() {
+        return parallelJobCount;
     }
     /**
      * Get the wait time for license retries
@@ -362,6 +371,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param manageProjectName manage project name
      * @param jobName job name
      * @param nodeLabel node label
+     * @param parallelJobCount parallel job count -1 for none
      */
     @DataBoundConstructor
     public VectorCASTSetup(String environmentSetupWin,
@@ -379,7 +389,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            Long waitTime,
                            String manageProjectName,
                            String jobName,
-                           String nodeLabel) {
+                           String nodeLabel,
+                           Long parallelJobCount) {
         this.environmentSetupWin = environmentSetupWin;
         this.environmentSetupUnix = environmentSetupUnix;
         this.executePreambleWin = executePreambleWin;
@@ -398,6 +409,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.manageProjectName = manageProjectName;
         this.jobName = jobName;
         this.nodeLabel = nodeLabel;
+        this.parallelJobCount = parallelJobCount;
     }
     /**
      * Copy the files in a directory recursively to the job workspace.
@@ -573,7 +585,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t waitTime: " + waitTime +  "\n"
     			+ "\t manageProjectName: " + manageProjectName +  "\n"
     			+ "\t jobName: " + jobName +  "\n"
-    			+ "\t nodeLabel: " + nodeLabel +  "\n";
+    			+ "\t nodeLabel: " + nodeLabel +  "\n"
+    			+ "\t parallelJobCount: " + parallelJobCount +  "\n";
     	return string;
     }
 }

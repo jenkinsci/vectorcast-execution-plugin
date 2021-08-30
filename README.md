@@ -1,18 +1,16 @@
-Create, delete and update Jobs for
-[VectorCAST](http://vector.com/vectorcast)/Manage
-projects.
+Create single and pipeline jobs to build and run
+[VectorCAST](http://vector.com/vectorcast) Projects.
 
 # Summary
 
-This plugin allows the user to create, delete and update Jobs to build
-and run
-[VectorCAST](http://vector.com/vectorcast) projects.
+This plugin allows the user to create single and pipeline jobs to build and run
+[VectorCAST](http://vector.com/vectorcast) Projects.
 Coverage is displayed using the [VectorCAST Coverage
 Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
 
-Jobs can be created as a single job or split into multiple jobs for a
-Manage project, with one job for each environment and an overall job to
-combine the results.
+Jobs can be created as a single job or a pipeline job for a
+VectorCAST project.  For the pipeline job, the plugin will create a pipeline script (Jenkinsfile) 
+with one job for each environment and an overall job to combine the results.
 
 # Usage
 
@@ -21,29 +19,29 @@ This plugin adds a new top-level menu item to the Jenkins sidebar.
 ![](docs/images/vc_menu_in_sidebar.png)
 
 that provides job control for
-[VectorCAST](http://vector.com/vectorcast)/Manage projects
+[VectorCAST](http://vector.com/vectorcast)/VectorCAST Projects
 
 ![](docs/images/image2017-10-17_18_14_2.png)
 
 ## Job Types
 
-There are 2 types of supported jobs and 1 deprecated job type
+There are 2 types of supported jobs and 1 diagnostic job type
 
 -   **Single Job**
 -   **Pipeline Job**
--   **Multi-Job (Deprecated)**
+-   **VectorCAST Diagnostic Job**
 
 ### Single Job
 
 **Single** creates a single Jenkins job to build/execute and
-(optionally) report on all environments in a VectorCAST/Manage project.
+(optionally) report on all environments in a VectorCAST/VectorCAST Project.
 
 ![](docs/images/single.png)
 
 ### Pipeline Job
 
 **Pipeline** creates a Jenkins Pipeline job to build/execute and
-(optionally) report on all environments in a VectorCAST/Manage project
+(optionally) report on all environments in a VectorCAST/VectorCAST Project
 in parallel.
 
 :warning:*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel execution on a single VectorCAST Project*
@@ -56,17 +54,17 @@ There are 2 options for running tests
         workspace for each Jenkins job from your repository
     -   The pipeline job will them combine the coverage and test
         results from all these individual machines/nodes
-    -   In this case, the VectorCAST/Manage project should be specified
+    -   In this case, the VectorCAST/VectorCAST Project should be specified
         as relative to the root of the checkout
     - There is now an option to use the main Pipeline Job's Workspace as 
         a dedicated single checkout directory.  This checkout directory must be available
         to all executors across all nodes either by having all executors running on the same
         computer or have the main Pipeline Job's Workspace on a shared network drive.
-- Use an existing drive/directory for VectorCAST/Manage project
-    -   In this case, the VectorCAST/Manage project should be specified
+- Use an existing drive/directory for VectorCAST/VectorCAST Project
+    -   In this case, the VectorCAST/VectorCAST Project should be specified
         as an absolute path that is available on all machines/nodes
     -   Each job can optionally clean up the working directory which
-        will have no effect on the VectorCAST/Manage project since it is
+        will have no effect on the VectorCAST/VectorCAST Project since it is
         located elsewhere
     -   The reports are generated into the workspace and archived as
         part of the Jenkins job
@@ -81,7 +79,7 @@ Continuous Integration Licenses, do not check this box as you will encounter lic
 
 If the user wishes to call the Jenkins job from another Pipeline job, check the box to 
 parameterize the Jenkinsfile.  This will add parameters to the pipeline job  
-that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage project (VCAST_PROJECT_DIR)
+that will be used by the VectorCAST pipeline job to locate the VectorCAST/VectorCAST Project (VCAST_PROJECT_DIR)
 and for forcing the VectorCAST Jobs to be executed on a specific node (VCAST_FORCE_NODE_EXEC_NAME) instead of using 
 the compiler as a node label.
 
@@ -95,7 +93,7 @@ catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : 
 }
 ```
 
-Additionally, if a shared artifact directory is specified, VectorCAST/Manage
+Additionally, if a shared artifact directory is specified, VectorCAST Project
 will execute jobs independently, but have a central location for storing
 the build artifacts.  This option can be used to accelerate testing by use
 of VectorCAST's Change Based Testing feature. 
@@ -112,49 +110,9 @@ and denoted as _Skipped_ in the test results list
 
 ![](docs/images/test_results.png)
 
-        
-### Multi-Job (Deprecated)
-
-**Multi-Job (Deprecated)** creates a top-level Jenkins job to combine the results from
-individual Jenkins jobs created for each environment in the
-VectorCAST/Manage project. The options for a multi-job are the same as
-single apart from supplying a copy of the Manage project.
-
-![](docs/images/image2017-10-25_17_3_35.png)
-
-Jenkins jobs normally build and run in independent workspaces. This is
-the case with this integration. However, there are 2 options for running
-tests
-
--   Use an SCM system (any that is supported by Jenkins)
-    -   In this case, Jenkins will check out the code and tests into the
-        workspace for each Jenkins job from your repository
-    -   The top-level job will them combine the coverage and test
-        results from all these individual machines/nodes
-    -   In this case, the VectorCAST/Manage project should be specified
-        as relative to the root of the checkout
-    -   Each job can optionally clean up the working directory. If the
-        working directory is not cleaned, then the results from the
-        previous run allow VectorCAST/Manage to optimize the execution
-        phase based on any code changes
--   Use a common, shared drive/directory
-    -   In this case, the VectorCAST/Manage project should be specified
-        as an absolute path that is available on all machines/nodes
-    -   Note: Some network drives/shares do not fully implement file
-        locking which cause SQLite, used by VectorCAST/Manage, problems
-        that can result in corruption of the results. If this happens,
-        you may need to use a different network drive/share or consider
-        using an SCM system. Using VectorCAST vc2019 SP3 eliminates these 
-        errors
-    -   Each job can optionally clean up the working directory which
-        will have no effect on the VectorCAST/Manage project since it is
-        located elsewhere
-    -   The reports are generated into the workspace and archived as
-        part of the Jenkins job
-
 ## Controlling Where Jobs Run
 
-When using Multi-Jobs, the jobs are created to run on specific nodes
+When using a Pipeline job, the sub jobs are created to run on specific nodes
 related to the compiler chosen for the environment. E.g.
 
 ![](docs/images/restrict.png)
@@ -176,13 +134,6 @@ The requirements for using this plugin with VectorCAST are
     -   in particular BUILD\_URL needs to be defined (in
         Jenkins-\>Manage Jenkins-\>Configure System and define 'Jenkins
         URL' and save the settings
-
-## Updating Existing Multi-job (Deprecated)
-
-An existing multi-job can be updated using the Update Multi-job setup
-manually, or by creating an auto-update multi-job Job. The auto-update
-job may require username/password to be supplied depending on your
-Jenkins configuration.
 
 ## Known Issues
 
@@ -240,7 +191,7 @@ results" in the Publish JUnit test result report configuration.
 - Encoding read for GBK characters
 - Bug fixes for compatibility issues with VectorCAST/2021
 - Bug fix for counting run system test cases as skipped
-- Handle uppercase Manage project .vcm extension
+- Handle uppercase VectorCAST Project .vcm extension
 
 ### Version 0.67 (30 March 2021)
 - Add support for Python 3.9
@@ -253,7 +204,7 @@ results" in the Publish JUnit test result report configuration.
 ### Version 0.65 (20 Jan 2021)
 - Single jobs not displaying full report and rebuild report correctly in summary (VC2020)
 - Capturing stdout for skipped analysis causing console output to be delayed
-- Pipeline job fails unless user specific .vcm for manage project
+- Pipeline job fails unless user specific .vcm for VectorCAST Project
 - Problem with CBT analysis when not using single checkout directory
 - Using lowercase %workspace% causes single checkout directory error
 - Updated managewait.py to overcome race condition causing script to hang on readline()
@@ -271,7 +222,7 @@ results" in the Publish JUnit test result report configuration.
 - "Could not acquire a read lock on the project's vcm file" should raise an error, but it does not 
 - Add option to active CI licenses 
 - Regression Scripts with identical ending directories show testcase as skipped 
-- Add option to make job parameterized for Manage project location and Force Node Execution rather than compiler 
+- Add option to make job parameterized for VectorCAST Project location and Force Node Execution rather than compiler 
 - Update error thrown when user creates absolute path with SCM snippet 
 - Need to add more error detection 
 - Expand JUnit test case name display to include file.subprogram 
@@ -284,7 +235,7 @@ results" in the Publish JUnit test result report configuration.
 - Check for illegal characters in Pipeline Job names
 - Update Single and Multi-Jobs to use same reporting as Pipeline Jobs
 - Remove CombinedReport.html from previous Pipeline job build at beginning of new build
-- Make aggregate coverage results consistent with VectorCAST/Manage aggregate coverage results
+- Make aggregate coverage results consistent with VectorCAST Project aggregate coverage results
 - Always use new VectorCAST report API for VectorCAST/2019 and later
 - Fix potential file access race condition when generating xml
 - Fix exception when building VectorCAST/Unit regression script environments
@@ -403,7 +354,7 @@ results" in the Publish JUnit test result report configuration.
 
 ### Version 0.40 (10 Apr 2019)
 
--   Update to fix auto job updates (where path to Manage project was
+-   Update to fix auto job updates (where path to VectorCAST Project was
     being removed)
 
 ### Version 0.39 (19 Mar 2019)
@@ -422,8 +373,8 @@ results" in the Publish JUnit test result report configuration.
 
 ### Version 0.36 (27 Sept 2018)
 
--   Support overlapping version 17 Manage projects
--   Updates to support long directory paths in VectorCAST/Manage
+-   Support overlapping version 17 VectorCAST Projects
+-   Updates to support long directory paths in VectorCAST Project
     reporting
 
 ### Version 0.35 (15 May 2018)
@@ -460,7 +411,7 @@ results" in the Publish JUnit test result report configuration.
 
 ### Version 0.29 (27 Nov 2017)
 
--   Improve support for long Manage project names, environment names and
+-   Improve support for long VectorCAST Project names, environment names and
     compiler names
 
 ### Version 0.28 (2 Nov 2017)
