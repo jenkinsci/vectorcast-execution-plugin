@@ -94,8 +94,6 @@ abstract public class BaseJob {
     private String jobName;
     /** Node label */
     private String nodeLabel;
-    /** parallel job count */
-    private Long parallelJobCount;
     /**
      * Constructor
      * @param request request object
@@ -143,7 +141,6 @@ abstract public class BaseJob {
             waitLoops = json.optLong("waitLoops", 2);
             
             jobName = json.optString("jobName", null);
-            parallelJobCount = json.optLong("parallelJobCount", -1);
             
             if (jobName != null) {
                 // Remove all non-alphanumeric characters from the Jenkins Job name
@@ -175,10 +172,8 @@ abstract public class BaseJob {
         usingSCM = savedData.getUsingSCM();
         scm = savedData.getSCM();
 
-        parallelJobCount = savedData.getParallelJobCount();
         waitTime = savedData.getWaitTime();
         waitLoops = savedData.getWaitLoops();
-        parallelJobCount = savedData.getParallelJobCount();
         jobName = savedData.getJobName();
         nodeLabel = savedData.getNodeLabel();
     }
@@ -351,13 +346,6 @@ abstract public class BaseJob {
         this.optionClean = optionClean;
     }
     /**
-     * Get the parallel job count
-     * @return number of parallel jobs
-     */
-    protected Long getParallelJobCount() {
-        return parallelJobCount;
-    }
-    /**
      * Get the time to wait between retries
      * @return number of seconds
      */
@@ -519,8 +507,7 @@ abstract public class BaseJob {
                                     waitTime,
                                     manageProjectName,
                                     jobName,
-                                    nodeLabel,
-                                    parallelJobCount);
+                                    nodeLabel);
         setup.setUsingSCM(usingSCM);
         setup.setSCM(scm);
 

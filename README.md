@@ -176,8 +176,8 @@ results" in the Publish JUnit test result report configuration.
 ### Version 0.71 (10 1Sep 2021)
 - Removal of Multi-Job option - use VectorCAST Pipeline job instead
 - Added VectorCAST Execution Plugin version to VectorCAST top level screen
-- Added option to parallelize environment build
 - Restructed some of the pipeline options into different groups
+- Added new stage to run system tests in serial, separate from unit tests
 
 ### Version 0.70 (2 Aug 2021)
 - Updated scripts to use io.open for all opens
