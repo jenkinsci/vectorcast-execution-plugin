@@ -117,7 +117,7 @@ def checkUseNewReportsAndAPI():
         if verbose:
             print("Using VectorCAST without new style reporting. Use "
                   "VectorCAST reports for Jenkins reports.")
-        return False
+    return False
 
 # Read the Manage project file to determine its version
 # File has already been checked for existence
