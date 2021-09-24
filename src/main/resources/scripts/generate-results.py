@@ -110,13 +110,11 @@ def checkUseNewReportsAndAPI():
     try:
         from vector.apps.ReportBuilder.reports import full_report
         if verbose:
-            print("Using VectorCAST with new style reporting. Use Data API for "
-                  "Jenkins reports.")
+            print("Using VectorCAST with new style reporting. Use Data API for Jenkins reports.")
         return True
     except:
         if verbose:
-            print("Using VectorCAST without new style reporting. Use "
-                  "VectorCAST reports for Jenkins reports.")
+            print("Using VectorCAST without new style reporting. Use VectorCAST reports for Jenkins reports.")
     return False
 
 # Read the Manage project file to determine its version
