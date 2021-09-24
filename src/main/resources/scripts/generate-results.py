@@ -103,25 +103,20 @@ def runManageWithWait(command_line, silent=False):
 # Determine if this version of VectorCAST supports new-style reporting/Data API
 def checkUseNewReportsAndAPI():
     if os.environ.get("VCAST_REPORT_ENGINE", "") == "LEGACY":
-        # Using legacy reporting with new reports - fall back to parsing html report
+        # The execution plugin will ignore this value, but warn user.
         if verbose:
             print("VectorCAST/Execution ignoring LEGACY VCAST_REPORT_ENGINE.")
 
-    # Look for existence of file that only exists in distribution with the new reports
-    check_file = os.path.join(os.environ.get('VECTORCAST_DIR'),
-                             "python",
-                             "vector",
-                             "apps",
-                             "ReportBuilder",
-                             "reports",
-                             "full_report.pyc")
-    if os.path.isfile(check_file):
+    try:
+        from vector.apps.ReportBuilder.reports import full_report
         if verbose:
-            print("Using VectorCAST with new style reporting. Use Data API for Jenkins reports.")
+            print("Using VectorCAST with new style reporting. Use Data API for "
+                  "Jenkins reports.")
         return True
-    else:
+    except:
         if verbose:
-            print("Using VectorCAST without new style reporting. Use VectorCAST reports for Jenkins reports.")
+            print("Using VectorCAST without new style reporting. Use "
+                  "VectorCAST reports for Jenkins reports.")
         return False
 
 # Read the Manage project file to determine its version
