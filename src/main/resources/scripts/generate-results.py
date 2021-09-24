@@ -55,15 +55,17 @@ from managewait import ManageWait
 import generate_qa_results_xml
 from parse_console_for_cbt import ParseConsoleForCBT
 
+using_new_reports = False
 try:
     from vector.apps.ReportBuilder.custom_report import CustomReport
     try:
         from vector.apps.DataAPI.unit_test_api import UnitTestApi
     except:
         from vector.apps.DataAPI.api import Api as UnitTestApi
+    using_new_reports = True
 except:
     pass
-    
+
 #global variables
 global verbose
 global print_exc
@@ -107,15 +109,13 @@ def checkUseNewReportsAndAPI():
         if verbose:
             print("VectorCAST/Execution ignoring LEGACY VCAST_REPORT_ENGINE.")
 
-    try:
-        from vector.apps.ReportBuilder.reports import full_report
-        if verbose:
+    if verbose:
+        if using_new_reports:
             print("Using VectorCAST with new style reporting. Use Data API for Jenkins reports.")
-        return True
-    except:
-        if verbose:
+        else:
             print("Using VectorCAST without new style reporting. Use VectorCAST reports for Jenkins reports.")
-    return False
+
+    return using_new_reports
 
 # Read the Manage project file to determine its version
 # File has already been checked for existence
