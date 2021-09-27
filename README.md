@@ -223,9 +223,10 @@ results" in the Publish JUnit test result report configuration.
 ## Change Log
 
 ### Version 0.71 (21 Sep 2021)
-- Updated scripts to use a different method for checking the presence of the
-  new reports api. Later versions of VectorCAST will require this version of the
-  VectorCAST/Execution plugin.
+- The Python support scripts have been updated to attempt importing a module
+  from VectorCAST's DataAPI/reporting API vs. checking for the existence of a
+  pre-compiled Python bytecode file. Such an approach follows Python's "EAFP"
+  mantra.
 
 ### Version 0.70 (2 Aug 2021)
 - Updated scripts to use io.open for all opens
