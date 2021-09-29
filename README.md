@@ -222,9 +222,9 @@ results" in the Publish JUnit test result report configuration.
 
 ## Change Log
 
-### Version 0.71 (19 Sept 2021)
-- Updated baseline pipeline script to reflect changes in the code coverage plugin, arg!
-
+### Version 0.71 (29 Sept 2021)
+- Updated baseline pipeline script to reflect changes in the code coverage plugin
+- Updated to skip CBT analysis on migrated system test projects
 
 ### Version 0.70 (2 Aug 2021)
 - Updated scripts to use io.open for all opens
