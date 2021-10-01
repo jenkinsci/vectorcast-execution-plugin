@@ -172,6 +172,7 @@ if __name__ == '__main__':
             addFile(tf, "manage.xml")
             addFile(tf, "testcase_data.xml")
             addFile(tf, "*.LIS")
+            addFile(tf, "system_test_results.xml")
             addDirectory(tf, "TESTCASES")
             addFile(tf, Env + ".vce", backOneDir=True)
             addFile(tf, Env + ".vcp", backOneDir=True)

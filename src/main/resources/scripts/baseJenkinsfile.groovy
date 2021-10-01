@@ -1,11 +1,8 @@
 // Code Coverage threshold numbers
 // Basis path coverage is no longer support after VectorCAST 2019SP1
-VC_Healthy_Target = [ maxStatement: 100, maxBranch: 100, maxFunctionCall: 100, maxMCDC: 100,
-                      minStatement: 100, minBranch: 100, minFunctionCall: 100, minMCDC: 100]
+VC_Healthy_Target = [ maxStatement: 100, maxBranch: 100, maxFunctionCall: 100, maxFunction: 100, maxMCDC: 100,
+                      minStatement: 20,  minBranch: 20,  minFunctionCall: 20,  minFunction: 20,  minMCDC: 20]
                       
-VC_Unhealthy_Target = [ maxStatement: 20, maxBranch: 20, maxFunctionCall: 20, maxMCDC: 20,
-                        minStatement:  0, minBranch:  0, minFunctionCall:  0, minMCDC:  0]
-                     
 
 VC_Use_Threshold = true
 
@@ -498,8 +495,7 @@ pipeline {
                     step([$class: 'VectorCASTPublisher', 
                         includes: 'xml_data/coverage_results*.xml', 
                         useThreshold: VC_Use_Threshold,        
-                        healthyTarget:   VC_Healthy_Target, 
-                        unhealthyTarget: VC_Unhealthy_Target
+                        healthyTarget:   VC_Healthy_Target
                         ])
 
                     // Send test results to JUnit plugin
