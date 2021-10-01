@@ -1,7 +1,7 @@
 // Code Coverage threshold numbers
 // Basis path coverage is no longer support after VectorCAST 2019SP1
-VC_Healthy_Target = [ maxStatement: 100, maxBranch: 100, maxFunctionCall: 100, maxMCDC: 100,
-                      minStatement: 20, minBranch: 20, minFunctionCall: 20, minMCDC: 20]
+VC_Healthy_Target = [ maxStatement: 100, maxBranch: 100, maxFunctionCall: 100, maxFunction: 100, maxMCDC: 100,
+                      minStatement: 20,  minBranch: 20,  minFunctionCall: 20,  minFunction: 20,  minMCDC: 20]
                       
 
 VC_Use_Threshold = true

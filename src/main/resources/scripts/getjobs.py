@@ -58,7 +58,6 @@ def printEnvInfoDataAPI(api, printData = True):
 
 def printEnvInfoNoDataAPI(ManageProjectName, printData = True):
 
-    print ("Old Method")
     somethingPrinted = False
     output = ""
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --full-status",
@@ -106,7 +105,7 @@ def printEnvironmentInfo(ManageProjectName, printData = True):
     except:
         import parse_traceback
         import traceback
-        print (parse_traceback.parse(traceback.format_exc()))
+        #print (parse_traceback.parse(traceback.format_exc()))
         return printEnvInfoNoDataAPI(ManageProjectName, printData)
         
         
