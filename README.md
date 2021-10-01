@@ -225,6 +225,10 @@ results" in the Publish JUnit test result report configuration.
 ### Version 0.71 (29 Sept 2021)
 - Updated baseline pipeline script to reflect changes in the code coverage plugin
 - Updated to skip CBT analysis on migrated system test projects
+- The Python support scripts have been updated to attempt importing a module
+  from VectorCAST's DataAPI/reporting API vs. checking for the existence of a
+  pre-compiled Python bytecode file. Such an approach follows Python's "EAFP"
+  mantra.
 
 ### Version 0.70 (2 Aug 2021)
 - Updated scripts to use io.open for all opens
