@@ -23,7 +23,7 @@ that provides job control for
 
 ![](docs/images/image2017-10-17_18_14_2.png)
 
-## Job Types
+## Job Typesthat provides job control for
 
 There are 2 types of supported jobs and 1 diagnostic job type
 
