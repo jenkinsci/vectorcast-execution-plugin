@@ -427,7 +427,7 @@ class GenerateXml(BaseGenerateXml):
                             level = env.compiler.name + "/" + env.testsuite.name + "/" + env.name
                             if self.verbose:
                                 print (level, st.name, pass_fail_rerun)
-                            self.write_testcase(st, level, st.name)
+                            self.write_testcase(st, level, st.name, env.definition.is_monitored)
                 from generate_qa_results_xml import saveQATestStatus
                 saveQATestStatus(self.FullManageProjectName)
 
@@ -522,7 +522,7 @@ class GenerateXml(BaseGenerateXml):
 #
 # Internal - write a testcase to the jUnit XML file
 #
-    def write_testcase(self, tc, unit_name, func_name):
+    def write_testcase(self, tc, unit_name, func_name, st_is_monitored = False):
     
         isSystemTest = False
         
@@ -535,8 +535,13 @@ class GenerateXml(BaseGenerateXml):
 
         start_tdo = datetime.now()
         end_tdo   = None
+        
+        # don't do CBT analysis on migrated cover environments
+        if isSystemTest and not st_is_monitored:
+            tcSkipped = False 
+            
         # If cbtDict is None, no build log was passed in...don't mark anything as skipped 
-        if self.cbtDict == None:
+        elif  self.cbtDict == None:
             tcSkipped = False 
             
         # else there is something check , if the length of cbtDict is greater than zero

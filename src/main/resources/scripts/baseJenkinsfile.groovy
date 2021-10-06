@@ -529,7 +529,7 @@ pipeline {
                     step([$class: 'VectorCASTPublisher', 
                         includes: 'xml_data/coverage_results*.xml', 
                         useThreshold: VC_Use_Threshold,        
-                        healthyTarget:   VC_Healthy_Target, 
+                        healthyTarget:   VC_Healthy_Target
                         ])
 
                     // Send test results to JUnit plugin

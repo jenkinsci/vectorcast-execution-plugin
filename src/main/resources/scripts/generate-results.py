@@ -55,15 +55,17 @@ from managewait import ManageWait
 import generate_qa_results_xml
 from parse_console_for_cbt import ParseConsoleForCBT
 
+using_new_reports = False
 try:
     from vector.apps.ReportBuilder.custom_report import CustomReport
     try:
         from vector.apps.DataAPI.unit_test_api import UnitTestApi
     except:
         from vector.apps.DataAPI.api import Api as UnitTestApi
+    using_new_reports = True
 except:
     pass
-    
+
 #global variables
 global verbose
 global print_exc
@@ -104,26 +106,17 @@ def runManageWithWait(command_line, silent=False):
 # Determine if this version of VectorCAST supports new-style reporting/Data API
 def checkUseNewReportsAndAPI():
     if os.environ.get("VCAST_REPORT_ENGINE", "") == "LEGACY":
-        # Using legacy reporting with new reports - fall back to parsing html report
+        # The execution plugin will ignore this value, but warn user.
         if verbose:
             print("VectorCAST/Execution ignoring LEGACY VCAST_REPORT_ENGINE.")
 
-    # Look for existence of file that only exists in distribution with the new reports
-    check_file = os.path.join(os.environ.get('VECTORCAST_DIR'),
-                             "python",
-                             "vector",
-                             "apps",
-                             "ReportBuilder",
-                             "reports",
-                             "full_report.pyc")
-    if os.path.isfile(check_file):
-        if verbose:
+    if verbose:
+        if using_new_reports:
             print("Using VectorCAST with new style reporting. Use Data API for Jenkins reports.")
-        return True
-    else:
-        if verbose:
+        else:
             print("Using VectorCAST without new style reporting. Use VectorCAST reports for Jenkins reports.")
-        return False
+
+    return using_new_reports
 
 # Read the Manage project file to determine its version
 # File has already been checked for existence
