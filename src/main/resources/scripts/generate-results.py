@@ -74,6 +74,7 @@ global wait_loops
 
 verbose = False
 print_exc = False
+need_fixup = False
 
 import getjobs
 
@@ -233,21 +234,19 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict):
         
         
 def fixup_css(report_name):
+    global need_fixup
     # Needed for VC19 and VC19 SP1.
     # From VC19 SP2 onwards a new option VCAST_RPTS_SELF_CONTAINED is used instead
     
-    with open(report_name,"r") as fd:
-        data = fd.read()
- 
-    # When using new option, there will be an <img src="vector_log.png"/> in the
-    # generated HTML. If present, no need to do anything else.
-    if '"vector_logo.png"' in data:
+    if not need_fixup:
         return
+
+    with open(report_name,"r") as fd:
+        data = fd.read() 
 
     #fix up inline CSS because of Content Security Policy violation
     newData = data[: data.index("<style>")-1] +  """
-    <link rel="stylesheet" href="normalize.css">
-    <link rel="stylesheet" href="default-style.css">
+    <link rel="stylesheet" href="vector_style.css">
     """ + data[data.index("</style>")+8:]
     
     #fix up style directive because of Content Security Policy violation
@@ -262,8 +261,7 @@ def fixup_css(report_name):
    
     vc_scripts = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
     
-    shutil.copy(os.path.join(vc_scripts,"normalize.css"), "management/normalize.css")
-    shutil.copy(os.path.join(vc_scripts,"default-style.css"), "management/default-style.css")
+    shutil.copy(os.path.join(vc_scripts,"vector_style.css"), "management/vector_style.css")
     shutil.copy(os.path.join(vc_scripts,"vectorcast.png"), "management/vectorcast.png")
 
 def generateCoverReport(path, env, level ):
@@ -626,7 +624,11 @@ if __name__ == '__main__':
         with open(tool_version,"r") as fd:
             ver = fd.read()
             
+        if "19 " in ver:
+            need_fixup = True
+            
         if "19.sp1" in ver:
+            need_fixup = True
             # custom report patch for SP1 problem - should be fixed in future release      
             old_init = CustomReport._post_init
             def new_init(self):

@@ -164,6 +164,9 @@ combined with enabling anonymous reads from the Manage Jenkins > Configure Globa
 For more information on the Jenkins CSP, please see [Configuring Content Security
 Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
 
+For more information on VectorCAST Reports and Jenkins Content Security
+Policy, please see this article [VectorCAST Reports and Jenkins Content Security Policy](https://support.vector.com/kb?sys_kb_id=e54af267db6b6c904896115e68961902&id=kb_article_view&sysparm_rank=8&sysparm_tsqueryId=ba9d8f558707b858b9f233770cbb3543)
+
 ### JUnit publisher failing environment with no test cases
 
 For non-pipeline jobs, JUnit publisher will fail any environments published 
@@ -178,6 +181,8 @@ results" in the Publish JUnit test result report configuration.
 - Added VectorCAST Execution Plugin version to VectorCAST top level screen
 - Restructed some of the pipeline options into different groups
 - Added new stage to run system tests in serial, separate from unit tests
+- Modified the fixup_css script to only run for VC19 and VC19SP1
+
 ### Version 0.71 (29 Sept 2021)
 - Updated baseline pipeline script to reflect changes in the code coverage plugin
 - Updated to skip CBT analysis on migrated system test projects
