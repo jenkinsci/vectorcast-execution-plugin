@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import tee_print
+import glob
 
 
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
@@ -14,9 +15,8 @@ def printOutput(somethingPrinted, ManageProjectName, output, teePrint):
         teePrint.teePrint ("No environments found in " + ManageProjectName + ". Please check configuration")
     
     teePrint.teePrint(output)
-
-def checkForSystemTest(compiler , testsuite , env_name, buildDirInfo):
-
+    
+def getBuildDirectory(compiler , testsuite , env_name, buildDirInfo):
     for line in buildDirInfo:
         if "Compiler:" in line:
             build_comp = line.split(":",1)[-1].strip()
@@ -29,34 +29,87 @@ def checkForSystemTest(compiler , testsuite , env_name, buildDirInfo):
         elif "Build Directory:" in line:
             build_dir = line.split(":",1)[-1].strip()
             if build_comp == compiler and build_ts == testsuite and build_env == env_name:
-                if os.path.exists(os.path.join(build_dir,env_name+".vcp")) or os.path.exists(os.path.join(build_dir,env_name+".enc")):
-                    return "ST: "
+                return build_dir
+                
+    return None
+
+
+def checkForSystemTest(build_dir, env_name):
+    
+    if (build_dir):
+        if os.path.exists(os.path.join(build_dir,env_name+".vcp")) or os.path.exists(os.path.join(build_dir,env_name+".enc")):
+            return "ST: "        
 
     return "UT: "
     
+def checkForEnvChanges(vcm_fname, build_dir, env_name):
+
+    env_coverdb = os.path.join(build_dir,env_name,"cover.db")
+        
+    if (os.path.exists(env_coverdb)):
+        #print("cover.db file exists")
+        env_coverdb_ts = os.path.getmtime(env_coverdb)
+        vcm_file_ts = os.path.getmtime(vcm_fname)
+        if (vcm_file_ts > env_coverdb_ts):
+            print ("Changes to .vcm file.  Rebuild all")
+            #print(str(env_coverdb_ts), str(vcm_file_ts))
+            return " FR"
+            
+        env_files_latest_ts = 0
+        
+        vcm_path = vcm_fname.replace("\\","/")
+        if "/" in vcm_path:
+            vcm_path = vcm_path.rsplit("/",1)[0]
+        else:
+            vcm_path = ""
+            
+        vcm_basename = os.path.basename(vcm_fname).replace(".vcm","")
+        
+        env_data_path = os.path.join(vcm_path,vcm_basename, "environment", env_name,"*.*")
+        for file in glob.glob(env_data_path):
+            if os.path.getmtime(file) > env_coverdb_ts:
+                print(file,"time greater than", env_coverdb)
+                print("force rebuild of enviornment")
+                return "FR"
+            
+        return " NA"
     
-def printEnvInfoDataAPI(api, printData = True):
-    print ("Using data api")
+    return " FR"
+    
+    
+def printEnvInfoDataAPI(api, printData = True, printEnvType = False, full_rebuild_check = False):
+    print ("Using data api!!!")
     somethingPrinted = False
     output = ""
     
     for env in api.Environment.all():
+        force_rebuild = " XX"
+        try:
+            force_rebuild = checkForEnvChanges(api.vcm_file, env.build_directory, env.name)
+        except:
+            import traceback
+            print(traceback.format_exc())
+            
         somethingPrinted = True
-
-        if env.system_tests:
-            st_ut = "ST: "
+        
+        if (printEnvType):
+            if env.system_tests:
+                output += "ST: "
+            else:
+                output += "UT: "
+                
+        if full_rebuild_check:
+            output += "%s %s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name, force_rebuild)
         else:
-            st_ut = "UT: "
-        
-        output += "%s %s %s %s\n" % (st_ut, env.compiler.name , env.testsuite.name , env.name)
-        
+            output += "%s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name)
+
     if printData:
         with tee_print.TeePrint() as teePrint:
             printOutput(somethingPrinted, api.vcm_file, output, teePrint)
 
     return output
 
-def printEnvInfoNoDataAPI(ManageProjectName, printData = True):
+def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = False, full_rebuild_check = False):
 
     somethingPrinted = False
     output = ""
@@ -83,10 +136,18 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True):
         elif re.match("^      [^\s]",str) is not None and not str.startswith("      Disabled Environment"):
                 
             env_name = str.split()[0]
+            build_dir = getBuildDirectory(compiler , testsuite , env_name, buildDirInfo)
             
-            st_ut = checkForSystemTest(compiler , testsuite , env_name, buildDirInfo)
+            force_rebuild = checkForEnvChanges(ManageProjectName, build_dir, env_name)
 
-            output += "%s %s %s %s\n" % (st_ut, compiler , testsuite , env_name)
+            if printEnvType:
+                output += checkForSystemTest(build_dir, env_name)
+
+            if full_rebuild_check:
+                output += "%s %s %s %s\n" % (compiler , testsuite , env_name, force_rebuild)
+            else:
+                output += "%s %s %s\n" % (compiler , testsuite , env_name)
+            
                             
             somethingPrinted = True;
 
@@ -96,20 +157,30 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True):
 
     return output
  
-def printEnvironmentInfo(ManageProjectName, printData = True):
+def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, full_rebuild_check = False, legacy = False):
     try:
+        if (legacy): raise KeyError
+            
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         api = VCProjectApi(ManageProjectName)
-        return printEnvInfoDataAPI(api, printData)
+        return printEnvInfoDataAPI(api, printData, printEnvType, full_rebuild_check)
     
     except:
         import parse_traceback
         import traceback
         #print (parse_traceback.parse(traceback.format_exc()))
-        return printEnvInfoNoDataAPI(ManageProjectName, printData)
+        return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType, full_rebuild_check)
         
         
 if __name__ == "__main__":
-    ManageProjectName = sys.argv[1]
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('ManageProject', help='Manager Project Name')
+    parser.add_argument('-t', '--type',   help='Displays the type of environemnt (Unit test or System test)', action="store_true", default = False)    
+    parser.add_argument('-l', '--legacy',   help='Use the legacy report parsing method - testing only)', action="store_true", default = False)    
+    parser.add_argument('-f', '--full-rebuild-check', dest="full_rebuild_check",
+        help='Checks timestamps of .vcm and env files to determine what needs to be rebuilt', action="store_true", default = False)    
     
-    printEnvironmentInfo(ManageProjectName)
+    args = parser.parse_args()
+
+    printEnvironmentInfo(args.ManageProject, True, args.type, args.full_rebuild_check, args.legacy)

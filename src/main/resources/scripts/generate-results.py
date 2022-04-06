@@ -86,7 +86,7 @@ def getEnabledEnvironments(MPname):
     for line in output.split("\n"):
         if line.strip():
 			# type being system or unit test
-            type, compiler, testsuite, environment = line.split()
+            compiler, testsuite, environment = line.split()
             enabledEnvironmentArray.append([compiler, testsuite, environment])
                        
 def environmentEnabled(comp,ts,env):
@@ -678,6 +678,7 @@ if __name__ == '__main__':
     os.environ['VCAST_RPTS_PRETTY_PRINT_HTML'] = 'FALSE'
     # Used for VC19 SP2 onwards
     os.environ['VCAST_RPTS_SELF_CONTAINED'] = 'FALSE'
-
+    # Set VCAST_MANAGE_PROJECT_DIRECTORY to match .vcm directory
+    os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(args.ManageProject).rsplit(".",1)[0]
     buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict)
 
