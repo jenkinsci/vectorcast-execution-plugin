@@ -92,6 +92,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private String jobName;
     /** Node label */
     private String nodeLabel;
+    /** PC Lint Plus Command */
+    private String pclpCommand = "";
+    /** PC Lint Plus Path */
+    private String pclpResultsPattern;
     /**
      * Get the number of wait loops to do
      * @return number of loops
@@ -345,6 +349,41 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.nodeLabel = nodeLabel;
     }
     /**
+     * Get pc-lint plus command
+     * @return pc-lint plus command
+     */
+    public String getPclpCommand() {
+        return pclpCommand;
+    }
+    /**
+     * Get pc-lint plus command
+     * @return pc-lint plus command
+     */
+    public void setPclpCommand(String pclpCommand) {
+        this.pclpCommand = pclpCommand;
+    }
+    /**
+     * Get using pc-lint plus command
+     * @return true/false if we have a 
+     */
+    public boolean getUsingPCLP() {
+        return (pclpCommand.length() != 0);
+    }
+    /**
+     * Get pc-lint plus result pattern
+     * @return pc-lint plus result pattern
+     */
+    public String getPclpResultsPattern() {
+        return pclpResultsPattern;
+    }
+    /**
+     * Get pc-lint plus result pattern
+     * @return pc-lint plus result pattern
+     */
+    public void setPclpResultsPattern(String pclpResultsPattern) {
+        this.pclpResultsPattern = pclpResultsPattern;
+    }
+    /**
      * Create setup step
      * @param environmentSetupWin environment setup for windows
      * @param environmentSetupUnix environment setup for unix
@@ -362,6 +401,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param manageProjectName manage project name
      * @param jobName job name
      * @param nodeLabel node label
+     * @param pclpCommand PC Lint Plus command
+     * @param pclpResultsPattern PC Lint Plus result patter
      */
     @DataBoundConstructor
     public VectorCASTSetup(String environmentSetupWin,
@@ -379,7 +420,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            Long waitTime,
                            String manageProjectName,
                            String jobName,
-                           String nodeLabel) {
+                           String nodeLabel,
+                           String pclpCommand,
+                           String pclpResultsPattern) {
         this.environmentSetupWin = environmentSetupWin;
         this.environmentSetupUnix = environmentSetupUnix;
         this.executePreambleWin = executePreambleWin;
@@ -398,6 +441,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.manageProjectName = manageProjectName;
         this.jobName = jobName;
         this.nodeLabel = nodeLabel;
+        this.pclpCommand = pclpCommand;
+        this.pclpResultsPattern = pclpResultsPattern;
     }
     /**
      * Copy the files in a directory recursively to the job workspace.
@@ -573,7 +618,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t waitTime: " + waitTime +  "\n"
     			+ "\t manageProjectName: " + manageProjectName +  "\n"
     			+ "\t jobName: " + jobName +  "\n"
-    			+ "\t nodeLabel: " + nodeLabel +  "\n";
+    			+ "\t nodeLabel: " + nodeLabel +  "\n"
+    			+ "\t pclpCommand: " + pclpCommand +  "\n"
+    			+ "\t pclpResultsPattern: " + pclpResultsPattern +  "\n";
     	return string;
     }
 }

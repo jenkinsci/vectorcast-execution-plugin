@@ -96,6 +96,15 @@ public class NewPipelineJob extends BaseJob {
     private String executePreamble;
     /** Environment tear down*/
     private String environmentTeardown;
+
+    /** PC Lint Plus Command */
+    private String pclpCommand;
+    /** PC Lint Plus Path */
+    private String pclpResultsPattern;
+
+
+
+
 	/**
 	 * Constructor
 	 * 
@@ -129,7 +138,10 @@ public class NewPipelineJob extends BaseJob {
         environmentSetup = json.optString("environmentSetup", null);
         executePreamble = json.optString("executePreamble", null);
         environmentTeardown = json.optString("environmentTeardown", null);
-        
+         
+        pclpCommand = json.optString("pclpCommand", "");
+        pclpResultsPattern = json.optString("pclpResultsPattern", "");
+       
         if (sharedArtifactDirectory.length() != 0) {
             sharedArtifactDirectory = "--workspace="+sharedArtifactDirectory.replace("\\","/");
         }
@@ -411,6 +423,9 @@ public class NewPipelineJob extends BaseJob {
             "VC_UseCILicense = " + VC_Use_CI + "\n" +  
             "VC_useCBT = " + incremental + "\n" +  
             "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
+            "VC_usePCLintPlus = " + String.valueOf(pclpCommand.length() != 0) + "\n" +  
+            "VC_pclpCommand = '" + pclpCommand + "'\n" +  
+            "VC_pclpResultsPattern = '" + pclpResultsPattern + "'\n" +  
             "\n" +   
             "";
             

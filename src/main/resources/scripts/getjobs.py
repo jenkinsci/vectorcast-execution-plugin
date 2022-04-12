@@ -77,19 +77,12 @@ def checkForEnvChanges(vcm_fname, build_dir, env_name):
     return " FR"
     
     
-def printEnvInfoDataAPI(api, printData = True, printEnvType = False, full_rebuild_check = False):
+def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
     print ("Using data api!!!")
     somethingPrinted = False
     output = ""
     
     for env in api.Environment.all():
-        force_rebuild = " XX"
-        try:
-            force_rebuild = checkForEnvChanges(api.vcm_file, env.build_directory, env.name)
-        except:
-            import traceback
-            print(traceback.format_exc())
-            
         somethingPrinted = True
         
         if (printEnvType):
@@ -98,10 +91,7 @@ def printEnvInfoDataAPI(api, printData = True, printEnvType = False, full_rebuil
             else:
                 output += "UT: "
                 
-        if full_rebuild_check:
-            output += "%s %s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name, force_rebuild)
-        else:
-            output += "%s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name)
+        output += "%s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name)
 
     if printData:
         with tee_print.TeePrint() as teePrint:
@@ -109,7 +99,7 @@ def printEnvInfoDataAPI(api, printData = True, printEnvType = False, full_rebuil
 
     return output
 
-def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = False, full_rebuild_check = False):
+def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = False):
 
     somethingPrinted = False
     output = ""
@@ -143,11 +133,7 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
             if printEnvType:
                 output += checkForSystemTest(build_dir, env_name)
 
-            if full_rebuild_check:
-                output += "%s %s %s %s\n" % (compiler , testsuite , env_name, force_rebuild)
-            else:
-                output += "%s %s %s\n" % (compiler , testsuite , env_name)
-            
+            output += "%s %s %s\n" % (compiler , testsuite , env_name)            
                             
             somethingPrinted = True;
 
@@ -157,19 +143,19 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
 
     return output
  
-def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, full_rebuild_check = False, legacy = False):
+def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, legacy = False):
     try:
         if (legacy): raise KeyError
             
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         api = VCProjectApi(ManageProjectName)
-        return printEnvInfoDataAPI(api, printData, printEnvType, full_rebuild_check)
+        return printEnvInfoDataAPI(api, printData, printEnvType)
     
     except:
         import parse_traceback
         import traceback
         #print (parse_traceback.parse(traceback.format_exc()))
-        return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType, full_rebuild_check)
+        return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvTyp)
         
         
 if __name__ == "__main__":
@@ -178,9 +164,7 @@ if __name__ == "__main__":
     parser.add_argument('ManageProject', help='Manager Project Name')
     parser.add_argument('-t', '--type',   help='Displays the type of environemnt (Unit test or System test)', action="store_true", default = False)    
     parser.add_argument('-l', '--legacy',   help='Use the legacy report parsing method - testing only)', action="store_true", default = False)    
-    parser.add_argument('-f', '--full-rebuild-check', dest="full_rebuild_check",
-        help='Checks timestamps of .vcm and env files to determine what needs to be rebuilt', action="store_true", default = False)    
     
     args = parser.parse_args()
 
-    printEnvironmentInfo(args.ManageProject, True, args.type, args.full_rebuild_check, args.legacy)
+    printEnvironmentInfo(args.ManageProject, True, args.type, args.legacy)

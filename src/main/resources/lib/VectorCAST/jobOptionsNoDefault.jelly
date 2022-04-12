@@ -39,7 +39,6 @@
                  help="/plugin/vectorcast-execution/help-jobOptJobName.html">
           <f:textbox name="jobName" size="50" value="${instance.jobName}"/>
         </f:entry>
-        <vc:jobOptionsLabelNoDefault></vc:jobOptionsLabelNoDefault>
       </f:optionalBlock>
     </f:section>
 </j:jelly>

@@ -6,8 +6,6 @@ VC_Healthy_Target = [ maxStatement: 100, maxBranch: 100, maxFunctionCall: 100, m
 
 VC_Use_Threshold = true
 
-VC_Use_FullRebuildCheck = true
-
 // ===============================================================
 // 
 // Generic file from VectorCAST Pipeline Plug-in DO NOT ALTER
@@ -187,7 +185,7 @@ def fixUpName(name) {
 def transformIntoStep(inputString) {
     
     // grab the compiler test_suite and environment out the single line
-    def (compiler, test_suite, environment, full_rebuild) = inputString.split()
+    def (compiler, test_suite, environment) = inputString.split()
     
     // set the stashed file name for later
     String stashName = fixUpName("${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage")
@@ -230,18 +228,11 @@ def transformIntoStep(inputString) {
                     // set options for each manage project pulled out out of SCM
                     setupManageProject()
                 }
-                
-                if (VC_Use_FullRebuildCheck && full_rebuild) {
-                    tmp_use_cbt = ""
-                } else {
-                    tmp_use_cbt = "${VC_useCBT}"
-                }
-                
-                
+                                
                 // setup the commands for building, executing, and transferring information
                 cmds =  """
                     ${VC_EnvSetup}
-                    ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${tmp_use_cbt} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+                    ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
                     ${VC_EnvTeardown}
                 """.stripIndent()
                 
@@ -379,6 +370,17 @@ pipeline {
             }
         }
         
+        stage('Additional Tools') {
+            steps {
+                script {
+                    if (VC_usePCLintPlus) {
+                        runCommands(VC_pclpCommand)
+                        recordIssues(tools: [pcLint(pattern: VC_pclpResultsPattern, reportEncoding: 'UTF-8')])
+                    }
+                }
+            }
+        }
+        
         // This stage gets the information on the manage project from the full-status report
         // Parsing the output determines the level and environment name
         stage('Get-Environment-Info') {
@@ -399,7 +401,8 @@ pipeline {
                     def EnvData = ""
                     
                     // Run a script to determine the compiler test_suite and environment
-                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project} --type --full-rebuild-check""")
+                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project} --type""")
+                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project} --type""")
                                         
                     // for a groovy list that is stored in a global variable EnvList to be use later in multiple places
                     def lines = EnvData.split('\n')
@@ -408,19 +411,19 @@ pipeline {
                         def trimmedString = line.trim()
                         boolean containsData = trimmedString?.trim()
                         if (containsData) {
-                            (type, compiler, test_suite, environment, full_rebuild) = trimmedString.split()
+                            (type, compiler, test_suite, environment) = trimmedString.split()
                             if (type == "ST:") {
-                                trimmedString = compiler + " " + test_suite + " " + environment + " " + full_rebuild
+                                trimmedString = compiler + " " + test_suite + " " + environment
                                 // print("ST:" + trimmedString)
                                 StEnvList = StEnvList + [trimmedString]
                             }
                             else if (type == "UT:") {
-                                trimmedString = compiler + " " + test_suite + " " + environment + " " + full_rebuild
+                                trimmedString = compiler + " " + test_suite + " " + environment
                                 // print("UT:" + trimmedString)
                                 UtEnvList = UtEnvList + [trimmedString]
                             }
                             else {
-                                trimmedString = compiler + " " + test_suite + " " + environment + " " + full_rebuild
+                                trimmedString = compiler + " " + test_suite + " " + environment
                                 print("??:" + trimmedString)
                                 continue
                             }
@@ -475,7 +478,7 @@ pipeline {
                         
                         // unstash each of the files
                         EnvList.each {
-                            (compiler, test_suite, environment, full_rebuild) = it.split()
+                            (compiler, test_suite, environment) = it.split()
                             String stashName = fixUpName("${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage")
                             
                             try {

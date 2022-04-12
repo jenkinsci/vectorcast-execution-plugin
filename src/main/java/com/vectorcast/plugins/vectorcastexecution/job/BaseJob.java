@@ -42,6 +42,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.tasks.junit.JUnitResultArchiver;
+//import io.jenkins.plugins.analysis.warnings;
+
 /**
  * Base job management - create/delete/update
  */
@@ -94,6 +96,12 @@ abstract public class BaseJob {
     private String jobName;
     /** Node label */
     private String nodeLabel;
+    
+    /** PC Lint Plus Command */
+    private String pclpCommand;
+    /** PC Lint Plus Path */
+    private String pclpResultsPattern;
+    
     /**
      * Constructor
      * @param request request object
@@ -148,6 +156,9 @@ abstract public class BaseJob {
             }
             
             nodeLabel = json.optString("nodeLabel", "");
+            
+            pclpCommand = json.optString("pclpCommand", "");
+            pclpResultsPattern = json.optString("pclpResultsPattern", "**/*lint_results.txt");
         }
     }
     /**
@@ -176,6 +187,8 @@ abstract public class BaseJob {
         waitLoops = savedData.getWaitLoops();
         jobName = savedData.getJobName();
         nodeLabel = savedData.getNodeLabel();
+        pclpCommand = savedData.getPclpCommand();
+        pclpResultsPattern = savedData.getPclpResultsPattern();
     }
     /**
      * Using some form of SCM
@@ -395,6 +408,20 @@ abstract public class BaseJob {
         return nodeLabel;
     }
     /**
+     * Get pc-lint plus command
+     * @return pc-lint plus command
+     */
+    protected String getPclpCommand() {
+        return pclpCommand;
+    }
+    /**
+     * Get pc-lint plus result pattern
+     * @return pc-lint plus result pattern
+     */
+    protected String getPclpResultsPattern() {
+        return pclpResultsPattern;
+    }
+    /**
      * Get request
      * @return request
      */
@@ -507,7 +534,10 @@ abstract public class BaseJob {
                                     waitTime,
                                     manageProjectName,
                                     jobName,
-                                    nodeLabel);
+                                    nodeLabel,
+                                    pclpCommand,
+                                    pclpResultsPattern);
+                                    
         setup.setUsingSCM(usingSCM);
         setup.setSCM(scm);
 
@@ -534,6 +564,18 @@ abstract public class BaseJob {
     protected void addJunit(Project project) {
         JUnitResultArchiver junit = new JUnitResultArchiver("**/test_results_*.xml");
         project.getPublishersList().add(junit);
+    }
+    /**
+     * Add JUnit rules step
+     * @param project project to add step to
+     */
+
+    protected void addPCLintPlus(Project project) {
+/*        PcLint pcLintPlus = new PcLint();
+        pcLintPlus.setPattern(pclpResultsPattern);
+        pcLintPlus.setEncoding("UTF-8");
+        pcLintPlus.setSkipSymbolicLinks(false);
+        project.getPublishersList().add(pcLintPlus);*/
     }
     /**
      * Add VectorCAST coverage reporting step

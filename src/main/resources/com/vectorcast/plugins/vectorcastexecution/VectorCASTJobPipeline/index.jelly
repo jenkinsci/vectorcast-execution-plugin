@@ -41,8 +41,11 @@
         <f:section title="${%VCJob.Control.Project}">
           <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}"
                    help="/plugin/vectorcast-execution/help-projectPath.html">
-            <f:textbox name="manageProjectName" size="50" required="true" />
+            <f:textbox name="manageProjectName" size="50" required="true" />  
           </f:entry>
+
+          <vc:jobOptionsLabelMaster></vc:jobOptionsLabelMaster>
+          
             <f:entry title="${%VCJob.Options.useCBT.title}" description="${%VCJob.Options.useCBT.description}"
                     help="/plugin/vectorcast-execution/help-optuseCBT.html">
                 <f:checkbox name="useCBT" checked="${instance.useCBT}" default="true"/>
@@ -57,6 +60,7 @@
         <vc:retry></vc:retry>
         <vc:jobOptionsPipeline></vc:jobOptionsPipeline>
         <vc:pipelineScripts></vc:pipelineScripts>
+        <vc:additionalTools></vc:additionalTools>
 
         <f:section title="${%VCJob.Control.SCMCheckoutLine}">
           <f:entry title="${%VCJob.Options.singleCheckout.title}" description="${%VCJob.Options.singleCheckout.description}"

@@ -45,7 +45,6 @@
           <f:textbox name="jobName" size="50" value="${instance.jobName}"/>
         </f:entry>
         
-        <vc:jobOptionsLabelMaster></vc:jobOptionsLabelMaster>
       </f:optionalBlock>
     </f:section>
 </j:jelly>
