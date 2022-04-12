@@ -55,7 +55,7 @@
         <connection>scm:git:https://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
         <developerConnection>scm:git:https://github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
-        <tag>vectorcast-execution-0.72</tag>
+        <tag>vectorcast-execution-0.71</tag>
     </scm>
 
     <repositories>
