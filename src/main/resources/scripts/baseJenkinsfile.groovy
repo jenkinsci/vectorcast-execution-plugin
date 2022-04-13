@@ -402,7 +402,6 @@ pipeline {
                     
                     // Run a script to determine the compiler test_suite and environment
                     EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project} --type""")
-                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project} --type""")
                                         
                     // for a groovy list that is stored in a global variable EnvList to be use later in multiple places
                     def lines = EnvData.split('\n')
