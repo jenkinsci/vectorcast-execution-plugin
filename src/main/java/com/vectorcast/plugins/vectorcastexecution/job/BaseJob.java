@@ -42,7 +42,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.tasks.junit.JUnitResultArchiver;
-//import io.jenkins.plugins.analysis.warnings;
+import io.jenkins.plugins.analysis.warnings.PcLint;
+import io.jenkins.plugins.analysis.core.steps.IssuesRecorder;
 
 /**
  * Base job management - create/delete/update
@@ -571,11 +572,18 @@ abstract public class BaseJob {
      */
 
     protected void addPCLintPlus(Project project) {
-/*        PcLint pcLintPlus = new PcLint();
-        pcLintPlus.setPattern(pclpResultsPattern);
-        pcLintPlus.setEncoding("UTF-8");
-        pcLintPlus.setSkipSymbolicLinks(false);
-        project.getPublishersList().add(pcLintPlus);*/
+        if (pclpCommand.length() != 0) {
+            IssuesRecorder recorder = new IssuesRecorder();
+
+            PcLint pcLintPlus = new PcLint();
+            pcLintPlus.setPattern(pclpResultsPattern);
+            pcLintPlus.setReportEncoding("UTF-8");
+            pcLintPlus.setSkipSymbolicLinks(false);
+            
+            recorder.setTools(pcLintPlus);
+
+            project.getPublishersList().add(recorder);
+        }
     }
     /**
      * Add VectorCAST coverage reporting step

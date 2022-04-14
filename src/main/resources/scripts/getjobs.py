@@ -128,7 +128,7 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
             env_name = str.split()[0]
             build_dir = getBuildDirectory(compiler , testsuite , env_name, buildDirInfo)
             
-            force_rebuild = checkForEnvChanges(ManageProjectName, build_dir, env_name)
+            #force_rebuild = checkForEnvChanges(ManageProjectName, build_dir, env_name)
 
             if printEnvType:
                 output += checkForSystemTest(build_dir, env_name)
@@ -144,16 +144,18 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
     return output
  
 def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, legacy = False):
-    try:
-        if (legacy): raise KeyError
+    # try:
+        # if (legacy): raise KeyError
             
-        from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        api = VCProjectApi(ManageProjectName)
-        return printEnvInfoDataAPI(api, printData, printEnvType)
+        # from vector.apps.DataAPI.vcproject_api import VCProjectApi
+        # api = VCProjectApi(ManageProjectName)
+        # return printEnvInfoDataAPI(api, printData, printEnvType)
     
-    except:
-        import parse_traceback
-        import traceback
+    # except:
+    
+    if True:
+        #import parse_traceback
+        #import traceback
         #print (parse_traceback.parse(traceback.format_exc()))
         return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType)
         

@@ -330,6 +330,7 @@ if (getOptionUseReporting()) {
         // Post-build actions - only is using reporting
         if (getOptionUseReporting()) {
             addArchiveArtifacts(getTopProject());
+            addPCLintPlus(getTopProject());
             addJunit(getTopProject());
             addVCCoverage(getTopProject());
             addGroovyScriptSingleJob();
