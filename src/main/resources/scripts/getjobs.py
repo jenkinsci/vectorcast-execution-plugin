@@ -155,7 +155,7 @@ def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = Fal
         import parse_traceback
         import traceback
         #print (parse_traceback.parse(traceback.format_exc()))
-        return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvTyp)
+        return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType)
         
         
 if __name__ == "__main__":
