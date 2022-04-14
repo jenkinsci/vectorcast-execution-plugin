@@ -80,11 +80,15 @@ public class NewSingleJob extends BaseJob {
             html_text = ".txt";
             report_format = "TEXT";
         }
-        
+        String pclpCommandString = "";
+        if (getPclpCommand().length() != 0) {
+                pclpCommandString = "\nREM PC Lint Plus Command\n" + getPclpCommand() + "\n";
+        }            
         String pluginVersion = VcastUtils.getVersion().orElse( "Unknown" );    
         String win = 
-getEnvironmentSetupWin() + "\n" +
 "rem Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
+getEnvironmentSetupWin() + "\n" +
+pclpCommandString + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "set VCAST_NO_FILE_TRUNCATION=1\n" +
 "set VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
@@ -115,8 +119,9 @@ getExecutePreambleWin() +
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
 
         String unix = 
-getEnvironmentSetupUnix() + "\n" +
 "##Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
+getEnvironmentSetupUnix() + "\n" +
+pclpCommandString + "\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "export VCAST_NO_FILE_TRUNCATION=1\n" +
 "export VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
