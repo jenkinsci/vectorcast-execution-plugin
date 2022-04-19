@@ -99,9 +99,13 @@ public class NewPipelineJob extends BaseJob {
 
     /** PC Lint Plus Command */
     private String pclpCommand;
+    
     /** PC Lint Plus Path */
     private String pclpResultsPattern;
 
+    /* Squore execution command */
+    private String squoreCommand;
+    
 
 
 
@@ -141,6 +145,7 @@ public class NewPipelineJob extends BaseJob {
          
         pclpCommand = json.optString("pclpCommand", "");
         pclpResultsPattern = json.optString("pclpResultsPattern", "");
+        squoreCommand = json.optString("squoreCommand", "");
        
         if (sharedArtifactDirectory.length() != 0) {
             sharedArtifactDirectory = "--workspace="+sharedArtifactDirectory.replace("\\","/");
@@ -426,6 +431,8 @@ public class NewPipelineJob extends BaseJob {
             "VC_usePCLintPlus = " + String.valueOf(pclpCommand.length() != 0) + "\n" +  
             "VC_pclpCommand = '" + pclpCommand + "'\n" +  
             "VC_pclpResultsPattern = '" + pclpResultsPattern + "'\n" +  
+            "VC_useSquore = " + String.valueOf(squoreCommand.length() != 0) + "\n" +  
+            "VC_squoreCommand = '" + squoreCommand + "'\n" +  
             "\n" +   
             "";
             

@@ -96,6 +96,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private String pclpCommand = "";
     /** PC Lint Plus Path */
     private String pclpResultsPattern;
+    /** PC Lint Plus Path */
+    private String squoreCommand;
     /**
      * Get the number of wait loops to do
      * @return number of loops
@@ -364,7 +366,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }
     /**
      * Get using pc-lint plus command
-     * @return true/false if we have a 
+     * @return true/false if we have a PC Lint Command
      */
     public boolean getUsingPCLP() {
         return (pclpCommand.length() != 0);
@@ -383,6 +385,32 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     public void setPclpResultsPattern(String pclpResultsPattern) {
         this.pclpResultsPattern = pclpResultsPattern;
     }
+    
+    /**
+     * Get using getUsingPCLP command
+     * @return true/false if we have a squoreCommand
+     */
+    public boolean getUsingSquoreCommand() {
+        return (squoreCommand.length() != 0);
+    }
+
+    /**
+     * Get Squore command
+     * @return Squore command
+     */
+    public String getSquoreCommand() {
+        return squoreCommand;
+    }
+
+    /**
+     * Set Squore command
+     * @return Squore command
+     */
+    public void setSquoreCommand(String squoreCommand) {
+        this.squoreCommand = squoreCommand;
+    }
+
+
     /**
      * Create setup step
      * @param environmentSetupWin environment setup for windows
@@ -422,7 +450,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            String jobName,
                            String nodeLabel,
                            String pclpCommand,
-                           String pclpResultsPattern) {
+                           String pclpResultsPattern,
+                           String squoreCommand) {
         this.environmentSetupWin = environmentSetupWin;
         this.environmentSetupUnix = environmentSetupUnix;
         this.executePreambleWin = executePreambleWin;

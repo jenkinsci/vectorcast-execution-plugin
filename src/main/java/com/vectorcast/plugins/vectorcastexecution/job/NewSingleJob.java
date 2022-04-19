@@ -81,14 +81,18 @@ public class NewSingleJob extends BaseJob {
             report_format = "TEXT";
         }
         String pclpCommandString = "";
+        String squoreCommandString = "";
         if (getPclpCommand().length() != 0) {
-                pclpCommandString = "\nREM PC Lint Plus Command\n" + getPclpCommand() + "\n";
+                pclpCommandString = getPclpCommand() + "\n";
+        }            
+        if (getSquoreCommand().length() != 0) {
+                squoreCommandString = "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate_squore_results.py \\\"@PROJECT@\\\"";
+                squoreCommandString += "\n" + getSquoreCommand() + "\n";
         }            
         String pluginVersion = VcastUtils.getVersion().orElse( "Unknown" );    
         String win = 
 "rem Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 getEnvironmentSetupWin() + "\n" +
-pclpCommandString + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "set VCAST_NO_FILE_TRUNCATION=1\n" +
 "set VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
@@ -100,7 +104,8 @@ getExecutePreambleWin() +
 " %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --build-execute --incremental --output \\\"@PROJECT_BASE@_rebuild" + html_text + "\\\" \"\n" +
 "copy command.log complete_build.log\n"+
 "copy \"@PROJECT_BASE@_rebuild" + html_text + "\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n"+
-"\n";
+"\n" +
+pclpCommandString + squoreCommandString;
         if (getOptionUseReporting()) {
             win +=
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
@@ -121,7 +126,6 @@ getExecutePreambleWin() +
         String unix = 
 "##Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 getEnvironmentSetupUnix() + "\n" +
-pclpCommandString + "\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "export VCAST_NO_FILE_TRUNCATION=1\n" +
 "export VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
@@ -133,7 +137,8 @@ getExecutePreambleUnix() +
 " $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --build-execute --incremental  --output \\\"@PROJECT_BASE@_rebuild" + html_text + "\\\" \"\n" +
 "cp -p command.log complete_build.log\n"+
 "cp -p \"@PROJECT_BASE@_rebuild" + html_text + "\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n"+
-"\n";
+pclpCommandString + squoreCommandString + "\n";
+
 if (getOptionUseReporting()) {
             unix +=
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +

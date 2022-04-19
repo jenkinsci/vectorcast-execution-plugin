@@ -102,6 +102,8 @@ abstract public class BaseJob {
     private String pclpCommand;
     /** PC Lint Plus Path */
     private String pclpResultsPattern;
+    /* Squore execution command */
+    private String squoreCommand;
     
     /**
      * Constructor
@@ -158,8 +160,10 @@ abstract public class BaseJob {
             
             nodeLabel = json.optString("nodeLabel", "");
             
+            /* Additional Tools */
             pclpCommand = json.optString("pclpCommand", "");
             pclpResultsPattern = json.optString("pclpResultsPattern", "**/*lint_results.txt");
+            squoreCommand = json.optString("squoreCommand", "");
         }
     }
     /**
@@ -190,6 +194,7 @@ abstract public class BaseJob {
         nodeLabel = savedData.getNodeLabel();
         pclpCommand = savedData.getPclpCommand();
         pclpResultsPattern = savedData.getPclpResultsPattern();
+        squoreCommand = savedData.getSquoreCommand();
     }
     /**
      * Using some form of SCM
@@ -422,6 +427,15 @@ abstract public class BaseJob {
     protected String getPclpResultsPattern() {
         return pclpResultsPattern;
     }
+    
+    /**
+     * Get command for running Squore
+     * @return Squore command
+     */
+    protected String getSquoreCommand() {
+        return squoreCommand;
+    }    
+    
     /**
      * Get request
      * @return request
@@ -537,7 +551,8 @@ abstract public class BaseJob {
                                     jobName,
                                     nodeLabel,
                                     pclpCommand,
-                                    pclpResultsPattern);
+                                    pclpResultsPattern,
+                                    squoreCommand);
                                     
         setup.setUsingSCM(usingSCM);
         setup.setSCM(scm);

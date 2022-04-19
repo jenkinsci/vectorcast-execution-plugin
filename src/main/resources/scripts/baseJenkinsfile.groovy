@@ -370,17 +370,6 @@ pipeline {
             }
         }
         
-        stage('Additional Tools') {
-            steps {
-                script {
-                    if (VC_usePCLintPlus) {
-                        runCommands(VC_pclpCommand)
-                        recordIssues(tools: [pcLint(pattern: VC_pclpResultsPattern, reportEncoding: 'UTF-8')])
-                    }
-                }
-            }
-        }
-        
         // This stage gets the information on the manage project from the full-status report
         // Parsing the output determines the level and environment name
         stage('Get-Environment-Info') {
@@ -642,6 +631,21 @@ pipeline {
                 }
             }
         }
+        
+        stage('Additional Tools') {
+            steps {
+                script {
+                    if (VC_usePCLintPlus) {
+                        runCommands(VC_pclpCommand)
+                        recordIssues(tools: [pcLint(pattern: VC_pclpResultsPattern, reportEncoding: 'UTF-8')])
+                    }
+                    if (VC_useSquore) {
+                        runCommands(VC_squoreCommand)
+                    }
+                }
+            }
+        }
+        
         stage('Next-Stage') {
             steps {
                 script {
