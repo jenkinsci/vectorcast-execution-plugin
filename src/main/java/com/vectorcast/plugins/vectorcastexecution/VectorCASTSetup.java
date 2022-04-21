@@ -98,6 +98,13 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private String pclpResultsPattern;
     /** PC Lint Plus Path */
     private String squoreCommand;
+    
+    /** TESTinsights Push information **/
+    private String TESTinsights_URL;
+    private String TESTinsights_project;
+    private String TESTinsights_credentials_id;
+    private String TESTinsights_proxy;
+
     /**
      * Get the number of wait loops to do
      * @return number of loops
@@ -410,7 +417,58 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.squoreCommand = squoreCommand;
     }
 
-
+    /**
+     * Get URL for TESTinsights
+     * @return TESTinsights URL
+     */
+    public String getTESTinsights_URL() {
+        return TESTinsights_URL;
+    }    
+    /**
+     * Set URL for TESTinsights
+     * @return none     */
+    public void setTESTinsights_URL(String TESTinsights_URL) {
+        this.TESTinsights_URL = TESTinsights_URL;
+    }    
+    /**
+     * Get Project for TESTinsights
+     * @return TESTinsights Project
+     */
+    public String getTESTinsights_project() {
+        return TESTinsights_project;
+    }    
+    /**
+     * Set Project for TESTinsights
+     * @return none     */
+    public void setTESTinsights_project(String TESTinsights_project) {
+        this.TESTinsights_project = TESTinsights_project;
+    }    
+    /**
+     * Get Proxy for TESTinsights
+     * @return TESTinsights proxy
+     */
+    public String getTESTinsights_proxy() {
+        return TESTinsights_proxy;
+    }    
+    /**
+     * Set Project for TESTinsights
+     * @return none     */
+    public void setTESTinsights_proxy(String TESTinsights_proxy) {
+        this.TESTinsights_proxy = TESTinsights_proxy;
+    }    
+    /**
+     * Get Credentials ID for TESTinsights
+     * @return TESTinsights Credentials
+     */
+    public String getTESTinsights_credentials_id() {
+        return TESTinsights_credentials_id;
+    }        
+    /**
+     * Set Credentials ID for TESTinsights
+     * @return none     */
+    public void setTESTinsights_credentials_id(String TESTinsights_credentials_id) {
+        this.TESTinsights_credentials_id = TESTinsights_credentials_id;
+    }    
     /**
      * Create setup step
      * @param environmentSetupWin environment setup for windows
@@ -451,7 +509,11 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            String nodeLabel,
                            String pclpCommand,
                            String pclpResultsPattern,
-                           String squoreCommand) {
+                           String squoreCommand,
+                           String TESTinsights_URL,
+                           String TESTinsights_project,
+                           String TESTinsights_credentials_id,
+                           String TESTinsights_proxy) {
         this.environmentSetupWin = environmentSetupWin;
         this.environmentSetupUnix = environmentSetupUnix;
         this.executePreambleWin = executePreambleWin;
@@ -472,6 +534,11 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.nodeLabel = nodeLabel;
         this.pclpCommand = pclpCommand;
         this.pclpResultsPattern = pclpResultsPattern;
+        this.squoreCommand = squoreCommand;
+        this.TESTinsights_URL = TESTinsights_URL;
+        this.TESTinsights_project = TESTinsights_project;
+        this.TESTinsights_credentials_id = TESTinsights_credentials_id;
+        this.TESTinsights_proxy = TESTinsights_proxy;
     }
     /**
      * Copy the files in a directory recursively to the job workspace.
@@ -649,7 +716,12 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t jobName: " + jobName +  "\n"
     			+ "\t nodeLabel: " + nodeLabel +  "\n"
     			+ "\t pclpCommand: " + pclpCommand +  "\n"
-    			+ "\t pclpResultsPattern: " + pclpResultsPattern +  "\n";
+    			+ "\t pclpResultsPattern: " + pclpResultsPattern +  "\n"
+    			+ "\t pclpResultsPattern: " + squoreCommand +  "\n"
+    			+ "\t pclpResultsPattern: " + TESTinsights_URL +  "\n"
+    			+ "\t pclpResultsPattern: " + TESTinsights_project +  "\n"
+    			+ "\t pclpResultsPattern: " + TESTinsights_credentials_id +  "\n"
+    			+ "\t pclpResultsPattern: " + TESTinsights_proxy +  "\n";
     	return string;
     }
 }

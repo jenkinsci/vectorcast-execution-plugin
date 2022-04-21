@@ -289,8 +289,12 @@ def generateUTReport(path, env, level):
     def _dummy(*args, **kwargs):
         return True
 
-    api=UnitTestApi(path)
     report_name = "management/" + level + "_" + env + ".html"
+
+    if timing:
+        print("Start report " + report_name + " time: " + str(time.time()))
+
+    api=UnitTestApi(path)
     try:
         api.commit = _dummy
         api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
@@ -300,6 +304,9 @@ def generateUTReport(path, env, level):
         build_dir = build_dir.rsplit("/",1)[0]
 
         parse_traceback.parse(traceback.format_exc(), print_exc, level.split("_")[0] , level.split("_")[2], env, build_dir)
+        
+    if timing:
+        print("End report " + report_name + " time: " + str(time.time()))
         
 def generateIndividualReports(entry, envName):
     global verbose

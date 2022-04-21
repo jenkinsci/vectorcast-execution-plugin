@@ -98,13 +98,19 @@ public class NewPipelineJob extends BaseJob {
     private String environmentTeardown;
 
     /** PC Lint Plus Command */
-    private String pclpCommand;
+    // private String pclpCommand;
     
     /** PC Lint Plus Path */
-    private String pclpResultsPattern;
+    // private String pclpResultsPattern;
 
     /* Squore execution command */
-    private String squoreCommand;
+    // private String squoreCommand;
+    
+    /* TESTinsights Push information */
+    // private String TESTinsights_URL;
+    // private String TESTinsights_project;
+    // private String TESTinsights_credentials_id;
+    // private String TESTinsights_proxy;
     
 
 
@@ -143,10 +149,6 @@ public class NewPipelineJob extends BaseJob {
         executePreamble = json.optString("executePreamble", null);
         environmentTeardown = json.optString("environmentTeardown", null);
          
-        pclpCommand = json.optString("pclpCommand", "");
-        pclpResultsPattern = json.optString("pclpResultsPattern", "");
-        squoreCommand = json.optString("squoreCommand", "");
-       
         if (sharedArtifactDirectory.length() != 0) {
             sharedArtifactDirectory = "--workspace="+sharedArtifactDirectory.replace("\\","/");
         }
@@ -428,11 +430,16 @@ public class NewPipelineJob extends BaseJob {
             "VC_UseCILicense = " + VC_Use_CI + "\n" +  
             "VC_useCBT = " + incremental + "\n" +  
             "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
-            "VC_usePCLintPlus = " + String.valueOf(pclpCommand.length() != 0) + "\n" +  
-            "VC_pclpCommand = '" + pclpCommand + "'\n" +  
-            "VC_pclpResultsPattern = '" + pclpResultsPattern + "'\n" +  
-            "VC_useSquore = " + String.valueOf(squoreCommand.length() != 0) + "\n" +  
-            "VC_squoreCommand = '" + squoreCommand + "'\n" +  
+            "VC_usePCLintPlus = " + String.valueOf(getPclpCommand().length() != 0) + "\n" +  
+            "VC_pclpCommand = '" + getPclpCommand() + "'\n" +  
+            "VC_pclpResultsPattern = '" + getPclpResultsPattern() + "'\n" +  
+            "VC_useSquore = " + String.valueOf(getSquoreCommand().length() != 0) + "\n" +  
+            "VC_squoreCommand = '" + getSquoreCommand() + "'\n" +  
+            "VC_useTESTinsights = " + String.valueOf(getTESTinsights_URL().length() != 0) + "\n" +  
+            "VC_TESTinsights_URL = '" + getTESTinsights_URL() + "'\n" +  
+            "VC_TESTinsights_Project = '" + getTESTinsights_project() + "'\n" +  
+            "VC_TESTinsights_Proxy = '" + getTESTinsights_proxy() + "'\n" +  
+            "VC_TESTinsights_Credential_ID = '" + getTESTinsights_credentials_id() + "'\n" +  
             "\n" +   
             "";
             

@@ -44,6 +44,11 @@ import org.kohsuke.stapler.StaplerResponse;
 import hudson.tasks.junit.JUnitResultArchiver;
 import io.jenkins.plugins.analysis.warnings.PcLint;
 import io.jenkins.plugins.analysis.core.steps.IssuesRecorder;
+import org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper;
+import org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding;
+import org.jenkinsci.plugins.credentialsbinding.MultiBinding;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * Base job management - create/delete/update
@@ -104,7 +109,13 @@ abstract public class BaseJob {
     private String pclpResultsPattern;
     /* Squore execution command */
     private String squoreCommand;
-    
+
+    /* TESTinsights Push information */
+    private String TESTinsights_URL;
+    private String TESTinsights_project;
+    private String TESTinsights_credentials_id;
+    private String TESTinsights_proxy;
+
     /**
      * Constructor
      * @param request request object
@@ -164,7 +175,11 @@ abstract public class BaseJob {
             pclpCommand = json.optString("pclpCommand", "");
             pclpResultsPattern = json.optString("pclpResultsPattern", "**/*lint_results.txt");
             squoreCommand = json.optString("squoreCommand", "");
-        }
+            TESTinsights_URL = json.optString("TESTinsights_URL", "");
+            TESTinsights_project = json.optString("TESTinsights_project", "${JOB_BASE_NAME}");
+            TESTinsights_credentials_id = json.optString("TESTinsights_credentials_id", "");
+            TESTinsights_proxy = json.optString("TESTinsights_proxy", "");
+       }
     }
     /**
      * Use Saved Data
@@ -195,6 +210,10 @@ abstract public class BaseJob {
         pclpCommand = savedData.getPclpCommand();
         pclpResultsPattern = savedData.getPclpResultsPattern();
         squoreCommand = savedData.getSquoreCommand();
+        TESTinsights_URL = savedData.getTESTinsights_URL();
+        TESTinsights_project = savedData.getTESTinsights_project();
+        TESTinsights_proxy = savedData.getTESTinsights_proxy();
+        TESTinsights_credentials_id = savedData.getTESTinsights_credentials_id();
     }
     /**
      * Using some form of SCM
@@ -435,7 +454,34 @@ abstract public class BaseJob {
     protected String getSquoreCommand() {
         return squoreCommand;
     }    
-    
+    /**
+     * Get URL for TESTinsights
+     * @return TESTinsights URL
+     */
+    protected String getTESTinsights_URL() {
+        return TESTinsights_URL;
+    }    
+    /**
+     * Get Project for TESTinsights
+     * @return TESTinsights Project
+     */
+    protected String getTESTinsights_project() {
+        return TESTinsights_project;
+    }    
+    /**
+     * Get Proxy for TESTinsights
+     * @return TESTinsights proxy
+     */
+    protected String getTESTinsights_proxy() {
+        return TESTinsights_proxy;
+    }    
+    /**
+     * Get Credentials for TESTinsights
+     * @return TESTinsights Credentials
+     */
+    protected String getTESTinsights_credentials_id() {
+        return TESTinsights_credentials_id;
+    }        
     /**
      * Get request
      * @return request
@@ -552,7 +598,11 @@ abstract public class BaseJob {
                                     nodeLabel,
                                     pclpCommand,
                                     pclpResultsPattern,
-                                    squoreCommand);
+                                    squoreCommand,
+                                    TESTinsights_URL,
+                                    TESTinsights_project,
+                                    TESTinsights_credentials_id,
+                                    TESTinsights_proxy);
                                     
         setup.setUsingSCM(usingSCM);
         setup.setSCM(scm);
@@ -582,8 +632,8 @@ abstract public class BaseJob {
         project.getPublishersList().add(junit);
     }
     /**
-     * Add JUnit rules step
-     * @param project project to add step to
+     * Add PC-Lint Plus step
+     * @param project project to add step to do PC-Lint Plus
      */
 
     protected void addPCLintPlus(Project project) {
@@ -610,5 +660,8 @@ abstract public class BaseJob {
         publisher.includes = "**/coverage_results_*.xml";
         publisher.healthReports = healthReports;
         project.getPublishersList().add(publisher);
+    }
+    protected void addCredentialID(Project project) {
+        project.getBuildWrappersList().add(new SecretBuildWrapper(Collections.<MultiBinding<?>>singletonList(new UsernamePasswordMultiBinding("VC_TI_USR","VC_TI_PWS",TESTinsights_credentials_id))));
     }
 }

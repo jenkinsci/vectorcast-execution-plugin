@@ -642,6 +642,13 @@ pipeline {
                     if (VC_useSquore) {
                         runCommands(VC_squoreCommand)
                     }
+                    if (VC_useTESTinsights){
+                        withCredentials([usernamePassword(credentialsId: VC_TESTinsights_Credential_ID, usernameVariable : "VC_TI_USR", passwordVariable : "VC_TI_PWS")]){
+                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + " --pass " + VC_TI_PWS + " --action PUSH --project ${VC_TESTinsights_Project} --test-object ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} --proxy ${VC_TESTinsights_Proxy} --log TESTinsight_Push.log"
+                            runCommands(TESTinsight_Command)
+                            archiveArtifacts allowEmptyArchive: true, artifacts: 'TESTinsight_Push.log'
+                        }
+                    }
                 }
             }
         }

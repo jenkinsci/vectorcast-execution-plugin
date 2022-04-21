@@ -81,13 +81,22 @@ public class NewSingleJob extends BaseJob {
             report_format = "TEXT";
         }
         String pclpCommandString = "";
-        String squoreCommandString = "";
+        String squoreCommandString_win = "";
+        String squoreCommandString_unix = "";
+        String TESTinsightsCommandString_win = "";
+        String TESTinsightsCommandString_unix = "";
         if (getPclpCommand().length() != 0) {
-                pclpCommandString = getPclpCommand() + "\n";
+            pclpCommandString = getPclpCommand() + "\n";
         }            
         if (getSquoreCommand().length() != 0) {
-                squoreCommandString = "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate_squore_results.py \\\"@PROJECT@\\\"";
-                squoreCommandString += "\n" + getSquoreCommand() + "\n";
+            squoreCommandString_win = "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate_squore_results.py\" \"@PROJECT@\"";
+            squoreCommandString_win += "\n" + getSquoreCommand() + "\n";
+            squoreCommandString_unix = "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate_squore_results.py\" \"@PROJECT@\"";
+            squoreCommandString_unix += "\n" + getSquoreCommand() + "\n";
+        }            
+        if (getTESTinsights_URL().length() != 0) {
+            TESTinsightsCommandString_win  = "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + getTESTinsights_project() + " --test-object ${BUILD_NUMBER} --vc-project \\\"@PROJECT@\\\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log";
+            TESTinsightsCommandString_unix = "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + getTESTinsights_project() + " --test-object ${BUILD_NUMBER} --vc-project \\\"@PROJECT@\\\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log";
         }            
         String pluginVersion = VcastUtils.getVersion().orElse( "Unknown" );    
         String win = 
@@ -105,7 +114,7 @@ getExecutePreambleWin() +
 "copy command.log complete_build.log\n"+
 "copy \"@PROJECT_BASE@_rebuild" + html_text + "\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n"+
 "\n" +
-pclpCommandString + squoreCommandString;
+pclpCommandString + squoreCommandString_win + TESTinsightsCommandString_win;
         if (getOptionUseReporting()) {
             win +=
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
@@ -137,7 +146,7 @@ getExecutePreambleUnix() +
 " $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --build-execute --incremental  --output \\\"@PROJECT_BASE@_rebuild" + html_text + "\\\" \"\n" +
 "cp -p command.log complete_build.log\n"+
 "cp -p \"@PROJECT_BASE@_rebuild" + html_text + "\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n"+
-pclpCommandString + squoreCommandString + "\n";
+pclpCommandString + squoreCommandString_unix + TESTinsightsCommandString_unix;
 
 if (getOptionUseReporting()) {
             unix +=
@@ -344,6 +353,9 @@ if (getOptionUseReporting()) {
             addJunit(getTopProject());
             addVCCoverage(getTopProject());
             addGroovyScriptSingleJob();
+            if (getTESTinsights_URL().length() != 0) {
+                addCredentialID(getTopProject());
+            }
         }
         
         getTopProject().save();
