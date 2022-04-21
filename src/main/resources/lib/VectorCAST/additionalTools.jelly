@@ -1,0 +1,68 @@
+<!--
+  The MIT License
+
+  Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" 
+         xmlns:st="jelly:stapler" 
+         xmlns:d="jelly:define" 
+         xmlns:l="/lib/layout" 
+         xmlns:t="/lib/hudson" 
+         xmlns:f="/lib/form"
+         xmlns:p="/lib/hudson/project">
+         
+    <f:section title="${%VCJob.AdditionalTools}">
+        <f:optionalBlock title="PC Lint Plus" checked="${instance.addToolsPCLP}" inline="true" help="/plugin/vectorcast-execution/help-pclp.html">
+            <f:entry title="${%VCJob.AdditionalTools.pclp.command.title}" description="${%VCJob.AdditionalTools.pclp.command.description}">
+                <f:textbox name="pclpCommand" value="${instance.pclpCommand}"/>
+            </f:entry>
+            <f:entry title="${%VCJob.AdditionalTools.pclp.result_pattern.title}" description="${%VCJob.AdditionalTools.pclp.result_pattern.description}">
+                <f:textbox default="**/*lint_results.txt" name="pclpResultsPattern" value="${instance.pclpResultsPattern}"/>
+            </f:entry>
+        </f:optionalBlock>
+
+        <f:optionalBlock title="Squore" checked="${instance.addToolsSquore}" inline="true" help="/plugin/vectorcast-execution/help-squore.html">         
+            <f:entry title="${%VCJob.AdditionalTools.squore.command.title}" description="${%VCJob.AdditionalTools.squore.command.description}">
+                <f:textarea name="squoreCommand" class="fixed-width" value="${instance.squoreCommand}"/>
+            </f:entry>
+        </f:optionalBlock>
+
+
+        <f:optionalBlock title="TESTinsights" checked="${instance.addToolsTESTinsights}" inline="true" help="/plugin/vectorcast-execution/help-TESTinsights.html">         
+            <f:entry title="${%VCJob.AdditionalTools.TESTinsights.URL.title}" description="${%VCJob.AdditionalTools.TESTinsights.URL.description}">
+                <f:textbox name="TESTinsights_URL" value="${instance.TESTinsights_URL}"/>
+            </f:entry>
+            <f:entry title="${%VCJob.AdditionalTools.TESTinsights.project.title}" description="${%VCJob.AdditionalTools.TESTinsights.project.description}">
+                <f:textbox name="TESTinsights_project" value="${instance.TESTinsights_project}"/>
+            </f:entry>
+            <f:entry title="${%VCJob.AdditionalTools.TESTinsights.credentials_id.title}" description="${%VCJob.AdditionalTools.TESTinsights.credentials_id.description}">
+                <f:textbox name="TESTinsights_credentials_id" value="${instance.TESTinsights_credentials_id}"/>
+            </f:entry>
+            <f:entry title="${%VCJob.AdditionalTools.TESTinsights.proxy.title}" description="${%VCJob.AdditionalTools.TESTinsights.proxy.description}">
+                <f:textbox name="TESTinsights_proxy" value="${instance.TESTinsights_proxy}"/>
+            </f:entry>
+        </f:optionalBlock>
+
+    </f:section>
+</j:jelly>
+
