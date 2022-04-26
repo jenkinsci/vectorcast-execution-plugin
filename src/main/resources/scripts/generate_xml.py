@@ -334,11 +334,13 @@ class GenerateManageXml(BaseGenerateXml):
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None):
+    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, skipReportsForSkippedEnvs = False):
         super(GenerateXml, self).__init__(cover_report_name, verbose)
 
         self.cbtDict = cbtDict
         self.FullManageProjectName = FullManageProjectName
+        self.generate_exec_rpt_each_testcase = generate_exec_rpt_each_testcase
+        self.skipReportsForSkippedEnvs = skipReportsForSkippedEnvs;
         
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         
@@ -350,6 +352,7 @@ class GenerateXml(BaseGenerateXml):
             build_dir_4hash = build_dir_4hash.encode('utf-8')
 
         self.hashCode = hashlib.md5(build_dir_4hash).hexdigest()
+        
         if verbose:
             print ("gen Dir: " + str(build_dir_4hash)+ " Hash: " +self.hashCode)
 
@@ -541,7 +544,7 @@ class GenerateXml(BaseGenerateXml):
             tcSkipped = False 
             
         # If cbtDict is None, no build log was passed in...don't mark anything as skipped 
-        elif  self.cbtDict == None:
+        elif self.skipReportsForSkippedEnvs or self.cbtDict == None:
             tcSkipped = False 
             
         # else there is something check , if the length of cbtDict is greater than zero
@@ -797,6 +800,10 @@ class GenerateXml(BaseGenerateXml):
                 pprint.pprint ("CBT Dictionary: \n" + self.cbtDict, width = 132)
 
     def __get_testcase_execution_results(self, tc, classname, tc_name):
+    
+        if not self.generate_exec_rpt_each_testcase:
+            return "Execution Report disabled by using --dont-generate-individual-reports"
+            
         report_name_hash =  '.'.join(
             ["execution_results", classname, tc_name])
         # Unicode-objects must be encoded before hashing in Python 3
@@ -804,6 +811,8 @@ class GenerateXml(BaseGenerateXml):
             report_name_hash = report_name_hash.encode('utf-8')
 
         report_name = hashlib.md5(report_name_hash).hexdigest()
+
+        import time
 
         try:
             self.api.report(

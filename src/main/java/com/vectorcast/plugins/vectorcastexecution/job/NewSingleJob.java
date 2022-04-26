@@ -4,7 +4,7 @@
  * Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
+ * of this software and associated documentation files (the f"Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
@@ -95,8 +95,8 @@ public class NewSingleJob extends BaseJob {
             squoreCommandString_unix += "\n" + getSquoreCommand() + "\n";
         }            
         if (getTESTinsights_URL().length() != 0) {
-            TESTinsightsCommandString_win  = "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + getTESTinsights_project() + " --test-object ${BUILD_NUMBER} --vc-project \\\"@PROJECT@\\\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log";
-            TESTinsightsCommandString_unix = "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + getTESTinsights_project() + " --test-object ${BUILD_NUMBER} --vc-project \\\"@PROJECT@\\\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log";
+            TESTinsightsCommandString_win  = "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + getTESTinsights_project() + " --test-object ${BUILD_NUMBER} --vc-project \\\"@PROJECT@\\\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log\n";
+            TESTinsightsCommandString_unix = "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + getTESTinsights_project() + " --test-object ${BUILD_NUMBER} --vc-project \\\"@PROJECT@\\\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log\n";
         }            
         String pluginVersion = VcastUtils.getVersion().orElse( "Unknown" );    
         String win = 
