@@ -379,7 +379,10 @@ pipeline {
                         // Get the repo (should only need the .vcm file)
                         scmStep()
                     }
-                    
+
+                    // archive existing reports 
+                    runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive --verbose""")
+
                     println "Created with VectorCAST Execution Version: " + VC_createdWithVersion
 
                     // Run the setup step to copy over the scripts

@@ -96,12 +96,17 @@ def skipReporting(build_dir, skipReportsForSkippedEnvs, cbtDict):
     # skip report gen for skipped environments 
     if skipReportsForSkippedEnvs and cbtDict:
         if hashCode not in cbtDict.keys():
-            return False
+            if verbose:
+                print("skipping report because hash not round in cbtdict")
+
+            return True
         else:
             c,i,s = cbtDict[hashCode]
             if len(c)==0 and len(i)==0 and len(s)==0:
-                return False
-    return True
+                if verbose:
+                    print("skipping report because c,i,s are all 0 size")
+                return True
+    return False
 
 enabledEnvironmentArray = []
 
@@ -717,14 +722,10 @@ if __name__ == '__main__':
     # Set VCAST_MANAGE_PROJECT_DIRECTORY to match .vcm directory
     os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(args.ManageProject).rsplit(".",1)[0]
  
-    import archive_extract_reports
-    if (args.use_archive_extract):
-        archive_extract_reports.archive(verbose)
-        if timing:
-            print("Archving reports: " + str(time.time()))
-        
     buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict, args.use_archive_extract)
     
+    import archive_extract_reports
+        
     if (args.use_archive_extract):
         archive_extract_reports.extract(verbose)
         if timing:
