@@ -381,7 +381,8 @@ pipeline {
                     }
 
                     // archive existing reports 
-                    runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive --verbose""")
+                    //runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive --verbose""")
+                    tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/*.xml"
 
                     println "Created with VectorCAST Execution Version: " + VC_createdWithVersion
 
@@ -643,7 +644,9 @@ pipeline {
                         recordIssues(tools: [pcLint(pattern: VC_pclpResultsPattern, reportEncoding: 'UTF-8')])
                     }
                     if (VC_useSquore) {
-                        runCommands(VC_squoreCommand)
+                        cmd = """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate_squore_results.py ${VC_Manage_Project}
+                        ${VC_squoreCommand}"""
+                        runCommands(cmd)
                     }
                     if (VC_useTESTinsights){
                         withCredentials([usernamePassword(credentialsId: VC_TESTinsights_Credential_ID, usernameVariable : "VC_TI_USR", passwordVariable : "VC_TI_PWS")]){

@@ -215,7 +215,7 @@ def delete_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
         
-def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract):
+def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures):
     xml_file = ""
     
     try:
@@ -242,7 +242,8 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_e
                                verbose, 
                                cbtDict,
                                generate_exec_rpt_each_testcase,
-                               use_archive_extract)
+                               use_archive_extract,
+                               report_only_failures)
                                
         if xml_file.api != None:
             if verbose:
@@ -351,7 +352,7 @@ def generateIndividualReports(entry, envName):
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
 
-def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_exec_rpt_each_testcase = True, use_archive_extract = False):
+def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures):
 
     failed_count = 0 
         
@@ -361,14 +362,14 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
             continue 
 
         if envName == None:
-            failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract)
+            failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures)
             generateIndividualReports(manageEnvs[currentEnv], envName)
             
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
             if env_level.upper() == level.upper():
-                failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict, generate_exec_rpt_each_testcase,use_archive_extract)
+                failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures)
                 generateIndividualReports(manageEnvs[currentEnv], envName)
                 
     with open("unit_test_fail_count.txt", "w") as fd:
@@ -379,29 +380,24 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
             fd.write(failed_str)    
 
 def cleanupDirectory(path, teePrint):
-    # if the path exists, try to delete it
+
+    # if the path exists, try to delete all file in it
     if os.path.isdir(path):
-        try:
-            shutil.rmtree(path)
-        except:
-            # if there was an error removing the directory...delete all the files
-            print("Error removing directory: " + path)
-            for file in glob.glob(path + "/*.*"):
-                try:
-                    os.remove(file);
-                except:
-                    teePrint.teePrint("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
-                    if print_exc:  traceback.print_exc()
-            pass
+        for file in glob.glob(path + "/*.*"):
+            try:
+                os.remove(file);
+            except:
+                teePrint.teePrint("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
+                if print_exc:  traceback.print_exc()
 
     # we should either have an empty directory or no directory
-    if not os.path.isdir(path):
+    else:
         try:
             os.mkdir(path)
         except:
+            print("failed making path: " + path)
             teePrint.teePrint("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
             if print_exc:  traceback.print_exc()
-
 
 def cleanupOldBuilds(teePrint):
     for path in ["xml_data","management","execution"]:
@@ -410,7 +406,7 @@ def cleanupOldBuilds(teePrint):
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
-def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None,use_archive_extract = False):
+def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None,use_archive_extract = False, report_only_failures = False):
 
     if timing:
         print("Start report generation: " + str(time.time()))
@@ -451,15 +447,11 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         print("Cleanup: " + str(time.time()))
     if useNewReport and not legacy:
 
-        try:
-            shutil.rmtree("execution") 
-        except:
-            pass
         manageEnvs = getManageEnvs(FullManageProjectName)
         if timing:
             print("Using DataAPI for reporting")
             print("Get Info: " + str(time.time()))
-        useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract)
+        useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures)
         if timing:
             print("XML and Individual reports: " + str(time.time()))
 
@@ -634,7 +626,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose',   help='Enable verbose output', action="store_true")
     parser.add_argument('-l', '--level',   help='Environment Name if only doing single environment.  Should be in the form of level/env')
     parser.add_argument('-e', '--environment',   help='Environment Name if only doing single environment.  Should be in the form of level/env')
-    parser.add_argument('-g', '--dont-generate-individual-reports',   help='Don\'t Generated Individual Reports (below 2019 - this just controls execution report generate, 2019 and later - execution reports for each testcase won\'t be generated',  action="store_true")
+    parser.add_argument('-g', '--dont-generate-individual-reports',   help='Don\'t Generated Individual Reports (below 2019 - this just controls execution report generate, 2019 and later - execution reports for each testcase won\'t be generated',  action="store_true", default=False)
     parser.add_argument('--wait_time',   help='Time (in seconds) to wait between execution attempts', type=int, default=30)
     parser.add_argument('--wait_loops',   help='Number of times to retry execution', type=int, default=1)
     parser.add_argument('--timing',   help='Display timing information for report generation', action="store_true", default = False)
@@ -642,6 +634,7 @@ if __name__ == '__main__':
     parser.add_argument('--print_exc',   help='Output test resutls in JUnit format', action="store_true")
     parser.add_argument('--api',   help='Unused', type=int)
     parser.add_argument('--use_archive_extract',   help='Uses Archive/Extract for reports to save time on report generation', action="store_true", default = False)
+    parser.add_argument('--report_only_failures',   help='Report only failed test cases', action="store_true", default = False)
 
     parser.add_argument('--legacy',   help='Force legacy reports for testing only', action="store_true", default = False)
     parser.add_argument('--buildlog',   help='Build Log for CBT Statitics')
@@ -679,17 +672,14 @@ if __name__ == '__main__':
     
     tcmr2csv.useLocalCsv = True
 
+    generate_individual_reports = not args.dont_generate_individual_reports
+
     if args.verbose:
         verbose = True
     if args.print_exc:
         print_exc = True
     wait_time = args.wait_time
     wait_loops = args.wait_loops
-
-    if args.dont_generate_individual_reports:
-        dont_generate_individual_reports = False
-    else:
-        dont_generate_individual_reports = True
 
     if args.junit:
         junit = True
@@ -722,7 +712,7 @@ if __name__ == '__main__':
     # Set VCAST_MANAGE_PROJECT_DIRECTORY to match .vcm directory
     os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(args.ManageProject).rsplit(".",1)[0]
  
-    buildReports(args.ManageProject,args.level,args.environment,dont_generate_individual_reports, timing, cbtDict, args.use_archive_extract)
+    buildReports(args.ManageProject,args.level,args.environment,generate_individual_reports, timing, cbtDict, args.use_archive_extract, args.report_only_failures)
     
     import archive_extract_reports
         

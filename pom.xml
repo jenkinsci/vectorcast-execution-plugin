@@ -31,7 +31,7 @@
         <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
         <findbugs.failOnError>false</findbugs.failOnError>
         <!-- Minimum of 2.138.4 required for pipelines -->
-        <jenkins.version>2.289.1</jenkins.version>
+        <jenkins.version>2.289.3</jenkins.version>
         <java.level>8</java.level>
         <jenkins-test-harness.version>2.56</jenkins-test-harness.version>
         <powermock.version>1.6.2</powermock.version>
@@ -279,6 +279,17 @@
     <version>2.2</version>
     <scope>test</scope>
 </dependency>
+
+<dependency>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>pipeline-utility-steps</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.codehaus.plexus</groupId>
+    <artifactId>plexus-utils</artifactId>
+    <version>3.4.1</version>
+</dependency>
+
 
     </dependencies>
 
