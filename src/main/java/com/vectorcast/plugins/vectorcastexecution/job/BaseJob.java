@@ -49,6 +49,8 @@ import org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBindin
 import org.jenkinsci.plugins.credentialsbinding.MultiBinding;
 import java.util.List;
 import java.util.Collections;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Base job management - create/delete/update
@@ -115,6 +117,8 @@ abstract public class BaseJob {
     private String TESTinsights_project;
     private String TESTinsights_credentials_id;
     private String TESTinsights_proxy;
+    private String TESTinsights_SCM_URL;
+    private String TESTinsights_SCM_Tech;
 
     /**
      * Constructor
@@ -214,6 +218,8 @@ abstract public class BaseJob {
         TESTinsights_project = savedData.getTESTinsights_project();
         TESTinsights_proxy = savedData.getTESTinsights_proxy();
         TESTinsights_credentials_id = savedData.getTESTinsights_credentials_id();
+        TESTinsights_SCM_URL = savedData.getTESTinsights_SCM_URL();
+        TESTinsights_SCM_Tech = savedData.getTESTinsights_SCM_Tech();
     }
     /**
      * Using some form of SCM
@@ -483,6 +489,32 @@ abstract public class BaseJob {
         return TESTinsights_credentials_id;
     }        
     /**
+     * Get SCM URL for TESTinsights
+     * @return TESTinsights SCM URL
+     */
+    protected String getTESTinsights_SCM_URL() {
+        return TESTinsights_SCM_URL;
+    }    
+    /**
+     * Get SCM Technology TESTinsights
+     * @return TESTinsights SCM Technology
+     */
+    protected String getTESTinsights_SCM_Tech() {
+        return TESTinsights_SCM_Tech;
+    }    
+    /**
+     * Set SCM URL for TESTinsights
+     */
+    protected  void setTESTinsights_SCM_URL(String TESTinsights_SCM_URL) {
+        this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
+    }    
+    /**
+     * Set SCM Technology TESTinsights
+     */
+    protected void setTESTinsights_SCM_Tech(String TESTinsights_SCM_Tech) {
+        this.TESTinsights_SCM_Tech = TESTinsights_SCM_Tech;
+    }    
+    /**
      * Get request
      * @return request
      */
@@ -539,6 +571,17 @@ abstract public class BaseJob {
                 usingSCM = false;
             } else {
                 usingSCM = true;
+                
+                // for TESTinsights SCM connector
+                String scmName = scm.getDescriptor().getDisplayName();
+                if (scmName == "Git") {
+                    TESTinsights_SCM_Tech = "git";
+                } else if (scmName == "Subversion") {
+                    TESTinsights_SCM_Tech = "svn";
+                } else {
+                    TESTinsights_SCM_Tech = "";
+                }
+                Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "SCM Info: " + scmName);
             }
         }
         topProject.setScm(scm);
@@ -602,7 +645,9 @@ abstract public class BaseJob {
                                     TESTinsights_URL,
                                     TESTinsights_project,
                                     TESTinsights_credentials_id,
-                                    TESTinsights_proxy);
+                                    TESTinsights_proxy,
+                                    TESTinsights_SCM_URL,
+                                    TESTinsights_SCM_Tech);
                                     
         setup.setUsingSCM(usingSCM);
         setup.setSCM(scm);

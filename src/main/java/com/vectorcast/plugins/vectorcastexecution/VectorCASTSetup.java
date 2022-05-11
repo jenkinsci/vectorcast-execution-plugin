@@ -104,6 +104,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private String TESTinsights_project;
     private String TESTinsights_credentials_id;
     private String TESTinsights_proxy;
+    private String TESTinsights_SCM_URL;
+    private String TESTinsights_SCM_Tech;
 
     /**
      * Get the number of wait loops to do
@@ -470,6 +472,33 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.TESTinsights_credentials_id = TESTinsights_credentials_id;
     }    
     /**
+     * Get SCM URL for TESTinsights
+     * @return TESTinsights SCM URL
+     */
+    public String getTESTinsights_SCM_URL() {
+        return TESTinsights_SCM_URL;
+    }    
+    /**
+     * Get SCM Technology TESTinsights
+     * @return TESTinsights SCM Technology
+     */
+    public String getTESTinsights_SCM_Tech() {
+        return TESTinsights_SCM_Tech;
+    }    
+    /**
+     * Set SCM URL for TESTinsights
+     */
+    public void setTESTinsights_SCM_URL(String TESTinsights_SCM_URL) {
+        this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
+    }    
+    /**
+     * Set SCM Technology TESTinsights
+     */
+
+    public void setTESTinsights_SCM_Tech(String TESTinsights_SCM_Tech) {
+        this.TESTinsights_SCM_Tech = TESTinsights_SCM_Tech;
+    }    
+    /**
      * Create setup step
      * @param environmentSetupWin environment setup for windows
      * @param environmentSetupUnix environment setup for unix
@@ -489,6 +518,13 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param nodeLabel node label
      * @param pclpCommand PC Lint Plus command
      * @param pclpResultsPattern PC Lint Plus result patter
+     * @param squoreCommand Squore command
+     * @param TESTinsights_URL URL for TESTinsights
+     * @param TESTinsights_project Project for for TESTinsights
+     * @param TESTinsights_credentials_id Credentials for for TESTinsights
+     * @param TESTinsights_proxy Proxy for for TESTinsights
+     * @param TESTinsights_SCM_URL SCM URL for for TESTinsights
+     * @param TESTinsights_SCM_Tech SCM technology for for TESTinsights
      */
     @DataBoundConstructor
     public VectorCASTSetup(String environmentSetupWin,
@@ -513,7 +549,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            String TESTinsights_URL,
                            String TESTinsights_project,
                            String TESTinsights_credentials_id,
-                           String TESTinsights_proxy) {
+                           String TESTinsights_proxy,
+                           String TESTinsights_SCM_URL,
+                           String TESTinsights_SCM_Tech) {
         this.environmentSetupWin = environmentSetupWin;
         this.environmentSetupUnix = environmentSetupUnix;
         this.executePreambleWin = executePreambleWin;
@@ -539,6 +577,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.TESTinsights_project = TESTinsights_project;
         this.TESTinsights_credentials_id = TESTinsights_credentials_id;
         this.TESTinsights_proxy = TESTinsights_proxy;
+        this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
+        this.TESTinsights_SCM_Tech = TESTinsights_SCM_Tech;
     }
     /**
      * Copy the files in a directory recursively to the job workspace.
@@ -717,11 +757,13 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t nodeLabel: " + nodeLabel +  "\n"
     			+ "\t pclpCommand: " + pclpCommand +  "\n"
     			+ "\t pclpResultsPattern: " + pclpResultsPattern +  "\n"
-    			+ "\t pclpResultsPattern: " + squoreCommand +  "\n"
-    			+ "\t pclpResultsPattern: " + TESTinsights_URL +  "\n"
-    			+ "\t pclpResultsPattern: " + TESTinsights_project +  "\n"
-    			+ "\t pclpResultsPattern: " + TESTinsights_credentials_id +  "\n"
-    			+ "\t pclpResultsPattern: " + TESTinsights_proxy +  "\n";
+    			+ "\t squoreCommand: " + squoreCommand +  "\n"
+    			+ "\t TESTinsights_URL: " + TESTinsights_URL +  "\n"
+    			+ "\t TESTinsights_project: " + TESTinsights_project +  "\n"
+    			+ "\t TESTinsights_credentials_id: " + TESTinsights_credentials_id +  "\n"
+    			+ "\t TESTinsights_proxy: " + TESTinsights_proxy +  "\n"
+    			+ "\t TESTinsights_SCM_URL: " + TESTinsights_SCM_URL +  "\n"
+    			+ "\t TESTinsights_SCM_Tech: " + TESTinsights_SCM_Tech +  "\n";
     	return string;
     }
 }

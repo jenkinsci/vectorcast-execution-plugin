@@ -6,6 +6,7 @@ import datetime
 import glob
 import subprocess
 import re
+from safe_open import open
 
 try:
     try:
@@ -128,10 +129,11 @@ def is_default_basis_path_name(tc):
 def getCompilerfromConfig(config_file):
     compiler = "Unknown_Compiler"
     
-    config_file = open(config_file, 'r')
+    with open(config_file, 'r') as fd:
+        lines = fd.readlines()
 
     compiler = "Compiler_Not_Found"
-    for line in config_file.readlines():
+    for line in lines:
         match = re.match(r'^C_COMPILER_HIERARCHY_STRING: (.*)$', line)
         if match is not None:
             compiler = match.group(1)
@@ -374,9 +376,8 @@ def xmlToString(xml_node):
         return  minidom.parseString(ET.tostring(xml_node)).toprettyxml(indent="   ")
     
 def write_xml(file, xml_content, mode):
-    fichier = open(file, mode)
-    fichier.write(xmlToString(xml_content))
-    fichier.close()
+    with open(file, mode) as fd:
+        fd.write(xmlToString(xml_content))
 
 def write_xml_report(file):
     root = ET.Element("vectorCAST_Manage_report")

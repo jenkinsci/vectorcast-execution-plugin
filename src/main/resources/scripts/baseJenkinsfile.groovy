@@ -51,8 +51,28 @@ def setupManageProject() {
     runCommands(cmds)
 }
 
-// gets the manage project name without the .vcm if present
+def get_SCM_rev() {
+    def scm_rev = ""
+    def cmd = ""
+    
+    if (VC_TESTinsights_SCM_Tech=='git') {
+        cmd = "git rev-parse HEAD"
+    } else {
+        cmd = "svn info --show-item revision"
+    }
+    
+    if (isUnix()) {
+        scm_rev = sh returnStdout: true, script: cmd
+    } else {
+        cmd = "@echo off \n " + cmd
+        scm_rev = bat returnStdout: true, script: cmd
+    }
+    
+    println "Git Rev Reply " + scm_rev.trim() + "***"
+    return scm_rev.trim()
+}
 
+// gets the manage project name without the .vcm if present
 def getMPname() {
     // get the manage projects full name and base name
     def mpFullName = VC_Manage_Project.split("/")[-1]
@@ -382,7 +402,7 @@ pipeline {
 
                     // archive existing reports 
                     //runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive --verbose""")
-                    tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/*.xml"
+                    tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/*.xml", overwrite: true
 
                     println "Created with VectorCAST Execution Version: " + VC_createdWithVersion
 
@@ -650,7 +670,16 @@ pipeline {
                     }
                     if (VC_useTESTinsights){
                         withCredentials([usernamePassword(credentialsId: VC_TESTinsights_Credential_ID, usernameVariable : "VC_TI_USR", passwordVariable : "VC_TI_PWS")]){
-                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + " --pass " + VC_TI_PWS + " --action PUSH --project ${VC_TESTinsights_Project} --test-object ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} --proxy ${VC_TESTinsights_Proxy} --log TESTinsight_Push.log"
+                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} --proxy ${VC_TESTinsights_Proxy} --log TESTinsight_Push.log"
+
+                            if (VC_usingSCM) {
+                                
+                                VC_TESTinsights_Revision = get_SCM_rev()
+
+                                println "Git Rev: ${VC_TESTinsights_Revision}"
+
+                                TESTinsight_Command += " --vc-project-local-path=${env.WORKSPACE}/${VC_Manage_Project} --vc-project-scm-path=${VC_TESTinsights_SCM_URL}/${VC_Manage_Project} --src-local-path=${env.WORKSPACE} --src-scm-path=${VC_TESTinsights_SCM_URL}/ --vc-project-scm-technology=${VC_TESTinsights_SCM_Tech} --src-scm-technology=${VC_TESTinsights_SCM_Tech} --vc-project-scm-revision=${VC_TESTinsights_Revision} --src-scm-revision ${VC_TESTinsights_Revision} --versioned"
+                            }
                             runCommands(TESTinsight_Command)
                             archiveArtifacts allowEmptyArchive: true, artifacts: 'TESTinsight_Push.log'
                         }

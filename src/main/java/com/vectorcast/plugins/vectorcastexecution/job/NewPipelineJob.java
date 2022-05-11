@@ -62,6 +62,8 @@ import java.util.logging.Level;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Create a new single job
@@ -97,24 +99,6 @@ public class NewPipelineJob extends BaseJob {
     /** Environment tear down*/
     private String environmentTeardown;
 
-    /** PC Lint Plus Command */
-    // private String pclpCommand;
-    
-    /** PC Lint Plus Path */
-    // private String pclpResultsPattern;
-
-    /* Squore execution command */
-    // private String squoreCommand;
-    
-    /* TESTinsights Push information */
-    // private String TESTinsights_URL;
-    // private String TESTinsights_project;
-    // private String TESTinsights_credentials_id;
-    // private String TESTinsights_proxy;
-    
-
-
-
 	/**
 	 * Constructor
 	 * 
@@ -139,6 +123,41 @@ public class NewPipelineJob extends BaseJob {
 
         sharedArtifactDirectory = json.optString("sharedArtifactDir","");
         pipelineSCM = json.optString("scmSnippet","").trim();
+        
+        String[] lines = pipelineSCM.split("\n");
+        
+        List <String> scm_list = new ArrayList<String>();
+        scm_list.add("git");
+        scm_list.add("svn");
+        
+        String url = "";
+        String scm_technology = "";
+
+        for (String line : lines) {
+            
+            for (String scm : scm_list) {
+                if (line.startsWith(scm)) {
+                    scm_technology = scm;
+                    
+                    if (line.indexOf("url:") == -2) {
+                        String[] elements = line.split(",");
+                        for (String ele : elements) {
+                            
+                            if (ele.startsWith("url:")) {
+                                String[] ele_list = ele.split(" ");
+                                url = ele_list[ele_list.length - 1];
+                            }
+                        }
+                    } else {
+                        String[] url_ele = line.split(" ");
+                        url = url_ele[url_ele.length - 1];
+                    }
+                }
+            }
+        }
+        setTESTinsights_SCM_URL(url.replace("'",""));
+        setTESTinsights_SCM_Tech(scm_technology);
+        
         singleCheckout = json.optBoolean("singleCheckout", false);
         useCILicenses  = json.optBoolean("useCiLicense", false);
         useCBT  = json.optBoolean("useCBT", true);
@@ -440,6 +459,10 @@ public class NewPipelineJob extends BaseJob {
             "VC_TESTinsights_Project = '" + getTESTinsights_project() + "'\n" +  
             "VC_TESTinsights_Proxy = '" + getTESTinsights_proxy() + "'\n" +  
             "VC_TESTinsights_Credential_ID = '" + getTESTinsights_credentials_id() + "'\n" +  
+
+            "VC_TESTinsights_SCM_URL = '" + getTESTinsights_SCM_URL() + "'\n" +  
+            "VC_TESTinsights_SCM_Tech = '" + getTESTinsights_SCM_Tech() + "'\n" +  
+            "VC_TESTinsights_Revision=\"\"\n" +  
             "\n" +   
             "";
             

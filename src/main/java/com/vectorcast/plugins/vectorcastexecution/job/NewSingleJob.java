@@ -83,8 +83,13 @@ public class NewSingleJob extends BaseJob {
         String pclpCommandString = "";
         String squoreCommandString_win = "";
         String squoreCommandString_unix = "";
+        String TESTinsightsSCMconnect_win = "\n";
+        String TESTinsightsSCMconnect_unix = "\n";
         String TESTinsightsCommandString_win = "";
         String TESTinsightsCommandString_unix = "";
+        String scmInfoCommand_win = "";
+        String scmInfoCommand_unix = "";
+        
         if (getPclpCommand().length() != 0) {
             pclpCommandString = getPclpCommand() + "\n";
         }            
@@ -95,8 +100,38 @@ public class NewSingleJob extends BaseJob {
             squoreCommandString_unix += "\n" + getSquoreCommand() + "\n";
         }            
         if (getTESTinsights_URL().length() != 0) {
-            TESTinsightsCommandString_win  = "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + getTESTinsights_project() + " --test-object ${BUILD_NUMBER} --vc-project \\\"@PROJECT@\\\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log\n";
-            TESTinsightsCommandString_unix = "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + getTESTinsights_project() + " --test-object ${BUILD_NUMBER} --vc-project \\\"@PROJECT@\\\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log\n";
+            boolean setupConnect = false;
+            if (isUsingSCM()) {
+                if (getTESTinsights_SCM_Tech() == "git") {
+                    scmInfoCommand_win = "git config remote.origin.url > scm_url.tmp\n" +
+                        "set /p SCM_URL= < scm_url.tmp\n" +
+                        "git rev-parse HEAD > scm_rev.tmp\n" +
+                        "set /p SCM_REV= < scm_rev.tmp\n";
+                    scmInfoCommand_unix = "SCM_URL=`git config remote.origin.url`\n" +
+                        "SCM_REV=`git rev-parse HEAD`\n";
+                    setupConnect = true;
+                                            
+                }
+                if (getTESTinsights_SCM_Tech() == "svn") {
+                    scmInfoCommand_win = "svn info --show-item=url --no-newline > scm_url.tmp\n" +
+                        "set /p SCM_URL= < scm_url.tmp\n" +
+                        "git svn info --show-item revision > scm_rev.tmp\n" +
+                        "set /p SCM_REV= < scm_rev.tmp\n";
+                    scmInfoCommand_unix = "SCM_URL=`svn info --show-item=url --no-newline`\n" +
+                        "SCM_REV=`svn info --show-item revision`\n";
+                    setupConnect = true;
+                }
+                if (setupConnect) {
+                    TESTinsightsSCMconnect_win = " --vc-project-local-path=%WORKSPACE%/\"@PROJECT@\" --vc-project-scm-path=%SCM_URL%/\"@PROJECT@\" --src-local-path=%WORKSPACE% --src-scm-path=%SCM_URL%/ --vc-project-scm-technology=" + getTESTinsights_SCM_Tech() + " --src-scm-technology=" + getTESTinsights_SCM_Tech() + " --vc-project-scm-revision=%SCM_REV% --src-scm-revision %SCM_REV% --versioned\n";
+                    TESTinsightsSCMconnect_unix = " --vc-project-local-path=$WORKSPACE/\"@PROJECT@\" --vc-project-scm-path=$SCM_URL/\"@PROJECT@\" --src-local-path=$WORKSPACE --src-scm-path=$SCM_URL/ --vc-project-scm-technology=" + getTESTinsights_SCM_Tech() + " --src-scm-technology=" + getTESTinsights_SCM_Tech() + " --vc-project-scm-revision=$SCM_REV --src-scm-revision $SCM_REV --versioned\n";
+                }
+            }
+            if (setupConnect) {
+                TESTinsightsCommandString_win  = scmInfoCommand_win;
+                TESTinsightsCommandString_unix = scmInfoCommand_unix;
+            }
+            TESTinsightsCommandString_win  += "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + getTESTinsights_project() + " --test-object %BUILD_NUMBER% --vc-project \"@PROJECT@\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log " + TESTinsightsSCMconnect_win;
+            TESTinsightsCommandString_unix += "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + getTESTinsights_project() + " --test-object $BUILD_NUMBER --vc-project \"@PROJECT@\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log " + TESTinsightsSCMconnect_unix;
         }            
         String pluginVersion = VcastUtils.getVersion().orElse( "Unknown" );    
         String win = 
