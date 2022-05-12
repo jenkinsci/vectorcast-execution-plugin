@@ -352,7 +352,7 @@ def generateIndividualReports(entry, envName):
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
 
-def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures):
+def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report):
 
     failed_count = 0 
         
@@ -363,14 +363,16 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
 
         if envName == None:
             failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures)
-            generateIndividualReports(manageEnvs[currentEnv], envName)
+            if not no_full_report:
+                generateIndividualReports(manageEnvs[currentEnv], envName)
             
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
             if env_level.upper() == level.upper():
                 failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures)
-                generateIndividualReports(manageEnvs[currentEnv], envName)
+                if not no_full_report:
+                    generateIndividualReports(manageEnvs[currentEnv], envName)
                 
     with open("unit_test_fail_count.txt", "w") as fd:
         failed_str = str(failed_count)
@@ -406,7 +408,7 @@ def cleanupOldBuilds(teePrint):
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
-def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None,use_archive_extract = False, report_only_failures = False):
+def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None,use_archive_extract = False, report_only_failures = False, no_full_report = False):
 
     if timing:
         print("Start report generation: " + str(time.time()))
@@ -451,7 +453,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
         if timing:
             print("Using DataAPI for reporting")
             print("Get Info: " + str(time.time()))
-        useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures)
+        useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures, no_full_report)
         if timing:
             print("XML and Individual reports: " + str(time.time()))
 
@@ -635,6 +637,7 @@ if __name__ == '__main__':
     parser.add_argument('--api',   help='Unused', type=int)
     parser.add_argument('--use_archive_extract',   help='Uses Archive/Extract for reports to save time on report generation', action="store_true", default = False)
     parser.add_argument('--report_only_failures',   help='Report only failed test cases', action="store_true", default = False)
+    parser.add_argument('--no_full_report',   help='Generate just metrics for jenkins consumption', action="store_true", default = False)
 
     parser.add_argument('--legacy',   help='Force legacy reports for testing only', action="store_true", default = False)
     parser.add_argument('--buildlog',   help='Build Log for CBT Statitics')
@@ -712,7 +715,7 @@ if __name__ == '__main__':
     # Set VCAST_MANAGE_PROJECT_DIRECTORY to match .vcm directory
     os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(args.ManageProject).rsplit(".",1)[0]
  
-    buildReports(args.ManageProject,args.level,args.environment,generate_individual_reports, timing, cbtDict, args.use_archive_extract, args.report_only_failures)
+    buildReports(args.ManageProject,args.level,args.environment,generate_individual_reports, timing, cbtDict, args.use_archive_extract, args.report_only_failures, args.no_full_report)
     
     import archive_extract_reports
         
