@@ -176,12 +176,18 @@ results" in the Publish JUnit test result report configuration.
 
 ## Change Log
 
-### Version 0.72 (31 Oct 2021)
+### Version 0.72 (24 May 2022)
 - Removal of Multi-Job option - use VectorCAST Pipeline job instead
 - Added VectorCAST Execution Plugin version to VectorCAST top level screen
 - Restructed some of the pipeline options into different groups
 - Added new stage to run system tests in serial, separate from unit tests
 - Modified the fixup_css script to only run for VC19 and VC19SP1
+- Added options for faster report generation
+- Added support for Additonal Vector tools
+    - TESTinsights
+    - PC-Lint Plus
+    - Squore
+- Removed the default use of "master" for node execution.  
 
 ### Version 0.71 (29 Sept 2021)
 - Updated baseline pipeline script to reflect changes in the code coverage plugin

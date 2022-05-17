@@ -67,7 +67,8 @@
                     help="/plugin/vectorcast-execution/help-optsingleCheckout.html">
             <f:checkbox name="singleCheckout" checked="${instance.singleCheckout}" default="false"/>
           </f:entry>        
-          <f:entry title="${%VCJob.Control.SCMCheckoutLine.snippet.title}" description="${%VCJob.Control.SCMCheckoutLine.snippet.description}"
+          <f:entry title="${%VCJob.Control.SCMCheckoutLine.snippet.title}" 
+                   description="Pipeline Snippet from Jenkins &lt;a href=&quot;${rootURL}/pipeline-syntax&quot; target=&quot;_blank&quot;&gt; Snippet Generator &lt;/a&gt; for your SCM checkout of the VectorCAST/Manage project and related files"
                    help="/plugin/vectorcast-execution/help-scmSnippet.html">
             <f:textarea name="scmSnippet" class="fixed-width" required="false" />
           </f:entry>
