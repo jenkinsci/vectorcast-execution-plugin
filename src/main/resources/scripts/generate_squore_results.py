@@ -401,7 +401,8 @@ def write_xml_report(file):
         xml_tests.append(node)
     
     for func in all_functions:
-        # print(all_functions[func])
+        if func not in all_functions.keys() or "covered_statement" not in all_functions[func].keys():
+            continue
         xml_func = ET.Element("function")
         xml_func.attrib = all_functions[func]["attrib"]
         
