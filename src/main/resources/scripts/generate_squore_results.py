@@ -90,7 +90,7 @@ def get_apis_from_vcm_file(vcm):
                 print ("Disabled  : " , comp,ts,env_name)
                 continue
             else:
-                print ("Processing: " , comp,ts,env_name)
+                print ("Adding to list: " , comp,ts,env_name)
             
             env_dir = os.path.join(v, env_name)
             vce = env_dir + ".vce"
@@ -162,7 +162,7 @@ def process_file (vc_file, outputdir):
     elif vc_file.endswith(".vcm"):
         # for env in Api(vc_file).Environment.all():
         for env in get_apis_from_vcm_file(vc_file):
-            ##print ("Processing " + env.name)
+            print ("Processing " + env.get_environment().name)
 
             # print(env.Environment.first().configuration.path)
             path = ""
