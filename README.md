@@ -120,10 +120,10 @@ Additional integrations for other Vector tools have been added to this plugin.
 ![](docs/images/additional.png)
 
 - For PC-lint Plus, the user will provide the command or script that executes PC-lint Plus analysis.  It is important that the following format properties are include to ensure the results file is readable by the Warnings-NG plugin:
-        -v // turn off verbosity
+```        -v // turn off verbosity
         -width(0) // don't insert line breaks (unlimited output width)
         -"format=%f(%l): %t %n: %m"
-        -hs1 // The height of a message should be 1
+        -hs1 // The height of a message should be 1```
 - For Squore analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
 - For TESTinsights the user will need to provide the following. If using Git or Subversion for SCM, the plugin will attempt to have the SCM version linked to the TESTinsights project for team access and distributed change based testing.
     - TESTinsights URL - URL to TESTinsights server and project (Use Copy Team Area Url)
