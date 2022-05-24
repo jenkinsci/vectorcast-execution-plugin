@@ -32,7 +32,7 @@
          xmlns:p="/lib/hudson/project">
          
     <f:section title="${%VCJob.AdditionalTools}">
-        <f:optionalBlock title="PC Lint Plus" checked="${instance.addToolsPCLP}" inline="true" help="/plugin/vectorcast-execution/help-pclp.html">
+        <f:optionalBlock title="PC-lint Plus" checked="${instance.addToolsPCLP}" inline="true" help="/plugin/vectorcast-execution/help-pclp.html">
             <f:entry title="${%VCJob.AdditionalTools.pclp.command.title}" description="${%VCJob.AdditionalTools.pclp.command.description}" help="/plugin/vectorcast-execution/help-pclp_command.html">
                 <f:textbox name="pclpCommand" value="${instance.pclpCommand}" />
             </f:entry>

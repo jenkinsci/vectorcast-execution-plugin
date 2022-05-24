@@ -110,6 +110,27 @@ and denoted as _Skipped_ in the test results list
 
 ![](docs/images/test_results.png)
 
+## Additional Tools
+
+Additional integrations for other Vector tools have been added to this plugin.  
+-   **PC-lint Plus**
+-   **Squore**
+-   **TESTinsights**
+
+![](docs/images/additional.png)
+
+- For PC-lint Plus, the user will provide the command or script that executes PC-lint Plus analysis.  It is important that the following format properties are include to ensure the results file is readable by the Warnings-NG plugin:
+        -v // turn off verbosity
+        -width(0) // don't insert line breaks (unlimited output width)
+        -"format=%f(%l): %t %n: %m"
+        -hs1 // The height of a message should be 1
+- For Squore analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
+- For TESTinsights the user will need to provide the following. If using Git or Subversion for SCM, the plugin will attempt to have the SCM version linked to the TESTinsights project for team access and distributed change based testing.
+    - TESTinsights URL - URL to TESTinsights server and project (Use Copy Team Area Url)
+    - TESTinsights Project - Project Name in TESTinsights to push results - Leave blank to use Jenkins Job Name
+    - TESTinsights Credential ID-  Credential ID from Jenkins for TESTinsights
+    - Proxy to push to TESTinsights server - If needed, use proxy.address:port
+
 ## Controlling Where Jobs Run
 
 When using a Pipeline job, the sub jobs are created to run on specific nodes
@@ -185,7 +206,7 @@ results" in the Publish JUnit test result report configuration.
 - Added options for faster report generation
 - Added support for Additonal Vector tools
     - TESTinsights
-    - PC-Lint Plus
+    - PC-lint Plus
     - Squore
 - Removed the default use of "master" for node execution.  
 
