@@ -662,11 +662,13 @@ pipeline {
                     if (VC_usePCLintPlus) {
                         runCommands(VC_pclpCommand)
                         recordIssues(tools: [pcLint(pattern: VC_pclpResultsPattern, reportEncoding: 'UTF-8')])
+                        archiveArtifacts allowEmptyArchive: true, artifacts: VC_pclpResultsPattern
                     }
                     if (VC_useSquore) {
                         cmd = """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate_squore_results.py ${VC_Manage_Project}
                         ${VC_squoreCommand}"""
                         runCommands(cmd)
+                        archiveArtifacts allowEmptyArchive: true, artifacts: 'xml_data/squore_results*.xml'
                     }
                     if (VC_useTESTinsights){
                         withCredentials([usernamePassword(credentialsId: VC_TESTinsights_Credential_ID, usernameVariable : "VC_TI_USR", passwordVariable : "VC_TI_PWS")]){
