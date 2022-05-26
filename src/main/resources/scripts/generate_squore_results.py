@@ -452,6 +452,9 @@ def main():
     
     if os.path.isfile(args.project_file + ".vcm"):
         args.project_file += ".vcm"
+        
+    if not os.path.isdir(args.output_dir):
+        os.makedirs(args.output_dir)
     
     process_file(args.project_file, args.output_dir)
 

@@ -52,12 +52,13 @@ def get_file_encoding(file, default_encoding="utf-8"):
 
 @contextlib.contextmanager
 def open(file, mode="r"):
+    if os.path.exists(file):
+        encoding = get_file_encoding(file)
+    else:
+        encoding = "utf-8"
+    fd = _open(file, mode, encoding=encoding)
+    
     try:
-        if os.path.exists(file):
-            encoding = get_file_encoding(file)
-        else:
-            encoding = "utf-8"
-        fd = _open(file, mode, encoding=encoding)
         yield fd
     finally:
         fd.close()

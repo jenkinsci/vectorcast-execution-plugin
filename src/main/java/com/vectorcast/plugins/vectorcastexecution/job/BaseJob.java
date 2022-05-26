@@ -660,8 +660,19 @@ abstract public class BaseJob {
      * @param project project to add to
      */
     protected void addArchiveArtifacts(Project project) {
+        String pclpArchive = "";
+        String TIArchive = "";
+        
+        if (pclpResultsPattern.length() != 0) {
+            pclpArchive = ", " + pclpResultsPattern;
+        }
+        if (TESTinsights_URL.length() != 0) {
+            TIArchive = ", TESTinsight_Push.log";            
+        }
+        String addToolsArchive = pclpArchive + TIArchive;
+        
         ArtifactArchiver archiver = new ArtifactArchiver(
-                /*artifacts*/"**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log",
+                /*artifacts*/"**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log" + addToolsArchive,
                 /*excludes*/"",
                 /*latest only*/false,
                 /*allow empty archive*/false);
