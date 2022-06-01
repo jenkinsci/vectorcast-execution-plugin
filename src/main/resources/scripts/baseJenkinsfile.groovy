@@ -55,7 +55,7 @@ def get_SCM_rev() {
     def scm_rev = ""
     def cmd = ""
     
-    if (VC_TESTinsights_SCM_Tech=='git') {/
+    if (VC_TESTinsights_SCM_Tech=='git') {
         cmd = "git rev-parse HEAD"
     } else {
         cmd = "svn info --show-item revision"
