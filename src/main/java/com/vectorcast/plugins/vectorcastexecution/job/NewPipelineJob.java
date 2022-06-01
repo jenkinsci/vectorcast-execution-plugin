@@ -453,7 +453,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_pclpCommand = '" + getPclpCommand() + "'\n" +  
             "VC_pclpResultsPattern = '" + getPclpResultsPattern() + "'\n" +  
             "VC_useSquore = " + String.valueOf(getSquoreCommand().length() != 0) + "\n" +  
-            "VC_squoreCommand = '" + getSquoreCommand() + "'\n" +  
+            "VC_squoreCommand = '''" + getSquoreCommand() + "'''\n" +
             "VC_useTESTinsights = " + String.valueOf(getTESTinsights_URL().length() != 0) + "\n" +  
             "VC_TESTinsights_URL = '" + getTESTinsights_URL() + "'\n" +  
             "VC_TESTinsights_Project = '" + getTESTinsights_project() + "'\n" +  
