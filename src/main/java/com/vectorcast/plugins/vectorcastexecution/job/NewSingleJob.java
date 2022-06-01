@@ -130,8 +130,8 @@ public class NewSingleJob extends BaseJob {
                 TESTinsightsCommandString_win  = scmInfoCommand_win;
                 TESTinsightsCommandString_unix = scmInfoCommand_unix;
             }
-            TESTinsightsCommandString_win  += "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + getTESTinsights_project() + " --test-object %BUILD_NUMBER% --vc-project \"@PROJECT@\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log " + TESTinsightsSCMconnect_win;
-            TESTinsightsCommandString_unix += "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + getTESTinsights_project() + " --test-object $BUILD_NUMBER --vc-project \"@PROJECT@\" --proxy " + getTESTinsights_proxy() + " --log TESTinsight_Push.log " + TESTinsightsSCMconnect_unix;
+            TESTinsightsCommandString_win  += "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + getTESTinsights_project() + " --test-object %BUILD_NUMBER% --vc-project \"@PROJECT@\" --proxy " + getTESTinsights_proxy() + " --log TESTinsights_Push.log " + TESTinsightsSCMconnect_win;
+            TESTinsightsCommandString_unix += "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + getTESTinsights_project() + " --test-object $BUILD_NUMBER --vc-project \"@PROJECT@\" --proxy " + getTESTinsights_proxy() + " --log TESTinsights_Push.log " + TESTinsightsSCMconnect_unix;
         }            
         String pluginVersion = VcastUtils.getVersion().orElse( "Unknown" );    
         String win = 

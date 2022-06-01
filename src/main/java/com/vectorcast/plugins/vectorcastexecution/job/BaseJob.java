@@ -667,7 +667,7 @@ abstract public class BaseJob {
             pclpArchive = ", " + pclpResultsPattern;
         }
         if (TESTinsights_URL.length() != 0) {
-            TIArchive = ", TESTinsight_Push.log";            
+            TIArchive = ", TESTinsights_Push.log";            
         }
         String addToolsArchive = pclpArchive + TIArchive;
         

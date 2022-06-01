@@ -55,7 +55,7 @@ def get_SCM_rev() {
     def scm_rev = ""
     def cmd = ""
     
-    if (VC_TESTinsights_SCM_Tech=='git') {
+    if (VC_TESTinsights_SCM_Tech=='git') {/
         cmd = "git rev-parse HEAD"
     } else {
         cmd = "svn info --show-item revision"
@@ -672,7 +672,7 @@ pipeline {
                     }
                     if (VC_useTESTinsights){
                         withCredentials([usernamePassword(credentialsId: VC_TESTinsights_Credential_ID, usernameVariable : "VC_TI_USR", passwordVariable : "VC_TI_PWS")]){
-                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} --proxy ${VC_TESTinsights_Proxy} --log TESTinsight_Push.log"
+                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} --proxy ${VC_TESTinsights_Proxy} --log TESTinsights_Push.log"
 
                             if (VC_usingSCM) {
                                 
@@ -683,7 +683,7 @@ pipeline {
                                 TESTinsight_Command += " --vc-project-local-path=${env.WORKSPACE}/${VC_Manage_Project} --vc-project-scm-path=${VC_TESTinsights_SCM_URL}/${VC_Manage_Project} --src-local-path=${env.WORKSPACE} --src-scm-path=${VC_TESTinsights_SCM_URL}/ --vc-project-scm-technology=${VC_TESTinsights_SCM_Tech} --src-scm-technology=${VC_TESTinsights_SCM_Tech} --vc-project-scm-revision=${VC_TESTinsights_Revision} --src-scm-revision ${VC_TESTinsights_Revision} --versioned"
                             }
                             runCommands(TESTinsight_Command)
-                            archiveArtifacts allowEmptyArchive: true, artifacts: 'TESTinsight_Push.log'
+                            archiveArtifacts allowEmptyArchive: true, artifacts: 'TESTinsights_Push.log'
                         }
                     }
                 }
