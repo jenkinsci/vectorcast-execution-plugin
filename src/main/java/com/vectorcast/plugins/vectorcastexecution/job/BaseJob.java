@@ -177,7 +177,7 @@ abstract public class BaseJob {
             
             /* Additional Tools */
             pclpCommand = json.optString("pclpCommand", "");
-            pclpResultsPattern = json.optString("pclpResultsPattern", "**/*lint_results.txt");
+            pclpResultsPattern = json.optString("pclpResultsPattern", "");
             squoreCommand = json.optString("squoreCommand", "");
             TESTinsights_URL = json.optString("TESTinsights_URL", "");
             TESTinsights_project = json.optString("TESTinsights_project", "${JOB_BASE_NAME}");
@@ -663,7 +663,7 @@ abstract public class BaseJob {
         String pclpArchive = "";
         String TIArchive = "";
         
-        if (pclpResultsPattern.length() != 0) {
+        if (pclpCommand.length() != 0) {
             pclpArchive = ", " + pclpResultsPattern;
         }
         if (TESTinsights_URL.length() != 0) {
