@@ -672,7 +672,12 @@ pipeline {
                     }
                     if (VC_useTESTinsights){
                         withCredentials([usernamePassword(credentialsId: VC_TESTinsights_Credential_ID, usernameVariable : "VC_TI_USR", passwordVariable : "VC_TI_PWS")]){
-                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} --proxy ${VC_TESTinsights_Proxy} --log TESTinsights_Push.log"
+                            TI_proxy = ""
+                            if (VC_TESTinsights_Proxy.length() != 0) {
+                                TI_proxy = "--proxy ${VC_TESTinsights_Proxy}"
+                            }
+
+                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} " + TI_proxy + " --log TESTinsights_Push.log"
 
                             if (VC_usingSCM) {
                                 
