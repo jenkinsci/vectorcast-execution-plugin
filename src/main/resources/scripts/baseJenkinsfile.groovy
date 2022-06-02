@@ -313,6 +313,7 @@ def stepsForParallel(localEnvList) {
 EnvList = []
 UtEnvList = []
 StEnvList = []
+origManageProject = VC_Manage_Project
  
 pipeline {
 
@@ -677,15 +678,16 @@ pipeline {
                                 TI_proxy = "--proxy ${VC_TESTinsights_Proxy}"
                             }
 
-                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} " + TI_proxy + " --log TESTinsights_Push.log"
+                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} " + TI_proxy + " --log TESTinsights_Push.log"
 
                             if (VC_usingSCM) {
                                 
                                 VC_TESTinsights_Revision = get_SCM_rev()
 
                                 println "Git Rev: ${VC_TESTinsights_Revision}"
-
-                                TESTinsight_Command += " --vc-project-local-path=${env.WORKSPACE}/${VC_Manage_Project} --vc-project-scm-path=${VC_TESTinsights_SCM_URL}/${VC_Manage_Project} --src-local-path=${env.WORKSPACE} --src-scm-path=${VC_TESTinsights_SCM_URL}/ --vc-project-scm-technology=${VC_TESTinsights_SCM_Tech} --src-scm-technology=${VC_TESTinsights_SCM_Tech} --vc-project-scm-revision=${VC_TESTinsights_Revision} --src-scm-revision ${VC_TESTinsights_Revision} --versioned"
+                                
+                                TESTinsight_Command += " --vc-project-local-path=${origManageProject} --vc-project-scm-path=${VC_TESTinsights_SCM_URL}/${origManageProject} --src-local-path=${env.WORKSPACE} --src-scm-path=${VC_TESTinsights_SCM_URL}/ --vc-project-scm-technology=${VC_TESTinsights_SCM_Tech} --src-scm-technology=${VC_TESTinsights_SCM_Tech} --vc-project-scm-revision=${VC_TESTinsights_Revision} --src-scm-revision ${VC_TESTinsights_Revision} --versioned"
+                                
                             }
                             runCommands(TESTinsight_Command)
                             archiveArtifacts allowEmptyArchive: true, artifacts: 'TESTinsights_Push.log'
