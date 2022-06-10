@@ -209,6 +209,7 @@ results" in the Publish JUnit test result report configuration.
   - TESTinsights
 - Options were reorganized on the VectorCAST Pipeline Job creation page.
 - The VectorCAST Execution Plugin version is now displayed on the VectorCAST Jobs page.
+- Previously, custom reports that used the **VCAST_MANAGE_PROJECT_DIRECTORY** environment variable would fail to generate. Now, the environment variable is set when the reports are generated.
 
 ### Version 0.71 (29 Sept 2021)
 - Updated baseline pipeline script to reflect changes in the code coverage plugin
