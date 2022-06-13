@@ -200,17 +200,16 @@ results" in the Publish JUnit test result report configuration.
 ## Change Log
 
 ### Version 0.72 (24 May 2022)
-- Removal of Multi-Job option - use VectorCAST Pipeline job instead
-- Added VectorCAST Execution Plugin version to VectorCAST top level screen
-- Restructed some of the pipeline options into different groups
-- Added new stage to run system tests in serial, separate from unit tests
-- Modified the fixup_css script to only run for VC19 and VC19SP1
-- Added options for faster report generation
-- Added support for Additonal Vector tools
-    - TESTinsights
-    - PC-lint Plus
-    - Squore
-- Removed the default use of "master" for node execution.  
+- Support was removed for the deprecated VectorCAST Multi-Jobs. Users should create VectorCAST Pipeline Jobs in place of VectorCAST Multi-Jobs.
+- Previously, VectorCAST Jobs were executed on the built-in node by default. Now, users must provide the node name to execute the job on when creating a new VectorCAST Job. Jenkins advises against running builds on the built-in node. See [Controller Isolation](https://www.jenkins.io/doc/book/security/controller-isolation/) for more information.
+- A new stage was added to VectorCAST Pipeline jobs that runs the system tests in serial after running all unit tests. This prevents multiple instances of VectorCAST from modifying the same instrumented source files at the same time.
+- Support for additional external tools was added for VectorCAST jobs. See the **Additional Tools** options on the job creation page.
+  - PC-lint Plus
+  - Squore
+  - TESTinsights
+- Options were reorganized on the VectorCAST Pipeline Job creation page.
+- The VectorCAST Execution Plugin version is now displayed on the VectorCAST Jobs page.
+- Previously, custom reports that used the **VCAST_MANAGE_PROJECT_DIRECTORY** environment variable would fail to generate. Now, the environment variable is set when the reports are generated.
 
 ### Version 0.71 (29 Sept 2021)
 - Updated baseline pipeline script to reflect changes in the code coverage plugin
