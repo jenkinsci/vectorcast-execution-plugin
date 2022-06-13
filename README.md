@@ -9,7 +9,7 @@ Coverage is displayed using the [VectorCAST Coverage
 Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
 
 Jobs can be created as a single job or a pipeline job for a
-VectorCAST project.  For the pipeline job, the plugin will create a pipeline script (Jenkinsfile) 
+VectorCAST Project.  For the pipeline job, the plugin will create a pipeline script (Jenkinsfile) 
 with one job for each environment and an overall job to combine the results.
 
 # Usage
