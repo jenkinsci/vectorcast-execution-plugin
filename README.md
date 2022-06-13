@@ -198,7 +198,7 @@ results" in the Publish JUnit test result report configuration.
 
 ### Version 0.72 (24 May 2022)
 - Support was removed for the deprecated VectorCAST Multi-Jobs. Users should create VectorCAST Pipeline Jobs in place of VectorCAST Multi-Jobs.
-- Previously, VectorCAST Jobs were executed on the built-in node by default. Now, users must provide the node name to execute the job on when creating a new VectorCAST Job. Jenkins advises against running builds on the built-in node. See [Controller Isolation](https://www.jenkins.io/doc/book/security/controller-isolation/) for more information.
+- Previously, VectorCAST Jobs were executed on the built-in node by default. Now, when creating new VectorCAST Job, the user must provide the name of the node that the job should be executed on. Jenkins advises against running builds on the built-in node. See [Controller Isolation](https://www.jenkins.io/doc/book/security/controller-isolation/) for more information.
 - A new stage was added to VectorCAST Pipeline jobs that runs the system tests in serial after running all unit tests. This prevents multiple instances of VectorCAST from modifying the same instrumented source files at the same time.
 - Support for additional external tools was added for VectorCAST jobs. See the **Additional Tools** options on the job creation page.
   - PC-lint Plus
