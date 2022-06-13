@@ -19,13 +19,13 @@ This plugin adds a new top-level menu item to the Jenkins sidebar.
 ![](docs/images/vc_menu_in_sidebar.png)
 
 that provides job control for
-[VectorCAST](http://vector.com/vectorcast)/VectorCAST Projects
+[VectorCAST](http://vector.com/vectorcast) Projects
 
 ![](docs/images/image2017-10-17_18_14_2.png)
 
-## Job Typesthat provides job control for
+## Job Types that provides job control for
 
-There are 2 types of supported jobs and 1 diagnostic job type
+There are two types of supported jobs and one diagnostic job type
 
 -   **Single Job**
 -   **Pipeline Job**
@@ -34,14 +34,14 @@ There are 2 types of supported jobs and 1 diagnostic job type
 ### Single Job
 
 **Single** creates a single Jenkins job to build/execute and
-(optionally) report on all environments in a VectorCAST/VectorCAST Project.
+(optionally) report on all environments in a VectorCAST Project.
 
 ![](docs/images/single.png)
 
 ### Pipeline Job
 
 **Pipeline** creates a Jenkins Pipeline job to build/execute and
-(optionally) report on all environments in a VectorCAST/VectorCAST Project
+(optionally) report on all environments in a VectorCAST Project
 in parallel.
 
 :warning:*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel execution on a single VectorCAST Project*
@@ -54,17 +54,17 @@ There are 2 options for running tests
         workspace for each Jenkins job from your repository
     -   The pipeline job will them combine the coverage and test
         results from all these individual machines/nodes
-    -   In this case, the VectorCAST/VectorCAST Project should be specified
+    -   In this case, the VectorCAST Project should be specified
         as relative to the root of the checkout
     - There is now an option to use the main Pipeline Job's Workspace as 
         a dedicated single checkout directory.  This checkout directory must be available
         to all executors across all nodes either by having all executors running on the same
         computer or have the main Pipeline Job's Workspace on a shared network drive.
-- Use an existing drive/directory for VectorCAST/VectorCAST Project
-    -   In this case, the VectorCAST/VectorCAST Project should be specified
+- Use an existing drive/directory for VectorCAST Project
+    -   In this case, the VectorCAST Project should be specified
         as an absolute path that is available on all machines/nodes
     -   Each job can optionally clean up the working directory which
-        will have no effect on the VectorCAST/VectorCAST Project since it is
+        will have no effect on the VectorCAST Project since it is
         located elsewhere
     -   The reports are generated into the workspace and archived as
         part of the Jenkins job
@@ -79,7 +79,7 @@ Continuous Integration Licenses, do not check this box as you will encounter lic
 
 If the user wishes to call the Jenkins job from another Pipeline job, check the box to 
 parameterize the Jenkinsfile.  This will add parameters to the pipeline job  
-that will be used by the VectorCAST pipeline job to locate the VectorCAST/VectorCAST Project (VCAST_PROJECT_DIR)
+that will be used by the VectorCAST pipeline job to locate the VectorCAST Project (VCAST_PROJECT_DIR)
 and for forcing the VectorCAST Jobs to be executed on a specific node (VCAST_FORCE_NODE_EXEC_NAME) instead of using 
 the compiler as a node label.
 
@@ -130,7 +130,7 @@ Additional integrations for other Vector tools have been added to this plugin.
 - For TESTinsights the user will need to provide the following. If using Git or Subversion for SCM, the plugin will attempt to have the SCM version linked to the TESTinsights project for team access and distributed change based testing.
     - TESTinsights URL - URL to TESTinsights server and project (Use Copy Team Area Url)
     - TESTinsights Project - Project Name in TESTinsights to push results - Leave blank to use Jenkins Job Name
-    - TESTinsights Credential ID-  Credential ID from Jenkins for TESTinsights
+    - TESTinsights Credential ID -  Credential ID from Jenkins for TESTinsights
     - Proxy to push to TESTinsights server - If needed, use proxy.address:port
 
 ## Controlling Where Jobs Run
