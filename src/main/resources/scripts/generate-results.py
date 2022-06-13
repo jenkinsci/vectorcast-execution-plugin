@@ -161,7 +161,7 @@ def readManageVersion(ManageFile):
                 version = int(re.findall(r'\d+', line)[0])
                 break
     if verbose:
-        print("Version of Manage project file = %d" % version)
+        print("Version of VectorCAST project file = %d" % version)
         print("(Levels change in version 17 (*maybe) and above)")
     return version
 

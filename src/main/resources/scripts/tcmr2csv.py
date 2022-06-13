@@ -565,7 +565,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('HtmlReportName', help='HTML Report Name')
-    parser.add_argument('--manage-project',   help='Location of Manage Project that generated report (optional)')
+    parser.add_argument('--manage-project',   help='Location of VEctorCAST Project that generated report (optional)')
     parser.add_argument('--level',   help='Jenkins Job Name Identifier(Source/Platform/Compiler/Testsuite) (optional')
     parser.add_argument('--local',   help='Creates CVS files locally', action="store_true")
     
