@@ -162,11 +162,6 @@
             <version>1.43</version>
         </dependency>
         <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>jenkins-multijob-plugin</artifactId>
-            <version>1.32</version>
-        </dependency>
-        <dependency>
             <groupId>org.jenkins-ci.main</groupId>
             <artifactId>maven-plugin</artifactId>
             <version>3.4</version>
