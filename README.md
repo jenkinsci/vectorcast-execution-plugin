@@ -18,14 +18,11 @@ This plugin adds a new top-level menu item to the Jenkins sidebar.
 
 ![](docs/images/vc_menu_in_sidebar.png)
 
-that provides job control for
-[VectorCAST](http://vector.com/vectorcast) Projects
+## Job Types that provides job control for [VectorCAST](http://vector.com/vectorcast) Projects
 
 ![](docs/images/image2017-10-17_18_14_2.png)
 
-## Job Types that provides job control for
-
-There are two types of supported jobs and one diagnostic job type
+There are two types of supported jobs and one diagnostic job type.
 
 -   **Single Job**
 -   **Pipeline Job**
