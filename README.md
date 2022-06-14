@@ -12,7 +12,7 @@ This plugin adds a new top-level menu item to the Jenkins sidebar. Select the **
 
 ![](docs/images/image2017-10-17_18_14_2.png)
 
-There are two build/execute jobs types and one diagnostic job type.
+There are two build/execute job types and one diagnostic job type.
 
 -   **Single Job**
 -   **Pipeline Job**
@@ -74,7 +74,7 @@ Other Vector tool integrations are supported by this plugin.
 
 ![](docs/images/additional.png)
 
-- For **PC-lint Plus**, the user must provide the command or script that executes PC-lint Plus analysis. It is important that the following format properties are include to ensure the results file is readable by the Warnings-NG plugin:
+- For **PC-lint Plus**, the user must provide the command or script that executes PC-lint Plus analysis. It is important that the following format properties are included to ensure the results file is readable by the Warnings-NG plugin:
 ```        
     -v // turn off verbosity
     -width(0) // don't insert line breaks (unlimited output width)
@@ -90,7 +90,7 @@ Other Vector tool integrations are supported by this plugin.
 
 ## Controlling Where Jobs Run
 
-When using a Pipeline Job, the subjobs are created to run on specific node related to the compiler chosen for the environment. For example:
+When using a Pipeline Job, the sub jobs are created to run on specific node related to the compiler chosen for the environment. For example:
 
 ![](docs/images/restrict.png)
 
@@ -107,7 +107,8 @@ Make sure to set the labels on the relevant Jenkins nodes. Manage Jenkins -\> Ma
 
 ## Known Issues
 
-### VectorCAST Reports and Jenkins Content Security Policy
+### VectorCAST Reports and Jenkins Content Security 
+
 
 VectorCAST HTML reports for metrics were updated to use cascading style sheets (CSS) in the 2019 release and 2020 for top level project metrics. This was done to give users more flexibility in what and how metrics are displayed. To maintain single file HTML format, VectorCAST Reports used inline CSS. Inline CSS was disallowed under Jenkins more restrictive CSP.
 
@@ -147,7 +148,7 @@ For non-pipeline jobs, JUnit publisher will fail any environments published with
 ### Version 0.71 (29 Sept 2021)
 - Updated baseline pipeline script to reflect changes in the code coverage plugin
 - Updated to skip CBT analysis on migrated system test projects
-- Updated script to use import to detected DataAPI.
+- Updated script to use import to detect DataAPI.
 
 ### Version 0.70 (2 Aug 2021)
 - Updated scripts to use io.open for all opens
