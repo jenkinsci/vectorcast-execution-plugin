@@ -1,6 +1,6 @@
 # Summary
 
-This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Coverage is displayed using the [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
+This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Coverage is displayed using the [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
 
 # Usage
 
@@ -45,7 +45,7 @@ There are two options for running tests:
  
 The user will be able to disable the use of Change Based Testing to perform a complete run of their VectorCAST Project. By default, Change Based Testing is enabled but this option can be disabled by unchecking the **Use Change Based Testing** box.
 
-Users with Continuous Integration Licenses can access those licenses by checking the **Use Continuous Integration License** checkbox.  If you do not have Continuous Integration Licenses, do not check this box as you will encounter licensing errors.
+Users with Continuous Integration Licenses can access those licenses by checking the **Use Continuous Integration License** checkbox. If you do not have Continuous Integration Licenses, do not check this box as you will encounter licensing errors.
 
 If the user wishes to call the Jenkins Job from another Pipeline Job, check the **Use Parameterize the Jenkinsfile** box. This will add parameters to the Pipeline Job that will be used by the VectorCAST Pipeline Job to locate the VectorCAST Project (**VCAST_PROJECT_DIR**) and force the VectorCAST Jobs to be executed on a specific node (**VCAST_FORCE_NODE_EXEC_NAME**) instead of using the compiler as a node label.
 
@@ -111,7 +111,7 @@ Make sure to set the labels on the relevant Jenkins nodes. Manage Jenkins -\> Ma
 
 VectorCAST HTML reports for metrics were updated to use cascading style sheets (CSS) in the 2019 release and 2020 for top level project metrics. This was done to give users more flexibility in what and how metrics are displayed. To maintain single file HTML format, VectorCAST Reports used inline CSS. Inline CSS was disallowed under Jenkins more restrictive CSP.
 
-"Jenkins 1.641 / Jenkins 1.625.3 introduce the `Content-Security-Policy` header to static files served by Jenkins (specifically, `DirectoryBrowserSupport`). This header is set to a very restrictive default set of permissions to protect Jenkins users from malicious HTML/JS files in workspaces, `/userContent`, or archived
+"Jenkins 1.641 / Jenkins 1.625.3 introduce the `Content-Security-Policy` header to static files served by Jenkins (specifically, `DirectoryBrowserSupport`). This header is set to a very restrictive default set of permissions to protect Jenkins users from malicious HTML/JS files in workspaces, `/userContent`, or archived
 artifacts."
 
 The result of this combination incorrectly formatted the VectorCAST reports.
@@ -122,7 +122,7 @@ Numerous options are available to correct this:
 - Reconfigure the Jenkins Content Security Policy
 - Download the archives and view reports locally
 
-For more information on the Jenkins CSP, please see [Configuring Content Security Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
+For more information on the Jenkins CSP, please see [Configuring Content Security Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
 
 For more information on VectorCAST Reports and Jenkins Content Security Policy, please see the article [VectorCAST Reports and Jenkins Content Security Policy](https://support.vector.com/kb?sys_kb_id=e54af267db6b6c904896115e68961902&id=kb_article_view&sysparm_rank=8&sysparm_tsqueryId=ba9d8f558707b858b9f233770cbb3543)
 
@@ -298,20 +298,20 @@ For non-pipeline jobs, JUnit publisher will fail any environments published with
 ### Version 0.44 (1 May 2019)
 
 -   Added better legacy support for VectorCAST installations that do not
-    have their executables on the system PATH
+    have their executables on the system PATH
 
 ### Version 0.43 (26 Apr 2019)
 
 -   Removed all uses of the environment variable VECTORCAST\_DIR. From
     now on it is assumed that VectorCAST executables are on the system
-    PATH. Legacy support is still maintained for older versions of
+    PATH. Legacy support is still maintained for older versions of
     VectorCAST.
 -   Additional cleaning up of old files
 
 ### Version 0.42 (25 Apr 2019)
 
 -   Updates for corner cases, verbose out issue, and cleaning up
-    previous build's files
+    previous build's files
 -   Problem when function coverage enabled, but not function call
 -   Function coverage format incorrect in XML causing plugin to throw an
     error
@@ -325,7 +325,7 @@ For non-pipeline jobs, JUnit publisher will fail any environments published with
 ### Version 0.40 (10 Apr 2019)
 
 -   Update to fix auto job updates (where path to VectorCAST Project was
-    being removed)
+    being removed)
 
 ### Version 0.39 (19 Mar 2019)
 
