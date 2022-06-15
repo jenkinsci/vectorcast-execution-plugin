@@ -55,21 +55,12 @@ public class ManageProject implements Serializable {
     private List<Source> sources;
     /** Compilers - only valid if version of Manage file gt= 17 */
     private List<Compiler> compilers;
-    /** Jobs */
-    private List<MultiJobDetail> jobs;
     /**
      * Get groups
      * @return groups
      */
     public List<Group> getGroups() {
         return groups;
-    }
-    /**
-     * Get jobs
-     * @return jobs
-     */
-    public List<MultiJobDetail> getJobs() {
-        return jobs;
     }
     /**
      * Constructor
@@ -80,7 +71,6 @@ public class ManageProject implements Serializable {
         groups = new ArrayList<>();
         sources = new ArrayList<>();
         compilers = new ArrayList<>();
-        jobs = new ArrayList<>();
     }
     /**
      * When calling from the pipeline only the path is passed, need to read 
@@ -149,43 +139,6 @@ public class ManageProject implements Serializable {
         } catch (SAXException ex) {
             Logger.getLogger(NewSingleJob.class.getName()).log(Level.SEVERE, null, ex);
             throw new InvalidProjectFileException();
-        }
-        if (SourceCollectionFound) {
-            for (Source source : sources) {
-                for (Platform platform : source.platforms) {
-                    for (Compiler compiler : platform.compilers) {
-                        for (TestSuite testSuite : compiler.testsuites) {
-                            for (Group group : testSuite.groups) {
-                                for (Environment env : group.getEnvs()) {
-                                    MultiJobDetail job = new MultiJobDetail(
-                                            source.getName(),
-                                            platform.getName(),
-                                            compiler.getName(),
-                                            testSuite.getName(),
-                                            env.getName());
-                                    jobs.add(job);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            for (Compiler compiler : compilers) {
-                for (TestSuite testSuite : compiler.testsuites) {
-                    for (Group group : testSuite.groups) {
-                        for (Environment env : group.getEnvs()) {
-                            MultiJobDetail job = new MultiJobDetail(
-                                    /*source*/null,
-                                    /*platform*/null,
-                                    compiler.getName(),
-                                    testSuite.getName(),
-                                    env.getName());
-                            jobs.add(job);
-                        }
-                    }
-                }
-            }
         }
     }
     

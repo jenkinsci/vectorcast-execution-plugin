@@ -131,14 +131,14 @@ public class VectorCASTJobDiag extends JobBase {
 "%VECTORCAST_DIR%\\manage --help > help.log\n" +
 "if \"%errorlevel%\"==\"1\" (\n" +
 "   echo.\n" +
-"   echo VectorCAST/Manage License...ERROR\n" +
-"   echo    Error Starting VectorCAST/Manage.  Check the log below for details\n" +
+"   echo VectorCAST Project License...ERROR\n" +
+"   echo    Error Starting VectorCAST Project.  Check the log below for details\n" +
 "   echo.\n" +
 "   type help.log\n" +
 "   echo.\n" +
 "   set /a RET_VAL=%RET_VAL%-1\n" +
 ") else (\n" +
-"   echo VectorCAST/Manage License...OKAY\n" +
+"   echo VectorCAST Project License...OKAY\n" +
 ")\n" +
 "\n" +
 ":end\n" +
@@ -197,14 +197,14 @@ public class VectorCASTJobDiag extends JobBase {
 "\n" +
 "if [ \"$?\" != \"0\" ] ; then\n" +
 "   echo\n" +
-"   echo VectorCAST/Manage License...ERROR\n" +
-"   echo    Error Starting VectorCAST/Manage.  Check the log below for details\n" +
+"   echo VectorCAST Project License...ERROR\n" +
+"   echo    Error Starting VectorCAST Project.  Check the log below for details\n" +
 "   echo\n" +
 "   cat help.log\n" +
 "   echo\n" +
 "   RET_VAL=$(($RET_VAL-1))\n" +
 "else\n" +
-"   echo VectorCAST/Manage License...OKAY\n" +
+"   echo VectorCAST Project License...OKAY\n" +
 "fi\n" +
 "\n" +
 "rm -rf help.log\n" +

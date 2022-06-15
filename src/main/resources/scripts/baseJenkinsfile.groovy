@@ -51,8 +51,28 @@ def setupManageProject() {
     runCommands(cmds)
 }
 
-// gets the manage project name without the .vcm if present
+def get_SCM_rev() {
+    def scm_rev = ""
+    def cmd = ""
+    
+    if (VC_TESTinsights_SCM_Tech=='git') {
+        cmd = "git rev-parse HEAD"
+    } else {
+        cmd = "svn info --show-item revision"
+    }
+    
+    if (isUnix()) {
+        scm_rev = sh returnStdout: true, script: cmd
+    } else {
+        cmd = "@echo off \n " + cmd
+        scm_rev = bat returnStdout: true, script: cmd
+    }
+    
+    println "Git Rev Reply " + scm_rev.trim() + "***"
+    return scm_rev.trim()
+}
 
+// gets the manage project name without the .vcm if present
 def getMPname() {
     // get the manage projects full name and base name
     def mpFullName = VC_Manage_Project.split("/")[-1]
@@ -159,7 +179,7 @@ def runCommands(cmds) {
          if (VC_UseCILicense.length() != 0) {
             localCmds += """
                 set VCAST_USING_HEADLESS_MODE=1
-                set VCAST_USE_CI_LICENSES =1
+                set VCAST_USE_CI_LICENSES=1
             """.stripIndent()
         }
         cmds = localCmds + cmds
@@ -228,8 +248,7 @@ def transformIntoStep(inputString) {
                     // set options for each manage project pulled out out of SCM
                     setupManageProject()
                 }
-
-                
+                                
                 // setup the commands for building, executing, and transferring information
                 cmds =  """
                     ${VC_EnvSetup}
@@ -292,6 +311,9 @@ def stepsForParallel(localEnvList) {
 
 // global environment list used to create pipeline jobs
 EnvList = []
+UtEnvList = []
+StEnvList = []
+origManageProject = VC_Manage_Project
  
 pipeline {
 
@@ -378,7 +400,11 @@ pipeline {
                         // Get the repo (should only need the .vcm file)
                         scmStep()
                     }
-                    
+
+                    // archive existing reports 
+                    //runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive --verbose""")
+                    tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/*.xml", overwrite: true
+
                     println "Created with VectorCAST Execution Version: " + VC_createdWithVersion
 
                     // Run the setup step to copy over the scripts
@@ -389,19 +415,36 @@ pipeline {
                     def EnvData = ""
                     
                     // Run a script to determine the compiler test_suite and environment
-                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project}""")
+                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project} --type""")
                                         
                     // for a groovy list that is stored in a global variable EnvList to be use later in multiple places
                     def lines = EnvData.split('\n')
+                    
                     lines.each { line ->
                         def trimmedString = line.trim()
                         boolean containsData = trimmedString?.trim()
                         if (containsData) {
+                            (type, compiler, test_suite, environment) = trimmedString.split()
+                            if (type == "ST:") {
+                                trimmedString = compiler + " " + test_suite + " " + environment
+                                // print("ST:" + trimmedString)
+                                StEnvList = StEnvList + [trimmedString]
+                            }
+                            else if (type == "UT:") {
+                                trimmedString = compiler + " " + test_suite + " " + environment
+                                // print("UT:" + trimmedString)
+                                UtEnvList = UtEnvList + [trimmedString]
+                            }
+                            else {
+                                trimmedString = compiler + " " + test_suite + " " + environment
+                                print("??:" + trimmedString)
+                                continue
+                            }
+                            
                             print ("++ " + trimmedString)
                             EnvList = EnvList + [trimmedString]
                         }                        
                     }
-                    
                     // down to here                                                                            ^^^
                     // -------------------------------------------------------------------------------------------                    
                 }
@@ -409,12 +452,27 @@ pipeline {
         }
 
         // This is the stage that we use the EnvList via stepsForParallel >> transformIntoStep 
-        stage('Build-Execute Stage') {
+        stage('System Test Build-Execute Stage') {
             steps {
                 script {
                     setupManageProject()
                     
-                    jobs = stepsForParallel(EnvList)
+                    jobs = stepsForParallel(StEnvList)
+                    jobs.each { name, job ->
+                        print ("Running System Test Job: " + name)
+                        job.call()
+                    }
+               }
+            }
+        }
+
+        // This is the stage that we use the EnvList via stepsForParallel >> transformIntoStep 
+        stage('Unit Test Build-Execute Stage') {
+            steps {
+                script {
+                    setupManageProject()
+                    
+                    jobs = stepsForParallel(UtEnvList)
                     parallel jobs
                 }
             }
@@ -598,6 +656,47 @@ pipeline {
                 }
             }
         }
+        
+        stage('Additional Tools') {
+            steps {
+                script {
+                    if (VC_usePCLintPlus) {
+                        runCommands(VC_pclpCommand)
+                        recordIssues(tools: [pcLint(pattern: VC_pclpResultsPattern, reportEncoding: 'UTF-8')])
+                        archiveArtifacts allowEmptyArchive: true, artifacts: VC_pclpResultsPattern
+                    }
+                    if (VC_useSquore) {
+                        cmd = """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate_squore_results.py ${VC_Manage_Project}
+                        ${VC_squoreCommand}"""
+                        runCommands(cmd)
+                        archiveArtifacts allowEmptyArchive: true, artifacts: 'xml_data/squore_results*.xml'
+                    }
+                    if (VC_useTESTinsights){
+                        withCredentials([usernamePassword(credentialsId: VC_TESTinsights_Credential_ID, usernameVariable : "VC_TI_USR", passwordVariable : "VC_TI_PWS")]){
+                            TI_proxy = ""
+                            if (VC_TESTinsights_Proxy.length() != 0) {
+                                TI_proxy = "--proxy ${VC_TESTinsights_Proxy}"
+                            }
+
+                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} " + TI_proxy + " --log TESTinsights_Push.log"
+
+                            if (VC_usingSCM) {
+                                
+                                VC_TESTinsights_Revision = get_SCM_rev()
+
+                                println "Git Rev: ${VC_TESTinsights_Revision}"
+                                
+                                TESTinsight_Command += " --vc-project-local-path=${origManageProject} --vc-project-scm-path=${VC_TESTinsights_SCM_URL}/${origManageProject} --src-local-path=${env.WORKSPACE} --src-scm-path=${VC_TESTinsights_SCM_URL}/ --vc-project-scm-technology=${VC_TESTinsights_SCM_Tech} --src-scm-technology=${VC_TESTinsights_SCM_Tech} --vc-project-scm-revision=${VC_TESTinsights_Revision} --src-scm-revision ${VC_TESTinsights_Revision} --versioned"
+                                
+                            }
+                            runCommands(TESTinsight_Command)
+                            archiveArtifacts allowEmptyArchive: true, artifacts: 'TESTinsights_Push.log'
+                        }
+                    }
+                }
+            }
+        }
+        
         stage('Next-Stage') {
             steps {
                 script {

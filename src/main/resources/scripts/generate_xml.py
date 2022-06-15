@@ -334,11 +334,14 @@ class GenerateManageXml(BaseGenerateXml):
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None):
+    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, skipReportsForSkippedEnvs = False, report_failed_only = False):
         super(GenerateXml, self).__init__(cover_report_name, verbose)
 
         self.cbtDict = cbtDict
         self.FullManageProjectName = FullManageProjectName
+        self.generate_exec_rpt_each_testcase = generate_exec_rpt_each_testcase
+        self.skipReportsForSkippedEnvs = skipReportsForSkippedEnvs
+        self.report_failed_only = report_failed_only
         
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         
@@ -350,6 +353,7 @@ class GenerateXml(BaseGenerateXml):
             build_dir_4hash = build_dir_4hash.encode('utf-8')
 
         self.hashCode = hashlib.md5(build_dir_4hash).hexdigest()
+        
         if verbose:
             print ("gen Dir: " + str(build_dir_4hash)+ " Hash: " +self.hashCode)
 
@@ -467,7 +471,6 @@ class GenerateXml(BaseGenerateXml):
         if self.verbose:
             print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
-        #self.fh = open(self.unit_report_name, "w")
         errors = 0
         failed = 0
         success = 0                                            
@@ -485,7 +488,7 @@ class GenerateXml(BaseGenerateXml):
                         errors += 1  
                         self.failed_count += 1
         api.close()            
-		
+
         self.fh_data = ""
         self.fh_data += ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
         self.fh_data += ("<testsuites>\n")
@@ -520,11 +523,35 @@ class GenerateXml(BaseGenerateXml):
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
 
+    def testcase_failed(self, tc):
+        
+        try:
+            from vector.apps.DataAPI.manage_models import SystemTest
+            if (isinstance(tc, SystemTest)):
+                if tc.run_needed and tc.type == 2: 
+                    return False
+                elif tc.run_needed:
+                    return False
+                elif tc.passed == tc.total:
+                    return False
+                else:
+                    return True
+        except:
+            pass
+            
+        if not tc.passed:
+            return True
+            
+        return False
+
 #
 # Internal - write a testcase to the jUnit XML file
 #
     def write_testcase(self, tc, unit_name, func_name, st_is_monitored = False):
     
+        if self.report_failed_only and not self.testcase_failed(tc):
+            return
+
         isSystemTest = False
         
         try:
@@ -542,7 +569,7 @@ class GenerateXml(BaseGenerateXml):
             tcSkipped = False 
             
         # If cbtDict is None, no build log was passed in...don't mark anything as skipped 
-        elif  self.cbtDict == None:
+        elif self.skipReportsForSkippedEnvs or self.cbtDict == None:
             tcSkipped = False 
             
         # else there is something check , if the length of cbtDict is greater than zero
@@ -765,7 +792,7 @@ class GenerateXml(BaseGenerateXml):
         try:
             if isSystemTest:
                 compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
-				# use tc.name because system tests aren't for a specific unit/function
+                # use tc.name because system tests aren't for a specific unit/function
                 if tc.name in simpleTestcases.keys():
                     return [False, simpleTestcases[tc.name][0], simpleTestcases[tc.name][1]]
                 else:
@@ -798,6 +825,10 @@ class GenerateXml(BaseGenerateXml):
                 pprint.pprint ("CBT Dictionary: \n" + self.cbtDict, width = 132)
 
     def __get_testcase_execution_results(self, tc, classname, tc_name):
+    
+        if not self.generate_exec_rpt_each_testcase:
+            return "Execution Report disabled by using --dont-generate-individual-reports"
+            
         report_name_hash =  '.'.join(
             ["execution_results", classname, tc_name])
         # Unicode-objects must be encoded before hashing in Python 3
@@ -805,6 +836,8 @@ class GenerateXml(BaseGenerateXml):
             report_name_hash = report_name_hash.encode('utf-8')
 
         report_name = hashlib.md5(report_name_hash).hexdigest()
+
+        import time
 
         try:
             self.api.report(

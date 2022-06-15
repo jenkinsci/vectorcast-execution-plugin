@@ -39,12 +39,16 @@
         <f:section title="${%VCJob.Control.Project}">
           <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}"
                    help="/plugin/vectorcast-execution/help-projectPath.html">
-            <f:textbox name="manageProjectName" size="50"/>
+            <f:textbox name="manageProjectName" size="50" required="true" />
           </f:entry>
+
+        <vc:jobOptionsLabelNoDefault></vc:jobOptionsLabelNoDefault>
+          
         </f:section>
         <vc:retry></vc:retry>
         <vc:jobOptionsNoDefault></vc:jobOptionsNoDefault>
         <vc:scripts></vc:scripts>
+        <vc:additionalTools></vc:additionalTools>
         <vc:options></vc:options>
         <vc:scm></vc:scm>
         <f:section>

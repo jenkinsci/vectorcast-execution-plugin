@@ -32,7 +32,7 @@
          xmlns:p="/lib/hudson/project">
         <f:entry title="${%VCJob.JobOptions.nodeLabel.title}" description="${%VCJob.JobOptions.nodeLabel.description}"
                  help="/plugin/vectorcast-execution/help-jobOptNodeLabel.html">
-          <f:textbox name="nodeLabel" size="50" value="${instance.nodeLabel}"/>
+          <f:textbox name="nodeLabel" size="50" value="${instance.nodeLabel}" required="true" />
         </f:entry>
 </j:jelly>
 

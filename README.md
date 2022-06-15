@@ -1,93 +1,55 @@
-Create, delete and update Jobs for
-[VectorCAST](http://vector.com/vectorcast)/Manage
-projects.
-
 # Summary
 
-This plugin allows the user to create, delete and update Jobs to build
-and run
-[VectorCAST](http://vector.com/vectorcast) projects.
-Coverage is displayed using the [VectorCAST Coverage
-Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
-
-Jobs can be created as a single job or split into multiple jobs for a
-Manage project, with one job for each environment and an overall job to
-combine the results.
+This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Coverage is displayed using the [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
 
 # Usage
 
-This plugin adds a new top-level menu item to the Jenkins sidebar.
+This plugin adds a new top-level menu item to the Jenkins sidebar. Select the **VectorCAST** menu item to create a new VectorCAST Job.
 
 ![](docs/images/vc_menu_in_sidebar.png)
 
-that provides job control for
-[VectorCAST](http://vector.com/vectorcast)/Manage projects
+## Job Types
 
 ![](docs/images/image2017-10-17_18_14_2.png)
 
-## Job Types
-
-There are 2 types of supported jobs and 1 deprecated job type
+There are two build/execute job types and one diagnostic job type.
 
 -   **Single Job**
 -   **Pipeline Job**
--   **Multi-Job (Deprecated)**
+-   **Diagnostic Job**
 
 ### Single Job
 
-**Single** creates a single Jenkins job to build/execute and
-(optionally) report on all environments in a VectorCAST/Manage project.
+Single Job creates a Single Jenkins Job to build/execute and (optionally) report on all environments in a VectorCAST Project.
 
 ![](docs/images/single.png)
 
 ### Pipeline Job
 
-**Pipeline** creates a Jenkins Pipeline job to build/execute and
-(optionally) report on all environments in a VectorCAST/Manage project
-in parallel.
+Pipeline Job creates a Pipeline Jenkins Job to build/execute and (optionally) report on all environments in a VectorCAST Project in parallel. A Pipeline script (Jenkinsfile) is created to run a build/execute job for each environment and an overall job to combine the results.
 
-:warning:*Pipeline jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel execution on a single VectorCAST Project*
+:warning: *Pipeline Jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel execution on a single VectorCAST Project.*
 
 ![](docs/images/pipeline_create.png)
 
-There are 2 options for running tests
-- Use an SCM system (any that is supported by Jenkins)
-    -   In this case, Jenkins will check out the code and tests into the
-        workspace for each Jenkins job from your repository
-    -   The pipeline job will them combine the coverage and test
-        results from all these individual machines/nodes
-    -   In this case, the VectorCAST/Manage project should be specified
-        as relative to the root of the checkout
-    - There is now an option to use the main Pipeline Job's Workspace as 
-        a dedicated single checkout directory.  This checkout directory must be available
-        to all executors across all nodes either by having all executors running on the same
-        computer or have the main Pipeline Job's Workspace on a shared network drive.
-- Use an existing drive/directory for VectorCAST/Manage project
-    -   In this case, the VectorCAST/Manage project should be specified
-        as an absolute path that is available on all machines/nodes
-    -   Each job can optionally clean up the working directory which
-        will have no effect on the VectorCAST/Manage project since it is
-        located elsewhere
-    -   The reports are generated into the workspace and archived as
-        part of the Jenkins job
+There are two options for running tests:
+- Using an SCM system (any that is supported by Jenkins).
+    -   Jenkins will check out the source code and tests into the workspace for each Jenkins Job from the user's repository.
+    -   The Pipeline Job will then combine the coverage and test results from all of the individual machines/nodes.
+    -   The VectorCAST Project should be specified as relative to the root of the checkout.
+    - There is now an option to use the main Pipeline Job's Workspace as a dedicated single checkout directory. This checkout directory must be available to all executors across all nodes either by having all executors running on the same computer or having the main Pipeline Job's Workspace on a shared network drive.
+- Using an existing drive/directory for the VectorCAST Project.
+    -   The VectorCAST Project should be specified as an absolute path that is available on all machines/nodes.
+    -   Each job can optionally clean up the working directory which will have no effect on the VectorCAST Project since it is located elsewhere.
+    -   The reports are generated into the workspace and archived as part of the Jenkins Job.
  
-The user will be able to disable the use of Change Based Testing to perform a 
-complete run of their VectorCAST Project.  By default Change Based Testing is enabled, but 
-this option can be disabled by unchecking the Use Change Based Testing box
+The user will be able to disable the use of Change Based Testing to perform a complete run of their VectorCAST Project. By default, Change Based Testing is enabled but this option can be disabled by unchecking the **Use Change Based Testing** box.
 
-For users with Continuous Integration Licenses, you will be able to access those licenses by
-checking the Use Continuous Integration License checkbox.  If you do not have 
-Continuous Integration Licenses, do not check this box as you will encounter licensing errors.
+Users with Continuous Integration Licenses can access those licenses by checking the **Use Continuous Integration License** checkbox. If you do not have Continuous Integration Licenses, do not check this box as you will encounter licensing errors.
 
-If the user wishes to call the Jenkins job from another Pipeline job, check the box to 
-parameterize the Jenkinsfile.  This will add parameters to the pipeline job  
-that will be used by the VectorCAST pipeline job to locate the VectorCAST/Manage project (VCAST_PROJECT_DIR)
-and for forcing the VectorCAST Jobs to be executed on a specific node (VCAST_FORCE_NODE_EXEC_NAME) instead of using 
-the compiler as a node label.
+If the user wishes to call the Jenkins Job from another Pipeline Job, check the **Use Parameterize the Jenkinsfile** box. This will add parameters to the Pipeline Job that will be used by the VectorCAST Pipeline Job to locate the VectorCAST Project (**VCAST_PROJECT_DIR**) and force the VectorCAST Jobs to be executed on a specific node (**VCAST_FORCE_NODE_EXEC_NAME**) instead of using the compiler as a node label.
 
-Calling the build command will return Failed, Unstable, Success corresponding to the results of the VectorCAST
-Pipeline job.  To enabled the main pipeline job to continue, the user can surround the build command without
-a _catchError_ block as demonstrated below
+Calling the build command will return **Failed**, **Unstable**, or **Success** corresponding to the results of the VectorCAST Pipeline Job. To allow the main Pipeline Job to continue on error, the user can surround the build command without a _catchError_ block as demonstrated below.
 
 ```
 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : false ) {
@@ -95,154 +57,112 @@ catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : 
 }
 ```
 
-Additionally, if a shared artifact directory is specified, VectorCAST/Manage
-will execute jobs independently, but have a central location for storing
-the build artifacts.  This option can be used to accelerate testing by use
-of VectorCAST's Change Based Testing feature. 
+Additionally, if a shared artifact directory is specified, jobs for the VectorCAST Project will be executed independently but have a central location for storing the build artifacts. This option can be used to accelerate testing by use of VectorCAST's Change Based Testing feature. 
 
-For Pipeline jobs, the plugin processes the build log to determine which
-tests have been skipped by VectorCAST's Change Based Testing feature.  Any
-test cases that had previously pass and were skipped on the current execution
-will be marked as skipped for JUnit and display as such in yellow on the test result
-trend chart:
+For Pipeline Jobs, the plugin processes the build log to determine which tests have been skipped by VectorCAST's Change Based Testing feature. Any test cases that previously passed and were skipped on the current execution will be marked as skipped for JUnit and displayed in yellow on the test result trend chart and denoted as _Skipped_ in the test results list.
 
 ![](docs/images/test_trends.png)
 
-and denoted as _Skipped_ in the test results list
-
 ![](docs/images/test_results.png)
 
-        
-### Multi-Job (Deprecated)
+## Additional Tools
 
-**Multi-Job (Deprecated)** creates a top-level Jenkins job to combine the results from
-individual Jenkins jobs created for each environment in the
-VectorCAST/Manage project. The options for a multi-job are the same as
-single apart from supplying a copy of the Manage project.
+Other Vector tool integrations are supported by this plugin.  
+-   **PC-lint Plus**
+-   **Squore**
+-   **TESTinsights**
 
-![](docs/images/image2017-10-25_17_3_35.png)
+![](docs/images/additional.png)
 
-Jenkins jobs normally build and run in independent workspaces. This is
-the case with this integration. However, there are 2 options for running
-tests
-
--   Use an SCM system (any that is supported by Jenkins)
-    -   In this case, Jenkins will check out the code and tests into the
-        workspace for each Jenkins job from your repository
-    -   The top-level job will them combine the coverage and test
-        results from all these individual machines/nodes
-    -   In this case, the VectorCAST/Manage project should be specified
-        as relative to the root of the checkout
-    -   Each job can optionally clean up the working directory. If the
-        working directory is not cleaned, then the results from the
-        previous run allow VectorCAST/Manage to optimize the execution
-        phase based on any code changes
--   Use a common, shared drive/directory
-    -   In this case, the VectorCAST/Manage project should be specified
-        as an absolute path that is available on all machines/nodes
-    -   Note: Some network drives/shares do not fully implement file
-        locking which cause SQLite, used by VectorCAST/Manage, problems
-        that can result in corruption of the results. If this happens,
-        you may need to use a different network drive/share or consider
-        using an SCM system. Using VectorCAST vc2019 SP3 eliminates these 
-        errors
-    -   Each job can optionally clean up the working directory which
-        will have no effect on the VectorCAST/Manage project since it is
-        located elsewhere
-    -   The reports are generated into the workspace and archived as
-        part of the Jenkins job
+- For **PC-lint Plus**, the user must provide the command or script that executes PC-lint Plus analysis. It is important that the following format properties are included to ensure the results file is readable by the Warnings-NG plugin:
+```        
+    -v // turn off verbosity
+    -width(0) // don't insert line breaks (unlimited output width)
+    -"format=%f(%l): %t %n: %m"
+    -hs1 // The height of a message should be 1
+```        
+- For **Squore** analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
+- For **TESTinsights**, if the user is using Git or Subversion for SCM, the plugin will attempt to have the SCM version linked to the TESTinsights project for team access and distributed change based testing. The user must provide the following:
+    - TESTinsights URL - The URL to TESTinsights server and project (Use Copy Team Area Url).
+    - TESTinsights Project - The Project Name in TESTinsights to push the results (leave blank to use the Jenkins Job Name).
+    - TESTinsights Credential ID - The Credential ID from Jenkins for TESTinsights.
+    - The proxy to push to TESTinsights server in the format **proxy.address:port** (optional)
 
 ## Controlling Where Jobs Run
 
-When using Multi-Jobs, the jobs are created to run on specific nodes
-related to the compiler chosen for the environment. E.g.
+When using a Pipeline Job, the sub jobs are created to run on specific node related to the compiler chosen for the environment. For example:
 
 ![](docs/images/restrict.png)
 
-Make sure to set the labels on the relevant Jenkins nodes. Manage
-Jenkins -\> Manage Nodes -\> configure appropriate node and set the
-‘Labels’ field. In this example the labels have been set to
-GNU\_Native\_5.1\_C and GNU\_Native\_4.8\_C
+Make sure to set the labels on the relevant Jenkins nodes. Manage Jenkins -\> Manage Nodes -\> configure appropriate node and set the ‘Labels’ field. In this example the labels have been set to GNU\_Native\_5.1\_C and GNU\_Native\_4.8\_C
 
 ![](docs/images/restrict_node.png)
 
 ## Setup/Configuration
 
-The requirements for using this plugin with VectorCAST are
-
--   VectorCAST needs to be installed and setup on each node to be used
-    -   VECTORCAST\_DIR and VECTOR\_LICENSE needs to be set correctly
--   Jenkins needs to be installed and setup
-    -   in particular BUILD\_URL needs to be defined (in
-        Jenkins-\>Manage Jenkins-\>Configure System and define 'Jenkins
-        URL' and save the settings
-
-## Updating Existing Multi-job (Deprecated)
-
-An existing multi-job can be updated using the Update Multi-job setup
-manually, or by creating an auto-update multi-job Job. The auto-update
-job may require username/password to be supplied depending on your
-Jenkins configuration.
+- VectorCAST must be installed and setup on each node.
+- The environment variables **VECTORCAST\_DIR** and **VECTOR\_LICENSE** must be set.
+- Jenkins must be installed and setup.
+- **BUILD\_URL** must be defined (in Jenkins-\>Manage Jenkins-\>Configure System and define 'Jenkins URL' and save the settings).
 
 ## Known Issues
 
-### VectorCAST Reports and Jenkins Content Security Policy
+### VectorCAST Reports and Jenkins Content Security 
 
-VectorCAST HTML reports for metrics were updated to use cascading style 
-sheets (CSS) in the 2019 release and 2020 for top level project metrics. This 
-was done to give users more flexibility in what and how metrics are 
-displayed.  To maintain single file HTML format, VectorCAST Reports used inline 
-CSS.  Inline CSS was disallowed under Jenkins more restrictive CSP.
 
-"Jenkins 1.641 / Jenkins 1.625.3 introduce
-the `Content-Security-Policy` header to static files served by Jenkins
-(specifically, `DirectoryBrowserSupport`). This header is set to a very
-restrictive default set of permissions to protect Jenkins users from
-malicious HTML/JS files in workspaces, `/userContent`, or archived
+VectorCAST HTML reports for metrics were updated to use cascading style sheets (CSS) in the 2019 release and 2020 for top level project metrics. This was done to give users more flexibility in what and how metrics are displayed. To maintain single file HTML format, VectorCAST Reports used inline CSS. Inline CSS was disallowed under Jenkins more restrictive CSP.
+
+"Jenkins 1.641 / Jenkins 1.625.3 introduce the `Content-Security-Policy` header to static files served by Jenkins (specifically, `DirectoryBrowserSupport`). This header is set to a very restrictive default set of permissions to protect Jenkins users from malicious HTML/JS files in workspaces, `/userContent`, or archived
 artifacts."
 
 The result of this combination incorrectly formatted the VectorCAST reports.
 
 Numerous options are available to correct this:
 - Use the Jenkins Resource Root URL (Manage Jenkins > Configure System)
-- Reconfigure VectorCAST Jobs to use external CSS (VCAST_RPTS_SELF_CONTAINED=FALSE)
-combined with enabling anonymous reads from the Manage Jenkins > Configure Global Security > Authorization
+- Reconfigure VectorCAST Jobs to use external CSS (**VCAST_RPTS_SELF_CONTAINED=FALSE**) combined with enabling anonymous reads from the Manage Jenkins > Configure Global Security > Authorization
 - Reconfigure the Jenkins Content Security Policy
 - Download the archives and view reports locally
 
-For more information on the Jenkins CSP, please see [Configuring Content Security
-Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
+For more information on the Jenkins CSP, please see [Configuring Content Security Policy](https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy)
+
+For more information on VectorCAST Reports and Jenkins Content Security Policy, please see the article [VectorCAST Reports and Jenkins Content Security Policy](https://support.vector.com/kb?sys_kb_id=e54af267db6b6c904896115e68961902&id=kb_article_view&sysparm_rank=8&sysparm_tsqueryId=ba9d8f558707b858b9f233770cbb3543)
 
 ### JUnit publisher failing environment with no test cases
 
-For non-pipeline jobs, JUnit publisher will fail any environments published 
-with no test results. If you have an environment with no test results, 
-you will manually need to check the box "Do not fail the build on empty test
-results" in the Publish JUnit test result report configuration.
+For non-pipeline jobs, JUnit publisher will fail any environments published without test results. If you have an environment with no test results, you will need to manually check the box "Do not fail the build on empty test results" in the Publish JUnit test result report configuration.
 
 ## Change Log
+
+### Version 0.72 (24 May 2022)
+- Support was removed for the deprecated VectorCAST Multi-Jobs. Users should create VectorCAST Pipeline Jobs in place of VectorCAST Multi-Jobs.
+- Previously, VectorCAST Jobs were executed on the built-in node by default. Now, when creating new VectorCAST Job, the user must provide the name of the node that the job should be executed on. Jenkins advises against running builds on the built-in node. See [Controller Isolation](https://www.jenkins.io/doc/book/security/controller-isolation/) for more information.
+- A new stage was added to VectorCAST Pipeline jobs that runs the system tests in serial after running all unit tests. This prevents multiple instances of VectorCAST from modifying the same instrumented source files at the same time.
+- Support for additional external tools was added for VectorCAST jobs. See the **Additional Tools** options on the job creation page.
+  - PC-lint Plus
+  - Squore
+  - TESTinsights
+- Options were reorganized on the VectorCAST Pipeline Job creation page.
+- The VectorCAST Execution Plugin version is now displayed on the VectorCAST Jobs page.
+- Previously, custom reports that used the **VCAST_MANAGE_PROJECT_DIRECTORY** environment variable would fail to generate. Now, the environment variable is set when the reports are generated.
 
 ### Version 0.71 (29 Sept 2021)
 - Updated baseline pipeline script to reflect changes in the code coverage plugin
 - Updated to skip CBT analysis on migrated system test projects
-- The Python support scripts have been updated to attempt importing a module
-  from VectorCAST's DataAPI/reporting API vs. checking for the existence of a
-  pre-compiled Python bytecode file. Such an approach follows Python's "EAFP"
-  mantra.
+- Updated script to use import to detect DataAPI.
 
 ### Version 0.70 (2 Aug 2021)
 - Updated scripts to use io.open for all opens
 - Updated parse_traceback to display all tracebacks
 
 ### Version 0.69 (7 Jun 2021)
-- Updated pipeline job to handle continuouis integration licenses
+- Updated pipeline job to handle continuous integration licenses
 
 ### Version 0.68 (14 May 2021)
 - New HTML reports match current Jenkins CSP
 - Encoding read for GBK characters
 - Bug fixes for compatibility issues with VectorCAST/2021
 - Bug fix for counting run system test cases as skipped
-- Handle uppercase Manage project .vcm extension
+- Handle uppercase VectorCAST Project .vcm extension
 
 ### Version 0.67 (30 March 2021)
 - Add support for Python 3.9
@@ -255,7 +175,7 @@ results" in the Publish JUnit test result report configuration.
 ### Version 0.65 (20 Jan 2021)
 - Single jobs not displaying full report and rebuild report correctly in summary (VC2020)
 - Capturing stdout for skipped analysis causing console output to be delayed
-- Pipeline job fails unless user specific .vcm for manage project
+- Pipeline job fails unless user specific .vcm for VectorCAST Project
 - Problem with CBT analysis when not using single checkout directory
 - Using lowercase %workspace% causes single checkout directory error
 - Updated managewait.py to overcome race condition causing script to hang on readline()
@@ -273,7 +193,7 @@ results" in the Publish JUnit test result report configuration.
 - "Could not acquire a read lock on the project's vcm file" should raise an error, but it does not 
 - Add option to active CI licenses 
 - Regression Scripts with identical ending directories show testcase as skipped 
-- Add option to make job parameterized for Manage project location and Force Node Execution rather than compiler 
+- Add option to make job parameterized for VectorCAST Project location and Force Node Execution rather than compiler 
 - Update error thrown when user creates absolute path with SCM snippet 
 - Need to add more error detection 
 - Expand JUnit test case name display to include file.subprogram 
@@ -286,7 +206,7 @@ results" in the Publish JUnit test result report configuration.
 - Check for illegal characters in Pipeline Job names
 - Update Single and Multi-Jobs to use same reporting as Pipeline Jobs
 - Remove CombinedReport.html from previous Pipeline job build at beginning of new build
-- Make aggregate coverage results consistent with VectorCAST/Manage aggregate coverage results
+- Make aggregate coverage results consistent with VectorCAST Project aggregate coverage results
 - Always use new VectorCAST report API for VectorCAST/2019 and later
 - Fix potential file access race condition when generating xml
 - Fix exception when building VectorCAST/Unit regression script environments
@@ -379,20 +299,20 @@ results" in the Publish JUnit test result report configuration.
 ### Version 0.44 (1 May 2019)
 
 -   Added better legacy support for VectorCAST installations that do not
-    have their executables on the system PATH
+    have their executables on the system PATH
 
 ### Version 0.43 (26 Apr 2019)
 
 -   Removed all uses of the environment variable VECTORCAST\_DIR. From
     now on it is assumed that VectorCAST executables are on the system
-    PATH. Legacy support is still maintained for older versions of
+    PATH. Legacy support is still maintained for older versions of
     VectorCAST.
 -   Additional cleaning up of old files
 
 ### Version 0.42 (25 Apr 2019)
 
 -   Updates for corner cases, verbose out issue, and cleaning up
-    previous build's files
+    previous build's files
 -   Problem when function coverage enabled, but not function call
 -   Function coverage format incorrect in XML causing plugin to throw an
     error
@@ -405,8 +325,8 @@ results" in the Publish JUnit test result report configuration.
 
 ### Version 0.40 (10 Apr 2019)
 
--   Update to fix auto job updates (where path to Manage project was
-    being removed)
+-   Update to fix auto job updates (where path to VectorCAST Project was
+    being removed)
 
 ### Version 0.39 (19 Mar 2019)
 
@@ -424,8 +344,8 @@ results" in the Publish JUnit test result report configuration.
 
 ### Version 0.36 (27 Sept 2018)
 
--   Support overlapping version 17 Manage projects
--   Updates to support long directory paths in VectorCAST/Manage
+-   Support overlapping version 17 VectorCAST Projects
+-   Updates to support long directory paths in VectorCAST Project
     reporting
 
 ### Version 0.35 (15 May 2018)
@@ -462,7 +382,7 @@ results" in the Publish JUnit test result report configuration.
 
 ### Version 0.29 (27 Nov 2017)
 
--   Improve support for long Manage project names, environment names and
+-   Improve support for long VectorCAST Project names, environment names and
     compiler names
 
 ### Version 0.28 (2 Nov 2017)

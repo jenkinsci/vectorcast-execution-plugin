@@ -30,7 +30,7 @@
   <l:layout permission="${permission}" title="${%Conflict.Title}">
     <l:main-panel>
       <h1>${%Conflict.Title}</h1>
-      <h3>$SCM Snippet: ${it.scmException.scmSnippet} conflicts with absolute path to VectorCAST/Manage project: ${it.scmException.pathToManageProject}</h3>
+      <h3>$SCM Snippet: ${it.scmException.scmSnippet} conflicts with absolute path to VectorCAST Project: ${it.scmException.pathToManageProject}</h3>
       <p>${%Conflict.Description}</p>
     </l:main-panel>
   </l:layout>

@@ -41,16 +41,15 @@
         <f:section title="${%VCJob.Control.Project}">
           <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}"
                    help="/plugin/vectorcast-execution/help-projectPath.html">
-            <f:textbox name="manageProjectName" size="50" required="true" />
+            <f:textbox name="manageProjectName" size="50" required="true" />  
           </f:entry>
+
+          <vc:jobOptionsLabelMaster></vc:jobOptionsLabelMaster>
+          
             <f:entry title="${%VCJob.Options.useCBT.title}" description="${%VCJob.Options.useCBT.description}"
                     help="/plugin/vectorcast-execution/help-optuseCBT.html">
                 <f:checkbox name="useCBT" checked="${instance.useCBT}" default="true"/>
             </f:entry>        
-            <f:entry title="${%VCJob.Options.useCiLicense.title}" description="${%VCJob.Options.useCiLicense.description}"
-                    help="/plugin/vectorcast-execution/help-optuseCiLicense.html">
-                <f:checkbox name="useCiLicense" checked="${instance.useCiLicense}" default="false"/>
-            </f:entry>  
             <f:entry title="${%VCJob.Options.useParameters.title}" description="${%VCJob.Options.useParameters.description}"
                     help="/plugin/vectorcast-execution/help-optuseParameters.html">
                 <f:checkbox name="useParameters" checked="${instance.useParameters}" default="false"/>
@@ -61,13 +60,15 @@
         <vc:retry></vc:retry>
         <vc:jobOptionsPipeline></vc:jobOptionsPipeline>
         <vc:pipelineScripts></vc:pipelineScripts>
+        <vc:additionalTools></vc:additionalTools>
 
         <f:section title="${%VCJob.Control.SCMCheckoutLine}">
           <f:entry title="${%VCJob.Options.singleCheckout.title}" description="${%VCJob.Options.singleCheckout.description}"
                     help="/plugin/vectorcast-execution/help-optsingleCheckout.html">
             <f:checkbox name="singleCheckout" checked="${instance.singleCheckout}" default="false"/>
           </f:entry>        
-          <f:entry title="${%VCJob.Control.SCMCheckoutLine.snippet.title}" description="${%VCJob.Control.SCMCheckoutLine.snippet.description}"
+          <f:entry title="${%VCJob.Control.SCMCheckoutLine.snippet.title}" 
+                   description="Pipeline Snippet from Jenkins &lt;a href=&quot;${rootURL}/pipeline-syntax&quot; target=&quot;_blank&quot;&gt; Snippet Generator &lt;/a&gt; for your SCM checkout of the VectorCAST Project and related files"
                    help="/plugin/vectorcast-execution/help-scmSnippet.html">
             <f:textarea name="scmSnippet" class="fixed-width" required="false" />
           </f:entry>

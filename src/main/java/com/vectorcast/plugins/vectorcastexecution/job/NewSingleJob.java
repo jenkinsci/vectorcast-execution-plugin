@@ -4,7 +4,7 @@
  * Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
+ * of this software and associated documentation files (the f"Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
@@ -80,11 +80,67 @@ public class NewSingleJob extends BaseJob {
             html_text = ".txt";
             report_format = "TEXT";
         }
+        String pclpCommandString = "";
+        String squoreCommandString_win = "";
+        String squoreCommandString_unix = "";
+        String TESTinsightsSCMconnect_win = "\n";
+        String TESTinsightsSCMconnect_unix = "\n";
+        String TESTinsightsCommandString_win = "";
+        String TESTinsightsCommandString_unix = "";
+        String scmInfoCommand_win = "";
+        String scmInfoCommand_unix = "";
         
+        if (getPclpCommand().length() != 0) {
+            pclpCommandString = getPclpCommand() + "\n";
+        }            
+        if (getSquoreCommand().length() != 0) {
+            squoreCommandString_win = "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate_squore_results.py\" \"@PROJECT@\"";
+            squoreCommandString_win += "\n" + getSquoreCommand() + "\n";
+            squoreCommandString_unix = "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate_squore_results.py\" \"@PROJECT@\"";
+            squoreCommandString_unix += "\n" + getSquoreCommand() + "\n";
+        }            
+        if (getTESTinsights_URL().length() != 0) {
+            boolean setupConnect = false;
+            if (isUsingSCM()) {
+                if (getTESTinsights_SCM_Tech() == "git") {
+                    scmInfoCommand_win = "git config remote.origin.url > scm_url.tmp\n" +
+                        "set /p SCM_URL= < scm_url.tmp\n" +
+                        "git rev-parse HEAD > scm_rev.tmp\n" +
+                        "set /p SCM_REV= < scm_rev.tmp\n";
+                    scmInfoCommand_unix = "SCM_URL=`git config remote.origin.url`\n" +
+                        "SCM_REV=`git rev-parse HEAD`\n";
+                    setupConnect = true;
+                                            
+                }
+                if (getTESTinsights_SCM_Tech() == "svn") {
+                    scmInfoCommand_win = "svn info --show-item=url --no-newline > scm_url.tmp\n" +
+                        "set /p SCM_URL= < scm_url.tmp\n" +
+                        "git svn info --show-item revision > scm_rev.tmp\n" +
+                        "set /p SCM_REV= < scm_rev.tmp\n";
+                    scmInfoCommand_unix = "SCM_URL=`svn info --show-item=url --no-newline`\n" +
+                        "SCM_REV=`svn info --show-item revision`\n";
+                    setupConnect = true;
+                }
+                if (setupConnect) {
+                    TESTinsightsSCMconnect_win = " --vc-project-local-path=%WORKSPACE%/\"@PROJECT@\" --vc-project-scm-path=%SCM_URL%/\"@PROJECT@\" --src-local-path=%WORKSPACE% --src-scm-path=%SCM_URL%/ --vc-project-scm-technology=" + getTESTinsights_SCM_Tech() + " --src-scm-technology=" + getTESTinsights_SCM_Tech() + " --vc-project-scm-revision=%SCM_REV% --src-scm-revision %SCM_REV% --versioned\n";
+                    TESTinsightsSCMconnect_unix = " --vc-project-local-path=$WORKSPACE/\"@PROJECT@\" --vc-project-scm-path=$SCM_URL/\"@PROJECT@\" --src-local-path=$WORKSPACE --src-scm-path=$SCM_URL/ --vc-project-scm-technology=" + getTESTinsights_SCM_Tech() + " --src-scm-technology=" + getTESTinsights_SCM_Tech() + " --vc-project-scm-revision=$SCM_REV --src-scm-revision $SCM_REV --versioned\n";
+                }
+            }
+            if (setupConnect) {
+                TESTinsightsCommandString_win  = scmInfoCommand_win;
+                TESTinsightsCommandString_unix = scmInfoCommand_unix;
+            }
+            String TI_Proxy = "";
+            if (getTESTinsights_proxy().length() > 0) {
+                TI_Proxy = "--proxy " + getTESTinsights_proxy();
+            }
+            TESTinsightsCommandString_win  += "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + getTESTinsights_project() + " --test-object %BUILD_NUMBER% --vc-project \"@PROJECT@\" " + TI_Proxy + " --log TESTinsights_Push.log " + TESTinsightsSCMconnect_win;
+            TESTinsightsCommandString_unix += "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + getTESTinsights_project() + " --test-object $BUILD_NUMBER --vc-project \"@PROJECT@\" " + TI_Proxy + " --log TESTinsights_Push.log " + TESTinsightsSCMconnect_unix;
+        }            
         String pluginVersion = VcastUtils.getVersion().orElse( "Unknown" );    
         String win = 
-getEnvironmentSetupWin() + "\n" +
 "rem Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
+getEnvironmentSetupWin() + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "set VCAST_NO_FILE_TRUNCATION=1\n" +
 "set VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
@@ -110,13 +166,14 @@ getExecutePreambleWin() +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n";
         }
-        win += getEnvironmentTeardownWin() + "\n";
+        win += getEnvironmentTeardownWin() + "\n" +
+            pclpCommandString + squoreCommandString_win + TESTinsightsCommandString_win;
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
 
         String unix = 
-getEnvironmentSetupUnix() + "\n" +
 "##Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
+getEnvironmentSetupUnix() + "\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "export VCAST_NO_FILE_TRUNCATION=1\n" +
 "export VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
@@ -127,8 +184,7 @@ getExecutePreambleUnix() +
 "rm -f command.log\n"+
 " $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --build-execute --incremental  --output \\\"@PROJECT_BASE@_rebuild" + html_text + "\\\" \"\n" +
 "cp -p command.log complete_build.log\n"+
-"cp -p \"@PROJECT_BASE@_rebuild" + html_text + "\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n"+
-"\n";
+"cp -p \"@PROJECT_BASE@_rebuild" + html_text + "\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n";
 if (getOptionUseReporting()) {
             unix +=
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
@@ -141,7 +197,8 @@ if (getOptionUseReporting()) {
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n";
         }
-        unix += getEnvironmentTeardownUnix() + "\n";
+        unix += getEnvironmentTeardownUnix() + "\n" + 
+            pclpCommandString + squoreCommandString_unix + TESTinsightsCommandString_unix;
         unix = StringUtils.replace(unix, "@PROJECT@", getManageProjectName());
         unix = StringUtils.replace(unix, "@PROJECT_BASE@", getBaseName());
 
@@ -330,9 +387,13 @@ if (getOptionUseReporting()) {
         // Post-build actions - only is using reporting
         if (getOptionUseReporting()) {
             addArchiveArtifacts(getTopProject());
+            addPCLintPlus(getTopProject());
             addJunit(getTopProject());
             addVCCoverage(getTopProject());
             addGroovyScriptSingleJob();
+            if (getTESTinsights_URL().length() != 0) {
+                addCredentialID(getTopProject());
+            }
         }
         
         getTopProject().save();

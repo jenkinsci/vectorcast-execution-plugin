@@ -36,7 +36,7 @@
                      help="/plugin/vectorcast-execution/help-setupCommand.html">
       <f:section title="${%VCSetup.Control.Project}">
         <f:entry title="${%VCSetup.Control.Project.path.title}" description="${%VCSetup.Control.Project.path.description}"
-                 help="/plugin/vectorcast-execution/help-projectPathMulti.html">
+                 help="/plugin/vectorcast-execution/help-projectPath.html">
           <f:textbox name="manageProjectName" size="50" required="true" value="${instance.manageProjectName}"/>
         </f:entry>
       </f:section>

@@ -40,6 +40,10 @@
           <f:number clazz="positive-number" min="1" step="1" default="30" name="waitTime" value="${instance.waitTime}"/>
         </f:entry>
       </f:optionalBlock>
+      
+      <f:optionalBlock title="${%VCJob.LicOptions.useCiLicense.title}" checked="${instance.useCiLicense}" inline="true" 
+                       help="/plugin/vectorcast-execution/help-optuseCiLicense.html">
+      </f:optionalBlock>
     </f:section>
 </j:jelly>
 

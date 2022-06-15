@@ -62,6 +62,8 @@ import java.util.logging.Level;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Create a new single job
@@ -96,6 +98,7 @@ public class NewPipelineJob extends BaseJob {
     private String executePreamble;
     /** Environment tear down*/
     private String environmentTeardown;
+
 	/**
 	 * Constructor
 	 * 
@@ -120,6 +123,41 @@ public class NewPipelineJob extends BaseJob {
 
         sharedArtifactDirectory = json.optString("sharedArtifactDir","");
         pipelineSCM = json.optString("scmSnippet","").trim();
+        
+        String[] lines = pipelineSCM.split("\n");
+        
+        List <String> scm_list = new ArrayList<String>();
+        scm_list.add("git");
+        scm_list.add("svn");
+        
+        String url = "";
+        String scm_technology = "";
+
+        for (String line : lines) {
+            
+            for (String scm : scm_list) {
+                if (line.startsWith(scm)) {
+                    scm_technology = scm;
+                    
+                    if (line.indexOf("url:") == -2) {
+                        String[] elements = line.split(",");
+                        for (String ele : elements) {
+                            
+                            if (ele.startsWith("url:")) {
+                                String[] ele_list = ele.split(" ");
+                                url = ele_list[ele_list.length - 1];
+                            }
+                        }
+                    } else {
+                        String[] url_ele = line.split(" ");
+                        url = url_ele[url_ele.length - 1];
+                    }
+                }
+            }
+        }
+        setTESTinsights_SCM_URL(url.replace("'",""));
+        setTESTinsights_SCM_Tech(scm_technology);
+        
         singleCheckout = json.optBoolean("singleCheckout", false);
         useCILicenses  = json.optBoolean("useCiLicense", false);
         useCBT  = json.optBoolean("useCBT", true);
@@ -129,7 +167,7 @@ public class NewPipelineJob extends BaseJob {
         environmentSetup = json.optString("environmentSetup", null);
         executePreamble = json.optString("executePreamble", null);
         environmentTeardown = json.optString("environmentTeardown", null);
-        
+         
         if (sharedArtifactDirectory.length() != 0) {
             sharedArtifactDirectory = "--workspace="+sharedArtifactDirectory.replace("\\","/");
         }
@@ -411,6 +449,20 @@ public class NewPipelineJob extends BaseJob {
             "VC_UseCILicense = " + VC_Use_CI + "\n" +  
             "VC_useCBT = " + incremental + "\n" +  
             "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
+            "VC_usePCLintPlus = " + String.valueOf(getPclpCommand().length() != 0) + "\n" +  
+            "VC_pclpCommand = '" + getPclpCommand() + "'\n" +  
+            "VC_pclpResultsPattern = '" + getPclpResultsPattern() + "'\n" +  
+            "VC_useSquore = " + String.valueOf(getSquoreCommand().length() != 0) + "\n" +  
+            "VC_squoreCommand = '''" + getSquoreCommand() + "'''\n" +
+            "VC_useTESTinsights = " + String.valueOf(getTESTinsights_URL().length() != 0) + "\n" +  
+            "VC_TESTinsights_URL = '" + getTESTinsights_URL() + "'\n" +  
+            "VC_TESTinsights_Project = '" + getTESTinsights_project() + "'\n" +  
+            "VC_TESTinsights_Proxy = '" + getTESTinsights_proxy() + "'\n" +  
+            "VC_TESTinsights_Credential_ID = '" + getTESTinsights_credentials_id() + "'\n" +  
+
+            "VC_TESTinsights_SCM_URL = '" + getTESTinsights_SCM_URL() + "'\n" +  
+            "VC_TESTinsights_SCM_Tech = '" + getTESTinsights_SCM_Tech() + "'\n" +  
+            "VC_TESTinsights_Revision=\"\"\n" +  
             "\n" +   
             "";
             

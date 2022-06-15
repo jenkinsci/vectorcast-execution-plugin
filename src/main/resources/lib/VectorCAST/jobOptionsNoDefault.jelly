@@ -34,16 +34,11 @@
     <f:section title="${%VCJob.JobOptions}">
       <f:optionalBlock title="Job Creation Options" checked="${instance.showJobOptions}" inline="true" 
                        help="/plugin/vectorcast-execution/help-jobOptions.html">
-        <!-- f:entry title="${%VCJob.JobOptions.sharedArtifactDir.title}" description="${%VCJob.JobOptions.sharedArtifactDir.description}"
-                 help="/plugin/vectorcast-execution/help-sharedArtifactDir.html">
-          <f:textbox name="sharedArtifactDir" size="260" value="${instance.sharedArtifactDir}"/>
-        </f:entry -->
         
         <f:entry title="${%VCJob.JobOptions.jobName.title}" description="${%VCJob.JobOptions.jobName.description}"
                  help="/plugin/vectorcast-execution/help-jobOptJobName.html">
           <f:textbox name="jobName" size="50" value="${instance.jobName}"/>
         </f:entry>
-        <vc:jobOptionsLabelNoDefault></vc:jobOptionsLabelNoDefault>
       </f:optionalBlock>
     </f:section>
 </j:jelly>

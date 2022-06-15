@@ -42,6 +42,16 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.tasks.junit.JUnitResultArchiver;
+import io.jenkins.plugins.analysis.warnings.PcLint;
+import io.jenkins.plugins.analysis.core.steps.IssuesRecorder;
+import org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper;
+import org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding;
+import org.jenkinsci.plugins.credentialsbinding.MultiBinding;
+import java.util.List;
+import java.util.Collections;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 /**
  * Base job management - create/delete/update
  */
@@ -94,6 +104,22 @@ abstract public class BaseJob {
     private String jobName;
     /** Node label */
     private String nodeLabel;
+    
+    /** PC Lint Plus Command */
+    private String pclpCommand;
+    /** PC Lint Plus Path */
+    private String pclpResultsPattern;
+    /* Squore execution command */
+    private String squoreCommand;
+
+    /* TESTinsights Push information */
+    private String TESTinsights_URL;
+    private String TESTinsights_project;
+    private String TESTinsights_credentials_id;
+    private String TESTinsights_proxy;
+    private String TESTinsights_SCM_URL;
+    private String TESTinsights_SCM_Tech;
+
     /**
      * Constructor
      * @param request request object
@@ -148,7 +174,16 @@ abstract public class BaseJob {
             }
             
             nodeLabel = json.optString("nodeLabel", "");
-        }
+            
+            /* Additional Tools */
+            pclpCommand = json.optString("pclpCommand", "");
+            pclpResultsPattern = json.optString("pclpResultsPattern", "");
+            squoreCommand = json.optString("squoreCommand", "");
+            TESTinsights_URL = json.optString("TESTinsights_URL", "");
+            TESTinsights_project = json.optString("TESTinsights_project", "${JOB_BASE_NAME}");
+            TESTinsights_credentials_id = json.optString("TESTinsights_credentials_id", "");
+            TESTinsights_proxy = json.optString("TESTinsights_proxy", "");
+       }
     }
     /**
      * Use Saved Data
@@ -176,6 +211,15 @@ abstract public class BaseJob {
         waitLoops = savedData.getWaitLoops();
         jobName = savedData.getJobName();
         nodeLabel = savedData.getNodeLabel();
+        pclpCommand = savedData.getPclpCommand();
+        pclpResultsPattern = savedData.getPclpResultsPattern();
+        squoreCommand = savedData.getSquoreCommand();
+        TESTinsights_URL = savedData.getTESTinsights_URL();
+        TESTinsights_project = savedData.getTESTinsights_project();
+        TESTinsights_proxy = savedData.getTESTinsights_proxy();
+        TESTinsights_credentials_id = savedData.getTESTinsights_credentials_id();
+        TESTinsights_SCM_URL = savedData.getTESTinsights_SCM_URL();
+        TESTinsights_SCM_Tech = savedData.getTESTinsights_SCM_Tech();
     }
     /**
      * Using some form of SCM
@@ -395,6 +439,82 @@ abstract public class BaseJob {
         return nodeLabel;
     }
     /**
+     * Get pc-lint plus command
+     * @return pc-lint plus command
+     */
+    protected String getPclpCommand() {
+        return pclpCommand;
+    }
+    /**
+     * Get pc-lint plus result pattern
+     * @return pc-lint plus result pattern
+     */
+    protected String getPclpResultsPattern() {
+        return pclpResultsPattern;
+    }
+    
+    /**
+     * Get command for running Squore
+     * @return Squore command
+     */
+    protected String getSquoreCommand() {
+        return squoreCommand;
+    }    
+    /**
+     * Get URL for TESTinsights
+     * @return TESTinsights URL
+     */
+    protected String getTESTinsights_URL() {
+        return TESTinsights_URL;
+    }    
+    /**
+     * Get Project for TESTinsights
+     * @return TESTinsights Project
+     */
+    protected String getTESTinsights_project() {
+        return TESTinsights_project;
+    }    
+    /**
+     * Get Proxy for TESTinsights
+     * @return TESTinsights proxy
+     */
+    protected String getTESTinsights_proxy() {
+        return TESTinsights_proxy;
+    }    
+    /**
+     * Get Credentials for TESTinsights
+     * @return TESTinsights Credentials
+     */
+    protected String getTESTinsights_credentials_id() {
+        return TESTinsights_credentials_id;
+    }        
+    /**
+     * Get SCM URL for TESTinsights
+     * @return TESTinsights SCM URL
+     */
+    protected String getTESTinsights_SCM_URL() {
+        return TESTinsights_SCM_URL;
+    }    
+    /**
+     * Get SCM Technology TESTinsights
+     * @return TESTinsights SCM Technology
+     */
+    protected String getTESTinsights_SCM_Tech() {
+        return TESTinsights_SCM_Tech;
+    }    
+    /**
+     * Set SCM URL for TESTinsights
+     */
+    protected  void setTESTinsights_SCM_URL(String TESTinsights_SCM_URL) {
+        this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
+    }    
+    /**
+     * Set SCM Technology TESTinsights
+     */
+    protected void setTESTinsights_SCM_Tech(String TESTinsights_SCM_Tech) {
+        this.TESTinsights_SCM_Tech = TESTinsights_SCM_Tech;
+    }    
+    /**
      * Get request
      * @return request
      */
@@ -451,6 +571,17 @@ abstract public class BaseJob {
                 usingSCM = false;
             } else {
                 usingSCM = true;
+                
+                // for TESTinsights SCM connector
+                String scmName = scm.getDescriptor().getDisplayName();
+                if (scmName == "Git") {
+                    TESTinsights_SCM_Tech = "git";
+                } else if (scmName == "Subversion") {
+                    TESTinsights_SCM_Tech = "svn";
+                } else {
+                    TESTinsights_SCM_Tech = "";
+                }
+                Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "SCM Info: " + scmName);
             }
         }
         topProject.setScm(scm);
@@ -507,7 +638,17 @@ abstract public class BaseJob {
                                     waitTime,
                                     manageProjectName,
                                     jobName,
-                                    nodeLabel);
+                                    nodeLabel,
+                                    pclpCommand,
+                                    pclpResultsPattern,
+                                    squoreCommand,
+                                    TESTinsights_URL,
+                                    TESTinsights_project,
+                                    TESTinsights_credentials_id,
+                                    TESTinsights_proxy,
+                                    TESTinsights_SCM_URL,
+                                    TESTinsights_SCM_Tech);
+                                    
         setup.setUsingSCM(usingSCM);
         setup.setSCM(scm);
 
@@ -519,8 +660,19 @@ abstract public class BaseJob {
      * @param project project to add to
      */
     protected void addArchiveArtifacts(Project project) {
+        String pclpArchive = "";
+        String TIArchive = "";
+        
+        if (pclpCommand.length() != 0) {
+            pclpArchive = ", " + pclpResultsPattern;
+        }
+        if (TESTinsights_URL.length() != 0) {
+            TIArchive = ", TESTinsights_Push.log";            
+        }
+        String addToolsArchive = pclpArchive + TIArchive;
+        
         ArtifactArchiver archiver = new ArtifactArchiver(
-                /*artifacts*/"**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log",
+                /*artifacts*/"**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log" + addToolsArchive,
                 /*excludes*/"",
                 /*latest only*/false,
                 /*allow empty archive*/false);
@@ -536,6 +688,25 @@ abstract public class BaseJob {
         project.getPublishersList().add(junit);
     }
     /**
+     * Add PC-Lint Plus step
+     * @param project project to add step to do PC-Lint Plus
+     */
+
+    protected void addPCLintPlus(Project project) {
+        if (pclpCommand.length() != 0) {
+            IssuesRecorder recorder = new IssuesRecorder();
+
+            PcLint pcLintPlus = new PcLint();
+            pcLintPlus.setPattern(pclpResultsPattern);
+            pcLintPlus.setReportEncoding("UTF-8");
+            pcLintPlus.setSkipSymbolicLinks(false);
+            
+            recorder.setTools(pcLintPlus);
+
+            project.getPublishersList().add(recorder);
+        }
+    }
+    /**
      * Add VectorCAST coverage reporting step
      * @param project project to add step to
      */
@@ -545,5 +716,8 @@ abstract public class BaseJob {
         publisher.includes = "**/coverage_results_*.xml";
         publisher.healthReports = healthReports;
         project.getPublishersList().add(publisher);
+    }
+    protected void addCredentialID(Project project) {
+        project.getBuildWrappersList().add(new SecretBuildWrapper(Collections.<MultiBinding<?>>singletonList(new UsernamePasswordMultiBinding("VC_TI_USR","VC_TI_PWS",TESTinsights_credentials_id))));
     }
 }
