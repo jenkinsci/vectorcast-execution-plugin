@@ -659,10 +659,10 @@ if __name__ == '__main__':
         with open(tool_version,"r") as fd:
             ver = fd.read()
             
-        if "19 " in ver:
+        if ver.startswith("19 "):
             need_fixup = True
             
-        if "19.sp1" in ver:
+        if ver.startswith("19.sp1")"
             need_fixup = True
             # custom report patch for SP1 problem - should be fixed in future release      
             old_init = CustomReport._post_init
