@@ -662,7 +662,7 @@ if __name__ == '__main__':
         if ver.startswith("19 "):
             need_fixup = True
             
-        if ver.startswith("19.sp1")"
+        if ver.startswith("19.sp1"):
             need_fixup = True
             # custom report patch for SP1 problem - should be fixed in future release      
             old_init = CustomReport._post_init
