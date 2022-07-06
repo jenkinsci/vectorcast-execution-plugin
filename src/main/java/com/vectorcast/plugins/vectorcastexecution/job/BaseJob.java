@@ -504,12 +504,14 @@ abstract public class BaseJob {
     }    
     /**
      * Set SCM URL for TESTinsights
+     * @param TESTinsights_SCM_URL url for TESTinsights SCM
      */
     protected  void setTESTinsights_SCM_URL(String TESTinsights_SCM_URL) {
         this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
     }    
     /**
      * Set SCM Technology TESTinsights
+     * @param TESTinsights_SCM_Tech tech for TESTinsights SCM
      */
     protected void setTESTinsights_SCM_Tech(String TESTinsights_SCM_Tech) {
         this.TESTinsights_SCM_Tech = TESTinsights_SCM_Tech;

@@ -368,7 +368,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }
     /**
      * Get pc-lint plus command
-     * @return pc-lint plus command
+     * @param pclpCommand pc-lint plus command
      */
     public void setPclpCommand(String pclpCommand) {
         this.pclpCommand = pclpCommand;
@@ -389,7 +389,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }
     /**
      * Get pc-lint plus result pattern
-     * @return pc-lint plus result pattern
+     * @param pclpResultsPattern pc-lint plus result pattern
      */
     public void setPclpResultsPattern(String pclpResultsPattern) {
         this.pclpResultsPattern = pclpResultsPattern;
@@ -413,7 +413,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
     /**
      * Set Squore command
-     * @return Squore command
+     * @param squoreCommand quore command
      */
     public void setSquoreCommand(String squoreCommand) {
         this.squoreCommand = squoreCommand;
@@ -428,7 +428,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }    
     /**
      * Set URL for TESTinsights
-     * @return none     */
+     * @param TESTinsights_URL TESTinsights URL
+     */
     public void setTESTinsights_URL(String TESTinsights_URL) {
         this.TESTinsights_URL = TESTinsights_URL;
     }    
@@ -441,7 +442,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }    
     /**
      * Set Project for TESTinsights
-     * @return none     */
+     * @param TESTinsights_project TESTinsights project
+     */
     public void setTESTinsights_project(String TESTinsights_project) {
         this.TESTinsights_project = TESTinsights_project;
     }    
@@ -454,7 +456,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }    
     /**
      * Set Project for TESTinsights
-     * @return none     */
+     * @param TESTinsights_proxy TESTinsights proxy
+     */
     public void setTESTinsights_proxy(String TESTinsights_proxy) {
         this.TESTinsights_proxy = TESTinsights_proxy;
     }    
@@ -467,7 +470,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }        
     /**
      * Set Credentials ID for TESTinsights
-     * @return none     */
+     * @param TESTinsights_credentials_id TESTinsights credentials id
+     */
     public void setTESTinsights_credentials_id(String TESTinsights_credentials_id) {
         this.TESTinsights_credentials_id = TESTinsights_credentials_id;
     }    
@@ -487,12 +491,14 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }    
     /**
      * Set SCM URL for TESTinsights
+     * @param TESTinsights_SCM_URL TESTinsights SCM ULR
      */
     public void setTESTinsights_SCM_URL(String TESTinsights_SCM_URL) {
         this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
     }    
     /**
      * Set SCM Technology TESTinsights
+     * @param TESTinsights_SCM_Tech TESTinsights SCM Tech
      */
 
     public void setTESTinsights_SCM_Tech(String TESTinsights_SCM_Tech) {
