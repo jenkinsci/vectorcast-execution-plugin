@@ -41,9 +41,11 @@
         </f:entry>
       </f:optionalBlock>
       
-      <f:optionalBlock title="${%VCJob.LicOptions.useCiLicense.title}" checked="${instance.useCiLicense}" inline="true" 
-                       help="/plugin/vectorcast-execution/help-optuseCiLicense.html">
-      </f:optionalBlock>
+      <f:entry title="${%VCJob.LicOptions.useCiLicense.title}" description="${%VCJob.LicOptions.useCiLicense.description}"
+         help="/plugin/vectorcast-execution/help-optuseCiLicense.html">
+                <f:checkbox name="useCiLicense" checked="${instance.useCiLicense}" default="false"/>
+      </f:entry>  
+                       
     </f:section>
 </j:jelly>
 

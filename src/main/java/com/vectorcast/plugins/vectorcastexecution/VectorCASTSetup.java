@@ -78,6 +78,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private boolean optionExecutionReport;
     /** Clean workspace */
     private boolean optionClean;
+    /** Use CI License */
+    private boolean useCILicenses;
     /** Wait loops */
     private Long waitLoops;
     /** Wait time */
@@ -289,6 +291,20 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     public void setOptionClean(boolean optionClean) {
         this.optionClean = optionClean;
     }
+    /**
+     * Get option to use CI licenses
+     * @return true to use CI licenses, false to not
+     */
+    public boolean getUseCILicenses() {
+        return useCILicenses;
+    }
+    /**
+     * Set option to use CI licenses
+     * @param useCILicenses  true to use CI licenses, false to not
+     */
+    public void setUseCILicenses(boolean useCILicenses) {
+        this.useCILicenses = useCILicenses;
+    }    
     /**
      * Get using SCM
      * @return true/false
@@ -511,6 +527,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param optionHtmlBuildDesc HTML Build description
      * @param optionExecutionReport execution report
      * @param optionClean clean
+     * @param useCILicenses use CI licenses
      * @param waitLoops wait loops
      * @param waitTime wait time
      * @param manageProjectName manage project name
@@ -538,6 +555,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            String optionHtmlBuildDesc,
                            boolean optionExecutionReport,
                            boolean optionClean,
+                           boolean useCILicenses,
                            Long waitLoops,
                            Long waitTime,
                            String manageProjectName,
@@ -563,6 +581,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.optionHtmlBuildDesc = optionHtmlBuildDesc;
         this.optionExecutionReport = optionExecutionReport;
         this.optionClean = optionClean;
+        this.useCILicenses = useCILicenses;
         this.usingSCM = false;
         this.scm = new NullSCM();
         this.waitLoops = waitLoops;
@@ -748,6 +767,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t optionHtmlBuildDesc: " + optionHtmlBuildDesc +  "\n"
     			+ "\t optionExecutionReport: " + optionExecutionReport +  "\n"
     			+ "\t optionClean: " + optionClean +  "\n"
+    			+ "\t useCILicenses: " + useCILicenses +  "\n"
     			+ "\t usingSCM: " + usingSCM +  "\n"
     			+ "\t scm: " + scm +  "\n"
     			+ "\t waitLoops: " + waitLoops +  "\n"

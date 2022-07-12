@@ -141,6 +141,7 @@ public class NewSingleJob extends BaseJob {
         String win = 
 "rem Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 getEnvironmentSetupWin() + "\n" +
+getUseCILicensesWin()  + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "set VCAST_NO_FILE_TRUNCATION=1\n" +
 "set VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
@@ -174,6 +175,7 @@ getExecutePreambleWin() +
         String unix = 
 "##Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 getEnvironmentSetupUnix() + "\n" +
+getUseCILicensesUnix()  + "\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "export VCAST_NO_FILE_TRUNCATION=1\n" +
 "export VCAST_RPTS_SELF_CONTAINED=FALSE\n" +

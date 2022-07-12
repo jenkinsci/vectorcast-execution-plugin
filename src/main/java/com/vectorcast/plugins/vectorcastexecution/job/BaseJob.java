@@ -90,6 +90,8 @@ abstract public class BaseJob {
     private boolean optionExecutionReport;
     /** Clean workspace */
     private boolean optionClean;
+    /** Use CI license */
+    private boolean useCILicenses;
     /** Using some form of SCM */
     private boolean usingSCM;
     /** The SCM being used */
@@ -175,10 +177,12 @@ abstract public class BaseJob {
             
             nodeLabel = json.optString("nodeLabel", "");
             
+            useCILicenses  = json.optBoolean("useCiLicense", false);
+            
             /* Additional Tools */
-            pclpCommand = json.optString("pclpCommand", "");
+            pclpCommand = json.optString("pclpCommand", "").replace('\\','/');;
             pclpResultsPattern = json.optString("pclpResultsPattern", "");
-            squoreCommand = json.optString("squoreCommand", "");
+            squoreCommand = json.optString("squoreCommand", "").replace('\\','/');
             TESTinsights_URL = json.optString("TESTinsights_URL", "");
             TESTinsights_project = json.optString("TESTinsights_project", "${JOB_BASE_NAME}");
             TESTinsights_credentials_id = json.optString("TESTinsights_credentials_id", "");
@@ -203,6 +207,7 @@ abstract public class BaseJob {
         optionHtmlBuildDesc = savedData.getOptionHtmlBuildDesc();
         optionExecutionReport = savedData.getOptionExecutionReport();
         optionClean = savedData.getOptionClean();
+        useCILicenses = savedData.getUseCILicenses();
 
         usingSCM = savedData.getUsingSCM();
         scm = savedData.getSCM();
@@ -242,6 +247,7 @@ abstract public class BaseJob {
     protected String getEnvironmentSetupWin() {
         return environmentSetupWin;
     }
+    
     /**
      * Set environment setup for windows
      * @param environmentSetupWin windows environment setup
@@ -389,7 +395,42 @@ abstract public class BaseJob {
     protected void setOptionClean(boolean optionClean) {
         this.optionClean = optionClean;
     }
+    
     /**
+     * Get option to use CI licenses
+     * @return true to use CI licenses, false to not
+     */
+    protected boolean getUseCILicenses() {
+        return useCILicenses;
+    }
+    /**
+     * Set option to use CI licenses
+     * @param useCILicenses  true to use CI licenses, false to not
+     */
+    protected void setUseCILicenses(boolean useCILicenses) {
+        this.useCILicenses = useCILicenses;
+    }    
+     /**
+     * Get environment setup for windows
+     * @return setup
+     */
+    protected String getUseCILicensesWin() {
+        String ciEnvVars = "";
+        
+        if (useCILicenses) {
+            ciEnvVars = "set VCAST_USING_HEADLESS_MODE=1\nset VCAST_USE_CI_LICENSES=1\n";
+        }
+        return ciEnvVars;
+    }
+    protected String getUseCILicensesUnix() {
+        String ciEnvVars = "";
+        
+        if (useCILicenses) {
+            ciEnvVars = "export VCAST_USING_HEADLESS_MODE=1\nexport VCAST_USE_CI_LICENSES=1\n";
+        }
+        return ciEnvVars;
+    }
+   /**
      * Get the time to wait between retries
      * @return number of seconds
      */
@@ -634,6 +675,7 @@ abstract public class BaseJob {
                                     optionHtmlBuildDesc,
                                     optionExecutionReport,
                                     optionClean,
+                                    useCILicenses,
                                     waitLoops,
                                     waitTime,
                                     manageProjectName,
