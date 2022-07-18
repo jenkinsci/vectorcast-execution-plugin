@@ -185,9 +185,11 @@ abstract public class BaseJob {
             squoreCommand = json.optString("squoreCommand", "").replace('\\','/');
             TESTinsights_URL = json.optString("TESTinsights_URL", "");
             TESTinsights_project = json.optString("TESTinsights_project", "");
-            if (TESTinsights_project == "") {
+            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "TESTinsights_project: " + TESTinsights_project + "  Size= " + TESTinsights_project.length());
+            if (TESTinsights_project.length() == 0) {
                     TESTinsights_project = "${JOB_BASE_NAME}";
             }
+            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "TESTinsights_project: " + TESTinsights_project + "  Size= " + TESTinsights_project.length());
             TESTinsights_credentials_id = json.optString("TESTinsights_credentials_id", "");
             TESTinsights_proxy = json.optString("TESTinsights_proxy", "");
        }
