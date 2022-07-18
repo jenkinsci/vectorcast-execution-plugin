@@ -384,7 +384,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }
     /**
      * Get pc-lint plus command
-     * @return pc-lint plus command
+     * @return none
      */
     public void setPclpCommand(String pclpCommand) {
         this.pclpCommand = pclpCommand;
@@ -405,7 +405,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }
     /**
      * Get pc-lint plus result pattern
-     * @return pc-lint plus result pattern
+     * @return none
      */
     public void setPclpResultsPattern(String pclpResultsPattern) {
         this.pclpResultsPattern = pclpResultsPattern;
@@ -429,7 +429,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
     /**
      * Set Squore command
-     * @return Squore command
+     * @return none
      */
     public void setSquoreCommand(String squoreCommand) {
         this.squoreCommand = squoreCommand;
@@ -503,13 +503,13 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }    
     /**
      * Set SCM URL for TESTinsights
-     */
+     * @return none     */
     public void setTESTinsights_SCM_URL(String TESTinsights_SCM_URL) {
         this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
     }    
     /**
      * Set SCM Technology TESTinsights
-     */
+     * @return none     */
 
     public void setTESTinsights_SCM_Tech(String TESTinsights_SCM_Tech) {
         this.TESTinsights_SCM_Tech = TESTinsights_SCM_Tech;

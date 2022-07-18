@@ -189,6 +189,10 @@ public class NewPipelineJob extends BaseJob {
         if (pipelineSCM.length() != 0 && absPath) {
             throw new ScmConflictException(pipelineSCM, MPName);
         }
+        
+        if (getTESTinsights_project() == "env.JOB_BASE_NAME") {
+            setTESTinsights_project("${JOB_BASE_NAME}");
+        }
     }
 
 	/**
@@ -456,7 +460,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_squoreCommand = '''" + getSquoreCommand() + "'''\n" +
             "VC_useTESTinsights = " + String.valueOf(getTESTinsights_URL().length() != 0) + "\n" +  
             "VC_TESTinsights_URL = '" + getTESTinsights_URL() + "'\n" +  
-            "VC_TESTinsights_Project = '" + getTESTinsights_project() + "'\n" +  
+            "VC_TESTinsights_Project = \"" + getTESTinsights_project() + "\"\n" +  
             "VC_TESTinsights_Proxy = '" + getTESTinsights_proxy() + "'\n" +  
             "VC_TESTinsights_Credential_ID = '" + getTESTinsights_credentials_id() + "'\n" +  
 

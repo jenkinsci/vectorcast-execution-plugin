@@ -185,11 +185,9 @@ abstract public class BaseJob {
             squoreCommand = json.optString("squoreCommand", "").replace('\\','/');
             TESTinsights_URL = json.optString("TESTinsights_URL", "");
             TESTinsights_project = json.optString("TESTinsights_project", "");
-            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "TESTinsights_project: " + TESTinsights_project + "  Size= " + TESTinsights_project.length());
             if (TESTinsights_project.length() == 0) {
-                    TESTinsights_project = "${JOB_BASE_NAME}";
+                    TESTinsights_project = "env.JOB_BASE_NAME";
             }
-            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "TESTinsights_project: " + TESTinsights_project + "  Size= " + TESTinsights_project.length());
             TESTinsights_credentials_id = json.optString("TESTinsights_credentials_id", "");
             TESTinsights_proxy = json.optString("TESTinsights_proxy", "");
        }
@@ -521,6 +519,13 @@ abstract public class BaseJob {
         return TESTinsights_project;
     }    
     /**
+     * Set Project for TESTinsights
+     * @return TESTinsights Project
+     */
+    protected void setTESTinsights_project(String TESTinsights_project) {
+        this.TESTinsights_project = TESTinsights_project;
+    }    
+    /**
      * Get Proxy for TESTinsights
      * @return TESTinsights proxy
      */
@@ -550,13 +555,14 @@ abstract public class BaseJob {
     }    
     /**
      * Set SCM URL for TESTinsights
-     */
+     * @return none     */
+     
     protected  void setTESTinsights_SCM_URL(String TESTinsights_SCM_URL) {
         this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
     }    
     /**
      * Set SCM Technology TESTinsights
-     */
+     * @return none     */	 
     protected void setTESTinsights_SCM_Tech(String TESTinsights_SCM_Tech) {
         this.TESTinsights_SCM_Tech = TESTinsights_SCM_Tech;
     }    

@@ -137,7 +137,7 @@ For non-pipeline jobs, JUnit publisher will fail any environments published with
 - Pathing issue fixed 
 - Continuous integration license checkbox fixed
 - Fixed python issues 
-
+- Fixed issue with default TI project name
 ### Version 0.72 (24 May 2022)
 - Support was removed for the deprecated VectorCAST Multi-Jobs. Users should create VectorCAST Pipeline Jobs in place of VectorCAST Multi-Jobs.
 - Previously, VectorCAST Jobs were executed on the built-in node by default. Now, when creating new VectorCAST Job, the user must provide the name of the node that the job should be executed on. Jenkins advises against running builds on the built-in node. See [Controller Isolation](https://www.jenkins.io/doc/book/security/controller-isolation/) for more information.
