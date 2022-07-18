@@ -184,7 +184,10 @@ abstract public class BaseJob {
             pclpResultsPattern = json.optString("pclpResultsPattern", "");
             squoreCommand = json.optString("squoreCommand", "").replace('\\','/');
             TESTinsights_URL = json.optString("TESTinsights_URL", "");
-            TESTinsights_project = json.optString("TESTinsights_project", "${JOB_BASE_NAME}");
+            TESTinsights_project = json.optString("TESTinsights_project", "");
+            if (TESTinsights_project == "") {
+                    TESTinsights_project = "${JOB_BASE_NAME}";
+            }
             TESTinsights_credentials_id = json.optString("TESTinsights_credentials_id", "");
             TESTinsights_proxy = json.optString("TESTinsights_proxy", "");
        }
