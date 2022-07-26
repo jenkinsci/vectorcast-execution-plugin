@@ -520,7 +520,7 @@ abstract public class BaseJob {
     }    
     /**
      * Set Project for TESTinsights
-     * @return TESTinsights Project
+     * @param TESTinsights_project  TESTinsights project name
      */
     protected void setTESTinsights_project(String TESTinsights_project) {
         this.TESTinsights_project = TESTinsights_project;
@@ -555,14 +555,16 @@ abstract public class BaseJob {
     }    
     /**
      * Set SCM URL for TESTinsights
-     * @return none     */
+     * @param TESTinsights_SCM_URL - String TESTinsights SCM URL
+     */
      
     protected  void setTESTinsights_SCM_URL(String TESTinsights_SCM_URL) {
         this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
     }    
     /**
      * Set SCM Technology TESTinsights
-     * @return none     */	 
+     * @param TESTinsights_SCM_Tech - String TESTinsights SCM Techology (git or svn)
+     */	 
     protected void setTESTinsights_SCM_Tech(String TESTinsights_SCM_Tech) {
         this.TESTinsights_SCM_Tech = TESTinsights_SCM_Tech;
     }    
