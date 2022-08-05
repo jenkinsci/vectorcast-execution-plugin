@@ -134,13 +134,25 @@ public class NewSingleJob extends BaseJob {
             if (getTESTinsights_proxy().length() > 0) {
                 TI_Proxy = "--proxy " + getTESTinsights_proxy();
             }
-            TESTinsightsCommandString_win  += "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + getTESTinsights_project() + " --test-object %BUILD_NUMBER% --vc-project \"@PROJECT@\" " + TI_Proxy + " --log TESTinsights_Push.log " + TESTinsightsSCMconnect_win;
-            TESTinsightsCommandString_unix += "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + getTESTinsights_project() + " --test-object $BUILD_NUMBER --vc-project \"@PROJECT@\" " + TI_Proxy + " --log TESTinsights_Push.log " + TESTinsightsSCMconnect_unix;
+            String TI_Project_win = "";
+            String TI_Project_unix = "";
+            
+            if (getTESTinsights_project() == "env.JOB_BASE_NAME") {
+                TI_Project_win = "%JOB_BASE_NAME%";
+                TI_Project_unix = "$JOB_BASE_NAME";
+            } else {
+                TI_Project_win = getTESTinsights_project();
+                TI_Project_unix = getTESTinsights_project();
+            }
+            
+            TESTinsightsCommandString_win  += "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + TI_Project_win  + " --test-object %BUILD_NUMBER% --vc-project \"@PROJECT@\" " + TI_Proxy + " --log TESTinsights_Push.log " + TESTinsightsSCMconnect_win;
+            TESTinsightsCommandString_unix += "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + TI_Project_unix + " --test-object $BUILD_NUMBER --vc-project \"@PROJECT@\" " + TI_Proxy + " --log TESTinsights_Push.log " + TESTinsightsSCMconnect_unix;
         }            
         String pluginVersion = VcastUtils.getVersion().orElse( "Unknown" );    
         String win = 
 "rem Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 getEnvironmentSetupWin() + "\n" +
+getUseCILicensesWin()  + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "set VCAST_NO_FILE_TRUNCATION=1\n" +
 "set VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
@@ -174,6 +186,7 @@ getExecutePreambleWin() +
         String unix = 
 "##Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 getEnvironmentSetupUnix() + "\n" +
+getUseCILicensesUnix()  + "\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "export VCAST_NO_FILE_TRUNCATION=1\n" +
 "export VCAST_RPTS_SELF_CONTAINED=FALSE\n" +

@@ -168,31 +168,34 @@ def parse_html_files(mpName):
             except:
                 soup = BeautifulSoup(fd)
                 
-        if soup.find(id="report-title"):
-            manage_api_report = True
-            # New Manage reports have div with id=report-title
-            # Want second table (skip config data section)
-            row_list = soup.find_all('table')[1].tr.find_next_siblings()
-            count_list = row_list[-1].th.find_next_siblings()
-        else:
-            manage_api_report = False
-            row_list = soup.table.table.tr.find_next_siblings()
-            count_list = row_list[-1].td.find_next_siblings()
-        for item in row_list[:-1]:
-            if manage_api_report:
-                main_soup.find_all('table')[1].insert(insert_idx,item)
+        try:
+            if soup.find(id="report-title"):
+                manage_api_report = True
+                # New Manage reports have div with id=report-title
+                # Want second table (skip config data section)
+                row_list = soup.find_all('table')[1].tr.find_next_siblings()
+                count_list = row_list[-1].th.find_next_siblings()
             else:
-                main_soup.table.table.insert(insert_idx,item)
-            insert_idx = insert_idx + 1
-        preserved_count = preserved_count + int(count_list[1].get_text())
-        executed_count = executed_count + int(count_list[2].get_text())
-        total_count = total_count + int(count_list[3].get_text())
-        if manage_api_report:
-            build_totals = [int(s.strip()) for s in count_list[0].get_text().strip().split('(')[0][:-1].split('/')]
-        else:
-            build_totals = [int(s.strip()) for s in count_list[0].get_text().strip().split('(')[-1][:-1].split('/')]
-        build_success = build_success + build_totals[0]
-        build_total = build_total + build_totals[1]
+                manage_api_report = False
+                row_list = soup.table.table.tr.find_next_siblings()
+                count_list = row_list[-1].td.find_next_siblings()
+            for item in row_list[:-1]:
+                if manage_api_report:
+                    main_soup.find_all('table')[1].insert(insert_idx,item)
+                else:
+                    main_soup.table.table.insert(insert_idx,item)
+                insert_idx = insert_idx + 1
+            preserved_count = preserved_count + int(count_list[1].get_text())
+            executed_count = executed_count + int(count_list[2].get_text())
+            total_count = total_count + int(count_list[3].get_text())
+            if manage_api_report:
+                build_totals = [int(s.strip()) for s in count_list[0].get_text().strip().split('(')[0][:-1].split('/')]
+            else:
+                build_totals = [int(s.strip()) for s in count_list[0].get_text().strip().split('(')[-1][:-1].split('/')]
+            build_success = build_success + build_totals[0]
+            build_total = build_total + build_totals[1]
+        except:
+            continue
 
     try:
         percentage = build_success * 100 // build_total

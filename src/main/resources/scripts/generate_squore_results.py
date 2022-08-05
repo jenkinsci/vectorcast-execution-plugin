@@ -162,7 +162,7 @@ def process_file (vc_file, outputdir):
     elif vc_file.endswith(".vcm"):
         # for env in Api(vc_file).Environment.all():
         for env in get_apis_from_vcm_file(vc_file):
-            print ("Processing " + env.get_environment().name)
+            print ("Processing " + env.environment.name)
 
             # print(env.Environment.first().configuration.path)
             path = ""
