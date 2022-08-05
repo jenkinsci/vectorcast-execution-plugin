@@ -471,7 +471,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         return TESTinsights_proxy;
     }    
     /**
-     * Set Project for TESTinsights
+     * Set Proxy for TESTinsights
+     * @param TESTinsights_proxy TESTinsights proxy
+     */
     public void setTESTinsights_proxy(String TESTinsights_proxy) {
         this.TESTinsights_proxy = TESTinsights_proxy;
     }    
