@@ -109,7 +109,6 @@ Make sure to set the labels on the relevant Jenkins nodes. Manage Jenkins -\> Ma
 
 ### VectorCAST Reports and Jenkins Content Security 
 
-
 VectorCAST HTML reports for metrics were updated to use cascading style sheets (CSS) in the 2019 release and 2020 for top level project metrics. This was done to give users more flexibility in what and how metrics are displayed. To maintain single file HTML format, VectorCAST Reports used inline CSS. Inline CSS was disallowed under Jenkins more restrictive CSP.
 
 "Jenkins 1.641 / Jenkins 1.625.3 introduce the `Content-Security-Policy` header to static files served by Jenkins (specifically, `DirectoryBrowserSupport`). This header is set to a very restrictive default set of permissions to protect Jenkins users from malicious HTML/JS files in workspaces, `/userContent`, or archived
@@ -130,6 +129,10 @@ For more information on VectorCAST Reports and Jenkins Content Security Policy, 
 ### JUnit publisher failing environment with no test cases
 
 For non-pipeline jobs, JUnit publisher will fail any environments published without test results. If you have an environment with no test results, you will need to manually check the box "Do not fail the build on empty test results" in the Publish JUnit test result report configuration.
+
+### Potential lost off requirements information
+
+For customers using VectorCAST's requirements gateway, there's a potential for loss of requirements data when running test environments in parallel while using a shared requriments database.
 
 ## Change Log
 
