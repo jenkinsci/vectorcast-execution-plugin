@@ -136,11 +136,12 @@ For customers using VectorCAST's requirements gateway, there's a potential for l
 
 ## Change Log
 
-### Version 0.73 (22 July 2022)
-- Pathing issue fixed 
-- Continuous integration license checkbox fixed
-- Fixed python issues 
-- Fixed issue with default TI project name
+### Version 0.73 (19 Aug 2022)
+- Added support for entering a Windows path for PC-lint Plus or Squore commands. 
+- Added support for Continuous Integration Licenses with Single Jobs.
+- Added support for System Test Environments with Squore. 
+- If a TESTinsights project name is not given, it is named after the job.
+
 ### Version 0.72 (24 May 2022)
 - Support was removed for the deprecated VectorCAST Multi-Jobs. Users should create VectorCAST Pipeline Jobs in place of VectorCAST Multi-Jobs.
 - Previously, VectorCAST Jobs were executed on the built-in node by default. Now, when creating new VectorCAST Job, the user must provide the name of the node that the job should be executed on. Jenkins advises against running builds on the built-in node. See [Controller Isolation](https://www.jenkins.io/doc/book/security/controller-isolation/) for more information.
