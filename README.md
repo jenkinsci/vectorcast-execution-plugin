@@ -136,7 +136,7 @@ For customers using VectorCAST's requirements gateway, there's a potential for l
 
 ## Change Log
 
-### Version 0.73 (19 Aug 2022)
+### Version 0.73 (22 Aug 2022)
 - Added support for entering a Windows path for PC-lint Plus or Squore commands. 
 - Added support for Continuous Integration Licenses with Single Jobs.
 - Added support for System Test Environments with Squore. 
