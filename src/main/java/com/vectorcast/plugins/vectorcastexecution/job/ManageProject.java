@@ -41,6 +41,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Manage project
@@ -80,7 +81,7 @@ public class ManageProject implements Serializable {
      */
     public void parseFromPipeline() throws IOException, InvalidProjectFileException {
 
-        String content = new String (Files.readAllBytes(Paths.get(manageFile)));
+        String content = new String (Files.readAllBytes(Paths.get(manageFile)), StandardCharsets.UTF_8);
         manageFile = content;
         parse();
     }
@@ -142,7 +143,9 @@ public class ManageProject implements Serializable {
         }
     }
     
-    private abstract class BaseElement {
+    private abstract class BaseElement implements Serializable {
+		private static final long serialVersionUID = -2702906759715291576L;
+        
         private String name;
         public String getName() {
             return name;
@@ -154,14 +157,14 @@ public class ManageProject implements Serializable {
             this.name = name;
         }
     }
-    private class Environment extends BaseElement implements Serializable {
-		private static final long serialVersionUID = 3034737707481469634L;
+    private class Environment extends BaseElement  {
+		//private static final long serialVersionUID = 3034737707481469634L;
         public Environment(String name) {
             super(name);
         }
     }
-    private class Compiler extends BaseElement implements Serializable {
-		private static final long serialVersionUID = 1589398746960619492L;
+    private class Compiler extends BaseElement {
+		//private static final long serialVersionUID = 1589398746960619492L;
         private List<TestSuite> testsuites;
         public Compiler() {
             super(null);
@@ -189,8 +192,8 @@ public class ManageProject implements Serializable {
             }
         }
     }
-    private class Group extends BaseElement implements Serializable {
-		private static final long serialVersionUID = -3853981706915279144L;
+    private class Group extends BaseElement {
+		//private static final long serialVersionUID = -3853981706915279144L;
         private List<Environment> envs;
         public Group(String name) {
             super(name);
@@ -213,8 +216,8 @@ public class ManageProject implements Serializable {
             }
         }
     }
-    private class Platform extends BaseElement implements Serializable {
-		private static final long serialVersionUID = -4654058958485216364L;
+    private class Platform extends BaseElement  {
+		//private static final long serialVersionUID = -4654058958485216364L;
         private List<Compiler> compilers;
         public Platform(String name) {
             super(name);
@@ -236,8 +239,8 @@ public class ManageProject implements Serializable {
             }
         }
     }
-    private class Source extends BaseElement implements Serializable {
-		private static final long serialVersionUID = 5593732464142577808L;
+    private class Source extends BaseElement {
+		//private static final long serialVersionUID = 5593732464142577808L;
         private List<Platform> platforms;
         public Source(String name) {
             super(name);
@@ -258,8 +261,8 @@ public class ManageProject implements Serializable {
             }
         }
     }
-    private class TestSuite extends BaseElement implements Serializable {
-		private static final long serialVersionUID = -5423816322247056526L;
+    private class TestSuite extends BaseElement  {
+		//private static final long serialVersionUID = -5423816322247056526L;
         List<Group> groups;
         public TestSuite(String name) {
             super(name);

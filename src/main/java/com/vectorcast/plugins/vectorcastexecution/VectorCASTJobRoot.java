@@ -44,7 +44,7 @@ public class VectorCASTJobRoot implements RootAction {
     
 	public static final PermissionGroup PERMISSIONS_GROUP = new PermissionGroup(
 			VectorCASTJobRoot.class,Messages._VectorCASTRootAction_PermissionGroup());
-    public static final PermissionScope scope[] = {PermissionScope.JENKINS};
+    private static final PermissionScope scope[] = {PermissionScope.JENKINS};
  	public static final Permission VIEW = new Permission(PERMISSIONS_GROUP,
 			"View", Messages._VectorCASTRootAction_ViewPermissionDescription(),
             Jenkins.ADMINISTER, true, scope);
@@ -99,8 +99,13 @@ public class VectorCASTJobRoot implements RootAction {
      */
     public JobBase getDynamic(String name) {
         for (JobBase ui : getAll())
-            if (ui.getUrlName().equals(name))
-                return ui;
+            try {
+                if (ui.getUrlName().equals(name))
+                    return ui;
+            } catch (NullPointerException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         return null;
     }
     /**

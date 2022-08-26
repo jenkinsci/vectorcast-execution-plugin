@@ -1,3 +1,4 @@
+
 # Summary
 
 This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Coverage is displayed using the [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
@@ -130,17 +131,23 @@ For more information on VectorCAST Reports and Jenkins Content Security Policy, 
 
 For non-pipeline jobs, JUnit publisher will fail any environments published without test results. If you have an environment with no test results, you will need to manually check the box "Do not fail the build on empty test results" in the Publish JUnit test result report configuration.
 
-### Potential lost off requirements information
+### Potential loss off requirements information
 
 For customers using VectorCAST's requirements gateway, there's a potential for loss of requirements data when running test environments in parallel while using a shared requriments database.
 
 ## Change Log
 
-### Version 0.73 (22 July 2022)
-- Pathing issue fixed 
-- Continuous integration license checkbox fixed
-- Fixed python issues 
-- Fixed issue with default TI project name
+### Version 0.74 (9 Sep 2022)
+- Fixed findbugs related warnings. 
+- Restructured and commented Jenkinsfile base for pipeline jobs
+- Added catchError to additional tools stage
+
+### Version 0.73 (22 Aug 2022)
+- Fixed support for entering a Windows path for PC Lint Plus or Squore commands. 
+- Fixed support for Continuous Integration Licenses.
+- Fixed support for System Test Environments with Squore. 
+- Fixed issue when TESTinsights project name is not given, it is named after the job.
+
 ### Version 0.72 (24 May 2022)
 - Support was removed for the deprecated VectorCAST Multi-Jobs. Users should create VectorCAST Pipeline Jobs in place of VectorCAST Multi-Jobs.
 - Previously, VectorCAST Jobs were executed on the built-in node by default. Now, when creating new VectorCAST Job, the user must provide the name of the node that the job should be executed on. Jenkins advises against running builds on the built-in node. See [Controller Isolation](https://www.jenkins.io/doc/book/security/controller-isolation/) for more information.
