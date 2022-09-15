@@ -64,7 +64,31 @@ public class VectorCASTJobRoot implements RootAction {
         // Always display - assume that Jenkins permission checking
         // will catch and report any permissions issues
         if (permission) {
-            return "/plugin/vectorcast-execution/icons/vector_favicon.png";
+            String iconName;
+            String jenkinsVersion = Jenkins.getInstance().VERSION;
+            String version[] = jenkinsVersion.split("\\.");
+            Integer major, minor;
+            Boolean colorIcon = true;
+
+            try {
+                major = Integer.parseInt(version[0]);
+                minor = Integer.parseInt(version[1]);
+                if  ((major >= 2) && (minor >=361)) {
+                    colorIcon = false;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Logger.getLogger(VectorCASTJobRoot.class.getName()).log(Level.INFO, "Jenkins version: " + jenkinsVersion);
+            
+            if (colorIcon) {
+                iconName = "/plugin/vectorcast-execution/icons/vector_favicon.png";
+            } else {
+                iconName = "/plugin/vectorcast-execution/icons/vector_favicon_bw.png";
+            }
+            
+            return iconName;
         } else {
             return null;
         }
