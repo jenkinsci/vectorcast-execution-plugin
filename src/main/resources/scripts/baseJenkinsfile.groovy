@@ -241,14 +241,14 @@ def runCommands(cmds) {
             export VCAST_NO_FILE_TRUNCATION=1
             export VCAST_RPTS_SELF_CONTAINED=FALSE
             
-            """.stripIndent()
+            """
             
         // if using CI licenses add in both CI license env vars
         if (VC_UseCILicense.length() != 0) {
             localCmds += """
                 export VCAST_USING_HEADLESS_MODE=1
                 export VCAST_USE_CI_LICENSES=1
-            """.stripIndent()
+            """
         }
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
@@ -268,14 +268,14 @@ def runCommands(cmds) {
             set VCAST_NO_FILE_TRUNCATION=1
             set VCAST_RPTS_SELF_CONTAINED=FALSE
             
-            """.stripIndent()
+            """
             
         // if using CI licenses add in both CI license env vars
          if (VC_UseCILicense.length() != 0) {
             localCmds += """
                 set VCAST_USING_HEADLESS_MODE=1
                 set VCAST_USE_CI_LICENSES=1
-            """.stripIndent()
+            """
         }
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
@@ -310,7 +310,7 @@ def setupManageProject() {
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} ${VC_sharedArtifactDirectory} --status"  
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --release-locks"
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
-    """.stripIndent()
+    """
 
     runCommands(cmds)
 }
@@ -383,7 +383,7 @@ def transformIntoStep(inputString) {
                     ${VC_EnvSetup}
                     ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
                     ${VC_EnvTeardown}
-                """.stripIndent()
+                """
                 
                 
                 // setup build lot test variable to hold all VC commands results for this job
@@ -712,7 +712,7 @@ pipeline {
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=aggregate   --output=${mpName}_aggregate_report.html"
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=metrics     --output=${mpName}_metrics_report.html"
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=environment --output=${mpName}_environment_report.html"
-                        """.stripIndent()
+                        """
                         
                         buildLogText += runCommands(cmds)
 
@@ -815,7 +815,7 @@ pipeline {
                         def cmds = """        
                             _RM combined_incr_rebuild.tmp
                             _RM ${mpName}_full_report.html_tmp
-                        """.stripIndent()
+                        """
                         
                         runCommands(cmds)
                         
