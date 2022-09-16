@@ -650,9 +650,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param workspace workspace
      * @param launcher launcher
      * @param listener  listener
+	 * @throws IOException      exception
      */    
     @Override
-    public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
+    public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException {
         FilePath destScriptDir = new FilePath(workspace, "vc_scripts");
         JarFile jFile = null;
         try {
@@ -720,7 +721,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             {
                 if (file.isFile()) 
                 {
-                    file.delete();
+                    if (!file.delete()) {
+                        throw new IOException("Unable to delete file: " + file.getAbsolutePath());   
+                    }               
                 }
             }
         }

@@ -13,6 +13,8 @@ VC_Use_Threshold = true
 // ===============================================================
 
 
+// Failure phrases for checkLogsForErrors
+
 VC_FailurePhrases = ["No valid edition(s) available",
                   "py did not execute correctly", 
                   "Traceback (most recent call last)",
@@ -37,65 +39,20 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   "Error: That command is not permitted in continuous integration mode"
                   ]
                 
-VC_UnstablePhrases = ["Value Line Error - Command Ignored", "INFO: Problem parsing test results file", "INFO: File System Error ", "ERROR: Error accessing DataAPI", "ERROR: Undefined Error"]                       
+// Unstable phrases for checkLogsForErrors
 
-// setup the manage project to have preset options
-def setupManageProject() {
-    def cmds = """        
-        _RM *_rebuild.html
-        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} ${VC_sharedArtifactDirectory} --status"  
-        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --release-locks"
-        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
-    """.stripIndent()
+VC_UnstablePhrases = ["Value Line Error - Command Ignored", "INFO: Problem parsing test results file", "INFO: File System Error ", "ERROR: Error accessing DataAPI", "ERROR: Undefined Error"]   
+                    
+// ===============================================================
+//
+// Function : checkLogsForErrors
+// Inputs   : log
+// Action   : Scans the input log file to for keywords listed above 
+// Returns  : found foundKeywords, failure and/or unstable_flag
+// Notes    : Used to Check for VectorCAST build errors/problems
+//
+// ===============================================================
 
-    runCommands(cmds)
-}
-
-def get_SCM_rev() {
-    def scm_rev = ""
-    def cmd = ""
-    
-    if (VC_TESTinsights_SCM_Tech=='git') {
-        cmd = "git rev-parse HEAD"
-    } else {
-        cmd = "svn info --show-item revision"
-    }
-    
-    if (isUnix()) {
-        scm_rev = sh returnStdout: true, script: cmd
-    } else {
-        cmd = "@echo off \n " + cmd
-        scm_rev = bat returnStdout: true, script: cmd
-    }
-    
-    println "Git Rev Reply " + scm_rev.trim() + "***"
-    return scm_rev.trim()
-}
-
-// gets the manage project name without the .vcm if present
-def getMPname() {
-    // get the manage projects full name and base name
-    def mpFullName = VC_Manage_Project.split("/")[-1]
-    def mpName = ""
-    if (mpFullName.toLowerCase().endsWith(".vcm")) {
-        mpName = mpFullName.take(mpFullName.lastIndexOf('.'))
-    } else {
-        mpName = mpFullName
-    }
-    return mpName
-}
-def getMPpath() {
-    // get the manage projects full name and base name
-    def mpFullName = VC_Manage_Project
-    def mpPath = ""
-    if (mpFullName.toLowerCase().endsWith(".vcm")) {
-        mpPath = mpFullName.take(mpFullName.lastIndexOf('.'))
-    } else {
-        mpPath = mpFullName
-    }
-    return mpPath
-}
-// check log for errors
 def checkLogsForErrors(log) {
 
     def boolean failure = false;
@@ -128,6 +85,99 @@ def checkLogsForErrors(log) {
     return [foundKeywords, failure, unstable_flag]
 }
 
+// ***************************************************************
+// 
+//                           SCM Utilities
+//
+// ***************************************************************
+
+// ===============================================================
+//
+// Function : get_SCM_rev
+// Inputs   : None
+// Action   : Returns SCM revision from git or svn
+// Notes    : Used for TESTinsight Command
+//
+// ===============================================================
+
+def get_SCM_rev() {
+    def scm_rev = ""
+    def cmd = ""
+    
+    if (VC_TESTinsights_SCM_Tech=='git') {
+        cmd = "git rev-parse HEAD"
+    } else {
+        cmd = "svn info --show-item revision"
+    }
+    
+    if (isUnix()) {
+        scm_rev = sh returnStdout: true, script: cmd
+    } else {
+        cmd = "@echo off \n " + cmd
+        scm_rev = bat returnStdout: true, script: cmd
+    }
+    
+    println "Git Rev Reply " + scm_rev.trim() + "***"
+    return scm_rev.trim()
+}
+
+// ***************************************************************
+// 
+//                       File/Pathing Utilities
+//
+// ***************************************************************
+
+// ===============================================================
+//
+// Function : getMPname
+// Inputs   : None
+// Action   : Returns the base name 
+// Notes    : Used for creating report name 
+//
+// ===============================================================
+
+def getMPname() {
+    // get the manage projects full name and base name
+    def mpFullName = VC_Manage_Project.split("/")[-1]
+    def mpName = ""
+    if (mpFullName.toLowerCase().endsWith(".vcm")) {
+        mpName = mpFullName.take(mpFullName.lastIndexOf('.'))
+    } else {
+        mpName = mpFullName
+    }
+    return mpName
+}
+
+// ===============================================================
+//
+// Function : getMPpath
+// Inputs   : None
+// Action   : Returns the path name to the manage project's directory 
+// Notes    : Used for accessing the build directory
+//
+// ===============================================================
+def getMPpath() {
+    // get the manage projects full name and base name
+    def mpFullName = VC_Manage_Project
+    def mpPath = ""
+    if (mpFullName.toLowerCase().endsWith(".vcm")) {
+        mpPath = mpFullName.take(mpFullName.lastIndexOf('.'))
+    } else {
+        mpPath = mpFullName
+    }
+    return mpPath
+}
+
+// ===============================================================
+//
+// Function : formatPath
+// Inputs   : directory path
+// Action   : on Windows it will change / path seperators to \ (\\) 
+// Returns  : fixed path
+// Notes    : Used to Check for VectorCAST build errors/problems
+//
+// ===============================================================
+
 def formatPath(inPath) {
     def outPath = inPath
     if (!isUnix()) {
@@ -135,7 +185,42 @@ def formatPath(inPath) {
     }
     return outPath
 }
-// run commands on Unix (Linux) or Windows
+
+// ===============================================================
+//
+// Function : fixUpName
+// Inputs   : command list 
+// Action   : Fixup name so it doesn't include / or %## or any other special characters
+// Returns  : Fixed up name
+// Notes    : Used widely
+//
+// ===============================================================
+// 
+def fixUpName(name) {
+    return name.replace("/","_").replaceAll('\\%..','_').replaceAll('\\W','_')
+}
+
+
+// ***************************************************************
+// 
+//                    Execution Utilities
+//
+// ***************************************************************
+
+
+// ===============================================================
+//
+// Function : runCommands
+// Inputs   : command list 
+// Action   : 1. Adds VC Setup calls to beginning of script
+//            2. If using CI licenses, it set the appropriate envionment variables
+//            3. Replaces keywords for windows/linux
+//            4. Calls the command
+//            5. Reads the log and return the log file (prints as well)
+// Returns  : stdout/stderr from the commands
+// Notes    : Used widely
+//
+// ===============================================================
 def runCommands(cmds) {
     def boolean failure = false;
     def boolean unstable_flag = false;
@@ -147,26 +232,35 @@ def runCommands(cmds) {
     
     // if its Linux run the sh command and save the stdout for analysis
     if (isUnix()) {
+        // add VC setup to beginning of script
+        // add extra env vars to make debugging of commands useful
+        // add extra env for reports 
         localCmds = """
             ${VC_EnvSetup}
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_NO_FILE_TRUNCATION=1
             export VCAST_RPTS_SELF_CONTAINED=FALSE
             
-            """.stripIndent()
+            """
             
+        // if using CI licenses add in both CI license env vars
         if (VC_UseCILicense.length() != 0) {
             localCmds += """
                 export VCAST_USING_HEADLESS_MODE=1
                 export VCAST_USE_CI_LICENSES=1
-            """.stripIndent()
+            """
         }
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
         println "Running commands: " + cmds
+        
+        // run command in shell
         sh label: 'Running VectorCAST Commands', returnStdout: false, script: cmds
         
     } else {
+        // add VC setup to beginning of script
+        // add extra env vars to make debugging of commands useful
+        // add extra env for reports 
         localCmds = """
             @echo off
             ${VC_EnvSetup}
@@ -174,20 +268,24 @@ def runCommands(cmds) {
             set VCAST_NO_FILE_TRUNCATION=1
             set VCAST_RPTS_SELF_CONTAINED=FALSE
             
-            """.stripIndent()
+            """
             
+        // if using CI licenses add in both CI license env vars
          if (VC_UseCILicense.length() != 0) {
             localCmds += """
                 set VCAST_USING_HEADLESS_MODE=1
                 set VCAST_USE_CI_LICENSES=1
-            """.stripIndent()
+            """
         }
         cmds = localCmds + cmds
         cmds = cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
         println "Running commands: " + cmds
+        
+        // run command in bat
         bat label: 'Running VectorCAST Commands', returnStdout: false, script: cmds
     }
     
+    // read back the command.log - this is specific to 
     log = readFile "command.log"
     
     println "Commands Output: " + log        
@@ -195,13 +293,38 @@ def runCommands(cmds) {
     return log
 }
 
-// Fixup name so it doesn't include / or %## or any other special characters
-def fixUpName(name) {
-    return name.replace("/","_").replaceAll('\\%..','_').replaceAll('\\W','_')
+// ===============================================================
+//
+// Function : setupManageProject
+// Inputs   : none
+// Action   : Issues commands needed to run manage project from 
+//            .vcm and environment defintions 
+// Returns  : None
+// Notes    : Used once per manage project checkout
+//
+// ===============================================================
+
+def setupManageProject() {
+    def cmds = """        
+        _RM *_rebuild.html
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} ${VC_sharedArtifactDirectory} --status"  
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --release-locks"
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
+    """
+
+    runCommands(cmds)
 }
-// transform environment data, a line at a time, into an execution node 
-// inputString is a space separated string = <<compiler>> <<testsuite>> <<environment>>
-// return a node definition based on compiler for the specific job
+
+// ===============================================================
+//
+// Function : transformIntoStep
+// Inputs   : inputString containing a single [compiler, test_suite, environment]
+// Action   : Uses the input to create a build step in the pipeline job
+// Returns  : Build step for a job
+// Notes    : This will be executed later in parallel with other jobs
+//
+// ===============================================================
+
 def transformIntoStep(inputString) {
     
     // grab the compiler test_suite and environment out the single line
@@ -232,19 +355,25 @@ def transformIntoStep(inputString) {
             
             print "Using NodeID = " + nodeID
             
+            
+            // node definition and job starting here
             node ( nodeID as String ){
             
                 println "Starting Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
             
-                // call any SCM step if needed
+                // if we are not using a single checkout directory
                 if (!VC_useOneCheckoutDir) {
+                
+                    // call the scmStep for each job
                     scmStep()
                 }
                 
                 // Run the setup step to copy over the scripts
                 step([$class: 'VectorCASTSetup'])
 
+                // if we are not using a single checkout directory and using SCM step
                 if (VC_usingSCM && !VC_useOneCheckoutDir) {
+                
                     // set options for each manage project pulled out out of SCM
                     setupManageProject()
                 }
@@ -254,39 +383,52 @@ def transformIntoStep(inputString) {
                     ${VC_EnvSetup}
                     ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
                     ${VC_EnvTeardown}
-                """.stripIndent()
+                """
                 
+                
+                // setup build lot test variable to hold all VC commands results for this job
                 def buildLogText = ""
                 
+                // run the build-execute step and save the results
                 buildLogText = runCommands(cmds)
                     
                 def foundKeywords = ""
                 def boolean failure = false
                 def boolean unstable_flag = false
                                         
+                // check log for errors/unstable keywords
                 (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
+                // if we didn't fail and don't have a shared artifact directory - we may have to copy back build directory artifacts...
                 if (!failure && VC_sharedArtifactDirectory.length() == 0) {
 
+                    // if we are using an SCM checkout and we aren't using a single checkout directory, we need to copy back build artifacts
                     if (VC_usingSCM && !VC_useOneCheckoutDir) {
                         def fixedJobName = fixUpName("${env.JOB_NAME}")
                         buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} ${compiler}/${test_suite} ${fixedJobName}_${compiler}_${test_suite}_${environment} ${environment}""" )
                     }
                 }
                 
+                // write a build log file for compiler/test suite/environment
                 writeFile file: "${compiler}_${test_suite}_${environment}_build.log", text: buildLogText
 
                 // no cleanup - possible CBT
                 // use individual names
                 def fixedJobName = fixUpName("${env.JOB_NAME}")
+                
+                // save artifact in a "stash" to be "unstashed" by the main job
                 stash includes: "${compiler}_${test_suite}_${environment}_build.log, **/${compiler}_${test_suite}_${environment}_rebuild.html, execution/*.html, management/*${compiler}_${test_suite}_${environment}*, xml_data/*${compiler}_${test_suite}_${environment}*, ${fixedJobName}_${compiler}_${test_suite}_${environment}_build.tar", name: stashName as String
                 
                 println "Finished Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
 
+                // check log for errors/unstable keywords again since the copy build dir could have thrown errors/unstable keywords
                 (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
+                // if somethign failed, raise an error
                 if (failure) {
                     error ("Error in Commands: " + foundKeywords)
+                    
+                // else if something made the job unstable, mark as unsable 
                 } else if (unstable_flag) {
                     unstable("Triggering stage unstable because keywords found: " + foundKeywords)
                 }
@@ -295,12 +437,16 @@ def transformIntoStep(inputString) {
     }
 }
 
-// Convert localEnvList to a job list that's used for parallel execution.
-//     EnvList:
-//       <<compiler1>> <<testsuite1>> <<environment1>>
-//       ...
-//       <<compiler>> <<testsuite>> <<environmentN>>
-def stepsForParallel(localEnvList) {
+// ===============================================================
+//
+// Function : stepsForJobList
+// Inputs   : localEnvList - a list of [compiler, testsuite, environments] that need to be executed
+// Action   : Loops of list and calls " transformIntoStep
+// Returns  : A job that can be executed
+// Notes    : Use to get a list of system and unit tests jobs
+//
+// ===============================================================
+def stepsForJobList(localEnvList) {
     jobList = [:]
     localEnvList.each {
         jobList[it] =  transformIntoStep(it)
@@ -315,11 +461,20 @@ UtEnvList = []
 StEnvList = []
 origManageProject = VC_Manage_Project
  
+ 
+// ***************************************************************
+// 
+//              VectorCAST Execution Pipeline
+//
+// ***************************************************************
+
 pipeline {
 
+    // Use the input from the job creation label as for the "main job"
     agent {label VC_Agent_Label as String}
     
     stages {
+        // Place holder for previous stages the customer may need to use
         stage('Previous-Stage') {
             steps {
                 script {
@@ -328,11 +483,17 @@ pipeline {
             }
         }
         
+        // If we are using a single checkout directory option, do the checkout here
+        // This stage also includes the implementation for the parameterized Jenkins job
+        //    that includes a forced node name and an external repository
+        // External repository is used when another job has already checked out the source code
+        //    and is passing that information to this pipeline via VCAST_FORCE_NODE_EXEC_NAME env var
         stage('Single-Checkout') {
             steps {
                 script {
                     def usingExternalRepo = false;
 
+                    // check to see if env var VCAST_FORCE_NODE_EXEC_NAME is setup from another job
                     try {
                         if ("${VCAST_FORCE_NODE_EXEC_NAME}".length() > 0) {
                             usingExternalRepo = true
@@ -344,7 +505,11 @@ pipeline {
                        usingExternalRepo = false
                     }
                 
+                    // If we are using a single checkout directory option and its not a 
+                    //    SMC checkout from another job...
                     if (VC_useOneCheckoutDir && !usingExternalRepo) {
+                        
+                        // we need to convert all the future job's workspaces to point to the original checkout
                         VC_OriginalWorkspace = "${env.WORKSPACE}"
                         println "scmStep executed here: " + VC_OriginalWorkspace
                         scmStep()
@@ -420,6 +585,8 @@ pipeline {
                     // for a groovy list that is stored in a global variable EnvList to be use later in multiple places
                     def lines = EnvData.split('\n')
                     
+                    // loop over each returned line from getjobs.py to determine if its a system test or unit test 
+                    //    and add it to the appropriate list
                     lines.each { line ->
                         def trimmedString = line.trim()
                         boolean containsData = trimmedString?.trim()
@@ -451,13 +618,16 @@ pipeline {
             }
         }
 
-        // This is the stage that we use the EnvList via stepsForParallel >> transformIntoStep 
+        // This is the stage that we use the EnvList via stepsForJobList >> transformIntoStep 
         stage('System Test Build-Execute Stage') {
             steps {
                 script {
                     setupManageProject()
                     
-                    jobs = stepsForParallel(StEnvList)
+                    // Get the job list from the system test environment listed
+                    jobs = stepsForJobList(StEnvList)
+                    
+                    // run each of those jobs in serial
                     jobs.each { name, job ->
                         print ("Running System Test Job: " + name)
                         job.call()
@@ -466,13 +636,16 @@ pipeline {
             }
         }
 
-        // This is the stage that we use the EnvList via stepsForParallel >> transformIntoStep 
+        // This is the stage that we use the EnvList via stepsForJobList >> transformIntoStep 
         stage('Unit Test Build-Execute Stage') {
             steps {
                 script {
                     setupManageProject()
                     
-                    jobs = stepsForParallel(UtEnvList)
+                    // Get the job list from the unit test environment listed
+                    jobs = stepsForJobList(UtEnvList)
+                    
+                    // run those jobs in parallel
                     parallel jobs
                 }
             }
@@ -483,13 +656,16 @@ pipeline {
         
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                
                     // Run the setup step to copy over the scripts
                     step([$class: 'VectorCASTSetup'])
                     
+                    // run script to unstash files and generate results/reports
                     script {
                         def unstashedBuildLogText = ""
                         
-                        // unstash each of the files
+                        // Loop over all environnment and unstash each of the files
+                        // These files will be logs and build artifacts
                         EnvList.each {
                             (compiler, test_suite, environment) = it.split()
                             String stashName = fixUpName("${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage")
@@ -505,7 +681,7 @@ pipeline {
                             }
                         } 
                         
-                        // get the manage projects full name and base name
+                        // get the manage project's base name for use in rebuild naming
                         def mpName = getMPname()
                                                 
                         def buildLogText = ""
@@ -536,7 +712,7 @@ pipeline {
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=aggregate   --output=${mpName}_aggregate_report.html"
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=metrics     --output=${mpName}_metrics_report.html"
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=environment --output=${mpName}_environment_report.html"
-                        """.stripIndent()
+                        """
                         
                         buildLogText += runCommands(cmds)
 
@@ -565,6 +741,8 @@ pipeline {
             }
         }
         
+        // checking the build log of all the VC commands that have run
+        // setup overall job's build descript with aggregated incremental build report and full status report
         stage('Check-Build-Log') {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
@@ -637,10 +815,12 @@ pipeline {
                         def cmds = """        
                             _RM combined_incr_rebuild.tmp
                             _RM ${mpName}_full_report.html_tmp
-                        """.stripIndent()
+                        """
                         
                         runCommands(cmds)
                         
+                        // use unit_test_fail_count.txt to see if there were any failed test cases
+                        // if any failed test cases, Junit will mark as at least unstable.
                         def unitTestErrorCount = ""
                         unitTestErrorCount = readFile "unit_test_fail_count.txt"
                         if (unitTestErrorCount != "0") {
@@ -657,46 +837,74 @@ pipeline {
             }
         }
         
+        // Stage for additional tools from Vector
+        // Currently supporting PC Lint Plus, Squore, and TESTInsights
         stage('Additional Tools') {
             steps {
-                script {
-                    if (VC_usePCLintPlus) {
-                        runCommands(VC_pclpCommand)
-                        recordIssues(tools: [pcLint(pattern: VC_pclpResultsPattern, reportEncoding: 'UTF-8')])
-                        archiveArtifacts allowEmptyArchive: true, artifacts: VC_pclpResultsPattern
-                    }
-                    if (VC_useSquore) {
-                        cmd = """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate_squore_results.py ${VC_Manage_Project}
-                        ${VC_squoreCommand}"""
-                        runCommands(cmd)
-                        archiveArtifacts allowEmptyArchive: true, artifacts: 'xml_data/squore_results*.xml'
-                    }
-                    if (VC_useTESTinsights){
-                        withCredentials([usernamePassword(credentialsId: VC_TESTinsights_Credential_ID, usernameVariable : "VC_TI_USR", passwordVariable : "VC_TI_PWS")]){
-                            TI_proxy = ""
-                            if (VC_TESTinsights_Proxy.length() != 0) {
-                                TI_proxy = "--proxy ${VC_TESTinsights_Proxy}"
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    script {
+                    
+                        // If there's a PC Lint Plus command... 
+                        if (VC_usePCLintPlus) {
+                            // run the PC Lint Plus command
+                            runCommands(VC_pclpCommand)
+                            // record the results with Warnings-NG plugin
+                            recordIssues(tools: [pcLint(pattern: VC_pclpResultsPattern, reportEncoding: 'UTF-8')])
+                            // Archive the PC Lint Results
+                            archiveArtifacts allowEmptyArchive: true, artifacts: VC_pclpResultsPattern
+                        }
+                        
+                        // If we are using Squore...
+                        if (VC_useSquore) {
+                            // Generate the results from Squore and run the squore command which should publish the information to Squore Server
+                            cmd = """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate_squore_results.py ${VC_Manage_Project}
+                            ${VC_squoreCommand}"""
+                            runCommands(cmd)
+                            
+                            // Archive the Squore results
+                            archiveArtifacts allowEmptyArchive: true, artifacts: 'xml_data/squore_results*.xml'
+                        }
+                        
+                        // If we using TESTInsights...
+                        if (VC_useTESTinsights){
+                            
+                            // using the credentials passed in when creating the job...
+                            withCredentials([usernamePassword(credentialsId: VC_TESTinsights_Credential_ID, usernameVariable : "VC_TI_USR", passwordVariable : "VC_TI_PWS")]){
+                                TI_proxy = ""
+                                
+                                // if we are using a proxy to communicate with TESTInsights, set the proxy from data input during job creation
+                                if (VC_TESTinsights_Proxy.length() != 0) {
+                                    TI_proxy = "--proxy ${VC_TESTinsights_Proxy}"
+                                }
+
+                                // Build the base TESTInsights command 
+                                TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} " + TI_proxy + " --log TESTinsights_Push.log"
+
+                                // If we are using an SCM, attempt to link the SCM info into TESTInsights
+                                if (VC_usingSCM) {
+                                    
+                                    // Get the TESTinsights Revision
+                                    VC_TESTinsights_Revision = get_SCM_rev()
+
+                                    println "Git Rev: ${VC_TESTinsights_Revision}"
+                                    
+                                    // Update the TESTInsights command
+                                    TESTinsight_Command += " --vc-project-local-path=${origManageProject} --vc-project-scm-path=${VC_TESTinsights_SCM_URL}/${origManageProject} --src-local-path=${env.WORKSPACE} --src-scm-path=${VC_TESTinsights_SCM_URL}/ --vc-project-scm-technology=${VC_TESTinsights_SCM_Tech} --src-scm-technology=${VC_TESTinsights_SCM_Tech} --vc-project-scm-revision=${VC_TESTinsights_Revision} --src-scm-revision ${VC_TESTinsights_Revision} --versioned"
+                                    
+                                }
+                                // Run the command to push data to TESTInsights
+                                runCommands(TESTinsight_Command)
+                                
+                                // Archive the push log
+                                archiveArtifacts allowEmptyArchive: true, artifacts: 'TESTinsights_Push.log'
                             }
-
-                            TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} " + TI_proxy + " --log TESTinsights_Push.log"
-
-                            if (VC_usingSCM) {
-                                
-                                VC_TESTinsights_Revision = get_SCM_rev()
-
-                                println "Git Rev: ${VC_TESTinsights_Revision}"
-                                
-                                TESTinsight_Command += " --vc-project-local-path=${origManageProject} --vc-project-scm-path=${VC_TESTinsights_SCM_URL}/${origManageProject} --src-local-path=${env.WORKSPACE} --src-scm-path=${VC_TESTinsights_SCM_URL}/ --vc-project-scm-technology=${VC_TESTinsights_SCM_Tech} --src-scm-technology=${VC_TESTinsights_SCM_Tech} --vc-project-scm-revision=${VC_TESTinsights_Revision} --src-scm-revision ${VC_TESTinsights_Revision} --versioned"
-                                
-                            }
-                            runCommands(TESTinsight_Command)
-                            archiveArtifacts allowEmptyArchive: true, artifacts: 'TESTinsights_Push.log'
                         }
                     }
                 }
             }
         }
         
+        // Place holder for previous stages the customer may need to use
         stage('Next-Stage') {
             steps {
                 script {

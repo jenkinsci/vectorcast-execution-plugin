@@ -40,6 +40,7 @@ public class VcastUtils
             File file = new File( URLDecoder.decode( VcastUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "utf-8" ) );
             JarFile jarfile = new JarFile( file );
             version = Optional.ofNullable( jarfile.getManifest().getMainAttributes().getValue( "Plugin-Version" ) );
+            jarfile.close();
             
         } catch ( IOException e ) {
             e.printStackTrace();

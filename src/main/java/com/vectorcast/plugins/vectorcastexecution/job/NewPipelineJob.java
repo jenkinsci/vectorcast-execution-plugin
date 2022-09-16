@@ -33,6 +33,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,6 +66,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Create a new single job
@@ -275,15 +278,21 @@ public class NewPipelineJob extends BaseJob {
 			StreamResult streamResult = new StreamResult(new File(configPath));
 			transformer.transform(domSource, streamResult);
 
-			InputStream xmlInput = new FileInputStream(configFile);
+            InputStream xmlInput = new FileInputStream(configFile);
 
-			/**
-			 * hudson.model.Project Project proj = (Project) Fails with
-			 * java.lang.ClassCastException: org.jenkinsci.plugins.workflow.job.WorkflowJob
-			 * cannot be cast to Project
-			 */
+            try {
+                /**
+                 * hudson.model.Project Project proj = (Project) Fails with
+                 * java.lang.ClassCastException: org.jenkinsci.plugins.workflow.job.WorkflowJob
+                 * cannot be cast to Project
+                 */
 
-			getInstance().createProjectFromXML(this.projectName, xmlInput);
+                getInstance().createProjectFromXML(this.projectName, xmlInput);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                xmlInput.close();
+            }
 
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
@@ -296,8 +305,11 @@ public class NewPipelineJob extends BaseJob {
 		} catch (java.lang.IllegalArgumentException e) {
  			e.printStackTrace();
        }
+       
+        if (!configFile.delete()) {
+            throw new IOException("Unable to delete file: " + configFile.getAbsolutePath());   
+        }
 
-		configFile.delete();
 	}
 
     /**
@@ -335,28 +347,32 @@ public class NewPipelineJob extends BaseJob {
         }
         
 		//InputStream in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
-		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 		File configFile = File.createTempFile("config_temp", ".xml");
 
-		FileWriter fw = null;
-		BufferedWriter bw = null;
+		//FileWriter fw = null
+        FileOutputStream fosw = null;
+		OutputStreamWriter osrw = null;
 
 		try {
 			// write out to temp file
-			fw = new FileWriter(configFile);
-			bw = new BufferedWriter(fw);
-			if ((fw != null) && (bw != null)) {
+			//fw = new FileWriter(configFile);
+			//bw = new BufferedWriter(fw);
+            fosw = new FileOutputStream(configFile);
+            osrw = new OutputStreamWriter(fosw, StandardCharsets.UTF_8);
+
+			if (fosw != null && osrw != null) {
 				String line = null;
 				while ((line = br.readLine()) != null) {
-					bw.write(line + "\n");
+					osrw.write(line + "\n");
 				}
 			}
 		} finally {
 			// cleanup
-			bw.close();
+			if (osrw != null) osrw.close();
 			br.close();
 			in.close();
-			fw.close();
+			if (fosw != null) fosw.close();
 		}
 
 		return configFile.getAbsoluteFile();
