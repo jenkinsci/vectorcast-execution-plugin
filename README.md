@@ -138,12 +138,12 @@ For customers using VectorCAST's requirements gateway, there's a potential for l
 ## Change Log
 
 ### Version 0.74 (19 Sep 2022)
-- Fixed findbugs related warnings. 
-- Restructured and commented Jenkinsfile base for pipeline jobs
+- findbugs-related warnings in the output from maven are fixed in the VectorCAST/Execution plugin v0.74
+- The Jenkinsfile base has been restructured and commented for pipeline jobs
 - Added catchError to additional tools stage
-- Added pipeline test to plugin build
-- Added B/W icon to match Jenkins current aesthetic
-- Removed stripIndent() calls from pipeline script 
+- Additional Java tests incorporated into the plugin build
+- The VectorCAST icon has been updated to match the Jenkins design aesthetic
+- Previously, errors indicated that calls cannot run in the Jenkins sandbox. VectorCAST/Execution v0.74 fixed errors caused by the updated version of Java required for the Jenkins plugin.
 
 ### Version 0.73 (22 Aug 2022)
 - Fixed support for entering a Windows path for PC Lint Plus or Squore commands. 
