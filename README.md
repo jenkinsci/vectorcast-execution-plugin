@@ -137,7 +137,7 @@ For customers using VectorCAST's requirements gateway, there's a potential for l
 
 ## Change Log
 
-### Version 0.74 (19 Sep 2022)
+### Version 0.74 (27 Sep 2022)
 - findbugs-related warnings in the output from maven are fixed in the VectorCAST/Execution plugin v0.74
 - The Jenkinsfile base has been restructured and commented for pipeline jobs
 - Added catchError to additional tools stage
