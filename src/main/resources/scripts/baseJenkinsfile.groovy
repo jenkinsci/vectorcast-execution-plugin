@@ -605,7 +605,7 @@ pipeline {
                             else {
                                 trimmedString = compiler + " " + test_suite + " " + environment
                                 print("??:" + trimmedString)
-                                continue
+                                return
                             }
                             
                             print ("++ " + trimmedString)
