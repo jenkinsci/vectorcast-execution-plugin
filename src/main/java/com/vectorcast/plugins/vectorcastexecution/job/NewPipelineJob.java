@@ -434,12 +434,6 @@ public class NewPipelineJob extends BaseJob {
             incremental = "\"--incremental\"";
         }
         
-        String VC_Proj_Prefix = "";
-        
-        if (useParameters) {
-            VC_Proj_Prefix = "${VCAST_PROJECT_DIR}/";
-        }
-        
         String VC_Use_CI = "\"\"";
 
         if (useCILicenses) {
@@ -455,7 +449,7 @@ public class NewPipelineJob extends BaseJob {
             "//\n" +  
             "// ===============================================================\n" +  
             "\n" +  
-            "VC_Manage_Project     = \"" + VC_Proj_Prefix + "\" + \'" + this.getManageProjectName() + "\'\n" + 
+            "VC_Manage_Project     = \'" + this.getManageProjectName() + "\'\n" + 
             "VC_EnvSetup        = '''" + setup + "'''\n" + 
             "VC_Build_Preamble  = \"" + preamble + "\"\n" + 
             "VC_EnvTeardown     = '''" + teardown + "'''\n" + 

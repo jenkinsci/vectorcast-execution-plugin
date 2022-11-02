@@ -487,16 +487,17 @@ pipeline {
         // This stage also includes the implementation for the parameterized Jenkins job
         //    that includes a forced node name and an external repository
         // External repository is used when another job has already checked out the source code
-        //    and is passing that information to this pipeline via VCAST_FORCE_NODE_EXEC_NAME env var
+        //    and is passing that information to this pipeline via VCAST_PROJECT_DIR env var
         stage('Single-Checkout') {
             steps {
                 script {
                     def usingExternalRepo = false;
 
-                    // check to see if env var VCAST_FORCE_NODE_EXEC_NAME is setup from another job
+                    // check to see if env var VCAST_PROJECT_DIR is setup from another job
                     try {
-                        if ("${VCAST_FORCE_NODE_EXEC_NAME}".length() > 0) {
+                        if ("${VCAST_PROJECT_DIR}".length() > 0) {
                             usingExternalRepo = true
+                            VC_Manage_Project = "${VCAST_PROJECT_DIR}/" + VC_Manage_Project
                         }
                         else {
                             usingExternalRepo = false
