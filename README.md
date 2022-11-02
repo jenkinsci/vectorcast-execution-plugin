@@ -48,7 +48,7 @@ The user will be able to disable the use of Change Based Testing to perform a co
 
 Users with Continuous Integration Licenses can access those licenses by checking the **Use Continuous Integration License** checkbox. If you do not have Continuous Integration Licenses, do not check this box as you will encounter licensing errors.
 
-If the user wishes to call the Jenkins Job from another Pipeline Job, check the **Use Parameterize the Jenkinsfile** box. This will add parameters to the Pipeline Job that will be used by the VectorCAST Pipeline Job to locate the VectorCAST Project (**VCAST_PROJECT_DIR**) and force the VectorCAST Jobs to be executed on a specific node (**VCAST_FORCE_NODE_EXEC_NAME**) instead of using the compiler as a node label.
+If the user wishes to call the Jenkins Job from another Pipeline Job, check the **Use Parameterize the Jenkinsfile** box. This will add parameters to the Pipeline Job that will be used by the VectorCAST Pipeline Job to locate an external VectorCAST Project (**VCAST_PROJECT_DIR**) and force the VectorCAST Jobs to be executed on a specific node (**VCAST_FORCE_NODE_EXEC_NAME**) instead of using the compiler as a node label.
 
 Calling the build command will return **Failed**, **Unstable**, or **Success** corresponding to the results of the VectorCAST Pipeline Job. To allow the main Pipeline Job to continue on error, the user can surround the build command without a _catchError_ block as demonstrated below.
 
@@ -136,6 +136,12 @@ For non-pipeline jobs, JUnit publisher will fail any environments published with
 For customers using VectorCAST's requirements gateway, there's a potential for loss of requirements data when running test environments in parallel while using a shared requriments database.
 
 ## Change Log
+
+### Version 0.75 (2 Nov 2022)
+- Decoupled the two parameters used for parameterized pipeline
+- Fixed skipped test analysis issue for overloaded C++ methods
+- Fixed error in pipeline syntax "continue" changed to "return" for each loop
+- Fixed single job error when not using CBT for missing incremental build rebuild report
 
 ### Version 0.74 (27 Sep 2022)
 - findbugs-related warnings in the output from maven are fixed in the VectorCAST/Execution plugin v0.74
