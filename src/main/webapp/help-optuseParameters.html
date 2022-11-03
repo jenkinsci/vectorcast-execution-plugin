@@ -25,7 +25,7 @@ THE SOFTWARE.
 <div>
     The use case for this option is when another Pipeline job wants call the VectorCAST pipeline job and has checked out the VectorCAST Project.  This options sets up the following parameters to be passed in from another Pipeline Job.
 <ul>
-  <li>VCAST_PROJECT_DIR - Path to the location of the VectorCAST Project.  This parameter can also be used in setup/teardown scripts (see below)</li>
+  <li>VCAST_PROJECT_DIR - Path to the location of the VectorCAST Project or root of the external SCM checkout.  This path will be prefixed to the entry for VectorCAST Project</li>
   <li>VCAST_FORCE_NODE_EXEC_NAME - Forces VectorCAST Jobs to be run on a specific node instead of a node with a label matching the compiler</li>
 </ul>
 
