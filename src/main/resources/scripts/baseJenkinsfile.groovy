@@ -424,7 +424,7 @@ def transformIntoStep(inputString) {
                 // check log for errors/unstable keywords again since the copy build dir could have thrown errors/unstable keywords
                 (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
-                // if somethign failed, raise an error
+                // if something failed, raise an error
                 if (failure) {
                     error ("Error in Commands: " + foundKeywords)
                     
