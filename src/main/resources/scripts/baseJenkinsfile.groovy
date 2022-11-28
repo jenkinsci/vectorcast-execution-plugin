@@ -85,6 +85,118 @@ def checkLogsForErrors(log) {
     return [foundKeywords, failure, unstable_flag]
 }
 
+// ===============================================================
+//
+// Function : checkCoverageHistory
+// Inputs   : none
+// Action   : Compares the last coverage informatio nfor statement/branch
+// Returns  : Raises error if the coverage for statement/branch has dropped
+// Notes    : Depends on a file coverage_history.txt being written from updated coverage plugin 
+//
+// ===============================================================
+
+def checkCoverageHistory() {
+
+    def oldCov = ""
+    def newCov = ""
+    def failure = false
+    
+    try {
+        newCov = readFile 'current_coverage.txt'
+        oldCov = readFile 'last_coverage.txt'
+        def oldCovParts = oldCov.split(" ")
+        def newCovParts = newCov.split(" ")
+        
+        print "old: " + oldCov
+        print "new: " + newCov
+        
+        // get the old statement and/or branch coverage
+        def counter = 0
+        def oldStatementIndex = -1
+        def oldBranchIndex = -1
+        oldCovParts.each {
+            if (it == "Statement") {
+                oldStatementIndex = counter + 1
+            }
+            if (it == "Branch") {
+                oldBranchIndex = counter + 1
+            }
+            counter += 1
+        }
+        
+        counter = 0
+        def newStatementIndex = -1
+        def newBranchIndex = -1
+
+        // get the new statement and/or branch coverage                    
+        newCovParts.each {
+            if (it == "Statement") {
+                newStatementIndex = counter + 1
+            }
+            if (it == "Branch") {
+                newBranchIndex = counter + 1
+            }
+            counter += 1
+        }
+        
+        def oldStatements = ""
+        def oldBranches   = ""
+        def newStatements = ""
+        def newBranches   = ""
+        
+        if (oldStatementIndex != -1 && newStatementIndex != -1) {
+            oldStatements = oldCovParts[oldStatementIndex]
+            newStatements = newCovParts[newStatementIndex]
+
+            def (oldNum, oldDem)  = oldStatements.split("/")
+            def oldPcnt = 100.0 * (oldNum as Float) / (oldDem as Float)
+            
+            def (newNum, newDem)  = newStatements.split("/")
+            def newPcnt = 100.0 * (newNum as Float) / (newDem as Float) 
+            
+            if (newPcnt < oldPcnt) {
+                print "Statement coverage history (FAILED): " + newPcnt + "% <  " + oldPcnt + "%"
+                failure = true
+                createSummary icon: "warning.gif", text: "Statement coverage decreased"
+                addBadge(icon: "warning.gif", text: "Statement coverage decreased")
+    
+            } else {
+                print "Statement coverage history (PASSED): " + newPcnt + "% >=  " + oldPcnt + "%"
+            }
+        }
+        
+        if (oldBranchIndex != -1 && newBranchIndex != -1) {
+            oldBranches = oldCovParts[oldBranchIndex]
+            newBranches = newCovParts[newBranchIndex]
+
+            def (oldNum, oldDem)  = oldBranches.split("/")
+            def oldPcnt = 100 * (oldNum as Float) / (oldDem as Float)
+            def (newNum, newDem)  = newBranches.split("/")
+            def newPcnt = 100 * (newNum as Float) / (newDem as Float)
+            
+            if (newPcnt < oldPcnt) {
+                print "Branch coverage history (FAILED)   : " + newPcnt + "% <  " + oldPcnt + "%"
+                createSummary icon: "warning.gif", text: "Branch coverage decreased"
+                addBadge(icon: "warning.gif", text: "Branch coverage decreased")
+    
+                failure = true
+            } else {
+                print "Branch coverage history (PASSED)   : " + newPcnt + "% >= " + oldPcnt + "%"
+            }
+        }
+        
+    } catch (exe) {
+        print "error eith processing coverage differences"
+    } finally {
+        writeFile file: "last_coverage.txt", text: newCov
+    }
+    
+    if (failure) {
+        error("Statement and/or Branch coverage decreased from last build.  Check console log for details")
+    }
+}
+
+
 // ***************************************************************
 // 
 //                           SCM Utilities
@@ -520,10 +632,13 @@ pipeline {
                         def origSetup = VC_EnvSetup
                         def origTeardown = VC_EnvTeardown
                         def orig_VC_sharedArtifactDirectory = VC_sharedArtifactDirectory
+                        def orig_VC_postScmStepsCmds = VC_postScmStepsCmds
+
                         if (isUnix()) {
                             VC_EnvSetup = VC_EnvSetup.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
                             VC_EnvTeardown = VC_EnvTeardown.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
                             VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
+                            VC_postScmStepsCmds = VC_postScmStepsCmds.replace("\$WORKSPACE" ,VC_OriginalWorkspace)                            
                         } else {
                             VC_OriginalWorkspace = VC_OriginalWorkspace.replace('\\','/')
                             
@@ -540,10 +655,20 @@ pipeline {
                             // replace case insensitive workspace with WORKSPACE
                             tmpInfo = VC_sharedArtifactDirectory.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
                             VC_sharedArtifactDirectory = tmpInfo.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
+                            
+                            // replace case insensitive workspace with WORKSPACE
+                            tmpInfo = VC_postScmStepsCmds.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
+                            VC_postScmStepsCmds = tmpInfo.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
                         }
                         print "Updating setup script " + origSetup + " \nto: " + VC_EnvSetup
                         print "Updating teardown script " + origTeardown + " \nto: " + origTeardown
                         print "Updating shared artifact directory " + orig_VC_sharedArtifactDirectory + " \nto: " + VC_sharedArtifactDirectory
+                        print "Updating post SCM steps "  + orig_VC_postScmStepsCmds + "\nto: " + VC_postScmStepsCmds
+                        }
+                        
+                        // If there are post SCM checkout steps, do them now
+                        if (VC_postScmStepsCmds.length() > 0) {
+                            runCommands(VC_postScmStepsCmds)
                         }
                     else {
                         if (usingExternalRepo) {
@@ -565,6 +690,11 @@ pipeline {
                     if (!VC_useOneCheckoutDir) {
                         // Get the repo (should only need the .vcm file)
                         scmStep()
+                        
+                        // If there are post SCM checkout steps, do them now
+                        if (VC_postScmStepsCmds.length() > 0) {
+                            runCommands(VC_postScmStepsCmds)
+                        }
                     }
 
                     // archive existing reports 
@@ -735,6 +865,13 @@ pipeline {
 
                     // Send test results to JUnit plugin
                     step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
+
+                    // if using coverage history as additional check
+                    script {
+                        if (VC_useCoverageHistory) {
+                            checkCoverageHistory()
+                        }
+                    }
                 }            
 
                 // Save all the html, xml, and txt files
