@@ -664,13 +664,12 @@ pipeline {
                         print "Updating teardown script " + origTeardown + " \nto: " + origTeardown
                         print "Updating shared artifact directory " + orig_VC_sharedArtifactDirectory + " \nto: " + VC_sharedArtifactDirectory
                         print "Updating post SCM steps "  + orig_VC_postScmStepsCmds + "\nto: " + VC_postScmStepsCmds
-                        }
-                        
+
                         // If there are post SCM checkout steps, do them now
                         if (VC_postScmStepsCmds.length() > 0) {
                             runCommands(VC_postScmStepsCmds)
                         }
-                    else {
+                    } else {
                         if (usingExternalRepo) {
                             println "Using ${VCAST_FORCE_NODE_EXEC_NAME}/${VC_Manage_Project} as single checkout directory"
                         }
