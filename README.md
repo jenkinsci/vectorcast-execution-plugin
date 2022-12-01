@@ -137,11 +137,14 @@ For customers using VectorCAST's requirements gateway, there's a potential for l
 
 ## Change Log
 
-### Version 0.75 (2 Nov 2022)
+### Version 0.75 (23 Dec 2022)
 - Decoupled the two parameters used for parameterized pipeline
 - Fixed skipped test analysis issue for overloaded C++ methods
 - Fixed error in pipeline syntax "continue" changed to "return" for each loop
 - Fixed single job error when not using CBT for missing incremental build rebuild report
+- Added option to have pipeline job be marked as failed if statement or branch coverage decreases
+- Added post-SCM step to run commands after SCM checkout before the project build/execute
+- Fixed error identifying unbuilt migrated system test projects
 
 ### Version 0.74 (27 Sep 2022)
 - findbugs-related warnings in the output from maven are fixed in the VectorCAST/Execution plugin v0.74

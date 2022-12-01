@@ -35,10 +35,20 @@ def getBuildDirectory(compiler , testsuite , env_name, buildDirInfo):
 
 
 def checkForSystemTest(build_dir, env_name):
-    
+
+    # Leave for legacy, but not sure this is needed
     if (build_dir):
-        if os.path.exists(os.path.join(build_dir,env_name+".vcp")) or os.path.exists(os.path.join(build_dir,env_name+".enc")):
-            return "ST: "        
+       
+        # If the build directory is there, check that
+        if os.path.exists(build_dir):
+            if os.path.exists(os.path.join(build_dir,env_name+".vcp")) or os.path.exists(os.path.join(build_dir,env_name+".enc")):
+                return "ST: "        
+                
+        # if there's no build directory, check the project's enviornment directory for a migrated ST project
+        else:
+            env_dir = build_dir.rsplit("/",2)[0] + "/environment/" + env_name
+            if os.path.exists(os.path.join(env_dir,env_name+".enc")):
+                return "ST: "        
 
     return "UT: "
     
