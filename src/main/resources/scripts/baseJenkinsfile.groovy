@@ -85,118 +85,6 @@ def checkLogsForErrors(log) {
     return [foundKeywords, failure, unstable_flag]
 }
 
-// ===============================================================
-//
-// Function : checkCoverageHistory
-// Inputs   : none
-// Action   : Compares the last coverage informatio nfor statement/branch
-// Returns  : Raises error if the coverage for statement/branch has dropped
-// Notes    : Depends on a file coverage_history.txt being written from updated coverage plugin 
-//
-// ===============================================================
-
-def checkCoverageHistory() {
-
-    def oldCov = ""
-    def newCov = ""
-    def failure = false
-    
-    try {
-        newCov = readFile 'current_coverage.txt'
-        oldCov = readFile 'last_coverage.txt'
-        def oldCovParts = oldCov.split(" ")
-        def newCovParts = newCov.split(" ")
-        
-        print "old: " + oldCov
-        print "new: " + newCov
-        
-        // get the old statement and/or branch coverage
-        def counter = 0
-        def oldStatementIndex = -1
-        def oldBranchIndex = -1
-        oldCovParts.each {
-            if (it == "Statement") {
-                oldStatementIndex = counter + 1
-            }
-            if (it == "Branch") {
-                oldBranchIndex = counter + 1
-            }
-            counter += 1
-        }
-        
-        counter = 0
-        def newStatementIndex = -1
-        def newBranchIndex = -1
-
-        // get the new statement and/or branch coverage                    
-        newCovParts.each {
-            if (it == "Statement") {
-                newStatementIndex = counter + 1
-            }
-            if (it == "Branch") {
-                newBranchIndex = counter + 1
-            }
-            counter += 1
-        }
-        
-        def oldStatements = ""
-        def oldBranches   = ""
-        def newStatements = ""
-        def newBranches   = ""
-        
-        if (oldStatementIndex != -1 && newStatementIndex != -1) {
-            oldStatements = oldCovParts[oldStatementIndex]
-            newStatements = newCovParts[newStatementIndex]
-
-            def (oldNum, oldDem)  = oldStatements.split("/")
-            def oldPcnt = 100.0 * (oldNum as Float) / (oldDem as Float)
-            
-            def (newNum, newDem)  = newStatements.split("/")
-            def newPcnt = 100.0 * (newNum as Float) / (newDem as Float) 
-            
-            if (newPcnt < oldPcnt) {
-                print "Statement coverage history (FAILED): " + newPcnt + "% <  " + oldPcnt + "%"
-                failure = true
-                createSummary icon: "warning.gif", text: "Statement coverage decreased"
-                addBadge(icon: "warning.gif", text: "Statement coverage decreased")
-    
-            } else {
-                print "Statement coverage history (PASSED): " + newPcnt + "% >=  " + oldPcnt + "%"
-            }
-        }
-        
-        if (oldBranchIndex != -1 && newBranchIndex != -1) {
-            oldBranches = oldCovParts[oldBranchIndex]
-            newBranches = newCovParts[newBranchIndex]
-
-            def (oldNum, oldDem)  = oldBranches.split("/")
-            def oldPcnt = 100 * (oldNum as Float) / (oldDem as Float)
-            def (newNum, newDem)  = newBranches.split("/")
-            def newPcnt = 100 * (newNum as Float) / (newDem as Float)
-            
-            if (newPcnt < oldPcnt) {
-                print "Branch coverage history (FAILED)   : " + newPcnt + "% <  " + oldPcnt + "%"
-                createSummary icon: "warning.gif", text: "Branch coverage decreased"
-                addBadge(icon: "warning.gif", text: "Branch coverage decreased")
-    
-                failure = true
-            } else {
-                print "Branch coverage history (PASSED)   : " + newPcnt + "% >= " + oldPcnt + "%"
-            }
-        }
-        
-    } catch (exe) {
-        print "error eith processing coverage differences"
-    } finally {
-        writeFile file: "last_coverage.txt", text: newCov
-    }
-    
-    if (failure) {
-        error("Statement and/or Branch coverage decreased from last build.  Check console log for details")
-    }
-}
-
-
 // ***************************************************************
 // 
 //                           SCM Utilities
@@ -686,6 +574,10 @@ pipeline {
         stage('Get-Environment-Info') {
             steps {
                 script {
+                        if (currentBuild.description == null) {
+                            currentBuild.description = ""
+                        }
+
                     if (!VC_useOneCheckoutDir) {
                         // Get the repo (should only need the .vcm file)
                         scmStep()
@@ -853,23 +745,28 @@ pipeline {
                         if (failure) {
                             throw new Exception ("Error in Commands: " + foundKeywords)
                         }
-                    }
-                    
-                    // Send reports to the code coverage plugin
-                    step([$class: 'VectorCASTPublisher', 
-                        includes: 'xml_data/coverage_results*.xml', 
-                        useThreshold: VC_Use_Threshold,        
-                        healthyTarget:   VC_Healthy_Target
-                        ])
-
-                    // Send test results to JUnit plugin
-                    step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
-
-                    // if using coverage history as additional check
-                    script {
+                        def currResult = ""
                         if (VC_useCoverageHistory) {
-                            checkCoverageHistory()
+                            currResult = currentBuild.result
                         }
+                        
+                        // Send reports to the code coverage plugin
+                        step([$class: 'VectorCASTPublisher', 
+                            includes: 'xml_data/coverage_results*.xml', 
+                            useThreshold: VC_Use_Threshold,        
+                            healthyTarget:   VC_Healthy_Target,
+                            useCoverageHistory: VC_useCoverageHistory])
+                            
+                        if (VC_useCoverageHistory) {
+                            if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
+                                createSummary icon: "error.gif", text: "Code Coverage Decreased"
+                                currentBuild.description += "Code coverage decreased.  See console log for details\n"
+                                addBadge icon: "error.gif", text: "Code Coverage Decreased"
+                            }
+                        }
+                        
+                        // Send test results to JUnit plugin
+                        step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
                     }
                 }            
 
@@ -898,7 +795,6 @@ pipeline {
 
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly
-                        currentBuild.description = ""
                         if (foundKeywords.size() > 0) {
                             currentBuild.description += "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords + "\n"
                         }
