@@ -424,7 +424,7 @@ def transformIntoStep(inputString) {
                 // check log for errors/unstable keywords again since the copy build dir could have thrown errors/unstable keywords
                 (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                 
-                // if somethign failed, raise an error
+                // if something failed, raise an error
                 if (failure) {
                     error ("Error in Commands: " + foundKeywords)
                     
@@ -487,16 +487,17 @@ pipeline {
         // This stage also includes the implementation for the parameterized Jenkins job
         //    that includes a forced node name and an external repository
         // External repository is used when another job has already checked out the source code
-        //    and is passing that information to this pipeline via VCAST_FORCE_NODE_EXEC_NAME env var
+        //    and is passing that information to this pipeline via VCAST_PROJECT_DIR env var
         stage('Single-Checkout') {
             steps {
                 script {
                     def usingExternalRepo = false;
 
-                    // check to see if env var VCAST_FORCE_NODE_EXEC_NAME is setup from another job
+                    // check to see if env var VCAST_PROJECT_DIR is setup from another job
                     try {
-                        if ("${VCAST_FORCE_NODE_EXEC_NAME}".length() > 0) {
+                        if ("${VCAST_PROJECT_DIR}".length() > 0) {
                             usingExternalRepo = true
+                            VC_Manage_Project = "${VCAST_PROJECT_DIR}/" + VC_Manage_Project
                         }
                         else {
                             usingExternalRepo = false
@@ -519,10 +520,13 @@ pipeline {
                         def origSetup = VC_EnvSetup
                         def origTeardown = VC_EnvTeardown
                         def orig_VC_sharedArtifactDirectory = VC_sharedArtifactDirectory
+                        def orig_VC_postScmStepsCmds = VC_postScmStepsCmds
+
                         if (isUnix()) {
                             VC_EnvSetup = VC_EnvSetup.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
                             VC_EnvTeardown = VC_EnvTeardown.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
                             VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
+                            VC_postScmStepsCmds = VC_postScmStepsCmds.replace("\$WORKSPACE" ,VC_OriginalWorkspace)                            
                         } else {
                             VC_OriginalWorkspace = VC_OriginalWorkspace.replace('\\','/')
                             
@@ -539,12 +543,21 @@ pipeline {
                             // replace case insensitive workspace with WORKSPACE
                             tmpInfo = VC_sharedArtifactDirectory.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
                             VC_sharedArtifactDirectory = tmpInfo.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
+                            
+                            // replace case insensitive workspace with WORKSPACE
+                            tmpInfo = VC_postScmStepsCmds.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
+                            VC_postScmStepsCmds = tmpInfo.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
                         }
                         print "Updating setup script " + origSetup + " \nto: " + VC_EnvSetup
                         print "Updating teardown script " + origTeardown + " \nto: " + origTeardown
                         print "Updating shared artifact directory " + orig_VC_sharedArtifactDirectory + " \nto: " + VC_sharedArtifactDirectory
+                        print "Updating post SCM steps "  + orig_VC_postScmStepsCmds + "\nto: " + VC_postScmStepsCmds
+
+                        // If there are post SCM checkout steps, do them now
+                        if (VC_postScmStepsCmds.length() > 0) {
+                            runCommands(VC_postScmStepsCmds)
                         }
-                    else {
+                    } else {
                         if (usingExternalRepo) {
                             println "Using ${VCAST_FORCE_NODE_EXEC_NAME}/${VC_Manage_Project} as single checkout directory"
                         }
@@ -561,9 +574,18 @@ pipeline {
         stage('Get-Environment-Info') {
             steps {
                 script {
+                        if (currentBuild.description == null) {
+                            currentBuild.description = ""
+                        }
+
                     if (!VC_useOneCheckoutDir) {
                         // Get the repo (should only need the .vcm file)
                         scmStep()
+                        
+                        // If there are post SCM checkout steps, do them now
+                        if (VC_postScmStepsCmds.length() > 0) {
+                            runCommands(VC_postScmStepsCmds)
+                        }
                     }
 
                     // archive existing reports 
@@ -605,7 +627,7 @@ pipeline {
                             else {
                                 trimmedString = compiler + " " + test_suite + " " + environment
                                 print("??:" + trimmedString)
-                                continue
+                                return
                             }
                             
                             print ("++ " + trimmedString)
@@ -723,17 +745,29 @@ pipeline {
                         if (failure) {
                             throw new Exception ("Error in Commands: " + foundKeywords)
                         }
+                        def currResult = ""
+                        if (VC_useCoverageHistory) {
+                            currResult = currentBuild.result
+                        }
+                        
+                        // Send reports to the code coverage plugin
+                        step([$class: 'VectorCASTPublisher', 
+                            includes: 'xml_data/coverage_results*.xml', 
+                            useThreshold: VC_Use_Threshold,        
+                            healthyTarget:   VC_Healthy_Target,
+                            useCoverageHistory: VC_useCoverageHistory])
+                            
+                        if (VC_useCoverageHistory) {
+                            if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
+                                createSummary icon: "error.gif", text: "Code Coverage Decreased"
+                                currentBuild.description += "Code coverage decreased.  See console log for details\n"
+                                addBadge icon: "error.gif", text: "Code Coverage Decreased"
+                            }
+                        }
+                        
+                        // Send test results to JUnit plugin
+                        step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
                     }
-                    
-                    // Send reports to the code coverage plugin
-                    step([$class: 'VectorCASTPublisher', 
-                        includes: 'xml_data/coverage_results*.xml', 
-                        useThreshold: VC_Use_Threshold,        
-                        healthyTarget:   VC_Healthy_Target
-                        ])
-
-                    // Send test results to JUnit plugin
-                    step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
                 }            
 
                 // Save all the html, xml, and txt files
@@ -761,7 +795,6 @@ pipeline {
 
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly
-                        currentBuild.description = ""
                         if (foundKeywords.size() > 0) {
                             currentBuild.description += "Problematic data found in console output, search the console output for the following phrases: " + foundKeywords + "\n"
                         }

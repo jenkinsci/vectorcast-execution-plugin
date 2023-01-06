@@ -325,12 +325,18 @@ if (getOptionUseReporting()) {
 "\n" +
 "FilePath fp_i = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_rebuild" + html_text + "_tmp')\n" +
 "FilePath fp_f = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report" + html_text + "_tmp')\n" +
-"if (fp_i.exists() && fp_f.exists())\n" +
-"{\n" +
 // Must put HTML in createSummary and not description. Description will be truncated
 // and shown in Build history on left and cause corruption in the display, particularly
 // if using 'anything-goes-formatter'
-"    manager.createSummary(\"monitor.png\").appendText(fp_i.readToString() + \"" + html_newline + "\" + fp_f.readToString(), false)\n" +
+"if (fp_i.exists() && fp_f.exists())\n" +
+"{\n" +
+"    manager.createSummary(\"monitor.png\").appendText(fp_i.readToString() + \"<br>\" + fp_f.readToString(), false)\n" +
+"}\n" +
+"else if (fp_f.exists())\n" +
+"{\n" +
+"    manager.createSummary(\"monitor.png\").appendText(fp_f.readToString(), false)\n" +
+"    manager.build.description = \"Warning: Incremental Build Report not found.  Ignore if not building with Change Based Testing\"\n" +
+"    manager.addBadge(\"warning.gif\", \"CBT Report Missing - Ignore if not testing with CBT\")\n" +
 "}\n" +
 "else\n" +
 "{\n" +

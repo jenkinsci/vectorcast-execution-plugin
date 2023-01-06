@@ -52,9 +52,12 @@ import org.mockito.Mockito;
 import static org.powermock.api.mockito.PowerMockito.when;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Jenkins.class)
+@PowerMockIgnore("jdk.internal.reflect.*")
+
 public class NewPipelineTest extends TestCase {
     @Rule
     public JenkinsRule r = new JenkinsRule();

@@ -72,6 +72,11 @@
                    help="/plugin/vectorcast-execution/help-scmSnippet.html">
             <f:textarea name="scmSnippet" class="fixed-width" required="false" />
           </f:entry>
+          <f:entry title="${%VCJob.Control.SCMCheckoutLine.postSCMCheckoutCommands.title}" 
+                   description="Commmands to be run after SCM checkout of the VectorCAST Project and related files"
+                   help="/plugin/vectorcast-execution/help-postSCMCheckoutCommands.html">
+            <f:textarea name="postSCMCheckoutCommands" class="fixed-width" required="false" />
+          </f:entry>
         </f:section>        
         
         <f:section>

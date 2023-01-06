@@ -94,7 +94,11 @@ public class NewPipelineJob extends BaseJob {
     private boolean useCBT;
 
     private boolean useParameters;
-   
+    
+    private boolean useCoverageHistory;
+    
+    private String postSCMCheckoutCommands;
+    
     /** Environment setup script */
     private String environmentSetup;
     /** Execute preamble */
@@ -165,11 +169,13 @@ public class NewPipelineJob extends BaseJob {
         useCILicenses  = json.optBoolean("useCiLicense", false);
         useCBT  = json.optBoolean("useCBT", true);
         useParameters  = json.optBoolean("useParameters", false);
+        useCoverageHistory  = json.optBoolean("useCoverageHistory", false);
         
         // remove the win/linux options since there's no platform any more 
         environmentSetup = json.optString("environmentSetup", null);
         executePreamble = json.optString("executePreamble", null);
         environmentTeardown = json.optString("environmentTeardown", null);
+        postSCMCheckoutCommands = json.optString("postSCMCheckoutCommands", null);
          
         if (sharedArtifactDirectory.length() != 0) {
             sharedArtifactDirectory = "--workspace="+sharedArtifactDirectory.replace("\\","/");
@@ -417,6 +423,7 @@ public class NewPipelineJob extends BaseJob {
 		String setup = "";
 		String preamble = "";
 		String teardown = "";
+        String postCheckoutCmds = "";
 
 		// Doing once per MultiJobDetail similar to MultiJob plugin
         if ((executePreamble != null) && (!executePreamble.isEmpty())) {
@@ -428,16 +435,13 @@ public class NewPipelineJob extends BaseJob {
         if ((environmentTeardown != null) && (!environmentTeardown.isEmpty())) {
             teardown = environmentTeardown.replace("\\","/").replace("\"","\\\"");
         }
+        if ((postSCMCheckoutCommands != null) && (!postSCMCheckoutCommands.isEmpty())) {
+            postCheckoutCmds = postSCMCheckoutCommands.replace("\\","/").replace("\"","\\\"");
+        }
         String incremental = "\"\"";
         if (useCBT)
         {
             incremental = "\"--incremental\"";
-        }
-        
-        String VC_Proj_Prefix = "";
-        
-        if (useParameters) {
-            VC_Proj_Prefix = "${VCAST_PROJECT_DIR}/";
         }
         
         String VC_Use_CI = "\"\"";
@@ -455,12 +459,13 @@ public class NewPipelineJob extends BaseJob {
             "//\n" +  
             "// ===============================================================\n" +  
             "\n" +  
-            "VC_Manage_Project     = \"" + VC_Proj_Prefix + "\" + \'" + this.getManageProjectName() + "\'\n" + 
+            "VC_Manage_Project     = \'" + this.getManageProjectName() + "\'\n" + 
             "VC_EnvSetup        = '''" + setup + "'''\n" + 
             "VC_Build_Preamble  = \"" + preamble + "\"\n" + 
             "VC_EnvTeardown     = '''" + teardown + "'''\n" + 
             "def scmStep () { " + pipelineSCM + " }\n" + 
             "VC_usingSCM = " + String.valueOf(pipelineSCM.length() != 0) + "\n" + 
+            "VC_postScmStepsCmds = '''" + postCheckoutCmds + "'''\n" + 
             "VC_sharedArtifactDirectory = '''" + sharedArtifactDirectory + "'''\n" +  
             "VC_Agent_Label = '" + nodeLabel + "'\n" +  
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
@@ -483,6 +488,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_TESTinsights_SCM_URL = '" + getTESTinsights_SCM_URL() + "'\n" +  
             "VC_TESTinsights_SCM_Tech = '" + getTESTinsights_SCM_Tech() + "'\n" +  
             "VC_TESTinsights_Revision=\"\"\n" +  
+            "VC_useCoverageHistory=" + useCoverageHistory + "\n" +
             "\n" +   
             "";
             

@@ -38,6 +38,7 @@ simpleTestIndex = 2
 class ParseConsoleForCBT(object):
     def __init__(self, verbose = False):
         self.environmentDict = {}
+        self.environmentDict["BLANK"] = [{"BLANK"},{"BLANK"},{"BLANK"}]
         self.verbose = verbose
 
     def checkForSave(self, compoundTests, initTests, simpleTestcases):
@@ -119,7 +120,8 @@ class ParseConsoleForCBT(object):
                     fileName = ""
                     func = ""
                     try:
-                        fileName, func = line.split()[2].split(".",1)
+                        line = line.replace("test cases","").rstrip()
+                        fileName, func = line.split(" ",2)[-1].split(".",1)
                     except:
                         fileName = line.split()[2].split(".",1)[0]
 
