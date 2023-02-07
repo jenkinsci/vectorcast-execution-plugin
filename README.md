@@ -137,6 +137,9 @@ For customers using VectorCAST's requirements gateway, there's a potential for l
 
 ## Change Log
 
+### Version 0.75 (19 Jan 2023)
+- Added support for VectorCAST Projects (VC23) to not to have groups in project
+
 ### Version 0.75 (23 Dec 2022)
 - Decoupled the two parameters used for parameterized pipeline
 - Fixed skipped test analysis issue for overloaded C++ methods
