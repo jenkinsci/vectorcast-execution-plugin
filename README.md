@@ -131,13 +131,13 @@ For more information on VectorCAST Reports and Jenkins Content Security Policy, 
 
 For non-pipeline jobs, JUnit publisher will fail any environments published without test results. If you have an environment with no test results, you will need to manually check the box "Do not fail the build on empty test results" in the Publish JUnit test result report configuration.
 
-### Potential loss off requirements information
+### Potential loss of requirements information
 
 For customers using VectorCAST's requirements gateway, there's a potential for loss of requirements data when running test environments in parallel while using a shared requriments database.
 
 ## Change Log
 
-### Version 0.75 (19 Jan 2023)
+### Version 0.76 (19 Jan 2023)
 - Added support in VectorCAST version 2023 Projects for environments that are not in a group
 
 ### Version 0.75 (23 Dec 2022)
