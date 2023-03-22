@@ -90,6 +90,8 @@ public class NewPipelineJob extends BaseJob {
     private boolean singleCheckout;
 
     private boolean useCILicenses;
+    private boolean useStrictTestcaseImport;
+    private boolean useImportedResults;
     
     private boolean useCBT;
 
@@ -167,6 +169,8 @@ public class NewPipelineJob extends BaseJob {
         
         singleCheckout = json.optBoolean("singleCheckout", false);
         useCILicenses  = json.optBoolean("useCiLicense", false);
+        useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
+        useImportedResults  = json.optBoolean("useImportedResults", false);
         useCBT  = json.optBoolean("useCBT", true);
         useParameters  = json.optBoolean("useParameters", false);
         useCoverageHistory  = json.optBoolean("useCoverageHistory", false);
@@ -489,6 +493,8 @@ public class NewPipelineJob extends BaseJob {
             "VC_TESTinsights_SCM_Tech = '" + getTESTinsights_SCM_Tech() + "'\n" +  
             "VC_TESTinsights_Revision=\"\"\n" +  
             "VC_useCoverageHistory=" + useCoverageHistory + "\n" +
+            "VC_useStrictImport="    + useStrictTestcaseImport + "\n" +
+            "VC_useImportedResults=" + useImportedResults + "\n" +
             "\n" +   
             "";
             

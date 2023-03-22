@@ -92,6 +92,13 @@ abstract public class BaseJob {
     private boolean optionClean;
     /** Use CI license */
     private boolean useCILicenses;
+
+    /** Use strict testcase import */
+    private boolean useStrictTestcaseImport;
+
+    /** Use imported results */
+    private boolean useImportedResults;
+
     /** Using some form of SCM */
     private boolean usingSCM;
     /** The SCM being used */
@@ -178,6 +185,8 @@ abstract public class BaseJob {
             nodeLabel = json.optString("nodeLabel", "");
             
             useCILicenses  = json.optBoolean("useCiLicense", false);
+            useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
+            useImportedResults  = json.optBoolean("useImportedResults", false);
             
             /* Additional Tools */
             pclpCommand = json.optString("pclpCommand", "").replace('\\','/');;
@@ -211,6 +220,8 @@ abstract public class BaseJob {
         optionExecutionReport = savedData.getOptionExecutionReport();
         optionClean = savedData.getOptionClean();
         useCILicenses = savedData.getUseCILicenses();
+        useStrictTestcaseImport = savedData.getUseStrictTestcaseImport();
+        useImportedResults = savedData.getUseImportedResults();
 
         usingSCM = savedData.getUsingSCM();
         scm = savedData.getSCM();
@@ -398,7 +409,6 @@ abstract public class BaseJob {
     protected void setOptionClean(boolean optionClean) {
         this.optionClean = optionClean;
     }
-    
     /**
      * Get option to use CI licenses
      * @return true to use CI licenses, false to not
@@ -412,6 +422,34 @@ abstract public class BaseJob {
      */
     protected void setUseCILicenses(boolean useCILicenses) {
         this.useCILicenses = useCILicenses;
+    }    
+    /**
+     * Get option to Use strict testcase import
+     * @return true to Use strict testcase import, false to not
+     */
+    protected boolean getUseStrictTestcaseImport() {
+        return useStrictTestcaseImport;
+    }
+    /**
+     * Set option to Use strict testcase import
+     * @param useStrictTestcaseImport  true to Use strict testcase import, false to not
+     */
+    protected void setUseStrictTestcaseImport(boolean useStrictTestcaseImport) {
+        this.useStrictTestcaseImport = useStrictTestcaseImport;
+    }    
+    /**
+     * Get option to Use imported results
+     * @return true to Use imported results, false to not
+     */
+    protected boolean getUseImportedResults() {
+        return useImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useImportedResults true to Use imported results, false to not
+     */
+    protected void setUseImportedResults(boolean useImportedResults) {
+        this.useImportedResults = useImportedResults;
     }    
      /**
      * Get environment setup for windows
@@ -689,6 +727,8 @@ abstract public class BaseJob {
                                     optionExecutionReport,
                                     optionClean,
                                     useCILicenses,
+                                    useStrictTestcaseImport,
+                                    useImportedResults,
                                     waitLoops,
                                     waitTime,
                                     manageProjectName,

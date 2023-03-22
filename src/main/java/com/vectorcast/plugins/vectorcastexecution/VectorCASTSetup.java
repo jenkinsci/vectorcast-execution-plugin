@@ -80,6 +80,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private boolean optionClean;
     /** Use CI License */
     private boolean useCILicenses;
+    /** Use strict testcase import */
+    private boolean useStrictTestcaseImport;
+    /** Use imported results */
+    private boolean useImportedResults;
     /** Wait loops */
     private Long waitLoops;
     /** Wait time */
@@ -304,6 +308,34 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseCILicenses(boolean useCILicenses) {
         this.useCILicenses = useCILicenses;
+    }    
+    /**
+     * Get option to Use strict testcase import
+     * @return true to Use strict testcase import, false to not
+     */
+    public boolean getUseStrictTestcaseImport() {
+        return useStrictTestcaseImport;
+    }
+    /**
+     * Set option to Use strict testcase import
+     * @param useStrictTestcaseImport  true to Use strict testcase import, false to not
+     */
+    public void setUseStrictTestcaseImport(boolean useStrictTestcaseImport) {
+        this.useStrictTestcaseImport = useStrictTestcaseImport;
+    }    
+    /**
+     * Get option to Use imported results
+     * @return true to Use imported results, false to not
+     */
+    public boolean getUseImportedResults() {
+        return useImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useImportedResults true to Use imported results, false to not
+     */
+    public void setUseImportedResults(boolean useImportedResults) {
+        this.useImportedResults = useImportedResults;
     }    
     /**
      * Get using SCM
@@ -534,6 +566,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param optionExecutionReport execution report
      * @param optionClean clean
      * @param useCILicenses use CI licenses
+     * @param useStrictTestcaseImport Use strict testcase import
+     * @param useImportedResults use imported results
      * @param waitLoops wait loops
      * @param waitTime wait time
      * @param manageProjectName manage project name
@@ -562,6 +596,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            boolean optionExecutionReport,
                            boolean optionClean,
                            boolean useCILicenses,
+                           boolean useStrictTestcaseImport,
+                           boolean useImportedResults,
                            Long waitLoops,
                            Long waitTime,
                            String manageProjectName,
@@ -588,6 +624,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.optionExecutionReport = optionExecutionReport;
         this.optionClean = optionClean;
         this.useCILicenses = useCILicenses;
+        this.useStrictTestcaseImport = useStrictTestcaseImport;
+        this.useImportedResults = useImportedResults;
         this.usingSCM = false;
         this.scm = new NullSCM();
         this.waitLoops = waitLoops;
@@ -777,6 +815,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t optionExecutionReport: " + optionExecutionReport +  "\n"
     			+ "\t optionClean: " + optionClean +  "\n"
     			+ "\t useCILicenses: " + useCILicenses +  "\n"
+    			+ "\t useStrictTestcaseImport: " + useStrictTestcaseImport +  "\n"
+    			+ "\t useImportedResults: " + useImportedResults +  "\n"
     			+ "\t usingSCM: " + usingSCM +  "\n"
     			+ "\t scm: " + scm +  "\n"
     			+ "\t waitLoops: " + waitLoops +  "\n"
