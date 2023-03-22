@@ -75,10 +75,13 @@ def addFile(tf, file, backOneDir = False):
     if backOneDir:
         local_build_dir = os.sep.join(build_dir.split(os.sep)[:-1])
         
-    for f in os.listdir(local_build_dir):
-        if fnmatch.fnmatch(f, file):
-            tf.add(os.path.join(local_build_dir, f))
-
+    try:
+        for f in os.listdir(local_build_dir):
+            if fnmatch.fnmatch(f, file):
+                tf.add(os.path.join(local_build_dir, f))
+    except:
+        pass
+        
 def addDirectory(tf, dir):
     global build_dir
     

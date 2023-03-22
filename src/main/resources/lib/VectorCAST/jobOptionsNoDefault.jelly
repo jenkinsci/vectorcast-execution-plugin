@@ -38,6 +38,24 @@
         <f:entry title="${%VCJob.JobOptions.jobName.title}" description="${%VCJob.JobOptions.jobName.description}"
                  help="/plugin/vectorcast-execution/help-jobOptJobName.html">
           <f:textbox name="jobName" size="50" value="${instance.jobName}"/>
+
+
+        <f:entry title="${%VCJob.JobOptions.useCoverageHistory.title}" description="${%VCJob.JobOptions.useCoverageHistory.description}"
+                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">
+            <f:checkbox name="useCoverageHistory" checked="${instance.useCoverageHistory}" default="false"/>
+        </f:entry>        
+        
+        <f:entry title="${%VCJob.JobOptions.useStrictTestcaseImport.title}" description="${%VCJob.JobOptions.useStrictTestcaseImport.description}"
+                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">
+            <f:checkbox name="useStrictTestcaseImport" checked="${instance.useStrictTestcaseImport}" default="true"/>
+        </f:entry>        
+        
+        <f:entry title="${%VCJob.JobOptions.useImportedResults.title}" description="${%VCJob.JobOptions.useImportedResults.description}"
+                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">
+            <f:checkbox name="useImportedResults" checked="${instance.useImportedResults}" default="false"/>
+        </f:entry>        
+
+
         </f:entry>
       </f:optionalBlock>
     </f:section>

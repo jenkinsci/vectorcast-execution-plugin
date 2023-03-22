@@ -125,8 +125,8 @@ class ParseConsoleForCBT(object):
                     except:
                         fileName = line.split()[2].split(".",1)[0]
 
-                    # Running all <<COMPOUND>> test cases
-                    if "Running all <<COMPOUND>> test cases" in line:
+                    # Running all <<COMPOUND>>
+                    if "Running all <<COMPOUND>>" in line:
                         runningCompound = True
                         runningInits = False
 

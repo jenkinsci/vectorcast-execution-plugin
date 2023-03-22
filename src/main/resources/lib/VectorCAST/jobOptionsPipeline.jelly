@@ -50,6 +50,16 @@
             <f:checkbox name="useCoverageHistory" checked="${instance.useCoverageHistory}" default="false"/>
         </f:entry>        
         
+        <f:entry title="${%VCJob.JobOptionsPipeline.useStrictTestcaseImport.title}" description="${%VCJob.JobOptionsPipeline.useStrictTestcaseImport.description}"
+                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">
+            <f:checkbox name="useStrictTestcaseImport" checked="${instance.useStrictTestcaseImport}" default="true"/>
+        </f:entry>        
+        
+        <f:entry title="${%VCJob.JobOptionsPipeline.useImportedResults.title}" description="${%VCJob.JobOptionsPipeline.useImportedResults.description}"
+                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">
+            <f:checkbox name="useImportedResults" checked="${instance.useImportedResults}" default="false"/>
+        </f:entry>        
+        
       </f:optionalBlock>
     </f:section>
 </j:jelly>

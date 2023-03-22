@@ -15,10 +15,8 @@ def printOutput(somethingPrinted, ManageProjectName, output, teePrint):
         teePrint.teePrint ("No environments found in " + ManageProjectName + ". Please check configuration")
     else:
         teePrint.teePrint(output)
-    
-def parseBuildDirectory(ManageProjectName, printEnvType, buildDirInfo):
-    output = ""
-    
+        
+def getBuildDirectory(compiler , testsuite , env_name, buildDirInfo):
     for line in buildDirInfo:
         if "Compiler:" in line:
             build_comp = line.split(":",1)[-1].strip()
@@ -29,29 +27,12 @@ def parseBuildDirectory(ManageProjectName, printEnvType, buildDirInfo):
         elif "Environment:" in line:
             build_env = line.split(":",1)[-1].strip()
         elif "Build Directory:" in line:
-            envEnabled = True
             build_dir = line.split(":",1)[-1].strip()
-            
-            cmds = [manageCMD, "--project", ManageProjectName, "--compiler", build_comp,
-                    "--testsuite", build_ts, "--list"]
-            
-            p = subprocess.Popen(cmds, stdout=subprocess.PIPE, universal_newlines=True)
-            out, err = p.communicate()
-            if "DISABLED ENVIRONMENTS" in out:
-                listInfo = out.split("\n")
-                disableIndex = listInfo.index("DISABLED ENVIRONMENTS:")
-                enabledIndex = listInfo.index("ENVIRONMENTS:")
-                disabledList = listInfo[disableIndex+1:enabledIndex-1]
-                for env in disabledList:
-                    if build_env.strip() == env.strip():
-                        envEnabled = False
-            if envEnabled:
-                if printEnvType:
-                    output += checkForSystemTest(build_dir, build_env)
+            if build_comp == compiler and build_ts == testsuite and build_env == env_name:
+                return build_dir
+                
+    return None
 
-                output += "%s %s %s\n" % (build_comp , build_ts , build_env)  
-
-    return output
 
 def checkForSystemTest(build_dir, env_name):
 
@@ -70,11 +51,94 @@ def checkForSystemTest(build_dir, env_name):
                 return "ST: "        
 
     return "UT: "
+    
+def checkForEnvChanges(vcm_fname, build_dir, env_name):
+
+    env_coverdb = os.path.join(build_dir,env_name,"cover.db")
         
+    if (os.path.exists(env_coverdb)):
+        #print("cover.db file exists")
+        env_coverdb_ts = os.path.getmtime(env_coverdb)
+        vcm_file_ts = os.path.getmtime(vcm_fname)
+        if (vcm_file_ts > env_coverdb_ts):
+            print ("Changes to .vcm file.  Rebuild all")
+            #print(str(env_coverdb_ts), str(vcm_file_ts))
+            return " FR"
+            
+        env_files_latest_ts = 0
+        
+        vcm_path = vcm_fname.replace("\\","/")
+        if "/" in vcm_path:
+            vcm_path = vcm_path.rsplit("/",1)[0]
+        else:
+            vcm_path = ""
+            
+        vcm_basename = os.path.basename(vcm_fname).replace(".vcm","")
+        
+        env_data_path = os.path.join(vcm_path,vcm_basename, "environment", env_name,"*.*")
+        for file in glob.glob(env_data_path):
+            if os.path.getmtime(file) > env_coverdb_ts:
+                print(file,"time greater than", env_coverdb)
+                print("force rebuild of enviornment")
+                return "FR"
+            
+        return " NA"
+    
+    return " FR"
+    
+    
+def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
+    print ("Using data api!!!")
+    somethingPrinted = False
+    output = ""
+    
+    for env in api.Environment.all():
+        somethingPrinted = True
+        
+        if (printEnvType):
+            if env.system_tests:
+                output += "ST: "
+            else:
+                output += "UT: "
+                
+        output += "%s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name)
+
+    if printData:
+        with tee_print.TeePrint() as teePrint:
+            printOutput(somethingPrinted, api.vcm_file, output, teePrint)
+
+    return output
+    
+def checkGroupOrEnv(str):
+
+    ## env or no-group env
+    envOrNoGroupEnv = False
+    
+    if str.strip().startswith("Disabled Environment"):
+        envOrNoGroupEnv = false
+    
+    # environment with group
+    elif re.match("^      [^\s]",str) is not None:
+        envOrNoGroupEnv = True
+        
+    # group or environment with no group
+    elif re.match("^     [^\s]",str) is not None:
+        # groups will have a numeric starting of status: 10/100 (50%)
+        status = str.split()[1]
+        envOrNoGroupEnv = not status[0].isnumeric()
+        
+    return envOrNoGroupEnv
+
 def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = False):
 
     somethingPrinted = False
     output = ""
+    p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --full-status",
+                         shell=True,
+                         stdout=subprocess.PIPE,
+                         universal_newlines=True)
+    out, err = p.communicate()
+    enabledList = out.splitlines()
 
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name",
                          shell=True,
@@ -84,17 +148,46 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
     out, err = p.communicate()
     buildDirInfo = out.splitlines()
     
-    output = parseBuildDirectory(ManageProjectName, printEnvType, buildDirInfo)
+    for str in enabledList:
+        if re.match("^   [^\s]",str) is not None:
+            compiler = str.split()[0]
+        elif re.match("^    [^\s]",str) is not None:
+            testsuite = str.split()[0]
+        elif checkGroupOrEnv(str):
+                
+            env_name = str.split()[0]
+            build_dir = getBuildDirectory(compiler , testsuite , env_name, buildDirInfo)
+            
+            #force_rebuild = checkForEnvChanges(ManageProjectName, build_dir, env_name)
+
+            if printEnvType:
+                output += checkForSystemTest(build_dir, env_name)
+
+            output += "%s %s %s\n" % (compiler , testsuite , env_name)            
+                            
+            somethingPrinted = True;
 
     if printData:
         with tee_print.TeePrint() as teePrint:
-            printOutput(len(output) != 0, ManageProjectName, output, teePrint)
+            printOutput(somethingPrinted, ManageProjectName, output, teePrint)
 
     return output
  
 def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, legacy = False):
-
-    return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType)
+    # try:
+        # if (legacy): raise KeyError
+            
+        # from vector.apps.DataAPI.vcproject_api import VCProjectApi
+        # api = VCProjectApi(ManageProjectName)
+        # return printEnvInfoDataAPI(api, printData, printEnvType)
+    
+    # except:
+    
+    if True:
+        #import parse_traceback
+        #import traceback
+        #print (parse_traceback.parse(traceback.format_exc()))
+        return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType)
         
         
 if __name__ == "__main__":
