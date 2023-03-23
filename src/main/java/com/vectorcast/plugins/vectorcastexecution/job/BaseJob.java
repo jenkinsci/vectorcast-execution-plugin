@@ -32,6 +32,8 @@ import hudson.plugins.ws_cleanup.PreBuildCleanup;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
+import hudson.plugins.copyartifact.CopyArtifact;
+import hudson.plugins.copyartifact.StatusBuildSelector;
 import hudson.tasks.ArtifactArchiver;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -98,6 +100,9 @@ abstract public class BaseJob {
 
     /** Use imported results */
     private boolean useImportedResults;
+
+    /** Use coverage history to control build status */
+    private boolean useCoverageHistory;
 
     /** Using some form of SCM */
     private boolean usingSCM;
@@ -187,6 +192,7 @@ abstract public class BaseJob {
             useCILicenses  = json.optBoolean("useCiLicense", false);
             useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
             useImportedResults  = json.optBoolean("useImportedResults", false);
+            useCoverageHistory = json.optBoolean("useCoverageHistory", false);
             
             /* Additional Tools */
             pclpCommand = json.optString("pclpCommand", "").replace('\\','/');;
@@ -222,6 +228,7 @@ abstract public class BaseJob {
         useCILicenses = savedData.getUseCILicenses();
         useStrictTestcaseImport = savedData.getUseStrictTestcaseImport();
         useImportedResults = savedData.getUseImportedResults();
+        useCoverageHistory = savedData.getUseCoverageHistory();
 
         usingSCM = savedData.getUsingSCM();
         scm = savedData.getSCM();
@@ -450,6 +457,20 @@ abstract public class BaseJob {
      */
     protected void setUseImportedResults(boolean useImportedResults) {
         this.useImportedResults = useImportedResults;
+    }    
+    /**
+     * Get option to Use coverage history to control build status
+     * @return true to Use imported results, false to not
+     */
+    protected boolean getUseCoverageHistory() {
+        return useCoverageHistory;
+    }
+    /**
+     * Set option to Use coverage history to control build status
+     * @param useCoverageHistory true to Use imported results, false to not
+     */
+    protected void setUseCoverageHistory(boolean useCoverageHistory) {
+        this.useCoverageHistory = useCoverageHistory;
     }    
      /**
      * Get environment setup for windows
@@ -729,6 +750,7 @@ abstract public class BaseJob {
                                     useCILicenses,
                                     useStrictTestcaseImport,
                                     useImportedResults,
+                                    useCoverageHistory,
                                     waitLoops,
                                     waitTime,
                                     manageProjectName,
@@ -767,12 +789,31 @@ abstract public class BaseJob {
         String addToolsArchive = pclpArchive + TIArchive;
         
         ArtifactArchiver archiver = new ArtifactArchiver(
-                /*artifacts*/"**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log" + addToolsArchive,
+                /*artifacts*/"**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr" + addToolsArchive,
                 /*excludes*/"",
                 /*latest only*/false,
                 /*allow empty archive*/false);
         project.getPublishersList().add(archiver);
     }
+
+    /**
+     * Add archive artifacts step
+     * @param project project to add to
+     */
+    protected void addCopyResultsToImport(Project project) {
+        StatusBuildSelector selector = new StatusBuildSelector();
+        CopyArtifact archiverCopier = new CopyArtifact(
+                /* ProjectName   */  project.getName(),
+                /* Parameters    */  "", 
+                /* BuildSelector */  selector, 
+                /* filter        */  baseName + "_results.vcr",
+                /* target        */  "",
+                /* flatten       */  false,
+                /* optional      */  true
+                );
+        project.getBuildersList().add(archiverCopier);
+    }
+
     /**
      * Add JUnit rules step
      * @param project project to add step to
@@ -810,6 +851,7 @@ abstract public class BaseJob {
         VectorCASTPublisher publisher = new VectorCASTPublisher();
         publisher.includes = "**/coverage_results_*.xml";
         publisher.healthReports = healthReports;
+        publisher.setUseCoverageHistory(useCoverageHistory);
         project.getPublishersList().add(publisher);
     }
     protected void addCredentialID(Project project) {

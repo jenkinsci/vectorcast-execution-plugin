@@ -200,6 +200,23 @@ def fixUpName(name) {
     return name.replace("/","_").replaceAll('\\%..','_').replaceAll('\\W','_')
 }
 
+// ===============================================================
+//
+// Function : stripLeadingWhitespace
+// Inputs   : string or multiline string with leading spaces
+// Action   : input string with leading spaces removed 
+// Notes    : None
+//
+// ===============================================================
+def stripLeadingWhitespace(str) {
+    def lines = str.split('\n') 
+    def trimmedString = ""
+    lines.each { line ->
+        trimmedString += line.trim() + "\n"
+    }
+
+    return trimmedString
+}
 
 // ***************************************************************
 // 
@@ -251,7 +268,7 @@ def runCommands(cmds) {
             """
         }
         cmds = localCmds + cmds
-        cmds = cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ")
+        cmds = stripLeadingWhitespace(cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf "))
         println "Running commands: " + cmds
         
         // run command in shell
@@ -278,7 +295,7 @@ def runCommands(cmds) {
             """
         }
         cmds = localCmds + cmds
-        cmds = cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ")
+        cmds = stripLeadingWhitespace(cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q "))
         println "Running commands: " + cmds
         
         // run command in bat
@@ -305,12 +322,42 @@ def runCommands(cmds) {
 // ===============================================================
 
 def setupManageProject() {
-    def cmds = """        
+    def mpName = getMPname()
+    
+    def cmds = """"""
+    
+    if (VC_sharedArtifactDirectory.length() > 0) {
+        cmds += """        
+            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} ${VC_sharedArtifactDirectory}"  
+        """
+    }
+
+    if (VC_useStrictImport) {
+        cmds += """        
+            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config=VCAST_STRICT_TEST_CASE_IMPORT=TRUE"  
+        """
+    }
+
+    cmds += """        
         _RM *_rebuild.html
-        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} ${VC_sharedArtifactDirectory} --status"  
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --status"  
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --release-locks"
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
     """
+
+    if (VC_useImportedResults) {
+
+        try {
+            copyArtifacts filter: "${mpName}_results.vcr", fingerprintArtifacts: true, projectName: "${env.JOB_NAME}", selector: lastSuccessful()     
+            cmds += """
+                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --import-result=${mpName}_results.vcr"   
+                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --status"  
+            """
+        } catch (exe) {
+            print "No result artifact to use"
+        }
+    }
+    
 
     runCommands(cmds)
 }
@@ -588,9 +635,6 @@ pipeline {
                         }
                     }
 
-                    // archive existing reports 
-                    //runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive --verbose""")
-                    tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/*.xml", overwrite: true
 
                     println "Created with VectorCAST Execution Version: " + VC_createdWithVersion
 
@@ -736,6 +780,12 @@ pipeline {
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=environment --output=${mpName}_environment_report.html"
                         """
                         
+                        if (VC_useImportedResults) {
+                            cmds += """
+                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --export-result=${mpName}_results.vcr --force"        
+                            """
+                        }
+                        
                         buildLogText += runCommands(cmds)
 
                         writeFile file: "complete_build.log", text: unstashedBuildLogText + buildLogText
@@ -771,7 +821,7 @@ pipeline {
                 }            
 
                 // Save all the html, xml, and txt files
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log'
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr'
             }
         }
         

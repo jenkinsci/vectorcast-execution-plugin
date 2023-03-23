@@ -84,6 +84,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private boolean useStrictTestcaseImport;
     /** Use imported results */
     private boolean useImportedResults;
+    /** Use coverage history to control build status */
+    private boolean useCoverageHistory;
     /** Wait loops */
     private Long waitLoops;
     /** Wait time */
@@ -338,6 +340,20 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.useImportedResults = useImportedResults;
     }    
     /**
+     * Get option to Use coverage history to control build status
+     * @return true to Use imported results, false to not
+     */
+    public boolean getUseCoverageHistory() {
+        return useCoverageHistory;
+    }
+    /**
+     * Set option to Use coverage history to control build status
+     * @param useCoverageHistory true to Use imported results, false to not
+     */
+    public void setUseCoverageHistory(boolean useCoverageHistory) {
+        this.useCoverageHistory = useCoverageHistory;
+    }    
+    /**
      * Get using SCM
      * @return true/false
      */
@@ -568,6 +584,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param useCILicenses use CI licenses
      * @param useStrictTestcaseImport Use strict testcase import
      * @param useImportedResults use imported results
+     * @param useCoverageHistory use imported results
      * @param waitLoops wait loops
      * @param waitTime wait time
      * @param manageProjectName manage project name
@@ -598,6 +615,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            boolean useCILicenses,
                            boolean useStrictTestcaseImport,
                            boolean useImportedResults,
+                           boolean useCoverageHistory,
                            Long waitLoops,
                            Long waitTime,
                            String manageProjectName,
@@ -626,6 +644,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.useCILicenses = useCILicenses;
         this.useStrictTestcaseImport = useStrictTestcaseImport;
         this.useImportedResults = useImportedResults;
+        this.useCoverageHistory = useCoverageHistory;
         this.usingSCM = false;
         this.scm = new NullSCM();
         this.waitLoops = waitLoops;
@@ -817,6 +836,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t useCILicenses: " + useCILicenses +  "\n"
     			+ "\t useStrictTestcaseImport: " + useStrictTestcaseImport +  "\n"
     			+ "\t useImportedResults: " + useImportedResults +  "\n"
+    			+ "\t useCoverageHistory: " + useCoverageHistory +  "\n"
     			+ "\t usingSCM: " + usingSCM +  "\n"
     			+ "\t scm: " + scm +  "\n"
     			+ "\t waitLoops: " + waitLoops +  "\n"
