@@ -93,6 +93,9 @@ def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
     output = ""
     
     for env in api.Environment.all():
+        if not env.is_active:
+            continue
+        
         somethingPrinted = True
         
         if (printEnvType):
@@ -174,19 +177,14 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
     return output
  
 def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, legacy = False):
-    # try:
-        # if (legacy): raise KeyError
+    try:
+        if (legacy): raise KeyError
             
-        # from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        # api = VCProjectApi(ManageProjectName)
-        # return printEnvInfoDataAPI(api, printData, printEnvType)
+        from vector.apps.DataAPI.vcproject_api import VCProjectApi
+        api = VCProjectApi(ManageProjectName)
+        return printEnvInfoDataAPI(api, printData, printEnvType)
     
-    # except:
-    
-    if True:
-        #import parse_traceback
-        #import traceback
-        #print (parse_traceback.parse(traceback.format_exc()))
+    except:    
         return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType)
         
         
