@@ -65,7 +65,15 @@ try:
     using_new_reports = True
 except:
     pass
+    
+use_manage_api = False
 
+try:
+    from vector.apps.DataAPI.vcproject_api import VCProjectApi
+    use_manage_api = True
+except:
+    pass
+    
 #global variables
 global verbose
 global print_exc
@@ -352,6 +360,47 @@ def generateIndividualReports(entry, envName):
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
 
+
+
+def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report):
+    global verbose
+
+    print("Using VCProjectApi")
+    
+    xml_file = ""
+    
+    try:
+        from generate_xml import GenerateManageXml
+
+        xml_file = GenerateManageXml(FullManageProjectName, 
+                               verbose, 
+                               cbtDict,
+                               generate_exec_rpt_each_testcase,
+                               use_archive_extract,
+                               report_only_failures,
+                               no_full_report)
+                               
+        if xml_file.api != None:
+            if verbose:
+                print("   Generate Jenkins testcase report: {}".format(xmlUnitReportName))
+            xml_file.generate_testresults()
+
+            if verbose:
+                print("   Generate Jenkins coverage report: {}".format(xmlCoverReportName))
+            xml_file.generate_cover()
+        else:
+            print("   Skipping environment: " + jobNameDotted)
+            
+    
+    except Exception as e:
+        parse_traceback.parse(traceback.format_exc(), print_exc, entry["compiler"] , entry["testsuite"],  entry["env"], entry["build_dir"])
+
+    try:       
+        return xml_file.failed_count
+    except:
+        return 0
+
+
 def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report):
 
     failed_count = 0 
@@ -448,12 +497,20 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if timing:
         print("Cleanup: " + str(time.time()))
     if useNewReport and not legacy:
+        if use_manage_api:
+            useManageAPI(FullManageProjectName, cbtDict, generate_individual_reports, 
+                    use_archive_extract, 
+                    report_only_failures,
+                    no_full_report)
 
-        manageEnvs = getManageEnvs(FullManageProjectName)
-        if timing:
-            print("Using DataAPI for reporting")
-            print("Get Info: " + str(time.time()))
-        useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures, no_full_report)
+            
+        else:
+                
+            manageEnvs = getManageEnvs(FullManageProjectName)
+            if timing:
+                print("Using DataAPI for reporting")
+                print("Get Info: " + str(time.time()))
+            useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures, no_full_report)
         if timing:
             print("XML and Individual reports: " + str(time.time()))
 

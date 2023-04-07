@@ -88,7 +88,6 @@ def checkForEnvChanges(vcm_fname, build_dir, env_name):
     
     
 def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
-    print ("Using data api!!!")
     somethingPrinted = False
     output = ""
     
