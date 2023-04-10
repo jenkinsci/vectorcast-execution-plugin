@@ -150,6 +150,25 @@ def getMPname() {
 
 // ===============================================================
 //
+// Function : stripLeadingWhitespace
+// Inputs   : string or multiline string with leading spaces
+// Action   : input string with leading spaces removed 
+// Notes    : None
+//
+// ===============================================================
+def stripLeadingWhitespace(str) {
+    def lines = str.split('\n') 
+    def trimmedString = ""
+    lines.each { line ->
+        trimmedString += line.trim() + "\n"
+    }
+
+    return trimmedString
+}
+
+
+// ===============================================================
+//
 // Function : getMPpath
 // Inputs   : None
 // Action   : Returns the path name to the manage project's directory 
@@ -200,23 +219,6 @@ def fixUpName(name) {
     return name.replace("/","_").replaceAll('\\%..','_').replaceAll('\\W','_')
 }
 
-// ===============================================================
-//
-// Function : stripLeadingWhitespace
-// Inputs   : string or multiline string with leading spaces
-// Action   : input string with leading spaces removed 
-// Notes    : None
-//
-// ===============================================================
-def stripLeadingWhitespace(str) {
-    def lines = str.split('\n') 
-    def trimmedString = ""
-    lines.each { line ->
-        trimmedString += line.trim() + "\n"
-    }
-
-    return trimmedString
-}
 
 // ***************************************************************
 // 
@@ -853,11 +855,11 @@ pipeline {
                         //   - Using CBT - CombinedReport.html (combined rebuild reports from all the environments)
                         //   - full status report from the manage project
                         if (VC_useCBT) {
-                            if (fileExists('combined_incr_rebuild.tmp') && fileExists("${mpName}_full_report.html_tmp")) {
+                            if (fileExists('combined_incr_rebuild.tmp') && fileExists("${mpName}_full_report.html_tmp") && fileExists("${mpName}_metrics_report.html_tmp")) {
                                 // If we have both of these, add them to the summary in the "normal" job view
                                 // Blue ocean view doesn't have a summary
 
-                                def summaryText = readFile('combined_incr_rebuild.tmp') + "<br> " + readFile("${mpName}_full_report.html_tmp")
+                                def summaryText = readFile('combined_incr_rebuild.tmp') + "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " + readFile("${mpName}_full_report.html_tmp") + "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " + readFile("${mpName}_metrics_report.html_tmp")
                                 createSummary icon: "monitor.gif", text: summaryText
                                 
                             
@@ -872,6 +874,11 @@ pipeline {
                                 } else {
                                     print "${mpName}_full_report.html_tmp missing" 
                                 }
+                                if (fileExists("${mpName}_metrics_report.html_tmp")) { 
+                                    print "${mpName}_metrics_report.html_tmp found" 
+                                } else {
+                                    print "${mpName}_metrics_report.html_tmp missing" 
+                                }
                                 
                                 // If not, something went wrong... Make the build as unstable 
                                 currentBuild.result = 'UNSTABLE'
@@ -879,18 +886,18 @@ pipeline {
                                 currentBuild.description += "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
                             }                     
                         } else {
-                            if (fileExists("${mpName}_full_report.html_tmp")) {
+                            if (fileExists("${mpName}_full_report.html_tmp") && fileExists("${mpName}_metrics_report.html_tmp")) {
                                 // If we have both of these, add them to the summary in the "normal" job view
                                 // Blue ocean view doesn't have a summary
 
-                                def summaryText = readFile("${mpName}_full_report.html_tmp")
+                                def summaryText = readFile("${mpName}_full_report.html_tmp") + "<br> " + readFile("${mpName}_metrics_report.html_tmp")
                                 createSummary icon: "monitor.gif", text: summaryText
                             
                             } else {
                                 // If not, something went wrong... Make the build as unstable 
                                 currentBuild.result = 'UNSTABLE'
                                 createSummary icon: "warning.gif", text: "General Failure"
-                                currentBuild.description += "General Failure, Full Report Not Present. Please see the console for more information\n"
+                                currentBuild.description += "General Failure, Full Report or Metrics Report Not Present. Please see the console for more information\n"
                             }                                             
                         }
 
@@ -898,6 +905,7 @@ pipeline {
                         def cmds = """        
                             _RM combined_incr_rebuild.tmp
                             _RM ${mpName}_full_report.html_tmp
+                            _RM ${mpName}_metrics_report.html_tmp
                         """
                         
                         runCommands(cmds)

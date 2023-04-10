@@ -423,12 +423,7 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
                 if not no_full_report:
                     generateIndividualReports(manageEnvs[currentEnv], envName)
                 
-    with open("unit_test_fail_count.txt", "w") as fd:
-        failed_str = str(failed_count)
-        try:
-            fd.write(unicode(failed_str))
-        except:
-            fd.write(failed_str)    
+    return failed_count
 
 def cleanupDirectory(path, teePrint):
 
@@ -492,13 +487,14 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             teePrint.teePrint("   *INFO: File System Error removing " + file + ".  Check console for environment build/execution errors")
             if print_exc:  traceback.print_exc()
    
+    failed_count = 0
     
     ### Using new data API - 2019 and beyond
     if timing:
         print("Cleanup: " + str(time.time()))
     if useNewReport and not legacy:
         if use_manage_api:
-            useManageAPI(FullManageProjectName, cbtDict, generate_individual_reports, 
+            failed_count = useManageAPI(FullManageProjectName, cbtDict, generate_individual_reports, 
                     use_archive_extract, 
                     report_only_failures,
                     no_full_report)
@@ -510,9 +506,17 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             if timing:
                 print("Using DataAPI for reporting")
                 print("Get Info: " + str(time.time()))
-            useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures, no_full_report)
-        if timing:
-            print("XML and Individual reports: " + str(time.time()))
+            failed_count = useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures, no_full_report)
+            
+        with open("unit_test_fail_count.txt", "w") as fd:
+            failed_str = str(failed_count)
+            try:
+                fd.write(unicode(failed_str))
+            except:
+                fd.write(failed_str)    
+           
+            if timing:
+                print("XML and Individual reports: " + str(time.time()))
 
     ### NOT Using new data API        
     else:

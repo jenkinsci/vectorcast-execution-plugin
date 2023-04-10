@@ -191,8 +191,18 @@ class BaseGenerateXml(object):
 # BaseGenerateXml - write the units to the coverage file
 #
     def write_cov_units(self):
+    
+        self.reported_units = {}
+        
         for unit in self.our_units:
-            self.fh_data += ('        <unit name="%s">\n' % escape(unit["unit"].name, quote=False))
+            unit_name = unit["unit"].name
+            if unit_name in self.reported_units.keys():
+                self.reported_units[unit_name] += 1
+                unit_name = unit_name + "'%d" % self.reported_units[unit_name]
+            else:
+                self.reported_units[unit_name] = 0
+                
+            self.fh_data += ('        <unit name="%s">\n' % escape(unit_name, quote=False))
             if unit["coverage"]["statement"]:
                 self.fh_data += ('          <coverage type="statement, %%" value="%s"/>\n' % unit["coverage"]["statement"])
             if unit["coverage"]["branch"]:
@@ -290,8 +300,8 @@ class BaseGenerateXml(object):
 # BaseGenerateXml - write the end of the coverage file and close it
 #
     def end_cov_file(self):
-        ##pprint(traceback.format_stack())
         self.fh_data += ('</report>')
+        print("writing coverage report: " + self.cover_report_name)
         with open(self.cover_report_name,"w") as fd:
             try:
                 fd.write(self.fh_data)
