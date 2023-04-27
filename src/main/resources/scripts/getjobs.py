@@ -127,7 +127,13 @@ def checkGroupOrEnv(str):
     elif re.match("^     [^\s]",str) is not None:
         # groups will have a numeric starting of status: 10/100 (50%)
         status = str.split()[1]
-        envOrNoGroupEnv = not status[0].isnumeric()
+        try:
+            # python3
+            envOrNoGroupEnv = not status[0].isnumeric()
+        except:
+            # python 2.7 
+            uniStatus = unicode(status[0])
+            envOrNoGroupEnv = not uniStatus.isnumeric()
         
     return envOrNoGroupEnv
 

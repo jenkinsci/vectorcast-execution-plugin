@@ -263,7 +263,14 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_e
             xml_file.generate_cover()
         else:
             print("   Skipping environment: " + jobNameDotted)
-            
+            print("\n\n")
+            print ("******************************************************")
+            print ("** Environment's that only use imported results     **")
+            print ("** will not properly generate metrics with this     **")
+            print ("** version of VectorCAST.                           **")
+            print ("******************************************************")
+            print("\n\n")
+
     
     except Exception as e:
         parse_traceback.parse(traceback.format_exc(), print_exc, entry["compiler"] , entry["testsuite"],  entry["env"], entry["build_dir"])
@@ -381,19 +388,22 @@ def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase
                                no_full_report)
                                
         if xml_file.api != None:
-            if verbose:
-                print("   Generate Jenkins testcase report: {}".format(xmlUnitReportName))
             xml_file.generate_testresults()
-
-            if verbose:
-                print("   Generate Jenkins coverage report: {}".format(xmlCoverReportName))
             xml_file.generate_cover()
         else:
             print("   Skipping environment: " + jobNameDotted)
-            
+            print("\n\n")
+            print ("******************************************************")
+            print ("** Environment's that only use imported results     **")
+            print ("** will not properly generate metrics with this     **")
+            print ("** version of VectorCAST.                           **")
+            print ("******************************************************")
+            print("\n\n")
     
     except Exception as e:
-        parse_traceback.parse(traceback.format_exc(), print_exc, entry["compiler"] , entry["testsuite"],  entry["env"], entry["build_dir"])
+        parse_traceback.parse(traceback.format_exc(), print_exc)
+        #traceback.print_exc()
+
 
     try:       
         return xml_file.failed_count
@@ -540,6 +550,16 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
         # capture the output of the manage call
         out_mgt = runManageWithWait(callStr)
+        
+        if "Database error:" in out_mgt:
+            print("\n\n")
+            print ("******************************************************")
+            print ("** Failed to create individual environment reports. **")
+            print ("** Environment's that only use imported results     **")
+            print ("** will not properly generate metrics with this     **")
+            print ("** version of VectorCAST.                           **")
+            print ("******************************************************")
+            print("\n\n")
 
         coverProjectInManageProject = False
         if "database missing or inaccessible" in out_mgt:
@@ -563,6 +583,17 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
             out_exe = runManageWithWait(callStr)
             out = out_mgt + "\n" + out_exe
+            
+            if "Database error:" in out_exe:
+                print("\n\n")
+                print ("******************************************************")
+                print ("** Failed to create individual environment reports. **")
+                print ("** Environment's that only use imported results     **")
+                print ("** will not properly generate metrics with this     **")
+                print ("** version of VectorCAST.                           **")
+                print ("******************************************************")
+                print("\n\n")
+
         else:
             out = out_mgt
 

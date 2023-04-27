@@ -23,6 +23,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <div>
-    This option allows use imported results to do change based testing, even from a clean checkout <br>
-    The user can selected between internal imported results or external result files
+    This feature will export results from the current build and save that result file as an artifact.  The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
 </div>

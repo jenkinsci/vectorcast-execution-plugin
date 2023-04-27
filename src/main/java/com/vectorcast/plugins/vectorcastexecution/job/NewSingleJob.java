@@ -154,6 +154,8 @@ public class NewSingleJob extends BaseJob {
         } else {
             addEnvVars += "set VCAST_USE_STRICT_IMPORT=FALSE\n";
         }
+        
+        //TODO: TMS EXTERNAL RESULTS IMPLEMENT
         if (getUseImportedResults()) {
             addEnvVars += "set VCAST_USE_IMPORTED_RESULTS=TRUE\n";
         } else {

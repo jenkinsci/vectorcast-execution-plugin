@@ -179,5 +179,11 @@ if __name__ == '__main__':
             addDirectory(tf, "TESTCASES")
             addFile(tf, Env + ".vce", backOneDir=True)
             addFile(tf, Env + ".vcp", backOneDir=True)
+            addFile(tf, Env + ".env", backOneDir=True)
+            addFile(tf, Env + ".tst", backOneDir=True)
+            addFile(tf, Env + "_cba.cvr", backOneDir=True)
+            addFile(tf, "vcast_manage.cfg", backOneDir=True)
+            
+           
         finally:
             tf.close()

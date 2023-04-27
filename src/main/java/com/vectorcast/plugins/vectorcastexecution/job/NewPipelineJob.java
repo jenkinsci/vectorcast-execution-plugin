@@ -91,7 +91,10 @@ public class NewPipelineJob extends BaseJob {
 
     private boolean useCILicenses;
     private boolean useStrictTestcaseImport;
-    private boolean useImportedResults;
+    private boolean useImportedResults = false;
+    private boolean useLocalImportedResults  = false;
+    private boolean useExternalImportedResults  = false;
+    private String  externalResultsFilename;
     
     private boolean useCBT;
 
@@ -171,6 +174,10 @@ public class NewPipelineJob extends BaseJob {
         useCILicenses  = json.optBoolean("useCiLicense", false);
         useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
         useImportedResults  = json.optBoolean("useImportedResults", false);
+        useLocalImportedResults  = json.optBoolean("useLocalImportedResults", false);
+        useExternalImportedResults  = json.optBoolean("useExternalImportedResults", false);
+        externalResultsFilename = json.optString("externalResultsFilename", null);
+        
         useCBT  = json.optBoolean("useCBT", true);
         useParameters  = json.optBoolean("useParameters", false);
         useCoverageHistory  = json.optBoolean("useCoverageHistory", false);
@@ -492,9 +499,12 @@ public class NewPipelineJob extends BaseJob {
             "VC_TESTinsights_SCM_URL = '" + getTESTinsights_SCM_URL() + "'\n" +  
             "VC_TESTinsights_SCM_Tech = '" + getTESTinsights_SCM_Tech() + "'\n" +  
             "VC_TESTinsights_Revision=\"\"\n" +  
-            "VC_useCoverageHistory=" + useCoverageHistory + "\n" +
+            "VC_useCoverageHistory=" + useCoverageHistory + "\n" +           
             "VC_useStrictImport="    + useStrictTestcaseImport + "\n" +
             "VC_useImportedResults=" + useImportedResults + "\n" +
+            "VC_useLocalImportedResults=" + useLocalImportedResults + "\n" +
+            "VC_useExternalImportedResults=" + useExternalImportedResults + "\n" +
+            "VC_externalResultsFilename=" + externalResultsFilename + "\n" +
             "\n" +   
             "";
             

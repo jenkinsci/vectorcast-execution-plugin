@@ -99,8 +99,11 @@ abstract public class BaseJob {
     private boolean useStrictTestcaseImport;
 
     /** Use imported results */
-    private boolean useImportedResults;
-
+    private boolean useImportedResults = false;
+    private boolean useLocalImportedResults = false;
+    private boolean useExternalImportedResults = false;
+    private String  externalResultsFilename;
+    
     /** Use coverage history to control build status */
     private boolean useCoverageHistory;
 
@@ -192,6 +195,9 @@ abstract public class BaseJob {
             useCILicenses  = json.optBoolean("useCiLicense", false);
             useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
             useImportedResults  = json.optBoolean("useImportedResults", false);
+            useLocalImportedResults  = json.optBoolean("useLocalImportedResults", false);
+            useExternalImportedResults  = json.optBoolean("useExternalImportedResults", false);
+            externalResultsFilename  = json.optString("externalResultsFilename", "").replace('\\','/');;
             useCoverageHistory = json.optBoolean("useCoverageHistory", false);
             
             /* Additional Tools */
@@ -228,6 +234,9 @@ abstract public class BaseJob {
         useCILicenses = savedData.getUseCILicenses();
         useStrictTestcaseImport = savedData.getUseStrictTestcaseImport();
         useImportedResults = savedData.getUseImportedResults();
+        useLocalImportedResults = savedData.getUseLocalImportedResults();
+        useExternalImportedResults = savedData.getUseExternalImportedResults();
+        externalResultsFilename = savedData.getExternalResultsFilename();
         useCoverageHistory = savedData.getUseCoverageHistory();
 
         usingSCM = savedData.getUsingSCM();
@@ -458,6 +467,52 @@ abstract public class BaseJob {
     protected void setUseImportedResults(boolean useImportedResults) {
         this.useImportedResults = useImportedResults;
     }    
+
+    /**
+     * Get option to Use local imported results
+     * @return true to Use local imported results, false to not
+     */
+    protected boolean getUseLocalImportedResults() {
+        return useLocalImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useLocalImportedResults true to Use local imported results, false to not
+     */
+    protected void setUseLocalImportedResults(boolean useLocalImportedResults) {
+        this.useLocalImportedResults = useLocalImportedResults;
+    }    
+
+    /**
+     * Get option to Use external imported results
+     * @return true to Use external imported results, false to not
+     */
+    protected boolean getUseExternalImportedResults() {
+        return useExternalImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useExternalImportedResults true to Use external imported results, false to not
+     */
+    protected void setUseExternalImportedResults(boolean useExternalImportedResults) {
+        this.useExternalImportedResults = useExternalImportedResults;
+    }    
+
+    /**
+     * Get option to Use as external result filename
+     * @return string external result filename
+     */
+    protected String getExternalResultsFilename() {
+        return externalResultsFilename;
+    }
+    /**
+     * Set option to Use imported results
+     * @param externalResultsFilename true to Use external imported results, false to not
+     */
+    protected void setExternalResultsFilename(String externalResultsFilename) {
+        this.externalResultsFilename = externalResultsFilename;
+    }    
+
     /**
      * Get option to Use coverage history to control build status
      * @return true to Use imported results, false to not
@@ -750,6 +805,9 @@ abstract public class BaseJob {
                                     useCILicenses,
                                     useStrictTestcaseImport,
                                     useImportedResults,
+                                    useLocalImportedResults,
+                                    useExternalImportedResults,
+                                    externalResultsFilename,
                                     useCoverageHistory,
                                     waitLoops,
                                     waitTime,

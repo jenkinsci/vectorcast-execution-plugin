@@ -83,7 +83,11 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     /** Use strict testcase import */
     private boolean useStrictTestcaseImport;
     /** Use imported results */
-    private boolean useImportedResults;
+    private boolean useImportedResults = false;
+    private boolean useLocalImportedResults = false;
+    private boolean useExternalImportedResults = false;
+    private String  externalResultsFilename;
+
     /** Use coverage history to control build status */
     private boolean useCoverageHistory;
     /** Wait loops */
@@ -338,7 +342,53 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseImportedResults(boolean useImportedResults) {
         this.useImportedResults = useImportedResults;
+    }   
+    
+    /**
+     * Get option to Use local imported results
+     * @return true to Use local imported results, false to not
+     */
+    public boolean getUseLocalImportedResults() {
+        return useLocalImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useLocalImportedResults true to Use local imported results, false to not
+     */
+    public void setUseLocalImportedResults(boolean useLocalImportedResults) {
+        this.useLocalImportedResults = useLocalImportedResults;
     }    
+
+    /**
+     * Get option to Use external imported results
+     * @return true to Use external imported results, false to not
+     */
+    public boolean getUseExternalImportedResults() {
+        return useExternalImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useExternalImportedResults true to Use external imported results, false to not
+     */
+    public void setUseExternalImportedResults(boolean useExternalImportedResults) {
+        this.useExternalImportedResults = useExternalImportedResults;
+    }    
+
+      /**
+     * Get option to Use as external result filename
+     * @return string external result filename
+     */
+    public String getExternalResultsFilename() {
+        return externalResultsFilename;
+    }
+    /**
+     * Set option to Use imported results
+     * @param externalResultsFilename true to Use external imported results, false to not
+     */
+    public void setExternalResultsFilename(String externalResultsFilename) {
+        this.externalResultsFilename = externalResultsFilename;
+    }    
+
     /**
      * Get option to Use coverage history to control build status
      * @return true to Use imported results, false to not
@@ -584,6 +634,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param useCILicenses use CI licenses
      * @param useStrictTestcaseImport Use strict testcase import
      * @param useImportedResults use imported results
+     * @param useLocalImportedResults use local imported results
+     * @param useExternalImportedResults use extern imported results
+     * @param externalResultsFilename use extern result filename
      * @param useCoverageHistory use imported results
      * @param waitLoops wait loops
      * @param waitTime wait time
@@ -615,6 +668,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            boolean useCILicenses,
                            boolean useStrictTestcaseImport,
                            boolean useImportedResults,
+                           boolean useLocalImportedResults,
+                           boolean useExternalImportedResults,
+                           String  externalResultsFilename,
                            boolean useCoverageHistory,
                            Long waitLoops,
                            Long waitTime,
@@ -644,6 +700,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.useCILicenses = useCILicenses;
         this.useStrictTestcaseImport = useStrictTestcaseImport;
         this.useImportedResults = useImportedResults;
+        this.useLocalImportedResults = useLocalImportedResults;
+        this.useExternalImportedResults = useExternalImportedResults;
+        this.externalResultsFilename = externalResultsFilename;
         this.useCoverageHistory = useCoverageHistory;
         this.usingSCM = false;
         this.scm = new NullSCM();
@@ -836,6 +895,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t useCILicenses: " + useCILicenses +  "\n"
     			+ "\t useStrictTestcaseImport: " + useStrictTestcaseImport +  "\n"
     			+ "\t useImportedResults: " + useImportedResults +  "\n"
+    			+ "\t useLocalImportedResults: " + useLocalImportedResults +  "\n"
+    			+ "\t useExternalImportedResults: " + useExternalImportedResults +  "\n"
+    			+ "\t externalResultsFilename: " + externalResultsFilename +  "\n"
     			+ "\t useCoverageHistory: " + useCoverageHistory +  "\n"
     			+ "\t usingSCM: " + usingSCM +  "\n"
     			+ "\t scm: " + scm +  "\n"

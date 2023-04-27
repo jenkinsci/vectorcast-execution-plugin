@@ -352,7 +352,7 @@ def setupManageProject() {
         try {
             copyArtifacts filter: "${mpName}_results.vcr", fingerprintArtifacts: true, projectName: "${env.JOB_NAME}", selector: lastSuccessful()     
             cmds += """
-                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --import-result=${mpName}_results.vcr"   
+                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --import-result=${mpName}_results.vcr"   
                 _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --status"  
             """
         } catch (exe) {

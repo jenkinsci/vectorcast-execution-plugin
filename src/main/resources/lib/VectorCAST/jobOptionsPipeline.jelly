@@ -31,7 +31,8 @@
          xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project"
          xmlns:vc="/lib/VectorCAST">
-    <f:section title="${%VCJob.JobOptionsPipeline}">
+    <f:section title="Use Import Results">
+    
       <f:optionalBlock title="Job Creation Options" checked="${instance.showJobOptions}" inline="true" 
                        help="/plugin/vectorcast-execution/help-JobOptions.html">
                        
@@ -51,15 +52,26 @@
         </f:entry>        
         
         <f:entry title="${%VCJob.JobOptionsPipeline.useStrictTestcaseImport.title}" description="${%VCJob.JobOptionsPipeline.useStrictTestcaseImport.description}"
-                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">
+                help="/plugin/vectorcast-execution/help-optuseStrictTestcaseImport.html">
             <f:checkbox name="useStrictTestcaseImport" checked="${instance.useStrictTestcaseImport}" default="true"/>
         </f:entry>        
         
-        <f:entry title="${%VCJob.JobOptionsPipeline.useImportedResults.title}" description="${%VCJob.JobOptionsPipeline.useImportedResults.description}"
-                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">
-            <f:checkbox name="useImportedResults" checked="${instance.useImportedResults}" default="false"/>
-        </f:entry>        
-        
+
+        <f:optionalBlock title="Use Imported Results" 
+            checked="${instance.useImportedResults}" inline="true" 
+            help="/plugin/vectorcast-execution/help-optuseImportedResults.html">       
+          <f:block>
+               <f:radioBlock name="importedResults" value="1" title="${%VCJob.JobOptionsPipeline.useLocalImportedResults.title}" checked="true" help="/plugin/vectorcast-execution/help-optuseLocalImportedResults.html"/>               
+               <f:radioBlock name="importedResults" value="2" title="${%VCJob.JobOptionsPipeline.useExternalImportedResults.title}" checked="false" help="/plugin/vectorcast-execution/help-optuseExternalImportedResults.html" >
+                    <f:entry title="${%VCJob.JobOptionsPipeline.externalResultsFilename.title}" description="${%VCJob.JobOptionsPipeline.externalResultsFilename.description}"
+                             help="/plugin/vectorcast-execution/help-jobOptextFileName.html">
+                      <f:textbox name="externalResultsFilename" size="256" value="${instance.externalResultsFilename}"/>
+                    </f:entry>           
+               </f:radioBlock>
+          </f:block>
+           
+            
+        </f:optionalBlock>
       </f:optionalBlock>
     </f:section>
 </j:jelly>

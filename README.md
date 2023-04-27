@@ -135,7 +135,21 @@ For non-pipeline jobs, JUnit publisher will fail any environments published with
 
 For customers using VectorCAST's requirements gateway, there's a potential for loss of requirements data when running test environments in parallel while using a shared requriments database.
 
+### Test and code coverage reporting with Imported Results
+
+For environments that use imported results with versions of VectorCAST before 2020, reporting of test results and code coverage will not properly generate because of the lack of required build information.
+
 ## Change Log
+
+### Version 0.77 (24 May 2023)
+- Updated for findbugs to spotbugs
+- Fixed changed based testing analysis for compound tests being shown as Skipped
+- Fixed getjobs.py script to account for disabled compiler/testsuite nodes
+- Added option for adding strict test importing
+- Added option for using imported results for change based Testing
+    - Local results will be saved as a Jenkins Build artifact
+    - External results will be used from the repository
+- Bump json from 20220320 to 20230227
 
 ### Version 0.76 (19 Jan 2023)
 - Added support in VectorCAST version 2023 Projects for environments that are not in a group
