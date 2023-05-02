@@ -144,12 +144,15 @@ abstract public class BaseJob {
      * @param useSavedData use saved data true/false
      * @throws ServletException exception
      * @throws IOException exception
+     * @throws ExternalResultsFileException exception
      */
-    protected BaseJob(final StaplerRequest request, final StaplerResponse response, boolean useSavedData) throws ServletException, IOException {
+    protected BaseJob(final StaplerRequest request, final StaplerResponse response, boolean useSavedData) throws ServletException, IOException, ExternalResultsFileException {
         instance = Jenkins.getInstance();
         this.request = request;
         this.response = response;
         JSONObject json = request.getSubmittedForm();
+        
+        Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSON Info for Single Job Create: " + json.toString());
 
         manageProjectName = json.optString("manageProjectName");
         if (!manageProjectName.isEmpty()) {
@@ -195,8 +198,29 @@ abstract public class BaseJob {
             useCILicenses  = json.optBoolean("useCiLicense", false);
             useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
             useImportedResults  = json.optBoolean("useImportedResults", false);
-            useLocalImportedResults  = json.optBoolean("useLocalImportedResults", false);
-            useExternalImportedResults  = json.optBoolean("useExternalImportedResults", false);
+            externalResultsFilename = "";
+            
+            if (useImportedResults) {
+                JSONObject jsonImportResults  = json.optJSONObject("importedResults");
+                
+                if (jsonImportResults != null) {
+                    Long int_ext = jsonImportResults.optLong("value",0);
+                    
+                    if (int_ext == 1) {
+                        useLocalImportedResults = true;
+                        useExternalImportedResults = false;
+                        externalResultsFilename = "";
+                    } else if (int_ext == 2) {
+                        useLocalImportedResults = false;
+                        useExternalImportedResults = true;
+                        externalResultsFilename = jsonImportResults.optString("externalResultsFilename","");
+                        if (externalResultsFilename.length() == 0) {
+                            throw new ExternalResultsFileException();
+                        }
+                    }
+                }
+                Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "ImportedResults: " + jsonImportResults);
+            }
             externalResultsFilename  = json.optString("externalResultsFilename", "").replace('\\','/');;
             useCoverageHistory = json.optBoolean("useCoverageHistory", false);
             
@@ -726,6 +750,7 @@ abstract public class BaseJob {
         // Create the top-level project
         topProject = createProject();
         if (topProject == null) {
+            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "Could not create topProject");
             return;
         }
 

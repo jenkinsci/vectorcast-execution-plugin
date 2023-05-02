@@ -25,6 +25,7 @@ package com.vectorcast.plugins.vectorcastexecution.job;
 
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
+
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import net.sf.json.JSONObject;
@@ -60,6 +61,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -119,9 +121,10 @@ public class NewPipelineJob extends BaseJob {
 	 * @throws ServletException exception
 	 * @throws IOException      exception
 	 * @throws ScmConflictException      exception
+	 * @throws ExternalResultsFileException      exception
 	 */
 	public NewPipelineJob(final StaplerRequest request, final StaplerResponse response)
-			throws ServletException, IOException, ScmConflictException {
+			throws ServletException, IOException, ScmConflictException, ExternalResultsFileException {
 		super(request, response, false);
 
 		JSONObject json = request.getSubmittedForm();
@@ -174,10 +177,30 @@ public class NewPipelineJob extends BaseJob {
         useCILicenses  = json.optBoolean("useCiLicense", false);
         useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
         useImportedResults  = json.optBoolean("useImportedResults", false);
-        useLocalImportedResults  = json.optBoolean("useLocalImportedResults", false);
-        useExternalImportedResults  = json.optBoolean("useExternalImportedResults", false);
-        externalResultsFilename = json.optString("externalResultsFilename", null);
+        externalResultsFilename = "";
         
+        if (useImportedResults) {
+            JSONObject jsonImportResults  = json.optJSONObject("importedResults");
+            
+            if (jsonImportResults != null) {
+                Long int_ext = jsonImportResults.optLong("value",0);
+                
+                if (int_ext == 1) {
+                    useLocalImportedResults = true;
+                    useExternalImportedResults = false;
+                    externalResultsFilename = "";
+                } else if (int_ext == 2) {
+                    useLocalImportedResults = false;
+                    useExternalImportedResults = true;
+                    externalResultsFilename = jsonImportResults.optString("externalResultsFilename","");
+                    if (externalResultsFilename.length() == 0) {
+                        throw new ExternalResultsFileException();
+                    }
+                }
+            }
+            Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "ImportedResults: " + jsonImportResults);
+        }
+
         useCBT  = json.optBoolean("useCBT", true);
         useParameters  = json.optBoolean("useParameters", false);
         useCoverageHistory  = json.optBoolean("useCoverageHistory", false);
@@ -204,7 +227,7 @@ public class NewPipelineJob extends BaseJob {
         
         if (! MPName.toLowerCase().endsWith(".vcm")) MPName += ".vcm";
         
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "MPName: " + MPName + "   scmSnippet: " + pipelineSCM,  "MPName: " + MPName + "   scmSnippet: " + pipelineSCM);
+        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "MPName: " + MPName + "   scmSnippet: " + pipelineSCM);
 
         if (pipelineSCM.length() != 0 && absPath) {
             throw new ScmConflictException(pipelineSCM, MPName);

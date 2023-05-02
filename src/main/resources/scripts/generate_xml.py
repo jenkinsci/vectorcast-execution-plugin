@@ -682,7 +682,7 @@ class GenerateManageXml (BaseGenerateXml):
         if not self.no_full_reports:
             report_name = os.path.join("management", comp + "_" + ts + "_" + env_name + ".html")
             if isinstance(localXML.api, CoverApi):
-                CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
+                CustomReport.report_from_api(self.api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
             else:
                 localXML.api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
             self.fixupReport(report_name)
