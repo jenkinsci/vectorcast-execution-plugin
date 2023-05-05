@@ -139,6 +139,10 @@ For customers using VectorCAST's requirements gateway, there's a potential for l
 
 For environments that use imported results with versions of VectorCAST before 2020, reporting of test results and code coverage will not properly generate because of the lack of required build information.
 
+### Using Change Based Testing Imported Results with QA Project
+
+VectorCAST/QA projects cannot use imported results for change based testing
+
 ## Change Log
 
 ### Version 0.77 (24 May 2023)
@@ -149,6 +153,7 @@ For environments that use imported results with versions of VectorCAST before 20
 - Added option for using imported results for change based Testing
     - Local results will be saved as a Jenkins Build artifact
     - External results will be used from the repository
+    - Added support for DataAPI VCProjectApi for reporting imported results
 - Bump json from 20220320 to 20230227
 
 ### Version 0.76 (19 Jan 2023)

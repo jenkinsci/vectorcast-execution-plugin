@@ -270,7 +270,7 @@ def runCommands(cmds) {
             """
         }
         cmds = localCmds + cmds
-        cmds = stripLeadingWhitespace(cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf "))
+        cmds = stripLeadingWhitespace(cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ").replaceAll("_COPY","cp -p ").replaceAll("_IF_EXIST","if [[ -f ").replaceAll("_IF_THEN"," ]] ; then ").replaceAll("_ENDIF"," fi") )
         println "Running commands: " + cmds
         
         // run command in shell
@@ -297,7 +297,7 @@ def runCommands(cmds) {
             """
         }
         cmds = localCmds + cmds
-        cmds = stripLeadingWhitespace(cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q "))
+        cmds = stripLeadingWhitespace(cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ").replaceAll("_COPY","copy /y /b").replaceAll("_IF_EXIST","if exist ").replaceAll("_IF_THEN"," ( ").replaceAll("_ENDIF"," )"))
         println "Running commands: " + cmds
         
         // run command in bat
@@ -350,10 +350,11 @@ def setupManageProject() {
     if (VC_useImportedResults) {
         if (VC_useLocalImportedResults) {
             try {
-                copyArtifacts filter: "${mpName}_results.vcr", fingerprintArtifacts: true, projectName: "${env.JOB_NAME}", selector: lastSuccessful()     
+                copyArtifacts filter: "${mpName}_results.vcr", fingerprintArtifacts: true, optional: true, projectName: "${env.JOB_NAME}", selector: lastSuccessful()
                 cmds += """
                     _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --import-result=${mpName}_results.vcr"   
                     _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --status"  
+                    _IF_EXIST ${mpName}_results.vcr _IF_THEN _COPY ${mpName}_results.vcr ${mpName}_results_orig.vcr _ENDIF
                 """
             } catch (exe) {
                 print "No result artifact to use"
@@ -795,7 +796,9 @@ pipeline {
                         if (VC_useImportedResults) {
                             if (VC_useLocalImportedResults) {
                                 cmds += """
-                                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --export-result=${mpName}_results.vcr --force"        
+                                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --export-result=${mpName}_results.vcr"     
+                                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/merge_vcr.py --new ${mpName}_results.vcr --orig ${mpName}_results_orig.vcr     
+
                                 """
                             }
                         }
