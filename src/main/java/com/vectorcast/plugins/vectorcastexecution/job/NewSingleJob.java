@@ -193,9 +193,10 @@ addEnvVars +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
 "\n:: Use Imported Results\n" +
 "if \"%VCAST_USE_IMPORTED_RESULTS%\"==\"TRUE\" ( \n" + 
-"    if \"%VCAST_USE_LOCAL_IMPORTED_RESULTS%\"==\"TRUE\" if exist \"%COPYARTIFACT_BUILD_NUMBER_VCR%\\@PROJECT_BASE@_results.vcr\" (\n" +
-"        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\"%COPYARTIFACT_BUILD_NUMBER_VCR%\\@PROJECT_BASE@_results.vcr\"\"\n" +
+"    if \"%VCAST_USE_LOCAL_IMPORTED_RESULTS%\"==\"TRUE\" if exist \"@PROJECT_BASE@_results.vcr\" (\n" +
+"        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\"@PROJECT_BASE@_results.vcr\"\"\n" +
 "        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status\"\"\n" +
+"        if exist @PROJECT_BASE@_results.vcr  ( copy @PROJECT_BASE@_results.vcr @PROJECT_BASE@_results_orig.vcr ) \n" +
 "    )\n" + 
 "    if \"%VCAST_USE_EXTERNAL_IMPORTED_RESULTS%\"==\"TRUE\" if exist \"%VCAST_USE_EXTERNAL_FILENAME%\" ( \n" +
 "        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result\"%VCAST_USE_EXTERNAL_FILENAME%\"\"\n" +
@@ -223,7 +224,7 @@ getExecutePreambleWin() +
 "\n:: Use Imported Results\n" +
 "if \"%VCAST_USE_IMPORTED_RESULTS%\"==\"TRUE\" if \"%VCAST_USE_LOCAL_IMPORTED_RESULTS%\"==\"TRUE\" (\n" + 
 "    %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --export-result=@PROJECT_BASE@_results.vcr\"\n" +
-"    %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\merge_vcr.py\" --orig \"%COPYARTIFACT_BUILD_NUMBER_VCR%\\@PROJECT_BASE@_results.vcr\" --new @PROJECT_BASE@_results.vcr\n" +
+"    %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\merge_vcr.py\" --orig \"@PROJECT_BASE@_results_orig.vcr\" --new @PROJECT_BASE@_results.vcr\n" +
 ")\n";
         }
         win += getEnvironmentTeardownWin() + "\n" +
@@ -275,9 +276,10 @@ addEnvVars +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
 "\n# Use Imported Results\n" +
 "if [[ $VCAST_USE_IMPORTED_RESULTS -eq 1 ]]; then\n" +
-"    if [[ $VCAST_USE_LOCAL_IMPORTED_RESULTS -eq 1 ]] && [[ -f \"$COPYARTIFACT_BUILD_NUMBER_VCR/@PROJECT_BASE@_results.vcr\" ]] ; then \n" +
-"        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\\\"$COPYARTIFACT_BUILD_NUMBER_VCR/@PROJECT_BASE@_results.vcr\\\"\"\n" +
+"    if [[ $VCAST_USE_LOCAL_IMPORTED_RESULTS -eq 1 ]] && [[ -f \"@PROJECT_BASE@_results.vcr\" ]] ; then \n" +
+"        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\\\"@PROJECT_BASE@_results.vcr\\\"\"\n" +
 "        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status \"\n" +
+"        if [[ -f @PROJECT_BASE@_results.vcr ]] ; then cp -p @PROJECT_BASE@_results.vcr @PROJECT_BASE@_results_orig.vcr fi \n" +
 "    fi\n" + 
 "    if [[ $VCAST_USE_EXTERNAL_IMPORTED_RESULTS -eq 1 ]] && [[ -f \"$VCAST_USE_EXTERNAL_FILENAME\" ]] ; then \n" +
 "        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\"$VCAST_USE_EXTERNAL_FILENAME\" \"\n" +
@@ -301,7 +303,7 @@ if (getOptionUseReporting()) {
 "\n# Use strict testcase import\n" + 
 "if [[ $VCAST_USE_IMPORTED_RESULTS -eq 1 ]] && [[ $VCAST_USE_LOCAL_IMPORTED_RESULTS -eq 1 ]] ; then\n" +
 "   $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --export-result=@PROJECT_BASE@_results.vcr \"\n" +
-"   $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/merge_vcr.py\" --orig $COPYARTIFACT_BUILD_NUMBER_VCR/@PROJECT_BASE@_results.vcr --new @PROJECT_BASE@_results.vcr\n" +
+"   $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/merge_vcr.py\" --orig @PROJECT_BASE@_results_orig.vcr --new @PROJECT_BASE@_results.vcr\n" +
 "fi\n\n";
 
         }
