@@ -700,6 +700,9 @@ class GenerateManageXml (BaseGenerateXml):
         for env in self.api.Environment.all():
             all_envs.append(env.level._full_path)
             
+        if results['ALL']['testcase_results'] == {}:
+            return
+            
         total   = results['ALL']['testcase_results']['total_count']
         success = results['ALL']['testcase_results']['success_count']
         errors  = total - success

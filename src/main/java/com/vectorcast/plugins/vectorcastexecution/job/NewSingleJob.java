@@ -52,6 +52,7 @@ public class NewSingleJob extends BaseJob {
      * @param response response object
      * @throws ServletException exception
      * @throws IOException exception
+     * @throws ExternalResultsFileException exception
      */
     public NewSingleJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, ExternalResultsFileException {
         super(request, response, false);

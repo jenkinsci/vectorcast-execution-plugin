@@ -428,7 +428,7 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
-            if env_level.upper() == level.upper():
+            if level == None or env_level.upper() == level.upper():
                 failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures)
                 if not no_full_report:
                     generateIndividualReports(manageEnvs[currentEnv], envName)
