@@ -335,6 +335,23 @@ class BaseGenerateXml(object):
                 
         return False
 
+    def hasAnyCov(self, srcFile):
+        try:
+            metrics = srcFile.metrics
+        except:
+            metrics = srcFile.cover_metrics
+            
+        covTotals = (
+            metrics.max_covered_functions + 
+            metrics.max_uncovered_branches +
+            metrics.max_uncovered_function_calls +
+            metrics.max_uncovered_functions +
+            metrics.max_uncovered_mcdc_branches +
+            metrics.max_uncovered_mcdc_pairs + 
+            metrics.max_uncovered_statements )
+
+        return covTotals > 0
+
 #
 # BaseGenerateXml the XML Modified 'Emma' coverage data
 #
@@ -363,22 +380,15 @@ class BaseGenerateXml(object):
         self.grand_total_total_basis_path = 0
         self.grand_total_cov_basis_path = 0
         for srcFile in self.units:
+
+            if not self.hasAnyCov(srcFile):
+                continue
+                
             try:
                 hasFunCov = self.hasFunctionCoverage(srcFile.coverage_types)
             except:
                 hasFunCov = self.hasFunctionCoverage([srcFile.coverage_type])
-                
-            try:
-                hasAnyCov = srcFile.has_any_coverage
-            except:         
-                try:
-                    hasAnyCov = srcFile.has_cover_data
-                except:
-                    hasAnyCov = srcFile.coverdb.has_any_coverage
-                    
-            if not hasAnyCov:
-                continue
-
+                                    
             try:
                 if srcFile.coverage_type in (COVERAGE_TYPE_TYPE_T.FUNCTION_FUNCTION_CALL, COVERAGE_TYPE_TYPE_T.FUNCTION_COVERAGE):
                     self.has_function_coverage = True
@@ -682,7 +692,7 @@ class GenerateManageXml (BaseGenerateXml):
         if not self.no_full_reports:
             report_name = os.path.join("management", comp + "_" + ts + "_" + env_name + ".html")
             if isinstance(localXML.api, CoverApi):
-                CustomReport.report_from_api(self.api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
+                CustomReport.report_from_api(localXML.api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
             else:
                 localXML.api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
             self.fixupReport(report_name)
