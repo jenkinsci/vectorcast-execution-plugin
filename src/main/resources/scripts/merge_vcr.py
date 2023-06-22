@@ -1,4 +1,3 @@
-import sqlite3
 import sys
 import sqlite3
 import os, shutil
@@ -6,7 +5,7 @@ import zipfile, glob
 from pprint import pprint
 import argparse
 
-def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, cursor_new: sqlite3.Cursor, cursor_orig: sqlite3.Cursor, table_name: str, del_old_table: bool = False, verbose: bool = False) -> None:
+def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, cursor_new, cursor_orig, table_name, del_old_table = False, verbose = False):
     '''
     This function merges the content of a specific table from an old cursor into a new cursor. 
     

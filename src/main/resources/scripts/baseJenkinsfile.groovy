@@ -41,7 +41,13 @@ VC_FailurePhrases = ["No valid edition(s) available",
                 
 // Unstable phrases for checkLogsForErrors
 
-VC_UnstablePhrases = ["Value Line Error - Command Ignored", "INFO: Problem parsing test results file", "INFO: File System Error ", "ERROR: Error accessing DataAPI", "ERROR: Undefined Error"]   
+VC_UnstablePhrases = ["Dropping probe point", 
+                    "Value Line Error - Command Ignored", 
+                    "INFO: Problem parsing test results file", 
+                    "INFO: File System Error ", 
+                    "ERROR: Error accessing DataAPI", 
+                    "ERROR: Undefined Error"
+                    ]   
                     
 // ===============================================================
 //

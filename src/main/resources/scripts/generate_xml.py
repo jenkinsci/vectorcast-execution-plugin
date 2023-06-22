@@ -80,6 +80,18 @@ class BaseGenerateXml(object):
         self.verbose = verbose
         self.using_cover = False
         self.has_sfp_enabled = False
+        self.print_exc = False
+        
+        # get the VC langaguge and encoding
+        self.encFmt = 'utf-8'
+        from vector.apps.DataAPI.configuration import vcastqt_global_options
+        self.lang = vcastqt_global_options.get('Translator','english')
+        if self.lang == "english":
+            self.encFmt = "utf-8"
+        if self.lang == "japanese":
+            self.encFmt = "shift-jis"
+        if self.lang == "chinese":
+            self.encFmt = "GBK"
         
 #
 # BaseGenerateXml - calculate coverage value
@@ -313,7 +325,7 @@ class BaseGenerateXml(object):
             try:
                 fd.write(self.fh_data)
             except TypeError:
-                s = unicode(self.fh_data, "utf-8")
+                s = unicode(self.fh_data, self.encFmt)
                 fd.write(s)
 #
 # BaseGenerateXml - write the end of the coverage file and close it
@@ -568,7 +580,8 @@ class GenerateManageXml (BaseGenerateXml):
                        generate_exec_rpt_each_testcase = True,
                        skipReportsForSkippedEnvs = False,
                        report_failed_only = False,
-                       no_full_reports = False):
+                       no_full_reports = False,
+                       print_exc = False):
                        
         super(GenerateManageXml, self).__init__(FullManageProjectName, verbose)
         self.using_cover = False
@@ -582,6 +595,8 @@ class GenerateManageXml (BaseGenerateXml):
         self.cbtDict = cbtDict
         self.no_full_reports = no_full_reports
         self.failed_count = 0
+        self.passed_count = 0
+        self.print_exc = print_exc
 
         self.cleanupXmlDataDir()
 
@@ -685,7 +700,8 @@ class GenerateManageXml (BaseGenerateXml):
                                self.cbtDict, 
                                self.generate_exec_rpt_each_testcase, 
                                self.skipReportsForSkippedEnvs, 
-                               self.report_failed_only)
+                               self.report_failed_only,
+                               self.print_exc)
         localXML.generate_unit()
         
         ##need_fixup
@@ -717,8 +733,9 @@ class GenerateManageXml (BaseGenerateXml):
         success = results['ALL']['testcase_results']['success_count']
         errors  = total - success
         failed  = errors
+        self.localDataOnly = True
         self.fh_data = ""            
-        self.fh_data += ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt + "\"?>\n")
         self.fh_data += ("<testsuites>\n")
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,total,failed,escape(self.manageProjectName, quote=False)))
@@ -733,6 +750,7 @@ class GenerateManageXml (BaseGenerateXml):
                     self.generate_local_results(results,result)                    
                 else:
                     for key in results[result]['imported'].keys():
+                        self.localDataOnly = False
                         importedResult = results[result]['imported'][key]
                         total   = importedResult['testcase_results']['total_count']
                         success = importedResult['testcase_results']['success_count']
@@ -745,6 +763,7 @@ class GenerateManageXml (BaseGenerateXml):
                             tc_name_full = "ImportedResults." + importName + ".TestCase.PASS.%03d" % idx
                             extraStatus = "\n            <skipped/>\n"
                             self.fh_data += (testcaseString % (tc_name_full, classname, extraStatus))
+                            self.passed_count += 1
 
                         for idx in range(1,failed+1):
                             tc_name_full = "ImportedResults." + importName + ".TestCase.FAIL.%03d" % idx
@@ -754,11 +773,12 @@ class GenerateManageXml (BaseGenerateXml):
             
         self.fh_data += ("   </testsuite>\n")
         self.fh_data += ("</testsuites>\n")
-        with open(self.unit_report_name, "w") as fd:
-            try:
-                fd.write(self.fh_data)
-            except:
-                fd.write(unicode(self.fh_data))
+        if not self.localDataOnly:
+            with open(self.unit_report_name, "w") as fd:
+                try:
+                    fd.write(self.fh_data)
+                except:
+                    fd.write(unicode(self.fh_data))
         
 ##########################################################################
 # This class generates the XML (Junit based) report for dynamic tests and
@@ -768,7 +788,7 @@ class GenerateManageXml (BaseGenerateXml):
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, skipReportsForSkippedEnvs = False, report_failed_only = False):
+    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, skipReportsForSkippedEnvs = False, report_failed_only = False, print_exc = False):
         super(GenerateXml, self).__init__(FullManageProjectName, verbose)
 
         self.cbtDict = cbtDict
@@ -776,6 +796,7 @@ class GenerateXml(BaseGenerateXml):
         self.generate_exec_rpt_each_testcase = generate_exec_rpt_each_testcase
         self.skipReportsForSkippedEnvs = skipReportsForSkippedEnvs
         self.report_failed_only = report_failed_only
+        self.print_exc = print_exc
         
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         
@@ -784,7 +805,7 @@ class GenerateXml(BaseGenerateXml):
         
         # Unicode-objects must be encoded before hashing in Python 3
         if sys.version_info[0] >= 3:
-            build_dir_4hash = build_dir_4hash.encode('utf-8')
+            build_dir_4hash = build_dir_4hash.encode(self.encFmt)
 
         self.hashCode = hashlib.md5(build_dir_4hash).hexdigest()
         
@@ -819,6 +840,7 @@ class GenerateXml(BaseGenerateXml):
 
         self.api.commit = dummy
         self.failed_count = 0
+        self.passed_count = 0
 
 #
 # GenerateXml - add any compound tests to the unit report
@@ -872,7 +894,9 @@ class GenerateXml(BaseGenerateXml):
 
             except ImportError as e:
                 from generate_qa_results_xml import genQATestResults
-                self.failed_count += genQATestResults(self.FullManageProjectName, self.compiler+ "/" + self.testsuite, self.env, True)
+                pc,fc = genQATestResults(self.FullManageProjectName, self.compiler+ "/" + self.testsuite, self.env, True, self.encFmt)
+                self.failed_count += fc
+                self.passed_count += pc
                 return
 
         else:
@@ -926,6 +950,7 @@ class GenerateXml(BaseGenerateXml):
                 for st in env.system_tests:
                     if st.passed == st.total:
                         success += 1
+                        self.passed_count += 1
                     else:
                         failed += 1
                         errors += 1  
@@ -933,7 +958,7 @@ class GenerateXml(BaseGenerateXml):
         api.close()            
 
         self.fh_data = ""        
-        self.fh_data += ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt + "\"?>\n")
         self.fh_data += ("<testsuites>\n")
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
@@ -960,8 +985,9 @@ class GenerateXml(BaseGenerateXml):
                         errors += 1
                 else:
                     success += 1
+                    self.passed_count += 1
         self.fh_data = ""            
-        self.fh_data += ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt + "\"?>\n")
         self.fh_data += ("<testsuites>\n")
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
@@ -1168,7 +1194,7 @@ class GenerateXml(BaseGenerateXml):
             ["execution_results", classname, tc_name])
         # Unicode-objects must be encoded before hashing in Python 3
         if sys.version_info[0] >= 3:
-            report_name_hash = report_name_hash.encode('utf-8')
+            report_name_hash = report_name_hash.encode(self.encFmt)
 
         report_name = hashlib.md5(report_name_hash).hexdigest()
 
@@ -1184,12 +1210,17 @@ class GenerateXml(BaseGenerateXml):
                 sections=[ "TESTCASE_SECTIONS"],
                 testcase_sections=["EXECUTION_RESULTS"])
                 
-            with open(report_name,"r") as fd:
+            with open(report_name,"rb") as fd:
                 out = fd.read()
-
+                
+            out = out.decode('utf-8').encode(self.encFmt)
+            
             os.remove(report_name)
         except:
             out = "No execution results found"
+            parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
+
+        #out = bytes(out, 'utf-8').decode('utf-8', 'ignore')
 
         return out
 

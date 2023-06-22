@@ -5,6 +5,8 @@ import re
 import sys
 import tee_print
 import glob
+from vector.apps.DataAPI.vcproject_models import EnvironmentType
+from vector.apps.DataAPI.cover_api import CoverApi
 
 
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
@@ -90,15 +92,15 @@ def checkForEnvChanges(vcm_fname, build_dir, env_name):
 def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
     somethingPrinted = False
     output = ""
-    
     for env in api.Environment.all():
+        
         if not env.is_active:
-            continue
+            continue        
         
         somethingPrinted = True
-        
+                
         if (printEnvType):
-            if env.system_tests:
+            if env.system_tests or env.definition.env_type == EnvironmentType.COVER:
                 output += "ST: "
             else:
                 output += "UT: "

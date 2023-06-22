@@ -788,10 +788,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 path = URLDecoder.decode(path, "utf-8");
             }
             File testPath = new File(path);
+            printVersion( listener.getLogger() );
             if (testPath.isFile()) {
                 // Have jar file...
                 jFile = new JarFile(testPath);
-                printVersion( listener.getLogger() );
                 Enumeration<JarEntry> entries = jFile.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
