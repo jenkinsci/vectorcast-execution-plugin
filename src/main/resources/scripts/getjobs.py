@@ -6,7 +6,6 @@ import sys
 import tee_print
 import glob
 from vector.apps.DataAPI.vcproject_models import EnvironmentType
-from vector.apps.DataAPI.cover_api import CoverApi
 
 
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
