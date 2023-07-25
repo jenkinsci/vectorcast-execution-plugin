@@ -702,6 +702,8 @@ class GenerateManageXml (BaseGenerateXml):
                                self.skipReportsForSkippedEnvs, 
                                self.report_failed_only,
                                self.print_exc)
+                               
+        localXML.topLevelAPI = self.api
         localXML.generate_unit()
         
         ##need_fixup
@@ -797,6 +799,7 @@ class GenerateXml(BaseGenerateXml):
         self.skipReportsForSkippedEnvs = skipReportsForSkippedEnvs
         self.report_failed_only = report_failed_only
         self.print_exc = print_exc
+        self.topLevelAPI = None
         
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         
@@ -868,8 +871,12 @@ class GenerateXml(BaseGenerateXml):
         if isinstance(self.api, CoverApi):
             try:
                 self.start_system_test_file()
-                api = VCProjectApi(self.FullManageProjectName)
-                
+
+                if self.topLevelAPI == None:
+                    api = VCProjectApi(self.FullManageProjectName)
+                else:
+                    api = self.topLevelAPI
+                        
                 for env in api.Environment.all():
                     if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
                         for st in env.system_tests:
@@ -889,8 +896,9 @@ class GenerateXml(BaseGenerateXml):
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
                 from generate_qa_results_xml import saveQATestStatus
                 saveQATestStatus(self.FullManageProjectName)
-
-                api.close()
+                
+                if self.topLevelAPI == None:
+                    api.close()
 
             except ImportError as e:
                 from generate_qa_results_xml import genQATestResults
@@ -943,7 +951,11 @@ class GenerateXml(BaseGenerateXml):
         success = 0                                            
         
         from vector.apps.DataAPI.vcproject_api import VCProjectApi 
-        api = VCProjectApi(self.FullManageProjectName)
+        
+        if self.topLevelAPI == None:
+            api = VCProjectApi(self.FullManageProjectName)
+        else:
+            api = self.topLevelAPI
         
         for env in api.Environment.all():
             if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
@@ -955,7 +967,9 @@ class GenerateXml(BaseGenerateXml):
                         failed += 1
                         errors += 1  
                         self.failed_count += 1
-        api.close()            
+                        
+        if self.topLevelAPI == None:
+            api.close()            
 
         self.fh_data = ""        
         self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt + "\"?>\n")
@@ -1018,6 +1032,8 @@ class GenerateXml(BaseGenerateXml):
 #
     def write_testcase(self, tc, unit_name, func_name, st_is_monitored = False):
     
+        failure_message = ""
+        
         if self.report_failed_only and not self.testcase_failed(tc):
             return
 
@@ -1095,7 +1111,7 @@ class GenerateXml(BaseGenerateXml):
                 tc_name_full)
             
             if tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
-                result += "\nStrict Test Import Failure."
+                result += "\nStrict Test Import Failure.".encode()
     
             # Failure takes priority  
             failure_message = self.convertExecStatus(tc.execution_status)

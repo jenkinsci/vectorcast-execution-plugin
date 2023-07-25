@@ -875,14 +875,23 @@ pipeline {
                         // Make sure the build completed and we have two key reports
                         //   - Using CBT - CombinedReport.html (combined rebuild reports from all the environments)
                         //   - full status report from the manage project
+                        
+                        // Grab the coverage differences
+                        def summaryText = ""
+                        
+                        if (fileExists('coverage_diffs.html_tmp')) { 
+                            summaryText = readFile('coverage_diffs.html_tmp')
+                        } else {
+                            print "coverage_diffs.html_tmp missing" 
+                        }
+
                         if (VC_useCBT) {
                             if (fileExists('combined_incr_rebuild.tmp') && fileExists("${mpName}_full_report.html_tmp") && fileExists("${mpName}_metrics_report.html_tmp")) {
                                 // If we have both of these, add them to the summary in the "normal" job view
                                 // Blue ocean view doesn't have a summary
-
-                                def summaryText = readFile('combined_incr_rebuild.tmp') + "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " + readFile("${mpName}_full_report.html_tmp") + "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " + readFile("${mpName}_metrics_report.html_tmp")
-                                createSummary icon: "monitor.gif", text: summaryText
                                 
+                                summaryText += readFile('combined_incr_rebuild.tmp') + "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " + readFile("${mpName}_full_report.html_tmp") + "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " + readFile("${mpName}_metrics_report.html_tmp")
+                                createSummary icon: "monitor.gif", text: summaryText
                             
                             } else {
                                 if (fileExists('combined_incr_rebuild.tmp')) { 
@@ -911,7 +920,7 @@ pipeline {
                                 // If we have both of these, add them to the summary in the "normal" job view
                                 // Blue ocean view doesn't have a summary
 
-                                def summaryText = readFile("${mpName}_full_report.html_tmp") + "<br> " + readFile("${mpName}_metrics_report.html_tmp")
+                                summaryText += readFile("${mpName}_full_report.html_tmp") + "<br> " + readFile("${mpName}_metrics_report.html_tmp")
                                 createSummary icon: "monitor.gif", text: summaryText
                             
                             } else {
@@ -924,6 +933,7 @@ pipeline {
 
                         // Remove temporary files used for summary page
                         def cmds = """        
+                            _RM coverage_diffs.html_tmp
                             _RM combined_incr_rebuild.tmp
                             _RM ${mpName}_full_report.html_tmp
                             _RM ${mpName}_metrics_report.html_tmp
