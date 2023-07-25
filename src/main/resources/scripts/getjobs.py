@@ -5,7 +5,10 @@ import re
 import sys
 import tee_print
 import glob
-from vector.apps.DataAPI.vcproject_models import EnvironmentType
+try:
+    from vector.apps.DataAPI.vcproject_models import EnvironmentType
+except:
+    pass
 
 
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
