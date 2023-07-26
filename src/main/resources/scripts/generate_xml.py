@@ -152,8 +152,12 @@ class BaseGenerateXml(object):
                         'EXEC_COMMON_COMPOUND_CONTAINING_SPECIALIZED':'Non-specialized compound containing specialized testcases',
                         'EXEC_HIDING_EXPECTED_RESULTS':'Hiding expected results',
                         'INVALID_TEST_CASE':'Invalid Test Case'
-,                      }
-        return convertDict[str(status)]
+                       }
+        try:                  
+            s = convertDict[str(status)]
+        except:
+            s = convertDict[status]
+        return s
 
     
 #

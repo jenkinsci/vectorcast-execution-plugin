@@ -16,13 +16,15 @@ def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, cursor_new, cursor_orig, 
     '''
 
     # dynamically determine SQL expression requirements
-    column_names = cursor_new.execute(f"PRAGMA table_info({table_name})").fetchall()
+    s = "PRAGMA table_info(%s)" % (table_name)
+    column_names = cursor_new.execute(s).fetchall()
     column_names = tuple([x[1] for x in column_names][1:])  # remove the primary keyword
     values_placeholders = ', '.join(['?' for x in column_names])  # format appropriately
     
     # SQL select columns from table
-    orig_data = cursor_orig.execute(f"SELECT {', '.join(column_names)} FROM {table_name}").fetchall()
-    new_data  = cursor_new.execute(f"SELECT {', '.join(column_names)} FROM {table_name}").fetchall()
+    s = "SELECT %s FROM %s" % (', '.join(column_names), table_name)	
+    orig_data = cursor_orig.execute(s).fetchall()
+    new_data  = cursor_new.execute(s).fetchall()
 
     filtered_new_data = []
     rowsToRemove = []
@@ -38,22 +40,25 @@ def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, cursor_new, cursor_orig, 
             if new_testsuite_id == orig_testsuite_id and orig_env_name == new_env_name:
                 if verbose:
                     print("   need to replace contents of " + str(orig_testsuite_id) + "/" + orig_env_name + " in orig_dbx ")
-                    print(f"   DELETE FROM {table_name} WHERE testsuite_id={new_testsuite_id} and environment={new_env_name}")
+                    s = "   DELETE FROM %s WHERE testsuite_id=%s and environment=%s" % (table_name, new_testsuite_id, new_env_name)
+                    print(s)
                 rowsToRemove.append(new_row)
-                cursor_orig.execute(f"DELETE FROM {table_name} WHERE testsuite_id={new_testsuite_id} and environment=\"{new_env_name}\"")
+                s = "DELETE FROM %s WHERE testsuite_id=%s and environment=\"%s\"" % (table_name, new_testsuite_id, new_env_name)
+                cursor_orig.execute(s)
                 cursor_orig.connection.commit()
                 break
                 
-    cursor_orig.executemany(f"INSERT INTO {table_name} {column_names} VALUES ({values_placeholders})", new_data)
+    s = "INSERT INTO %s %s VALUES (%s)" % (table_name, column_names, values_placeholders)
+    cursor_orig.executemany(s, new_data)
     if (cursor_orig.connection.commit() == None):
         # With Ephemeral RAM connections & testing, deleting the table may be ill-advised
-        print(f"Table \"{table_name}\" merged from {origVcrFile} to {newVcrFile}") # Consider logging.info()
+        s = "Table \"%s\" merged from %s to %s" % (table_name, origVcrFile, newVcrFile)
+        print(s) # Consider logging.info()
         
     return None
 
 def run(origVcrFile, newVcrFile, verbose):
 
-    
     try:
         os.makedirs("newVcr")
         os.makedirs("origVcr")

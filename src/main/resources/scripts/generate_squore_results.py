@@ -4,13 +4,16 @@
 # Updated to make output_dirs if not present
 
 #from vector.apps.DataAPI.api import Api
-from vector.apps.DataAPI.vcproject_api import VCProjectApi
-from vector.apps.DataAPI.unit_test_api import UnitTestApi
-from vector.apps.DataAPI.vcproject_models import EnvironmentType
+try:
+    from vector.apps.DataAPI.vcproject_api import VCProjectApi
+    from vector.apps.DataAPI.unit_test_api import UnitTestApi
+    from vector.apps.DataAPI.vcproject_models import EnvironmentType
+    from vector.apps.DataAPI.cover_api import CoverApi
+    from vector.apps.DataAPI.coverdb import COVERED_STATUSES
+    from vector.lib.platform.vcast_platform import vcast_platform
+except:
+    pass
 
-from vector.apps.DataAPI.cover_api import CoverApi
-from vector.apps.DataAPI.coverdb import COVERED_STATUSES
-from vector.lib.platform.vcast_platform import vcast_platform
 import argparse
 import sys
 import os
@@ -93,6 +96,7 @@ def process_file(vc_file, outputdir):
                 
                 process_api(env.api, str(env.compiler.name), str(env.testsuite.name), str(env.group.name), env.environment_directory)
 
+        proj_api.close()
 
     write_xml_report(outputdir + "/vectorcast_report.xml")
 

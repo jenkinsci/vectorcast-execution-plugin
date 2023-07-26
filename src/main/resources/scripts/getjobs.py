@@ -191,7 +191,10 @@ def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = Fal
             
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         api = VCProjectApi(ManageProjectName)
-        return printEnvInfoDataAPI(api, printData, printEnvType)
+        ret_info = printEnvInfoDataAPI(api, printData, printEnvType)
+        api.close()
+        return ret_info
+
     
     except:    
         return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType)

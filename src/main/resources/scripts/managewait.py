@@ -48,15 +48,18 @@ class ManageWait(object):
         
         # get the VC langaguge and encoding
         self.encFmt = 'utf-8'
-        from vector.apps.DataAPI.configuration import vcastqt_global_options
-        self.lang = vcastqt_global_options.get('Translator','english')
-        if self.lang == "english":
-            self.encFmt = "utf-8"
-        if self.lang == "japanese":
-            self.encFmt = "shift-jis"
-        if self.lang == "chinese":
-            self.encFmt = "GBK"
-              
+        try:
+            from vector.apps.DataAPI.configuration import vcastqt_global_options
+            self.lang = vcastqt_global_options.get('Translator','english')
+            if self.lang == "english":
+                self.encFmt = "utf-8"
+            if self.lang == "japanese":
+                self.encFmt = "shift-jis"
+            if self.lang == "chinese":
+                self.encFmt = "GBK"
+        except:
+            pass
+        
     def enqueueOutput(self, io_target, queue, logfile):
         while True:
             line = io_target.readline()

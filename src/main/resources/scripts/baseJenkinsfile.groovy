@@ -828,7 +828,8 @@ pipeline {
                             includes: 'xml_data/coverage_results*.xml', 
                             useThreshold: VC_Use_Threshold,        
                             healthyTarget:   VC_Healthy_Target,
-                            useCoverageHistory: VC_useCoverageHistory])
+                            useCoverageHistory: VC_useCoverageHistory,
+                            maxHistory : 20])
                             
                         if (VC_useCoverageHistory) {
                             if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
