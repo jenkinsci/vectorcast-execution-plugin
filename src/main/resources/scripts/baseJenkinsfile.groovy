@@ -730,8 +730,19 @@ pipeline {
                     // Get the job list from the unit test environment listed
                     jobs = stepsForJobList(UtEnvList)
                     
-                    // run those jobs in parallel
-                    parallel jobs
+                    if (VC_maxParallel != -1) {
+                        // run those jobs in parallel
+                        parallel jobs
+                    } else {
+                        def runningJobs = [:]
+                        jobs.each { job ->
+                            runningJobs.put(job.key, job.value)
+                            if (runningJobs.size() == VC_maxParallel) {
+                                parallel runningJobs
+                                runningJobs = [:]
+                            }
+                        }                    
+                    }                    
                 }
             }
         }
@@ -980,8 +991,7 @@ pipeline {
                         // If we are using Squore...
                         if (VC_useSquore) {
                             // Generate the results from Squore and run the squore command which should publish the information to Squore Server
-                            cmd = """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/generate_squore_results.py ${VC_Manage_Project}
-                            ${VC_squoreCommand}"""
+                            cmd = "${VC_squoreCommand}"
                             runCommands(cmd)
                             
                             // Archive the Squore results

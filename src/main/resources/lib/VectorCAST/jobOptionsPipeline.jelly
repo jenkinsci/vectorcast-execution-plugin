@@ -47,10 +47,14 @@
                 help="/plugin/vectorcast-execution/help-sharedArtifactDir.html">
                 <f:textbox name="sharedArtifactDir" size="260" value="${instance.sharedArtifactDir}"/>
             </f:entry>
+
+            <f:entry title="${%VCJob.JobOptionsPipeline.maxParallel.title}" description="${%VCJob.JobOptionsPipeline.maxParallel.description}" help="/plugin/vectorcast-execution/help-maxParallel.html">
+                <f:number clazz="positive-number" min="1" step="1" default="" name="maxParallel" value="${instance.maxParallel}"/>
+            </f:entry>
             
             <f:entry title="${%VCJob.JobOptionsPipeline.useCoverageHistory.title}" 
                 description="${%VCJob.JobOptionsPipeline.useCoverageHistory.description}"
-                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">
+                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">>
                 <f:checkbox name="useCoverageHistory" checked="${instance.useCoverageHistory}" default="false"/>
             </f:entry>        
             

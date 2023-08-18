@@ -103,6 +103,7 @@ public class NewPipelineJob extends BaseJob {
     private boolean useParameters;
     
     private boolean useCoverageHistory;
+    private Long     maxParallel;
     
     private String postSCMCheckoutCommands;
     
@@ -204,6 +205,7 @@ public class NewPipelineJob extends BaseJob {
         useCBT  = json.optBoolean("useCBT", true);
         useParameters  = json.optBoolean("useParameters", false);
         useCoverageHistory  = json.optBoolean("useCoverageHistory", false);
+        maxParallel = json.optLong("maxParallel", -1);
         
         // remove the win/linux options since there's no platform any more 
         environmentSetup = json.optString("environmentSetup", null);
@@ -504,6 +506,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_Agent_Label = '" + nodeLabel + "'\n" +  
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
+            "VC_maxParallel = '" + getMaxParallel() + "'\n" +  
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
             "VC_UseCILicense = " + VC_Use_CI + "\n" +  
             "VC_useCBT = " + incremental + "\n" +  

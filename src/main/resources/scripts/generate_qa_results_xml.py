@@ -38,7 +38,7 @@ def write_tc_data(currentEnv, unit_report_name, jobNameDotted, passed, failed, e
 
     fh = open("xml_data/" + unit_report_name, "w")
 
-    writeJunitHeader(currentEnv, fh, failed, failed+passed, unit_report_namem, encoding)
+    writeJunitHeader(currentEnv, fh, failed, failed+passed, unit_report_name, encoding)
     writeJunitData(fh, testcase_data)
     writeJunitFooter(fh)
     fh.close()

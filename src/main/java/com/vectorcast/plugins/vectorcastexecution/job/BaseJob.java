@@ -121,6 +121,8 @@ abstract public class BaseJob {
     private String jobName;
     /** Node label */
     private String nodeLabel;
+    /** Maximum number of parallal jobs to queue up */
+    private Long maxParallel;
     
     /** PC Lint Plus Command */
     private String pclpCommand;
@@ -223,6 +225,7 @@ abstract public class BaseJob {
             }
             externalResultsFilename  = json.optString("externalResultsFilename", "").replace('\\','/');;
             useCoverageHistory = json.optBoolean("useCoverageHistory", false);
+            maxParallel = json.optLong("maxParallel", -1);
             
             /* Additional Tools */
             pclpCommand = json.optString("pclpCommand", "").replace('\\','/');;
@@ -262,6 +265,7 @@ abstract public class BaseJob {
         useExternalImportedResults = savedData.getUseExternalImportedResults();
         externalResultsFilename = savedData.getExternalResultsFilename();
         useCoverageHistory = savedData.getUseCoverageHistory();
+        maxParallel = savedData.getMaxParallel();
 
         usingSCM = savedData.getUsingSCM();
         scm = savedData.getSCM();
@@ -551,6 +555,21 @@ abstract public class BaseJob {
     protected void setUseCoverageHistory(boolean useCoverageHistory) {
         this.useCoverageHistory = useCoverageHistory;
     }    
+
+    /**
+     * Get for maxParallel to control maximum number of jobs to be queue at at any one point
+     * @return MaxParallel integer number
+     */
+    protected Long getMaxParallel() {
+        return maxParallel;
+    }
+    /**
+     * Set option for maxParallel to control maximum number of jobs to be queue at at any one point
+     * @param MaxParallel integer number
+     */
+    protected void setMaxParallel(Long maxParallel) {
+        this.maxParallel = maxParallel;
+    }    
      /**
      * Get environment setup for windows
      * @return setup
@@ -836,6 +855,7 @@ abstract public class BaseJob {
                                     useCoverageHistory,
                                     waitLoops,
                                     waitTime,
+                                    maxParallel,
                                     manageProjectName,
                                     jobName,
                                     nodeLabel,

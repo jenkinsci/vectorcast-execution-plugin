@@ -155,6 +155,8 @@ VectorCAST/QA projects cannot use imported results for change based testing
     - External results will be used from the repository
     - Added support for DataAPI VCProjectApi for reporting imported results
 - Bump json from 20220320 to 20230227
+- Added maximum number of queued jobs
+- Removed Squore script as customer should use script from their Squore installation.
 
 ### Version 0.76 (19 Jan 2023)
 - Added support in VectorCAST version 2023 Projects for environments that are not in a group

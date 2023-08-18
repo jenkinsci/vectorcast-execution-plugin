@@ -94,6 +94,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private Long waitLoops;
     /** Wait time */
     private Long waitTime;
+    /** Maximum number of parallal jobs to queue up */
+    private Long maxParallel;
     /** Using some form of SCM */
     private boolean usingSCM;
     /** SCM if using */
@@ -146,6 +148,20 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setWaitTime(Long waitTime) {
         this.waitTime = waitTime;
+    }
+    /**
+     * Get for maxParallel to control maximum number of jobs to be queue at at any one point
+     * @return MaxParallel integer number
+     */
+    public Long getMaxParallel() {
+        return maxParallel;
+    }
+    /**
+     * Set option for maxParallel to control maximum number of jobs to be queue at at any one point
+     * @param MaxParallel integer number
+     */
+    public void setMaxParallel(Long maxParallel) {
+        this.maxParallel = maxParallel;
     }
     /**
      * Get environment for windows setup
@@ -640,6 +656,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param useCoverageHistory use imported results
      * @param waitLoops wait loops
      * @param waitTime wait time
+     * @param maxParallel maximum number of jobs to queue in parallel
      * @param manageProjectName manage project name
      * @param jobName job name
      * @param nodeLabel node label
@@ -674,6 +691,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            boolean useCoverageHistory,
                            Long waitLoops,
                            Long waitTime,
+                           Long maxParallel,
                            String manageProjectName,
                            String jobName,
                            String nodeLabel,
@@ -708,6 +726,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.scm = new NullSCM();
         this.waitLoops = waitLoops;
         this.waitTime = waitTime;
+        this.maxParallel = maxParallel;
         this.manageProjectName = manageProjectName;
         this.jobName = jobName;
         this.nodeLabel = nodeLabel;
@@ -903,6 +922,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t scm: " + scm +  "\n"
     			+ "\t waitLoops: " + waitLoops +  "\n"
     			+ "\t waitTime: " + waitTime +  "\n"
+    			+ "\t maxParallel: " + maxParallel +  "\n"
     			+ "\t manageProjectName: " + manageProjectName +  "\n"
     			+ "\t jobName: " + jobName +  "\n"
     			+ "\t nodeLabel: " + nodeLabel +  "\n"
