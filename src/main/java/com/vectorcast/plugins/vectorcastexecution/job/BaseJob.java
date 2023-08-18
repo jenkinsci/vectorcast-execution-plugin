@@ -565,7 +565,7 @@ abstract public class BaseJob {
     }
     /**
      * Set option for maxParallel to control maximum number of jobs to be queue at at any one point
-     * @param MaxParallel integer number
+     * @param maxParallel Long number
      */
     protected void setMaxParallel(Long maxParallel) {
         this.maxParallel = maxParallel;

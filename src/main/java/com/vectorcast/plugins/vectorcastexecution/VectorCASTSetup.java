@@ -151,14 +151,14 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }
     /**
      * Get for maxParallel to control maximum number of jobs to be queue at at any one point
-     * @return MaxParallel integer number
+     * @return maxParallel Long number
      */
     public Long getMaxParallel() {
         return maxParallel;
     }
     /**
      * Set option for maxParallel to control maximum number of jobs to be queue at at any one point
-     * @param MaxParallel integer number
+     * @param maxParallel Long number
      */
     public void setMaxParallel(Long maxParallel) {
         this.maxParallel = maxParallel;

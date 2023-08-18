@@ -730,7 +730,7 @@ pipeline {
                     // Get the job list from the unit test environment listed
                     jobs = stepsForJobList(UtEnvList)
                     
-                    if (VC_maxParallel != -1) {
+                    if (VC_maxParallel == -1) {
                         // run those jobs in parallel
                         parallel jobs
                     } else {

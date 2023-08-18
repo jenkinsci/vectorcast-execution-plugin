@@ -506,7 +506,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_Agent_Label = '" + nodeLabel + "'\n" +  
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
-            "VC_maxParallel = '" + getMaxParallel() + "'\n" +  
+            "VC_maxParallel = " + getMaxParallel() + "\n" +  
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
             "VC_UseCILicense = " + VC_Use_CI + "\n" +  
             "VC_useCBT = " + incremental + "\n" +  

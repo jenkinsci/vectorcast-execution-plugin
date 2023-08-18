@@ -54,7 +54,7 @@
             
             <f:entry title="${%VCJob.JobOptionsPipeline.useCoverageHistory.title}" 
                 description="${%VCJob.JobOptionsPipeline.useCoverageHistory.description}"
-                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">>
+                help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">
                 <f:checkbox name="useCoverageHistory" checked="${instance.useCoverageHistory}" default="false"/>
             </f:entry>        
             
