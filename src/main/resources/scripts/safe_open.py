@@ -74,7 +74,7 @@ def open(file, mode="r"):
     else:
         if os.path.exists(file):
             #encoding = get_file_encoding(file)
-			encoding = new_get_file_encoding()
+            encoding = new_get_file_encoding()
         else:
             encoding = "utf-8"
         fd = _open(file, mode, encoding=encoding)
