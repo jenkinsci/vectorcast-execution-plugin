@@ -741,7 +741,12 @@ pipeline {
                                 parallel runningJobs
                                 runningJobs = [:]
                             }
-                        }                    
+                        }
+                        if (runningJobs.size() > 0) {
+                            parallel runningJobs
+                            runningJobs = [:]
+                        }
+                        
                     }                    
                 }
             }

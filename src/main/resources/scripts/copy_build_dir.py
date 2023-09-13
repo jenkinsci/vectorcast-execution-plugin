@@ -35,6 +35,7 @@ import tee_print
 global build_dir
 
 def make_relative(path, workspace, teePrint):
+
     path = path.replace("\\","/")
 
     # if the paths match
@@ -53,6 +54,9 @@ def make_relative(path, workspace, teePrint):
         
     else:
         teePrint.teePrint("  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace)
+        print("    " + path)
+        print("    " + workspace)
+    
         # something went wildly wrong -- raise an exception
         # raise Exception ("Problem updating database path to remove workspace:\n\n   PATH: " + path + "\n   WORKSPACE: " + workspace)
     
@@ -149,6 +153,8 @@ if __name__ == '__main__':
         nocase = "COLLATE NOCASE"
     else:
         nocase = ""
+        
+    os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(ManageProjectName).rsplit(".",1)[0]
 
     manageCMD = os.path.join(os.environ.get('VECTORCAST_DIR'), "manage")
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,
