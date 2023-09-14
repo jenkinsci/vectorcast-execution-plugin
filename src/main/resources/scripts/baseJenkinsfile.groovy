@@ -746,7 +746,6 @@ pipeline {
                             parallel runningJobs
                             runningJobs = [:]
                         }
-                        
                     }                    
                 }
             }

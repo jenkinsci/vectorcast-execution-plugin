@@ -37,7 +37,10 @@ global build_dir
 def make_relative(path, workspace, teePrint):
 
     path = path.replace("\\","/")
-
+    
+    if not os.path.isabs(path):
+        return path
+        
     # if the paths match
     if path.lower().startswith(workspace.lower()):
         path = path[len(workspace)+1:]
@@ -54,8 +57,6 @@ def make_relative(path, workspace, teePrint):
         
     else:
         teePrint.teePrint("  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace)
-        print("    " + path)
-        print("    " + workspace)
     
         # something went wildly wrong -- raise an exception
         # raise Exception ("Problem updating database path to remove workspace:\n\n   PATH: " + path + "\n   WORKSPACE: " + workspace)
