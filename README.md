@@ -157,6 +157,7 @@ VectorCAST/QA projects cannot use imported results for change based testing
 - Bump json from 20220320 to 20230227
 - Added maximum number of jobs to be queued so that server won't get flood with jobs and stall other Jenkins jobs
 - Removed Squore script as customer should use script from their Squore installation.
+- Fixed copy_build_dir.py ability to handle relative paths in the database.
 
 ### Version 0.76 (19 Jan 2023)
 - Added support in VectorCAST version 2023 Projects for environments that are not in a group
