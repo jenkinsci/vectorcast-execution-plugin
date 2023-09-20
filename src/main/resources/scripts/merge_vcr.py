@@ -18,7 +18,7 @@ def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, cursor_new, cursor_orig, 
     # dynamically determine SQL expression requirements
     s = "PRAGMA table_info(%s)" % (table_name)
     column_names = cursor_new.execute(s).fetchall()
-    column_names = tuple([x[1] for x in column_names][1:])  # remove the primary keyword
+    column_names = tuple([str(x[1]) for x in column_names][1:])  # remove the primary keyword
     values_placeholders = ', '.join(['?' for x in column_names])  # format appropriately
     
     # SQL select columns from table

@@ -1118,9 +1118,11 @@ class GenerateXml(BaseGenerateXml):
                 result += "\nStrict Test Import Failure.".encode()
     
             # Failure takes priority  
-            failure_message = self.convertExecStatus(tc.execution_status)
-            ##print(tc.name + "," + failure_message  + "," + str(tc.passed))
-        
+            if tc.status != "TC_EXECUTION_NONE":
+                failure_message = self.convertExecStatus(tc.execution_status)
+            else:
+                failure_message = "Test Not Executed"
+
         status = ""
         if tc.passed == None:
             extraStatus = "\n            <skipped/>\n"
