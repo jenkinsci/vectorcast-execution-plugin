@@ -417,6 +417,8 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
 
     failed_count = 0 
     passed_count = 0
+    
+    print("Using DataAPI per environment")
         
     for currentEnv in manageEnvs:
         if skipReporting(manageEnvs[currentEnv]["build_dir"], use_archive_extract, cbtDict):

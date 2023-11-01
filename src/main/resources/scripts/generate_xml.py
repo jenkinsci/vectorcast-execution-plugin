@@ -78,7 +78,6 @@ class BaseGenerateXml(object):
         self.cover_report_name = os.path.join("xml_data","coverage_results_"+ self.manageProjectName + ".xml")
         self.unit_report_name = os.path.join("xml_data","test_results_"+ self.manageProjectName + ".xml")
         self.verbose = verbose
-        self.using_cover = False
         self.has_sfp_enabled = False
         self.print_exc = False
         
@@ -240,12 +239,15 @@ class BaseGenerateXml(object):
             self.fh_data += ('          <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % unit["complexity"])
 
             for func in unit["functions"]:
-                if not self.using_cover:
-                    func_name = escape(func["func"].name, quote=True)
-                    self.fh_data += ('          <subprogram name="%s">\n' % func_name)
-                else:
-                    func_name = escape(func["func"].display_name, quote=True)
-                    self.fh_data += ('          <subprogram name="%s">\n' % func_name)
+
+                # if isinstance(self.api, CoverApi) or isinstance(self.api, VCProjectApi):
+                    # func_name = escape(func["func"].name, quote=True)
+                # else:
+                    # func_name = escape(func["func"].display_name, quote=True) 
+                    
+                func_name = escape(func["func"].name, quote=True)
+                self.fh_data += ('          <subprogram name="%s">\n' % func_name)
+                
                 if func["coverage"]["statement"]:
                     self.fh_data += ('            <coverage type="statement, %%" value="%s"/>\n' % func["coverage"]["statement"])
                 if func["coverage"]["branch"]:
@@ -357,15 +359,17 @@ class BaseGenerateXml(object):
         except:
             metrics = srcFile.cover_metrics
             
-        covTotals = (
-            metrics.max_covered_functions + 
-            metrics.max_uncovered_branches +
-            metrics.max_uncovered_function_calls +
-            metrics.max_uncovered_functions +
-            metrics.max_uncovered_mcdc_branches +
-            metrics.max_uncovered_mcdc_pairs + 
-            metrics.max_uncovered_statements )
-
+        try:
+            covTotals = (
+                metrics.branches +
+                metrics.function_calls +
+                metrics.functions +
+                metrics.mcdc_branches +
+                metrics.mcdc_pairs + 
+                metrics.statements )
+        except:
+            covTotals = 0
+            
         return covTotals > 0
 
 #
@@ -396,7 +400,7 @@ class BaseGenerateXml(object):
         self.grand_total_total_basis_path = 0
         self.grand_total_cov_basis_path = 0
         for srcFile in self.units:
-
+            
             if not self.hasAnyCov(srcFile):
                 continue
                 
@@ -446,7 +450,7 @@ class BaseGenerateXml(object):
                     functions_added = True
                     funcs_with_cover_data.append(func)
                     
-            if self.using_cover:
+            if isinstance(self.api, CoverApi):
                 sorted_funcs = sorted(funcs_with_cover_data,key=attrgetter('cover_data.index'))
             else:
                 try:
@@ -505,12 +509,12 @@ class BaseGenerateXml(object):
 #
     def generate_cover(self):
         self.units = []
-        if self.using_cover:
+        if isinstance(self.api, CoverApi):
             self.units = self.api.File.all()
             self.units.sort(key=lambda x: (x.coverage_type, x.unit_index))
         else:
             self.units = self.api.Unit.all()
-            
+                 
         # unbuilt (re: Error) Ada environments causing a crash
         try:
             cov_type = self.api.environment.coverage_type_text
@@ -588,7 +592,6 @@ class GenerateManageXml (BaseGenerateXml):
                        print_exc = False):
                        
         super(GenerateManageXml, self).__init__(FullManageProjectName, verbose)
-        self.using_cover = False
         self.api = VCProjectApi(FullManageProjectName)
         self.has_sfp_enabled = self.api.environment.get_option("VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE")        
 
@@ -631,10 +634,6 @@ class GenerateManageXml (BaseGenerateXml):
 # GenerateManageXml
 
     def generate_cover(self):
-        if isinstance(self.api, CoverApi):
-            self.using_cover = True
-        else:
-            self.using_cover = False
         self.units = self.api.project.cover_api.SourceFile.all() ##self.api.project.cover_api.File.all()
         self._generate_cover(None)
         self.start_cov_file_environment()
@@ -694,8 +693,14 @@ class GenerateManageXml (BaseGenerateXml):
         env = self.api.project.environments[env_key]
         env_def = self.api.project.environments[env_key].definition
     
-        build_dir = os.path.join(self.api.project.workspace,env.relative_working_directory)
+        build_dir = env.build_directory
         vceFile =  os.path.join(build_dir, env.name+".vce")
+        vcpFile =  os.path.join(build_dir, env.name+".vcp")
+        if not os.path.exists(vceFile) and not os.path.exists(vcpFile):
+            print("Error: Could not determine environment location for {}/{}".format(build_dir, env.name))
+            print("       {}/{}/{}".format(comp, ts, env_name))
+            return
+
         
         xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + key.replace("/","_") + ".xml"
 
@@ -829,14 +834,11 @@ class GenerateXml(BaseGenerateXml):
         self.unit_report_name = unit_report_name
         self.jenkins_link = jenkins_link
         self.jobNameDotted = jobNameDotted
-        self.using_cover = False
         cov_path = os.path.join(build_dir,env + '.vcp')
         unit_path = os.path.join(build_dir,env + '.vce')
         if os.path.exists(cov_path):
-            self.using_cover = True
             self.api = CoverApi(cov_path)
         elif os.path.exists(unit_path):
-            self.using_cover = False
             self.api = UnitTestApi(unit_path)
         else:
             self.api = None
@@ -1256,7 +1258,7 @@ def __generate_xml(xml_file, envPath, env, xmlCoverReportName, xmlTestingReportN
     if xml_file.api == None:
         teePrint.teePrint ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
         
-    elif xml_file.using_cover:
+    elif isinstance(xml_file, CoverApi):
         xml_file.generate_cover()
         teePrint.teePrint ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
 
