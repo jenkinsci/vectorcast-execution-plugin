@@ -968,8 +968,11 @@ class GenerateXml(BaseGenerateXml):
         self.fh_data += ("   </testsuite>\n")
         self.fh_data += ("</testsuites>\n")
         with open(self.unit_report_name, "w") as fd:
-            fd.write(self.fh_data)
-
+            try:
+                fd.write(self.fh_data)
+            except:
+                fd.write(self.fh_data.encode(self.encFmt))
+                
 #
 # GenerateXml - start the JUnit XML file
 #

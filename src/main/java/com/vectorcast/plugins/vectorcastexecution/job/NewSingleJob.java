@@ -95,9 +95,7 @@ public class NewSingleJob extends BaseJob {
             pclpCommandString = getPclpCommand() + "\n";
         }            
         if (getSquoreCommand().length() != 0) {
-            squoreCommandString_win = "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate_squore_results.py\" \"@PROJECT@\"";
             squoreCommandString_win += "\n" + getSquoreCommand() + "\n";
-            squoreCommandString_unix = "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate_squore_results.py\" \"@PROJECT@\"";
             squoreCommandString_unix += "\n" + getSquoreCommand() + "\n";
         }            
         if (getTESTinsights_URL().length() != 0) {
@@ -280,7 +278,9 @@ addEnvVars +
 "    if [[ $VCAST_USE_LOCAL_IMPORTED_RESULTS -eq 1 ]] && [[ -f \"@PROJECT_BASE@_results.vcr\" ]] ; then \n" +
 "        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\\\"@PROJECT_BASE@_results.vcr\\\"\"\n" +
 "        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status \"\n" +
-"        if [[ -f @PROJECT_BASE@_results.vcr ]] ; then cp -p @PROJECT_BASE@_results.vcr @PROJECT_BASE@_results_orig.vcr fi \n" +
+"        if [[ -f @PROJECT_BASE@_results.vcr ]] ; then \n" +
+"            cp -p @PROJECT_BASE@_results.vcr @PROJECT_BASE@_results_orig.vcr \n" + 
+"        fi \n" +
 "    fi\n" + 
 "    if [[ $VCAST_USE_EXTERNAL_IMPORTED_RESULTS -eq 1 ]] && [[ -f \"$VCAST_USE_EXTERNAL_FILENAME\" ]] ; then \n" +
 "        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\"$VCAST_USE_EXTERNAL_FILENAME\" \"\n" +
