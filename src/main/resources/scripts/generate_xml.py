@@ -66,7 +66,14 @@ import re
  
 def dummy(*args, **kwargs):
     return None
-
+def dump(obj):
+    if hasattr(obj, '__dict__'): 
+        return vars(obj) 
+    else:
+        try:
+            return {attr: getattr(obj, attr, None) for attr in obj.__slots__} 
+        except:
+            return str(obj)
 ##########################################################################
 # This class generates the XML (JUnit based) report for the overall
 # (Emma based) report for Coverage
@@ -158,7 +165,17 @@ class BaseGenerateXml(object):
             s = convertDict[status]
         return s
 
-    
+    def has_any_coverage(self,unit_or_func):
+        if unit_or_func.coverdb.has_covered_function_calls or \
+           unit_or_func.coverdb.has_covered_functions      or \
+           unit_or_func.coverdb.has_covered_mcdc_branches  or \
+           unit_or_func.coverdb.has_covered_mcdc_pairs     or \
+           unit_or_func.coverdb.has_covered_statements     or \
+           unit_or_func.coverdb.has_covered_branches:
+            return True
+        else:
+            return False 
+
 #
 # BaseGenerateXml - create coverage data object for given metrics entry
 # for coverage report
@@ -178,11 +195,16 @@ class BaseGenerateXml(object):
                 (total_funcs, funcs_covered) = unit_or_func.cover_data.functions_covered
                 entry["function"] = self.calc_cov_values(funcs_covered, total_funcs)
             else:
-                if unit_or_func.has_covered_objects:
-                    entry["function"] = '100% (1 / 1)'
-                else:
-                    entry["function"] = '0% (0 / 1)'
-                    
+                try:
+                    if unit_or_func.has_covered_objects:
+                        entry["function"] = '100% (1 / 1)'
+                    else:
+                        entry["function"] = '0% (0 / 1)'
+                except:
+                    if self.has_any_coverage(unit_or_func):
+                        entry["function"] = '100% (1 / 1)'
+                    else:
+                        entry["function"] = '0% (0 / 1)'
         if self.has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
             
@@ -593,7 +615,11 @@ class GenerateManageXml (BaseGenerateXml):
                        
         super(GenerateManageXml, self).__init__(FullManageProjectName, verbose)
         self.api = VCProjectApi(FullManageProjectName)
-        self.has_sfp_enabled = self.api.environment.get_option("VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE")        
+        
+        try:
+            self.has_sfp_enabled = self.api.environment.get_option("VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE")        
+        except:
+            self.has_sfp_enabled = False
 
         self.FullManageProjectName = FullManageProjectName        
         self.generate_exec_rpt_each_testcase = generate_exec_rpt_each_testcase
