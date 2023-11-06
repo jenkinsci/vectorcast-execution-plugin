@@ -27,7 +27,11 @@ from __future__ import print_function
 
 import sys, os
 # adding path
-jenkinsScriptHome = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
+workspace = os.getenv("WORKSPACE")
+if workspace is None:
+    workspace = os.getcwd()
+
+jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
 

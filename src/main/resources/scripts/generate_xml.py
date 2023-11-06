@@ -422,7 +422,7 @@ class BaseGenerateXml(object):
         self.grand_total_total_basis_path = 0
         self.grand_total_cov_basis_path = 0
         for srcFile in self.units:
-            
+        
             if not self.hasAnyCov(srcFile):
                 continue
                 
@@ -701,7 +701,11 @@ class GenerateManageXml (BaseGenerateXml):
         with open(report_name, "w") as fd:
             fd.write(newData)
        
-        vc_scripts = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
+        workspace = os.getenv("WORKSPACE")
+        if workspace is None:
+            workspace = os.getcwd()
+
+        vc_scripts = os.path.join(workspace,"vc_scripts")
         
         shutil.copy(os.path.join(vc_scripts,"vector_style.css"), "management/vector_style.css")
         shutil.copy(os.path.join(vc_scripts,"vectorcast.png"), "management/vectorcast.png")

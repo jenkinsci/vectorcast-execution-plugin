@@ -35,7 +35,11 @@ from safe_open import open
 #     into one comprehensive report.
 # 
 # adding path
-jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
+workspace = os.getenv("WORKSPACE")
+if workspace is None:
+    workspace = os.getcwd()
+
+jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
 

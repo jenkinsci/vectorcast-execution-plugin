@@ -149,6 +149,8 @@ if __name__ == '__main__':
     BaseName = sys.argv[3]
     Env = sys.argv[4]
     workspace = os.getenv("WORKSPACE")
+    if workspace is None:
+        workspace = os.getcwd()
     if sys.platform.startswith('win32'):
         workspace = workspace.replace("\\", "/")
         nocase = "COLLATE NOCASE"

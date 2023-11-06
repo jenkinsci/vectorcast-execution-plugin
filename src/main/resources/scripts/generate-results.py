@@ -40,7 +40,11 @@ import tee_print
 from safe_open import open
 
 # adding path
-jenkinsScriptHome = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
+workspace = os.getenv("WORKSPACE")
+if workspace is None:
+    workspace = os.getcwd()
+
+jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
 
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
@@ -308,7 +312,11 @@ def fixup_css(report_name):
     with open(report_name, "w") as fd:
         fd.write(newData)
    
-    vc_scripts = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
+    workspace = os.getenv("WORKSPACE")
+    if workspace is None:
+        workspace = os.getcwd()
+
+    vc_scripts = os.path.join(workspace,"vc_scripts")
     
     shutil.copy(os.path.join(vc_scripts,"vector_style.css"), "management/vector_style.css")
     shutil.copy(os.path.join(vc_scripts,"vectorcast.png"), "management/vectorcast.png")
@@ -514,6 +522,10 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if timing:
         print("Cleanup: " + str(time.time()))
     if useNewReport and not legacy:
+        with VCProjectApi(FullManageProjectName) as api:
+            tool_version = api.tool_version
+            if tool_version.startswith("20"):
+                use_manage_api = False
         if use_manage_api:
             passed_count, failed_count = useManageAPI(FullManageProjectName, cbtDict, generate_individual_reports, 
                     use_archive_extract, 
