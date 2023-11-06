@@ -815,7 +815,8 @@ class GenerateManageXml (BaseGenerateXml):
                 try:
                     fd.write(self.fh_data)
                 except:
-                    fd.write(unicode(self.fh_data))
+                    s = unicode(self.fh_data, self.encFmt)
+                    fd.write(s)
         
 ##########################################################################
 # This class generates the XML (Junit based) report for dynamic tests and
@@ -971,7 +972,8 @@ class GenerateXml(BaseGenerateXml):
             try:
                 fd.write(self.fh_data)
             except:
-                fd.write(self.fh_data.encode(self.encFmt))
+                s = unicode(self.fh_data, self.encFmt)
+                fd.write(s)
                 
 #
 # GenerateXml - start the JUnit XML file
