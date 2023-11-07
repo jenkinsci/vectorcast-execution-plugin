@@ -70,11 +70,9 @@ try:
 except:
     pass
     
-use_manage_api = False
 
 try:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
-    use_manage_api = True
 except:
     pass
     
@@ -526,6 +524,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             tool_version = api.tool_version
             if tool_version.startswith("20"):
                 use_manage_api = False
+            else:
+                use_manage_api = True
         if use_manage_api:
             passed_count, failed_count = useManageAPI(FullManageProjectName, cbtDict, generate_individual_reports, 
                     use_archive_extract, 
