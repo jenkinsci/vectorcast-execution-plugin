@@ -218,7 +218,6 @@ getExecutePreambleWin() +
 
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=\\\"@PROJECT_BASE@_full_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" + 
 "\n:: Use Imported Results\n" +
 "if \"%VCAST_USE_IMPORTED_RESULTS%\"==\"TRUE\" if \"%VCAST_USE_LOCAL_IMPORTED_RESULTS%\"==\"TRUE\" (\n" + 
@@ -299,7 +298,6 @@ if (getOptionUseReporting()) {
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/full_report_no_toc.py\" \"@PROJECT@\" \n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/fixup_reports.py\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
 "\n# Use strict testcase import\n" + 
 "if [[ $VCAST_USE_IMPORTED_RESULTS -eq 1 ]] && [[ $VCAST_USE_LOCAL_IMPORTED_RESULTS -eq 1 ]] ; then\n" +
