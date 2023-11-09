@@ -35,8 +35,8 @@ def generate_full_status(manageProject):
 
     mpName = os.path.splitext(os.path.basename(manageProject))[0]
     full_report_name = mpName + "_full_report.html"
-
     metrics_report_name = mpName + "_metrics_report.html"
+
     try:
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         api = VCProjectApi(manageProject)
@@ -66,7 +66,7 @@ def generate_full_status(manageProject):
         out_mgt = manageWait.exec_manage(True)
 
         shutil.copy(full_report_name,full_report_name + "_tmp")
-        shutil.copy(metrics_report_name,full_report_name + "_tmp")
+        shutil.copy(metrics_report_name,metrics_report_name + "_tmp")
         return out_mgt
         
 if __name__ == '__main__':
