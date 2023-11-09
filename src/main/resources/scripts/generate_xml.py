@@ -1094,8 +1094,6 @@ class GenerateXml(BaseGenerateXml):
         # don't do CBT analysis on migrated cover environments
         if isSystemTest and not st_is_monitored:
             tcSkipped = False 
-            
-        print(self.cbtDict)
         
         # If cbtDict is None, no build log was passed in...don't mark anything as skipped 
         elif self.skipReportsForSkippedEnvs or self.cbtDict == None:
