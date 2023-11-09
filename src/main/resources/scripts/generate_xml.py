@@ -776,7 +776,7 @@ class GenerateManageXml (BaseGenerateXml):
         failed  = errors
         self.localDataOnly = True
         self.fh_data = ""            
-        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt + "\"?>\n")
+        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
         self.fh_data += ("<testsuites>\n")
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,total,failed,escape(self.manageProjectName, quote=False)))
@@ -787,6 +787,7 @@ class GenerateManageXml (BaseGenerateXml):
                     comp, ts, group, env_name = result.split("/")
                 else:
                     comp, ts, env_name = result.split("/")
+                    
                 if results[result]['local'] != {}:
                     self.generate_local_results(results,result)                    
                 else:
@@ -842,7 +843,7 @@ class GenerateXml(BaseGenerateXml):
         self.topLevelAPI = None
         
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
-        
+        build_dir = build_dir.replace("\\","/")
         build_dir_4hash = build_dir.upper()
         build_dir_4hash = "/".join(build_dir_4hash.split("/")[-2:])
         
@@ -1013,7 +1014,7 @@ class GenerateXml(BaseGenerateXml):
             api.close()            
 
         self.fh_data = ""        
-        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt + "\"?>\n")
+        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
         self.fh_data += ("<testsuites>\n")
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
@@ -1042,7 +1043,7 @@ class GenerateXml(BaseGenerateXml):
                     success += 1
                     self.passed_count += 1
         self.fh_data = ""            
-        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt + "\"?>\n")
+        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
         self.fh_data += ("<testsuites>\n")
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
@@ -1089,11 +1090,13 @@ class GenerateXml(BaseGenerateXml):
 
         start_tdo = datetime.now()
         end_tdo   = None
-        
+                
         # don't do CBT analysis on migrated cover environments
         if isSystemTest and not st_is_monitored:
             tcSkipped = False 
             
+        print(self.cbtDict)
+        
         # If cbtDict is None, no build log was passed in...don't mark anything as skipped 
         elif self.skipReportsForSkippedEnvs or self.cbtDict == None:
             tcSkipped = False 
