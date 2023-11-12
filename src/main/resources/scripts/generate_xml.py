@@ -1153,7 +1153,7 @@ class GenerateXml(BaseGenerateXml):
                 tc_name_full)
             
             if tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
-                result += "\nStrict Test Import Failure.".encode()
+                result += "\nStrict Test Import Failure."
     
             # Failure takes priority  
             if tc.status != "TC_EXECUTION_NONE":
@@ -1184,7 +1184,8 @@ class GenerateXml(BaseGenerateXml):
             msg = escape(msg, quote=False)
             msg = msg.replace("\"","")
             msg = msg.replace("\n","&#xA;")
-        
+            msg = msg.replace("\r","")
+			
         testcaseStringExtraStatus="""
         <testcase name="%s" classname="%s" time="%s">
             %s
@@ -1273,8 +1274,7 @@ class GenerateXml(BaseGenerateXml):
             with open(report_name,"rb") as fd:
                 out = fd.read()
                 
-            out = out.decode('utf-8').encode(self.encFmt)
-            
+            out = out.decode(self.encFmt)
             os.remove(report_name)
         except:
             out = "No execution results found"

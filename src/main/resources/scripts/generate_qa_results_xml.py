@@ -19,9 +19,10 @@ def get_timestamp():
         hour -= 12
     return dt.strftime('%d %b %Y  @HR@:%M:%S %p').upper().replace('@HR@', str(hour))
 
-def writeJunitHeader(currentEnv, junitfile, failed, total, unit_report_name, encoding = 'utf-8'):
+def writeJunitHeader(currentEnv, junitfile, failed, total, unit_report_name, encoding = 'UTF-8'):
     
-    junitfile.write("<?xml version=\"1.0\" encoding=\"" + encoding + "\"?>\n")
+    junitfile.write("<?xml version=\"1.0\" encoding=\"" + encoding.upper() + "\"?>\n")
+
     junitfile.write("<testsuites>\n  <!--" + unit_report_name + "-->\n")
                     
     junitfile.write("  <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
