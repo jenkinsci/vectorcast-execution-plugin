@@ -367,8 +367,16 @@ class BaseGenerateXml(object):
 # BaseGenerateXml the XML Modified 'Emma' coverage data
 #
     def hasFunctionCoverage(self, cov_types):
-        func_cov_types = [COVERAGE_TYPE_TYPE_T.FUNCTION_COVERAGE, COVERAGE_TYPE_TYPE_T.FUNCTION_FUNCTION_CALL, COVERAGE_TYPE_TYPE_T.STATEMENT_FUNCTION_CALL, COVERAGE_TYPE_TYPE_T.STATEMENT_BRANCH_FUNCTION_CALL, COVERAGE_TYPE_TYPE_T.STATEMENT_MCDC_FUNCTION_CALL]
-        
+        func_cov_types =  [COVERAGE_TYPE_TYPE_T.FUNCTION_COVERAGE, 
+                           COVERAGE_TYPE_TYPE_T.FUNCTION_FUNCTION_CALL]
+                          
+        try:
+            func_cov_types += [COVERAGE_TYPE_TYPE_T.STATEMENT_FUNCTION_CALL, 
+                              COVERAGE_TYPE_TYPE_T.STATEMENT_BRANCH_FUNCTION_CALL, 
+                              COVERAGE_TYPE_TYPE_T.STATEMENT_MCDC_FUNCTION_CALL]
+        except:
+            pass
+
         for cov_type in cov_types:
             if cov_type in func_cov_types:
                 return True
