@@ -530,7 +530,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_useImportedResults=" + useImportedResults + "\n" +
             "VC_useLocalImportedResults=" + useLocalImportedResults + "\n" +
             "VC_useExternalImportedResults=" + useExternalImportedResults + "\n" +
-            "VC_externalResultsFilename=" + externalResultsFilename + "\n" +
+            "VC_externalResultsFilename=\"" + externalResultsFilename + "\"\n" +
             "\n" +   
             "";
             

@@ -211,12 +211,12 @@ class BaseGenerateXml(object):
         if self.verbose:
             print("Coverage Type:", cov_type_str)
             
-
+      
         if 'NONE' in cov_type_str:
             return entry         
         
         if "MCDC" in cov_type_str:
-            entry["branch"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
+            entry["mcdc"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
             if not self.simplified_mcdc:
                 entry["mcdc"] = self.calc_cov_values(metrics.max_covered_mcdc_pairs, metrics.mcdc_pairs)
         if "BASIS_PATH" in cov_type_str:
@@ -291,6 +291,7 @@ class BaseGenerateXml(object):
 # BaseGenerateXml - calculate 'grand total' coverage values for coverage report
 #
     def grand_total_coverage(self, cov_type):
+        
         cov_type_str = str(cov_type)
 
         entry = {}
@@ -305,12 +306,9 @@ class BaseGenerateXml(object):
             entry["function"] = self.calc_cov_values(self.grand_total_max_covered_functions, self.grand_total_max_coverable_functions)
         if self.has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)
-            
-        if 'NONE' in cov_type_str:
-            return entry
-            
+               
         if "MCDC" in cov_type_str:
-            entry["branch"] = self.calc_cov_values(self.grand_total_max_mcdc_covered_branches, self.grand_total_mcdc_branches)
+            entry["mcdc"] = self.calc_cov_values(self.grand_total_max_mcdc_covered_branches, self.grand_total_mcdc_branches)
             if not self.simplified_mcdc:
                 entry["mcdc"] = self.calc_cov_values(self.grand_total_max_covered_mcdc_pairs, self.grand_total_mcdc_pairs)
         if "BASIS_PATH" in cov_type_str:
@@ -429,6 +427,9 @@ class BaseGenerateXml(object):
         self.grand_total_max_coverable_functions = 0
         self.grand_total_total_basis_path = 0
         self.grand_total_cov_basis_path = 0
+        
+        overallCoverageTypes = set()
+        
         for srcFile in self.units:
         
             if not self.hasAnyCov(srcFile):
@@ -462,7 +463,9 @@ class BaseGenerateXml(object):
                 cov_type = srcFile.coverage_types
             except:
                 cov_type = srcFile.coverage_type
-                            
+
+            overallCoverageTypes.update(cov_type)
+            
             entry = {}
             entry["unit"] = srcFile
             entry["functions"] = []
@@ -488,12 +491,15 @@ class BaseGenerateXml(object):
                 except:
                     sorted_funcs = sorted(funcs_with_cover_data,key=attrgetter('instrumented_functions.index'))
 
+            sorted_funcs.sort(key=lambda x: (x.name))
+            
             for func in sorted_funcs:
+
                 try:
                     cover_function = func.cover_data.metrics
                 except:
                     cover_function = func.metrics
-                
+                                
                 functions_added = True
                 try:
                     complexity = func.complexity
@@ -531,7 +537,7 @@ class BaseGenerateXml(object):
                 self.grand_total_total_basis_path += total
                 self.grand_total_cov_basis_path += cov
 
-        self.coverage = self.grand_total_coverage(cov_type)
+        self.coverage = self.grand_total_coverage(overallCoverageTypes)
         self.num_units = len(self.our_units)
 
 #
@@ -669,6 +675,8 @@ class GenerateManageXml (BaseGenerateXml):
 
     def generate_cover(self):
         self.units = self.api.project.cover_api.SourceFile.all() ##self.api.project.cover_api.File.all()
+        self.units.sort(key=lambda x: (x.name))
+        
         self._generate_cover(None)
         self.start_cov_file_environment()
         self.write_cov_units()
