@@ -461,10 +461,11 @@ class BaseGenerateXml(object):
                 
             try:
                 cov_type = srcFile.coverage_types
+                overallCoverageTypes.update(srcFile.coverage_types)
             except:
                 cov_type = srcFile.coverage_type
+                overallCoverageTypes.update({srcFile.coverage_type})
 
-            overallCoverageTypes.update(cov_type)
             
             entry = {}
             entry["unit"] = srcFile
