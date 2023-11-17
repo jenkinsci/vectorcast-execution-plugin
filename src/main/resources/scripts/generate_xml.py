@@ -364,24 +364,27 @@ class BaseGenerateXml(object):
 #
 # BaseGenerateXml the XML Modified 'Emma' coverage data
 #
-    def hasFunctionCoverage(self, cov_types):
-        func_cov_types =  [COVERAGE_TYPE_TYPE_T.FUNCTION_COVERAGE, 
-                           COVERAGE_TYPE_TYPE_T.FUNCTION_FUNCTION_CALL]
-                          
+    def hasEitherFunctionCoverages(self, srcFile):
+    
+        hasFunCov = False
+        hasFuncCallCov = False
+        
         try:
-            func_cov_types += [COVERAGE_TYPE_TYPE_T.STATEMENT_FUNCTION_CALL, 
-                              COVERAGE_TYPE_TYPE_T.STATEMENT_BRANCH_FUNCTION_CALL, 
-                              COVERAGE_TYPE_TYPE_T.STATEMENT_MCDC_FUNCTION_CALL]
+            metrics = srcFile.metrics
         except:
-            pass
+            metrics = srcFile.cover_metrics
+            
+        try:
+            hasFunCov      = (metrics.functions > 0)
+            hasFuncCallCov = (metrics.function_calls > 0)
+            
+        except:
+            hasFuncCallCov = (metrics.function_calls > 0)
 
-        for cov_type in cov_types:
-            if cov_type in func_cov_types:
-                return True
-                
-        return False
+        return hasFunCov, hasFuncCallCov
 
     def hasAnyCov(self, srcFile):
+    
         try:
             metrics = srcFile.metrics
         except:
@@ -396,7 +399,12 @@ class BaseGenerateXml(object):
                 metrics.mcdc_pairs + 
                 metrics.statements )
         except:
-            covTotals = 0
+            covTotals = (
+                metrics.branches +
+                metrics.function_calls +
+                metrics.mcdc_branches +
+                metrics.mcdc_pairs + 
+                metrics.statements )
             
         return covTotals > 0
 
@@ -435,25 +443,8 @@ class BaseGenerateXml(object):
             if not self.hasAnyCov(srcFile):
                 continue
                 
-            try:
-                hasFunCov = self.hasFunctionCoverage(srcFile.coverage_types)
-            except:
-                hasFunCov = self.hasFunctionCoverage([srcFile.coverage_type])
-                                    
-            try:
-                if srcFile.coverage_type in (COVERAGE_TYPE_TYPE_T.FUNCTION_FUNCTION_CALL, COVERAGE_TYPE_TYPE_T.FUNCTION_COVERAGE):
-                    self.has_function_coverage = True
-            except Exception as e:
-                self.has_function_coverage = self.api.environment.get_option("VCAST_DISPLAY_FUNCTION_COVERAGE")
-            
-            # 2019 SP1 and above until Sam changes it again :P
-            try:
-                if hasFunCov:
-                    self.has_call_coverage = True
-            except:
-                if srcFile.has_call_coverage:
-                    self.has_call_coverage = True
-            
+            self.has_function_coverage, self.has_call_coverage = self.hasEitherFunctionCoverages(srcFile)
+
             try:
                 metrics = srcFile.metrics
             except:
