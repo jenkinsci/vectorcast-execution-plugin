@@ -219,6 +219,7 @@ class BaseGenerateXml(object):
             entry["mcdc"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
             if not self.simplified_mcdc:
                 entry["mcdc"] = self.calc_cov_values(metrics.max_covered_mcdc_pairs, metrics.mcdc_pairs)
+            entry["branch"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
         if "BASIS_PATH" in cov_type_str:
             (cov,total) = unit_or_func.basis_paths_coverage
             entry["basis_path"] = self.calc_cov_values(cov, total)
@@ -311,6 +312,7 @@ class BaseGenerateXml(object):
             entry["mcdc"] = self.calc_cov_values(self.grand_total_max_mcdc_covered_branches, self.grand_total_mcdc_branches)
             if not self.simplified_mcdc:
                 entry["mcdc"] = self.calc_cov_values(self.grand_total_max_covered_mcdc_pairs, self.grand_total_mcdc_pairs)
+            entry["branch"] = self.calc_cov_values(self.grand_total_max_mcdc_covered_branches, self.grand_total_mcdc_branches)
         if "BASIS_PATH" in cov_type_str:
             entry["basis_path"] = self.calc_cov_values(self.grand_total_cov_basis_path, self.grand_total_total_basis_path)
         if "STATEMENT" in cov_type_str:
@@ -510,8 +512,8 @@ class BaseGenerateXml(object):
             if functions_added:
                 self.our_units.append(entry)
 
-            self.grand_total_max_covered_branches += metrics.max_covered_branches
-            self.grand_total_branches += metrics.branches
+            self.grand_total_max_covered_branches += metrics.max_covered_branches + metrics.max_covered_mcdc_branches
+            self.grand_total_branches += metrics.branches + metrics.max_covered_mcdc_branches
             self.grand_total_max_covered_statements += metrics.max_covered_statements
             self.grand_total_statements += metrics.statements
             self.grand_total_max_mcdc_covered_branches += metrics.max_covered_mcdc_branches
