@@ -392,6 +392,9 @@ class BaseGenerateXml(object):
         except:
             metrics = srcFile.cover_metrics
             
+        if metrics is None:
+            return False
+        
         try:
             covTotals = (
                 metrics.branches +
