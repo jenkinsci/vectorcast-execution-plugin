@@ -377,9 +377,9 @@ class BaseGenerateXml(object):
             metrics = srcFile.cover_metrics
             
         try:
-            hasFunCov      = (metrics.functions > 0)
+            hasFunCov      = (metrics.coverable_functions > 0)
             hasFuncCallCov = (metrics.function_calls > 0)
-            
+
         except:
             hasFuncCallCov = (metrics.function_calls > 0)
 
@@ -461,7 +461,6 @@ class BaseGenerateXml(object):
             except:
                 cov_type = srcFile.coverage_type
                 overallCoverageTypes.update({srcFile.coverage_type})
-
             
             entry = {}
             entry["unit"] = srcFile
@@ -530,7 +529,6 @@ class BaseGenerateXml(object):
                 self.grand_total_max_covered_functions += metrics.covered_functions
                 self.grand_total_max_coverable_functions += metrics.functions
             except:
-                print(vars(metrics))
                 pass
                 
             if "BASIS_PATH" in str(cov_type):
@@ -1225,7 +1223,6 @@ class GenerateXml(BaseGenerateXml):
 ## GenerateXml
 
     def was_test_case_skipped(self, tc, searchName, isSystemTest):
-        import sys, pprint
         try:
             if isSystemTest:
                 compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
