@@ -516,7 +516,7 @@ class BaseGenerateXml(object):
                 self.our_units.append(entry)
 
             self.grand_total_max_covered_branches += metrics.max_covered_branches + metrics.max_covered_mcdc_branches
-            self.grand_total_branches += metrics.branches + metrics.max_covered_mcdc_branches
+            self.grand_total_branches += metrics.branches + metrics.mcdc_branches
             self.grand_total_max_covered_statements += metrics.max_covered_statements
             self.grand_total_statements += metrics.statements
             self.grand_total_max_mcdc_covered_branches += metrics.max_covered_mcdc_branches
@@ -525,10 +525,14 @@ class BaseGenerateXml(object):
             self.grand_total_mcdc_pairs += metrics.mcdc_pairs
             self.grand_total_max_covered_function_calls += metrics.max_covered_function_calls
             self.grand_total_function_calls += metrics.function_calls
-            #(total_funcs, funcs_covered) = cover_file.functions_covered
-            #self.grand_total_max_covered_functions += funcs_covered
-            #self.grand_total_max_coverable_functions += total_funcs
-
+            
+            try:
+                self.grand_total_max_covered_functions += metrics.covered_functions
+                self.grand_total_max_coverable_functions += metrics.functions
+            except:
+                print(vars(metrics))
+                pass
+                
             if "BASIS_PATH" in str(cov_type):
                 (cov, total) = srcFile.basis_paths_coverage
                 self.grand_total_total_basis_path += total
