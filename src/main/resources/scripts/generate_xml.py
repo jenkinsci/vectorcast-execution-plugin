@@ -368,22 +368,25 @@ class BaseGenerateXml(object):
 #
     def hasEitherFunctionCoverages(self, srcFile):
     
-        hasFunCov = False
-        hasFuncCallCov = False
+                    
+        cntFunCov = 0
+        cntFuncCallCov = 0 
         
         try:
-            metrics = srcFile.metrics
+            cov_types = srcFile.coverage_types
         except:
-            metrics = srcFile.cover_metrics
-            
-        try:
-            hasFunCov      = (metrics.coverable_functions > 0)
-            hasFuncCallCov = (metrics.function_calls > 0)
+            cov_types = [srcFile.coverage_type]     
+       
+        for cov_type in cov_types:
+            if "FUNCTION_FUNCTION_CALL" in str(cov_type):
+                cntFunCov      += 1
+                cntFuncCallCov += 1
+            elif "FUNCTION_CALL" in  str(cov_type):
+                cntFuncCallCov += 1
+            elif "FUNCTION_COVERAGE" in  str(cov_type):
+                cntFunCov      += 1
 
-        except:
-            hasFuncCallCov = (metrics.function_calls > 0)
-
-        return hasFunCov, hasFuncCallCov
+        return (cntFunCov > 0), (cntFuncCallCov > 0)
 
     def hasAnyCov(self, srcFile):
     
@@ -859,6 +862,7 @@ class GenerateXml(BaseGenerateXml):
         
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         build_dir = build_dir.replace("\\","/")
+        build_dir = build_dir.replace("/.","")      
         build_dir_4hash = build_dir.upper()
         build_dir_4hash = "/".join(build_dir_4hash.split("/")[-2:])
         
