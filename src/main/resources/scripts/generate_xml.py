@@ -1180,9 +1180,12 @@ class GenerateXml(BaseGenerateXml):
             else:
                 failure_message = "Test Not Executed"
 
+        msg = ""
         status = ""
         if tc.passed == None:
             extraStatus = "\n            <skipped/>\n"
+            status = "Testcase may have been skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nFAIL"
+            msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
 
         elif not tc.passed:
             if tcSkipped: 
@@ -1194,6 +1197,8 @@ class GenerateXml(BaseGenerateXml):
             msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
         elif tcSkipped:
             extraStatus = "\n            <skipped/>\n"
+            status = "Skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nPASS"
+            msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
         else:
             status = "PASS"
             extraStatus = ""
