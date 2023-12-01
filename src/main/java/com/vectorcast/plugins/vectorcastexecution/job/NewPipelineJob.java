@@ -540,6 +540,8 @@ public class NewPipelineJob extends BaseJob {
             baseJenkinsfile = "\n\n\n *** Errors reading the baseJenkinsfile...check the Jenkins System Logs***\n\n";
         }
         
+        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "HTML of Jenkinsfile: \n" + topOfJenkinsfile + baseJenkinsfile);
+        
         return  topOfJenkinsfile + baseJenkinsfile;
 
     }
