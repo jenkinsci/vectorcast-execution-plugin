@@ -206,6 +206,9 @@ public class NewPipelineJob extends BaseJob {
         useParameters  = json.optBoolean("useParameters", false);
         useCoverageHistory  = json.optBoolean("useCoverageHistory", false);
         maxParallel = json.optLong("maxParallel", -1);
+        if (maxParallel == 999999) {
+           maxParallel = -1l;
+        }
         
         // remove the win/linux options since there's no platform any more 
         environmentSetup = json.optString("environmentSetup", null);

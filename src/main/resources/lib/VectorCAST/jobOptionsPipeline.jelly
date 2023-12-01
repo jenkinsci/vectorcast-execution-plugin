@@ -49,7 +49,7 @@
             </f:entry>
 
             <f:entry title="${%VCJob.JobOptionsPipeline.maxParallel.title}" description="${%VCJob.JobOptionsPipeline.maxParallel.description}" help="/plugin/vectorcast-execution/help-maxParallel.html">
-                <f:number clazz="positive-number" min="1" step="1" default="" name="maxParallel" value="${instance.maxParallel}"/>
+                <f:number clazz="positive-number" min="1" step="1" default="999999" name="maxParallel" value="${instance.maxParallel}"/>
             </f:entry>
             
             <f:entry title="${%VCJob.JobOptionsPipeline.useCoverageHistory.title}" 
