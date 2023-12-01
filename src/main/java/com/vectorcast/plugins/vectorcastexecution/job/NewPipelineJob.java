@@ -206,9 +206,6 @@ public class NewPipelineJob extends BaseJob {
         useParameters  = json.optBoolean("useParameters", false);
         useCoverageHistory  = json.optBoolean("useCoverageHistory", false);
         maxParallel = json.optLong("maxParallel", -1);
-        if (maxParallel == 999999) {
-           maxParallel = -1l;
-        }
         
         // remove the win/linux options since there's no platform any more 
         environmentSetup = json.optString("environmentSetup", null);
@@ -509,7 +506,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_Agent_Label = '" + nodeLabel + "'\n" +  
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
-            "VC_maxParallel = " + getMaxParallel() + "\n" +  
+            "VC_maxParallel = " + getMaxParallel().toString() + "\n" +  
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
             "VC_UseCILicense = " + VC_Use_CI + "\n" +  
             "VC_useCBT = " + incremental + "\n" +  
