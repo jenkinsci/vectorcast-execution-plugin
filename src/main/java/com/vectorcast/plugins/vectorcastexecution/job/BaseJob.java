@@ -154,7 +154,7 @@ abstract public class BaseJob {
         this.response = response;
         JSONObject json = request.getSubmittedForm();
         
-        Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSON Info for Single Job Create: " + json.toString());
+        Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSON Info for Base Job Create: " + json.toString());
 
         manageProjectName = json.optString("manageProjectName");
         if (!manageProjectName.isEmpty()) {
@@ -225,7 +225,7 @@ abstract public class BaseJob {
             }
             externalResultsFilename  = json.optString("externalResultsFilename", "").replace('\\','/');;
             useCoverageHistory = json.optBoolean("useCoverageHistory", false);
-            maxParallel = json.optLong("maxParallel", -1);
+            maxParallel = json.optLong("maxParallel", 0);
             
             /* Additional Tools */
             pclpCommand = json.optString("pclpCommand", "").replace('\\','/');;

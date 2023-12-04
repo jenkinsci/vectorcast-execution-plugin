@@ -74,36 +74,20 @@ import java.nio.charset.StandardCharsets;
  * Create a new single job
  */
 public class NewPipelineJob extends BaseJob {
-	/** project name */
-	private String projectName;
+    /** project name */
+    private String projectName;
 
-	/** node label to determine where Jenkins runs the jobs */
-	private String nodeLabel = null;
-
-	/** used to determine if this version of Jenkins supports pipeline jobs */
-	private boolean supported = false;
-
-	private Project topProject;
+    private Project topProject;
     
     private String sharedArtifactDirectory;
     
     private String pipelineSCM = "";
     
     private boolean singleCheckout;
-
-    private boolean useCILicenses;
-    private boolean useStrictTestcaseImport;
-    private boolean useImportedResults = false;
-    private boolean useLocalImportedResults  = false;
-    private boolean useExternalImportedResults  = false;
-    private String  externalResultsFilename;
     
     private boolean useCBT;
 
     private boolean useParameters;
-    
-    private boolean useCoverageHistory;
-    private Long     maxParallel;
     
     private String postSCMCheckoutCommands;
     
@@ -114,29 +98,24 @@ public class NewPipelineJob extends BaseJob {
     /** Environment tear down*/
     private String environmentTeardown;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param request   request object
-	 * @param response  response object
-	 * @throws ServletException exception
-	 * @throws IOException      exception
-	 * @throws ScmConflictException      exception
-	 * @throws ExternalResultsFileException      exception
-	 */
-	public NewPipelineJob(final StaplerRequest request, final StaplerResponse response)
-			throws ServletException, IOException, ScmConflictException, ExternalResultsFileException {
-		super(request, response, false);
-
-		JSONObject json = request.getSubmittedForm();
+    /**
+     * Constructor
+     * 
+     * @param request   request object
+     * @param response  response object
+     * @throws ServletException exception
+     * @throws IOException      exception
+     * @throws ScmConflictException      exception
+     * @throws ExternalResultsFileException      exception
+     */
+    public NewPipelineJob(final StaplerRequest request, final StaplerResponse response)
+            throws ServletException, IOException, ScmConflictException, ExternalResultsFileException {
+        super(request, response, false);
         
+        JSONObject json = request.getSubmittedForm();
+
         Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "JSON Info for Pipeline Create: " + json.toString());
-
-		nodeLabel = json.optString("nodeLabel");
-		if (nodeLabel == null || nodeLabel.isEmpty()) {
-			nodeLabel = "master";
-        }
-
+        
         sharedArtifactDirectory = json.optString("sharedArtifactDir","");
         pipelineSCM = json.optString("scmSnippet","").trim();
         
@@ -175,38 +154,7 @@ public class NewPipelineJob extends BaseJob {
         setTESTinsights_SCM_Tech(scm_technology);
         
         singleCheckout = json.optBoolean("singleCheckout", false);
-        useCILicenses  = json.optBoolean("useCiLicense", false);
-        useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
-        useImportedResults  = json.optBoolean("useImportedResults", false);
-        externalResultsFilename = "";
-        
-        if (useImportedResults) {
-            JSONObject jsonImportResults  = json.optJSONObject("importedResults");
-            
-            if (jsonImportResults != null) {
-                Long int_ext = jsonImportResults.optLong("value",0);
                 
-                if (int_ext == 1) {
-                    useLocalImportedResults = true;
-                    useExternalImportedResults = false;
-                    externalResultsFilename = "";
-                } else if (int_ext == 2) {
-                    useLocalImportedResults = false;
-                    useExternalImportedResults = true;
-                    externalResultsFilename = jsonImportResults.optString("externalResultsFilename","");
-                    if (externalResultsFilename.length() == 0) {
-                        throw new ExternalResultsFileException();
-                    }
-                }
-            }
-            Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "ImportedResults: " + jsonImportResults);
-        }
-
-        useCBT  = json.optBoolean("useCBT", true);
-        useParameters  = json.optBoolean("useParameters", false);
-        useCoverageHistory  = json.optBoolean("useCoverageHistory", false);
-        maxParallel = json.optLong("maxParallel", -1);
-        
         // remove the win/linux options since there's no platform any more 
         environmentSetup = json.optString("environmentSetup", null);
         executePreamble = json.optString("executePreamble", null);
@@ -240,27 +188,27 @@ public class NewPipelineJob extends BaseJob {
         }
     }
 
-	/**
-	 * Get the name of the project
-	 * 
-	 * @return the project name
-	 */
-	public String getProjectName() {
+    /**
+     * Get the name of the project
+     * 
+     * @return the project name
+     */
+    public String getProjectName() {
         Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
         
-		return projectName;
-	}
+        return projectName;
+    }
 
-	/**
-	 * Create project
-	 * 
-	 * @return project
-	 * @throws IOException                   exception
-	 * @throws JobAlreadyExistsException     exception
+    /**
+     * Create project
+     * 
+     * @return project
+     * @throws IOException                   exception
+     * @throws JobAlreadyExistsException     exception
      
-	 */
-	@Override
-	protected Project createProject() throws IOException, JobAlreadyExistsException {
+     */
+    @Override
+    protected Project createProject() throws IOException, JobAlreadyExistsException {
 
 
         if (getBaseName().isEmpty()) {
@@ -283,42 +231,42 @@ public class NewPipelineJob extends BaseJob {
         }
             
         Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
-		return null;
+        return null;
     }
 
-	/**
-	 * Add build steps
-	 * 
-	 * @param update true to update, false to not
-	 * @throws IOException      exception
-	 * @throws ServletException exception
-	 * @throws hudson.model.Descriptor.FormException exception
-	 */
-	@Override
-	public void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
+    /**
+     * Add build steps
+     * 
+     * @param update true to update, false to not
+     * @throws IOException      exception
+     * @throws ServletException exception
+     * @throws hudson.model.Descriptor.FormException exception
+     */
+    @Override
+    public void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
         
-		// Get config.xml resource from jar and write it to temp
-		File configFile = writeConfigFile();
+        // Get config.xml resource from jar and write it to temp
+        File configFile = writeConfigFile();
 
-		try {
+        try {
 
-			// Modify XML to include generated pipeline script, remove sandbox restriction
-			String configPath = configFile.getAbsolutePath();
-			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            // Modify XML to include generated pipeline script, remove sandbox restriction
+            String configPath = configFile.getAbsolutePath();
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
-			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-			Document document = documentBuilder.parse(configPath);
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            Document document = documentBuilder.parse(configPath);
 
-			Node scriptNode = document.getElementsByTagName("script").item(0);
-			scriptNode.setTextContent(generateJenkinsfile());
+            Node scriptNode = document.getElementsByTagName("script").item(0);
+            scriptNode.setTextContent(generateJenkinsfile());
 
-			// Write DOM object to the file
-			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-			DOMSource domSource = new DOMSource(document);
+            // Write DOM object to the file
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource domSource = new DOMSource(document);
 
-			StreamResult streamResult = new StreamResult(new File(configPath));
-			transformer.transform(domSource, streamResult);
+            StreamResult streamResult = new StreamResult(new File(configPath));
+            transformer.transform(domSource, streamResult);
 
             InputStream xmlInput = new FileInputStream(configFile);
 
@@ -336,23 +284,23 @@ public class NewPipelineJob extends BaseJob {
                 xmlInput.close();
             }
 
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			e.printStackTrace();
-		} catch (java.lang.IllegalArgumentException e) {
- 			e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (java.lang.IllegalArgumentException e) {
+             e.printStackTrace();
        }
        
         if (!configFile.delete()) {
             throw new IOException("Unable to delete file: " + configFile.getAbsolutePath());   
         }
 
-	}
+    }
 
     /**
      * Create the Pipeline Jenkinsfile script
@@ -370,17 +318,17 @@ public class NewPipelineJob extends BaseJob {
             doCreate(update);
         }
     
-	/**
-	 * Retrieves config.xml from the jar and writes it to the systems temp
-	 * directory.
-	 * 
-	 * @return
-	 * @throws IOException
-	 */
-	private File writeConfigFile() throws IOException {
+    /**
+     * Retrieves config.xml from the jar and writes it to the systems temp
+     * directory.
+     * 
+     * @return
+     * @throws IOException
+     */
+    private File writeConfigFile() throws IOException {
 
         
-		InputStream in;
+        InputStream in;
 
         if (useParameters) {
             in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
@@ -388,37 +336,37 @@ public class NewPipelineJob extends BaseJob {
             in = getClass().getResourceAsStream("/scripts/config.xml");
         }
         
-		//InputStream in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
-		BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-		File configFile = File.createTempFile("config_temp", ".xml");
+        //InputStream in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
+        BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+        File configFile = File.createTempFile("config_temp", ".xml");
 
-		//FileWriter fw = null
+        //FileWriter fw = null
         FileOutputStream fosw = null;
-		OutputStreamWriter osrw = null;
+        OutputStreamWriter osrw = null;
 
-		try {
-			// write out to temp file
-			//fw = new FileWriter(configFile);
-			//bw = new BufferedWriter(fw);
+        try {
+            // write out to temp file
+            //fw = new FileWriter(configFile);
+            //bw = new BufferedWriter(fw);
             fosw = new FileOutputStream(configFile);
             osrw = new OutputStreamWriter(fosw, StandardCharsets.UTF_8);
 
-			if (fosw != null && osrw != null) {
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					osrw.write(line + "\n");
-				}
-			}
-		} finally {
-			// cleanup
-			if (osrw != null) osrw.close();
-			br.close();
-			in.close();
-			if (fosw != null) fosw.close();
-		}
+            if (fosw != null && osrw != null) {
+                String line = null;
+                while ((line = br.readLine()) != null) {
+                    osrw.write(line + "\n");
+                }
+            }
+        } finally {
+            // cleanup
+            if (osrw != null) osrw.close();
+            br.close();
+            in.close();
+            if (fosw != null) fosw.close();
+        }
 
-		return configFile.getAbsoluteFile();
-	}
+        return configFile.getAbsoluteFile();
+    }
 
     /**
      * Get getSharedArtifactDirectory
@@ -440,28 +388,28 @@ public class NewPipelineJob extends BaseJob {
             result = IOUtils.toString(in);
         } catch (IOException ex) {
             Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
+        } finally {
             in.close();
-		}
+        }
 
         return result;
     }
-	/**
-	 * Generates the <script> portion of the config.xml which defines the pipeline.
-	 * for this pipeline job.
-	 * 
-	 * 
-	 * @return script portion of pipeline job.
-	 * @throws IOException
-	 */
+    /**
+     * Generates the <script> portion of the config.xml which defines the pipeline.
+     * for this pipeline job.
+     * 
+     * 
+     * @return script portion of pipeline job.
+     * @throws IOException
+     */
      
     private String generateJenkinsfile() throws IOException {
-		String setup = "";
-		String preamble = "";
-		String teardown = "";
+        String setup = "";
+        String preamble = "";
+        String teardown = "";
         String postCheckoutCmds = "";
 
-		// Doing once per MultiJobDetail similar to MultiJob plugin
+        // Doing once per MultiJobDetail similar to MultiJob plugin
         if ((executePreamble != null) && (!executePreamble.isEmpty())) {
             preamble = executePreamble.replace("\\","/").replace("\"","\\\"");
         }
@@ -482,7 +430,7 @@ public class NewPipelineJob extends BaseJob {
         
         String VC_Use_CI = "\"\"";
 
-        if (useCILicenses) {
+        if (getUseCILicenses()) {
             VC_Use_CI = "\"--ci\"";
         } 
         
@@ -495,7 +443,7 @@ public class NewPipelineJob extends BaseJob {
             "//\n" +  
             "// ===============================================================\n" +  
             "\n" +  
-            "VC_Manage_Project     = \'" + this.getManageProjectName() + "\'\n" + 
+            "VC_Manage_Project  = \'" + this.getManageProjectName() + "\'\n" + 
             "VC_EnvSetup        = '''" + setup + "'''\n" + 
             "VC_Build_Preamble  = \"" + preamble + "\"\n" + 
             "VC_EnvTeardown     = '''" + teardown + "'''\n" + 
@@ -503,7 +451,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_usingSCM = " + String.valueOf(pipelineSCM.length() != 0) + "\n" + 
             "VC_postScmStepsCmds = '''" + postCheckoutCmds + "'''\n" + 
             "VC_sharedArtifactDirectory = '''" + sharedArtifactDirectory + "'''\n" +  
-            "VC_Agent_Label = '" + nodeLabel + "'\n" +  
+            "VC_Agent_Label = '" + getNodeLabel() + "'\n" +  
             "VC_waitTime = '"  + getWaitTime() + "'\n" +  
             "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
             "VC_maxParallel = " + getMaxParallel().toString() + "\n" +  
@@ -521,16 +469,15 @@ public class NewPipelineJob extends BaseJob {
             "VC_TESTinsights_Project = \"" + getTESTinsights_project() + "\"\n" +  
             "VC_TESTinsights_Proxy = '" + getTESTinsights_proxy() + "'\n" +  
             "VC_TESTinsights_Credential_ID = '" + getTESTinsights_credentials_id() + "'\n" +  
-
             "VC_TESTinsights_SCM_URL = '" + getTESTinsights_SCM_URL() + "'\n" +  
             "VC_TESTinsights_SCM_Tech = '" + getTESTinsights_SCM_Tech() + "'\n" +  
-            "VC_TESTinsights_Revision=\"\"\n" +  
-            "VC_useCoverageHistory=" + useCoverageHistory + "\n" +           
-            "VC_useStrictImport="    + useStrictTestcaseImport + "\n" +
-            "VC_useImportedResults=" + useImportedResults + "\n" +
-            "VC_useLocalImportedResults=" + useLocalImportedResults + "\n" +
-            "VC_useExternalImportedResults=" + useExternalImportedResults + "\n" +
-            "VC_externalResultsFilename=\"" + externalResultsFilename + "\"\n" +
+            "VC_TESTinsights_Revision = \"\"\n" +  
+            "VC_useCoverageHistory = " + getUseCoverageHistory() + "\n" +           
+            "VC_useStrictImport = "    + getUseStrictTestcaseImport() + "\n" +
+            "VC_useImportedResults = " + getUseImportedResults() + "\n" +
+            "VC_useLocalImportedResults = " + getUseLocalImportedResults() + "\n" +
+            "VC_useExternalImportedResults = " + getUseExternalImportedResults() + "\n" +
+            "VC_externalResultsFilename = \"" + getExternalResultsFilename() + "\"\n" +
             "\n" +   
             "";
             
@@ -540,16 +487,16 @@ public class NewPipelineJob extends BaseJob {
             baseJenkinsfile = "\n\n\n *** Errors reading the baseJenkinsfile...check the Jenkins System Logs***\n\n";
         }
         
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "HTML of Jenkinsfile: \n" + topOfJenkinsfile + baseJenkinsfile);
+        //Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "HTML of Jenkinsfile: \n" + topOfJenkinsfile + baseJenkinsfile);
         
         return  topOfJenkinsfile + baseJenkinsfile;
 
     }
    
-	@Override
-	protected void cleanupProject() {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
+    @Override
+    protected void cleanupProject() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
 
 }
