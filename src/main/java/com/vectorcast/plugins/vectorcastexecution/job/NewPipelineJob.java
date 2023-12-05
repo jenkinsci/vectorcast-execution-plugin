@@ -161,6 +161,7 @@ public class NewPipelineJob extends BaseJob {
         environmentTeardown = json.optString("environmentTeardown", null);
         postSCMCheckoutCommands = json.optString("postSCMCheckoutCommands", null);
         useCBT  = json.optBoolean("useCBT", true);
+        useParameters  = json.optBoolean("useParameters", false);
         if (sharedArtifactDirectory.length() != 0) {
             sharedArtifactDirectory = "--workspace="+sharedArtifactDirectory.replace("\\","/");
         }
