@@ -160,7 +160,7 @@ public class NewPipelineJob extends BaseJob {
         executePreamble = json.optString("executePreamble", null);
         environmentTeardown = json.optString("environmentTeardown", null);
         postSCMCheckoutCommands = json.optString("postSCMCheckoutCommands", null);
-         
+        useCBT  = json.optBoolean("useCBT", true);
         if (sharedArtifactDirectory.length() != 0) {
             sharedArtifactDirectory = "--workspace="+sharedArtifactDirectory.replace("\\","/");
         }
