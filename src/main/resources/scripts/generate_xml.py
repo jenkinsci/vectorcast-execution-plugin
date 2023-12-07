@@ -761,6 +761,7 @@ class GenerateManageXml (BaseGenerateXml):
                                self.print_exc)
                                
         localXML.topLevelAPI = self.api
+        localXML.noResults = self.noResults
         localXML.generate_unit()
         
         ##need_fixup
@@ -784,20 +785,22 @@ class GenerateManageXml (BaseGenerateXml):
         all_envs = []
         for env in self.api.Environment.all():
             all_envs.append(env.level._full_path)
-            
-        if results['ALL']['testcase_results'] == {}:
-            return
-            
-        total   = results['ALL']['testcase_results']['total_count']
-        success = results['ALL']['testcase_results']['success_count']
-        errors  = total - success
-        failed  = errors
-        self.localDataOnly = True
+
         self.fh_data = ""            
-        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
-        self.fh_data += ("<testsuites>\n")
-        self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
-            (errors,total,failed,escape(self.manageProjectName, quote=False)))
+        self.localDataOnly = True
+        self.noResults = False
+        if results['ALL']['testcase_results'] == {}:
+            print("** No results in project")
+            self.noResults = True
+        else:
+            total   = results['ALL']['testcase_results']['total_count']
+            success = results['ALL']['testcase_results']['success_count']
+            errors  = total - success
+            failed  = errors
+            self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
+            self.fh_data += ("<testsuites>\n")
+            self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
+                (errors,total,failed,escape(self.manageProjectName, quote=False)))
             
         for result in results:
             if result in all_envs:
@@ -859,6 +862,7 @@ class GenerateXml(BaseGenerateXml):
         self.report_failed_only = report_failed_only
         self.print_exc = print_exc
         self.topLevelAPI = None
+        self.noResults = False
         
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         build_dir = build_dir.replace("\\","/")
@@ -1052,12 +1056,13 @@ class GenerateXml(BaseGenerateXml):
             except:
                 vctMap = False
         
-            if (not tc.for_compound_only or tc.testcase_status == "TCR_STRICT_IMPORT_FAILED") and not tc.is_csv_map and not vctMap:
+            if not self.noResults and (not tc.for_compound_only or tc.testcase_status == "TCR_STRICT_IMPORT_FAILED") and not tc.is_csv_map and not vctMap:
                 if not tc.passed:
                     self.failed_count += 1
-                    failed += 1
                     if tc.execution_status != "EXEC_SUCCESS_FAIL ":
                         errors += 1
+                    else:
+                        failed += 1
                 else:
                     success += 1
                     self.passed_count += 1
@@ -1093,6 +1098,9 @@ class GenerateXml(BaseGenerateXml):
 #
     def write_testcase(self, tc, unit_name, func_name, st_is_monitored = False):
     
+        if self.noResults:
+            return
+            
         failure_message = ""
         
         if self.report_failed_only and not self.testcase_failed(tc):
@@ -1122,9 +1130,9 @@ class GenerateXml(BaseGenerateXml):
         elif len(self.cbtDict) > 0:
             tcSkipped, start_tdo, end_tdo = self.was_test_case_skipped(tc,"/".join([unit_name, func_name, tc.name]),isSystemTest)
             
-        # finally - there was something to check, but it was empty
+        # finally - there was nothing to check
         else:
-            tcSkipped = True
+            tcSkipped = False
          
         if end_tdo:
             deltaTimeStr = str((end_tdo - start_tdo).total_seconds())
