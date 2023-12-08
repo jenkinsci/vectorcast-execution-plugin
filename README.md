@@ -145,7 +145,7 @@ VectorCAST/QA projects cannot use imported results for change based testing
 
 ## Change Log
 
-### Version 0.77 (24 May 2023)
+### Version 0.77 (26 Dec 2023)
 - Updated for findbugs to spotbugs
 - Fixed changed based testing analysis for compound tests being shown as Skipped
 - Fixed getjobs.py script to account for disabled compiler/testsuite nodes
@@ -158,6 +158,7 @@ VectorCAST/QA projects cannot use imported results for change based testing
 - Added maximum number of jobs to be queued so that server won't get flood with jobs and stall other Jenkins jobs
 - Removed Squore script as customer should use script from their Squore installation.
 - Fixed copy_build_dir.py ability to handle relative paths in the database.
+- Removed duplicate code/variables in NewPipeline.java.
 
 ### Version 0.76 (19 Jan 2023)
 - Added support in VectorCAST version 2023 Projects for environments that are not in a group

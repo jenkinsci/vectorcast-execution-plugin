@@ -113,9 +113,7 @@ public class NewPipelineJob extends BaseJob {
         super(request, response, false);
         
         JSONObject json = request.getSubmittedForm();
-
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "JSON Info for Pipeline Create: " + json.toString());
-        
+       
         sharedArtifactDirectory = json.optString("sharedArtifactDir","");
         pipelineSCM = json.optString("scmSnippet","").trim();
         
@@ -487,9 +485,7 @@ public class NewPipelineJob extends BaseJob {
         if (baseJenkinsfile == null) {
             baseJenkinsfile = "\n\n\n *** Errors reading the baseJenkinsfile...check the Jenkins System Logs***\n\n";
         }
-        
-        //Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "HTML of Jenkinsfile: \n" + topOfJenkinsfile + baseJenkinsfile);
-        
+                
         return  topOfJenkinsfile + baseJenkinsfile;
 
     }
