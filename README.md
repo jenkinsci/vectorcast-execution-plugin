@@ -35,21 +35,22 @@ Pipeline Job creates a Pipeline Jenkins Job to build/execute and (optionally) re
 
 There are two options for running tests:
 - Using an SCM system (any that is supported by Jenkins).
-    -   Jenkins will check out the source code and tests into the workspace for each Jenkins Job from the user's repository.
-    -   The Pipeline Job will then combine the coverage and test results from all of the individual machines/nodes.
-    -   The VectorCAST Project should be specified as relative to the root of the checkout.
+    - Jenkins will check out the source code and tests into the workspace for each Jenkins Job from the user's repository.
+    - The Pipeline Job will then combine the coverage and test results from all of the individual machines/nodes.
+    - The VectorCAST Project should be specified as relative to the root of the checkout.
     - There is now an option to use the main Pipeline Job's Workspace as a dedicated single checkout directory. This checkout directory must be available to all executors across all nodes either by having all executors running on the same computer or having the main Pipeline Job's Workspace on a shared network drive.
-    - If addition processing is required to a repository after checkout, the user can add Post SCM Checkout Commands.  These commands would be native to a shell or batch file depending on which platform the jobs is running on.
     - Using an existing drive/directory for the VectorCAST Project.
-    -   The VectorCAST Project should be specified as an absolute path that is available on all machines/nodes.
-    -   Each job can optionally clean up the working directory which will have no effect on the VectorCAST Project since it is located elsewhere.
-    -   The reports are generated into the workspace and archived as part of the Jenkins Job.
+    - The VectorCAST Project should be specified as an absolute path that is available on all machines/nodes.
+    - Each job can optionally clean up the working directory which will have no effect on the VectorCAST Project since it is located elsewhere.
+    - The reports are generated into the workspace and archived as part of the Jenkins Job.
  
 The user will be able to disable the use of Change Based Testing to perform a complete run of their VectorCAST Project. By default, Change Based Testing is enabled but this option can be disabled by unchecking the **Use Change Based Testing** box.
 
 Users with Continuous Integration Licenses can access those licenses by checking the **Use Continuous Integration License** checkbox. If you do not have Continuous Integration Licenses, do not check this box as you will encounter licensing errors.
 
 If the user wishes to call the Jenkins Job from another Pipeline Job, check the **Use Parameterize the Jenkinsfile** box. This will add parameters to the Pipeline Job that will be used by the VectorCAST Pipeline Job to locate an external VectorCAST Project (**VCAST_PROJECT_DIR**) and force the VectorCAST Jobs to be executed on a specific node (**VCAST_FORCE_NODE_EXEC_NAME**) instead of using the compiler as a node label.
+
+If addition processing is required to a repository after checkout, the user can add Post SCM Checkout Commands.  These commands would be native to a shell or batch file depending on which platform the jobs is running on.
 
 Calling the build command will return **Failed**, **Unstable**, or **Success** corresponding to the results of the VectorCAST Pipeline Job. To allow the main Pipeline Job to continue on error, the user can surround the build command without a _catchError_ block as demonstrated below.
 
@@ -68,12 +69,12 @@ For Pipeline Jobs, the plugin processes the build log to determine which tests h
 ## Job Creation Options
 
 When using a Pipeline Job, the sub jobs are created to run on specific node related to the compiler chosen for the environment. For example:
-
+3
 ![](docs/images/job_creation_options.png)
 
 Use the Job Name setting for changing the created pipeline job name.  Default is *VectorCASTProjectName*\_vcast\_pipeline
 
-The Shared Artifact Directory option allows VectorCAST Project's build artifacts to be stored in a different location from the default *VectorCASTProjectName*\_build.  If stored in a location that can be maintained between builds, VectorCAST's Change Based Testing can accelerate testing
+The Shared Artifact Directory option allows VectorCAST Project's build artifacts to be stored in a different location from the default *VectorCASTProjectName*/build.  If stored in a location that can be maintained between builds, VectorCAST's Change Based Testing can accelerate testing
 
 Maximum Parallel Queued Jobs allows the job to specify the maximum number of unit test jobs to queue up at any one time for parallel execution. To queue all jobs, leave blank or set to zero (0). The use case for this option would be if you don't want to queue the Jenkins server with all VectorCAST environment build/execute jobs; thus, allowing other jobs to queue up as well.
 
