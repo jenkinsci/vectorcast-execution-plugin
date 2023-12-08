@@ -50,7 +50,7 @@ Users with Continuous Integration Licenses can access those licenses by checking
 
 If the user wishes to call the Jenkins Job from another Pipeline Job, check the **Use Parameterize the Jenkinsfile** box. This will add parameters to the Pipeline Job that will be used by the VectorCAST Pipeline Job to locate an external VectorCAST Project (**VCAST_PROJECT_DIR**) and force the VectorCAST Jobs to be executed on a specific node (**VCAST_FORCE_NODE_EXEC_NAME**) instead of using the compiler as a node label.
 
-If addition processing is required to a repository after checkout, the user can add Post SCM Checkout Commands.  These commands would be native to a shell or batch file depending on which platform the jobs is running on.
+If addition processing is required to a repository after checkout, the user can add **Post SCM Checkout Commands**.  These commands would be native to a shell or batch file depending on which platform the jobs is running on.
 
 Calling the build command will return **Failed**, **Unstable**, or **Success** corresponding to the results of the VectorCAST Pipeline Job. To allow the main Pipeline Job to continue on error, the user can surround the build command without a _catchError_ block as demonstrated below.
 
@@ -68,27 +68,27 @@ For Pipeline Jobs, the plugin processes the build log to determine which tests h
 
 ## Job Creation Options
 
-When using a Pipeline Job, the sub jobs are created to run on specific node related to the compiler chosen for the environment. For example:
-3
+The user can customize additional parameters for job creation by selecting the **Job Creation Options**:
+
 ![](docs/images/job_creation_options.png)
 
-Use the Job Name setting for changing the created pipeline job name.  Default is *VectorCASTProjectName*\_vcast\_pipeline
+Use the **Job Name** setting for changing the created pipeline job name.  Default is *VectorCASTProjectName*\_vcast\_pipeline
 
-The Shared Artifact Directory option allows VectorCAST Project's build artifacts to be stored in a different location from the default *VectorCASTProjectName*/build.  If stored in a location that can be maintained between builds, VectorCAST's Change Based Testing can accelerate testing
+The **Shared Artifact Directory** option allows VectorCAST Project's build artifacts to be stored in a different location from the default *VectorCASTProjectName*/build.  If stored in a location that can be maintained between builds, VectorCAST's Change Based Testing can accelerate testing
 
-Maximum Parallel Queued Jobs allows the job to specify the maximum number of unit test jobs to queue up at any one time for parallel execution. To queue all jobs, leave blank or set to zero (0). The use case for this option would be if you don't want to queue the Jenkins server with all VectorCAST environment build/execute jobs; thus, allowing other jobs to queue up as well.
+**Maximum Parallel Queued Jobs** allows the job to specify the maximum number of unit test jobs to queue up at any one time for parallel execution. To queue all jobs, leave blank or set to zero (0). The use case for this option would be if you don't want to queue the Jenkins server with all VectorCAST environment build/execute jobs; thus, allowing other jobs to queue up as well.
 
-Use Coverage History marks build as failed if statement or branch coverage decrease by comparing the previous non-failing build's statement and branch coverage to the current build's statement and branch coverage. If either of the coverages have decreased the job will be marked as failed
+**Use Coverage History** marks build as failed if statement or branch coverage decrease by comparing the previous non-failing build's statement and branch coverage to the current build's statement and branch coverage. If either of the coverages have decreased the job will be marked as failed
 
-Use Strict Test Case Importing allows the job to mark individual test cases as failures if errors encountered during test script import.  This option enables strict testcase importing for the VectorCAST Project.  This option give a more reliable metrics for pass/fail test cases as without strict test case import, bad test cases are just ignored.  The default is enabled.
+**Use Strict Test Case Importing** allows the job to mark individual test cases as failures if errors encountered during test script import.  This option enables strict testcase importing for the VectorCAST Project.  This option give a more reliable metrics for pass/fail test cases as without strict test case import, bad test cases are just ignored.  The default is enabled.
 
-Use Imported Results allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with *Use Change Based Testing*. The user can selected between internal imported results or external result files
+**Use Imported Results** allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with **Use Change Based Testing**. The user can selected between internal imported results or external result files
 
 ![](docs/images/use_imported_results.png)
 
-When using imported results and Use Local Imported Results the job will export results from the current build and save that result file as an job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
+When using imported results and the **Use Local Imported Results** option, the job will export results from the current build and save that result file as an job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
 
-When using  imported results and Use External Result File, the job will use an external results from the a specified location to use as a baseline for the the current job. If existing build artifacts exist, the combined results will be used for change based testing.  The use will have to specify an external result filename (.vcr).  This file would be typically stored in the repository.  This external result file could be updated by a main branch or periodic build to establish a current baseline.
+When using imported results and the **Use External Result File** option, the job will use an external results from the a specified location to use as a baseline for the the current job. If existing build artifacts exist, the combined results will be used for change based testing.  The user will need to specify an external result filename (.vcr) in the **External Result Filename** option.  This file would be typically stored in the repository.  This external result file could be updated by a main branch or periodic build to establish a current baseline.
 
 ## Additional Tools
 
