@@ -61,7 +61,6 @@ from parse_console_for_cbt import ParseConsoleForCBT
 
 using_new_reports = False
 try:
-    from vector.apps.ReportBuilder.custom_report import CustomReport
     try:
         from vector.apps.DataAPI.unit_test_api import UnitTestApi
     except:
@@ -87,6 +86,9 @@ print_exc = False
 need_fixup = False
 
 import getjobs
+
+def dummy(*args, **kwargs):
+    return None
 
 def skipReporting(build_dir, skipReportsForSkippedEnvs, cbtDict):
 
@@ -321,7 +323,6 @@ def fixup_css(report_name):
 
 def generateCoverReport(path, env, level ):
 
-    from vector.apps.ReportBuilder.custom_report import CustomReport
     from vector.apps.DataAPI.cover_api import CoverApi
 
     api=CoverApi(path)
@@ -329,7 +330,8 @@ def generateCoverReport(path, env, level ):
     report_name = "management/" + level + "_" + env + ".html"
 
     try:
-        CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
+        api.commit = dummy
+        api.report(report_type="AGGREGATE_REPORT", formats=["HTML"], output_file=report_name)
 
         fixup_css(report_name)
     except Exception as e:
@@ -341,14 +343,11 @@ def generateCoverReport(path, env, level ):
 def generateUTReport(path, env, level): 
     global verbose
 
-    def _dummy(*args, **kwargs):
-        return True
-
     report_name = "management/" + level + "_" + env + ".html"
 
     api=UnitTestApi(path)
     try:
-        api.commit = _dummy
+        api.commit = dummy
         api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
         fixup_css(report_name)
     except Exception as e:
@@ -805,12 +804,6 @@ if __name__ == '__main__':
             
         if ver.startswith("19.sp1"):
             need_fixup = True
-            # custom report patch for SP1 problem - should be fixed in future release      
-            old_init = CustomReport._post_init
-            def new_init(self):
-                old_init(self)
-                self.context['report']['use_all_testcases'] = True
-            CustomReport._post_init = new_init
     except:
         pass
     

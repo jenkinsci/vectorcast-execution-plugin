@@ -57,15 +57,12 @@ import parse_traceback
 import tee_print
 from safe_open import open
 from pprint import pprint
-try:
-    from vector.apps.ReportBuilder.custom_report import CustomReport
-except:
-    pass
 
 import re
  
 def dummy(*args, **kwargs):
     return None
+    
 def dump(obj):
     if hasattr(obj, '__dict__'): 
         return vars(obj) 
@@ -74,6 +71,7 @@ def dump(obj):
             return {attr: getattr(obj, attr, None) for attr in obj.__slots__} 
         except:
             return str(obj)
+            
 ##########################################################################
 # This class generates the XML (JUnit based) report for the overall
 # (Emma based) report for Coverage
@@ -182,6 +180,7 @@ class BaseGenerateXml(object):
 #
     def add_coverage(self, is_unit, unit_or_func, metrics, cov_type):
         cov_type_str = str(cov_type)
+        
         entry = {}
         entry["statement"] = None
         entry["branch"] = None
@@ -229,7 +228,8 @@ class BaseGenerateXml(object):
             entry["branch"] = self.calc_cov_values(metrics.max_covered_branches, metrics.branches)
         if "FUNCTION_FUNCTION_CALL" in cov_type_str:
             entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
-                        
+            entry["function"] = self.calc_cov_values(metrics.max_covered_functions, metrics.functions)
+
         return entry
 #
 # BaseGenerateXml - write the units to the coverage file
@@ -691,12 +691,6 @@ class GenerateManageXml (BaseGenerateXml):
             fixup = True
         elif self.api.tool_version.startswith("19sp1"):
             fixup = True
-            # custom report patch for SP1 problem - should be fixed in future release      
-            old_init = CustomReport._post_init
-            def new_init(self):
-                old_init(self)
-                self.context['report']['use_all_testcases'] = True
-            CustomReport._post_init = new_init
 
         if not fixup:
             return
@@ -759,7 +753,7 @@ class GenerateManageXml (BaseGenerateXml):
                                self.skipReportsForSkippedEnvs, 
                                self.report_failed_only,
                                self.print_exc)
-                               
+
         localXML.topLevelAPI = self.api
         localXML.noResults = self.noResults
         localXML.generate_unit()
@@ -767,13 +761,16 @@ class GenerateManageXml (BaseGenerateXml):
         ##need_fixup
         if not self.no_full_reports:
             report_name = os.path.join("management", comp + "_" + ts + "_" + env_name + ".html")
-            if isinstance(localXML.api, CoverApi):
-                CustomReport.report_from_api(localXML.api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
-            else:
-                localXML.api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
-            self.fixupReport(report_name)
-
-        
+            try:
+                if isinstance(localXML.api, CoverApi):
+                    localXML.api.report(report_type="AGGREGATE_REPORT", formats=["HTML"], output_file=report_name)
+                else:
+                    localXML.api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
+                self.fixupReport(report_name)
+            except:
+                print("Error creating report", report_name + ". Contact Vector Support")
+                parse_traceback.parse(traceback.format_exc(), self.verbose, self.compiler,  self.testsuite,  self.env,  self.build_dir)
+                
 # GenerateManageXml
     def generate_testresults(self):
         testcaseString = """
