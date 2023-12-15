@@ -183,6 +183,7 @@ VectorCAST/QA projects cannot use imported results for change based testing
 - Removed Squore script as customer should use script from their Squore installation.
 - Fixed copy_build_dir.py ability to handle relative paths in the database.
 - Removed duplicate code/variables in NewPipeline.java.
+- Switched from CustomReport.report_from_api to api.report to solve corner case
 
 ### Version 0.76 (19 Jan 2023)
 - Added support in VectorCAST version 2023 Projects for environments that are not in a group
