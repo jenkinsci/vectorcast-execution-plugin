@@ -220,9 +220,33 @@ def formatPath(inPath) {
 // Notes    : Used widely
 //
 // ===============================================================
-// 
+
 def fixUpName(name) {
     return name.replace("/","_").replaceAll('\\%..','_').replaceAll('\\W','_')
+}
+
+// ===============================================================
+//
+// Function : concatenateBuildLogs
+// Inputs   : file list 
+// Action   : Concatenate build logs into one file
+// Returns  : None
+// Notes    : Generate-Overall-Reports
+//
+// ===============================================================
+
+def concatenateBuildLogs(logFileNames, outputFileName) {
+    
+    def cmd = ""
+    if (isUnix()) {
+        cmd =  "cat "
+    } else {
+        cmd =  "type "
+    }
+    
+    cmd += logFileNames + " > " + outputFileName
+
+    runCommands(cmd)
 }
 
 
@@ -762,7 +786,7 @@ pipeline {
                     
                     // run script to unstash files and generate results/reports
                     script {
-                        def unstashedBuildLogText = ""
+                        def buildFileNames = ""
                         
                         // Loop over all environnment and unstash each of the files
                         // These files will be logs and build artifacts
@@ -772,8 +796,7 @@ pipeline {
                             
                             try {
                                 unstash stashName as String
-                                unstashedBuildLogText += readFile "${compiler}_${test_suite}_${environment}_build.log"
-                                unstashedBuildLogText += '\n'
+                                buildFileNames += "${compiler}_${test_suite}_${environment}_build.log "
                                 
                             }
                             catch (Exception ex) {
@@ -800,8 +823,6 @@ pipeline {
                             buildLogText += runCommands(cmds)
                             
                         }        
-                        // use unstashed build logs to get the skipped data
-                        writeFile file: "unstashed_build.log", text: unstashedBuildLogText
 
                         // run the metrics at the end
                         buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
@@ -824,8 +845,12 @@ pipeline {
                         }
                         
                         buildLogText += runCommands(cmds)
+                        
+                        writeFile file: "metrics_build.log", text: buildLogText
+                        
+                        buildFileNames += "metrics_build.log "
 
-                        writeFile file: "complete_build.log", text: unstashedBuildLogText + buildLogText
+                        concatenateBuildLogs(buildFileNames, "complete_build.log")
                         
                         (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
                     
