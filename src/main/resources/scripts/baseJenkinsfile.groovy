@@ -91,6 +91,46 @@ def checkLogsForErrors(log) {
     return [foundKeywords, failure, unstable_flag]
 }
 
+// ===============================================================
+//
+// Function : checkBuildLogForErrors
+// Inputs   : logFile
+// Action   : Scans the input log file to for keywords listed above 
+// Returns  : found foundKeywords, failure and/or unstable_flag
+// Notes    : Used to Check for VectorCAST build errors/problems
+//
+// ===============================================================
+
+def checkBuildLogForErrors(logFile) {
+
+    def boolean failure = false;
+    def boolean unstable_flag = false;
+    def foundKeywords = ""
+    def output = ""
+    def status = 0
+
+    writeFile file: "phrases.txt", text: VC_UnstablePhrases.join("\n") + VC_FailurePhrases.join("\n")
+
+    if (isUnix()) {
+        cmd =  "grep -f phrases.txt " + logFile + " > search_results.txt"
+        status = sh label: 'Checking build log for errors', returnStdout: true, script: cmd
+    } else {
+        cmd =  "findstr /g:phrases.txt " + logFile + " > search_results.txt"
+        status = bat label: 'Checking build log for errors', returnStatus: true, script: cmd
+    }
+    
+    if (status == 0) {
+        output = readFile("search_results.txt")
+        foundKeywords += output.replaceAll("\n",",")
+        return checkLogsForErrors(output)
+    } else {
+        return [foundKeywords, failure, unstable_flag]
+    }
+    
+    error ("Error in checking build log file: " + cmd)
+    
+}
+
 // ***************************************************************
 // 
 //                           SCM Utilities
@@ -804,6 +844,8 @@ pipeline {
                             }
                         } 
                         
+			concatenateBuildLogs(buildFileNames, "unstashed_build.log")
+			
                         // get the manage project's base name for use in rebuild naming
                         def mpName = getMPname()
                                                 
@@ -852,7 +894,7 @@ pipeline {
 
                         concatenateBuildLogs(buildFileNames, "complete_build.log")
                         
-                        (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText) 
+                        (foundKeywords, failure, unstable_flag) = checkBuildLogForErrors("complete_build.log") 
                     
                         if (failure) {
                             throw new Exception ("Error in Commands: " + foundKeywords)
@@ -894,17 +936,14 @@ pipeline {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
-                                                    
-                        // get the console log - this requires running outside of the Groovy Sandbox
-                        def logContent = readFile 'complete_build.log'
-                            
+
                         def mpName = getMPname()
                         
                         def foundKeywords = ""
                         def boolean failure = false
                         def boolean unstable_flag = false
                                                 
-                        (foundKeywords, failure, unstable_flag) = checkLogsForErrors(logContent) 
+                        (foundKeywords, failure, unstable_flag) = checkBuildLogForErrors('complete_build.log') 
 
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly
