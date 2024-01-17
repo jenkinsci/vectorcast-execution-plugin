@@ -113,7 +113,7 @@ def checkBuildLogForErrors(logFile) {
 
     if (isUnix()) {
         cmd =  "grep -f phrases.txt " + logFile + " > search_results.txt"
-        status = sh label: 'Checking build log for errors', returnStdout: true, script: cmd
+        status = sh label: 'Checking build log for errors', returnStatus: true, script: cmd
     } else {
         cmd =  "findstr /g:phrases.txt " + logFile + " > search_results.txt"
         status = bat label: 'Checking build log for errors', returnStatus: true, script: cmd
