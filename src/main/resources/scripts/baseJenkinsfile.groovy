@@ -400,9 +400,9 @@ def setupManageProject() {
     
     if (VC_sharedArtifactDirectory.length() > 0) {
         cmds += """        
-            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} ${VC_sharedArtifactDirectory}"  
+            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} ${VC_sharedArtifactDirectory} --status" 
         """
-    }
+    } 
 
     if (VC_useStrictImport) {
         cmds += """        
