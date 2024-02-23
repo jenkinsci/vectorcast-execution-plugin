@@ -167,6 +167,11 @@ For environments that use imported results with versions of VectorCAST before 20
 
 VectorCAST/QA projects cannot use imported results for change based testing
 
+### Disabled environments may add coverage metrics
+
+In rare cases, VectorCAST projects will have disabled environment with results stored before they were disabled.  In cases where the disabled environments share source file with enabled environments, this may lead addition coverage metrics.  It is recommended to clean the 
+environment before disabling.  This takes into account enviornments that are directly disabled or disabled at the Compiler or TestSuite Nodes.
+
 ## Change Log
 
 ### Version 0.77 (26 Dec 2023)
