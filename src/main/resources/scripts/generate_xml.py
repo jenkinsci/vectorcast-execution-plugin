@@ -646,6 +646,8 @@ class GenerateManageXml (BaseGenerateXml):
         self.failed_count = 0
         self.passed_count = 0
         self.print_exc = print_exc
+        
+        self.units = []
 
         self.cleanupXmlDataDir()
 
@@ -676,7 +678,18 @@ class GenerateManageXml (BaseGenerateXml):
 # GenerateManageXml
 
     def generate_cover(self):
-        self.units = self.api.project.cover_api.SourceFile.all() ##self.api.project.cover_api.File.all()
+    
+        environments = self.api.Environment.all()
+        
+        for env in environments:
+            if not env.is_active:
+                continue
+            for srcFile in env.api.SourceFile.all():
+                print(srcFile)
+                if srcFile not in self.units:
+                    self.units.append(srcFile)
+
+        #self.units = self.api.project.cover_api.SourceFile.all() ##self.api.project.cover_api.File.all()
         self.units.sort(key=lambda x: (x.name))
         
         self._generate_cover(None)
