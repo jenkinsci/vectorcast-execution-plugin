@@ -816,7 +816,10 @@ class GenerateManageXml (BaseGenerateXml):
             self.fh_data += ("<testsuites>\n")
             self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
                 (errors,total,failed,escape(self.manageProjectName, quote=False)))
-            
+                
+            self.failed_count = errors
+            self.passed_count = success
+
         for result in results:
             if result in all_envs:
                 if len(result.split("/")) != 3:
