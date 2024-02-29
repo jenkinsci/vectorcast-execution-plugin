@@ -35,20 +35,22 @@ Pipeline Job creates a Pipeline Jenkins Job to build/execute and (optionally) re
 
 There are two options for running tests:
 - Using an SCM system (any that is supported by Jenkins).
-    -   Jenkins will check out the source code and tests into the workspace for each Jenkins Job from the user's repository.
-    -   The Pipeline Job will then combine the coverage and test results from all of the individual machines/nodes.
-    -   The VectorCAST Project should be specified as relative to the root of the checkout.
+    - Jenkins will check out the source code and tests into the workspace for each Jenkins Job from the user's repository.
+    - The Pipeline Job will then combine the coverage and test results from all of the individual machines/nodes.
+    - The VectorCAST Project should be specified as relative to the root of the checkout.
     - There is now an option to use the main Pipeline Job's Workspace as a dedicated single checkout directory. This checkout directory must be available to all executors across all nodes either by having all executors running on the same computer or having the main Pipeline Job's Workspace on a shared network drive.
-- Using an existing drive/directory for the VectorCAST Project.
-    -   The VectorCAST Project should be specified as an absolute path that is available on all machines/nodes.
-    -   Each job can optionally clean up the working directory which will have no effect on the VectorCAST Project since it is located elsewhere.
-    -   The reports are generated into the workspace and archived as part of the Jenkins Job.
+    - Using an existing drive/directory for the VectorCAST Project.
+    - The VectorCAST Project should be specified as an absolute path that is available on all machines/nodes.
+    - Each job can optionally clean up the working directory which will have no effect on the VectorCAST Project since it is located elsewhere.
+    - The reports are generated into the workspace and archived as part of the Jenkins Job.
  
 The user will be able to disable the use of Change Based Testing to perform a complete run of their VectorCAST Project. By default, Change Based Testing is enabled but this option can be disabled by unchecking the **Use Change Based Testing** box.
 
 Users with Continuous Integration Licenses can access those licenses by checking the **Use Continuous Integration License** checkbox. If you do not have Continuous Integration Licenses, do not check this box as you will encounter licensing errors.
 
 If the user wishes to call the Jenkins Job from another Pipeline Job, check the **Use Parameterize the Jenkinsfile** box. This will add parameters to the Pipeline Job that will be used by the VectorCAST Pipeline Job to locate an external VectorCAST Project (**VCAST_PROJECT_DIR**) and force the VectorCAST Jobs to be executed on a specific node (**VCAST_FORCE_NODE_EXEC_NAME**) instead of using the compiler as a node label.
+
+If addition processing is required to a repository after checkout, the user can add **Post SCM Checkout Commands**.  These commands would be native to a shell or batch file depending on which platform the jobs is running on.
 
 Calling the build command will return **Failed**, **Unstable**, or **Success** corresponding to the results of the VectorCAST Pipeline Job. To allow the main Pipeline Job to continue on error, the user can surround the build command without a _catchError_ block as demonstrated below.
 
@@ -58,13 +60,35 @@ catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', catchInterruptions : 
 }
 ```
 
-Additionally, if a shared artifact directory is specified, jobs for the VectorCAST Project will be executed independently but have a central location for storing the build artifacts. This option can be used to accelerate testing by use of VectorCAST's Change Based Testing feature. 
-
 For Pipeline Jobs, the plugin processes the build log to determine which tests have been skipped by VectorCAST's Change Based Testing feature. Any test cases that previously passed and were skipped on the current execution will be marked as skipped for JUnit and displayed in yellow on the test result trend chart and denoted as _Skipped_ in the test results list.
 
 ![](docs/images/test_trends.png)
 
 ![](docs/images/test_results.png)
+
+## Job Creation Options
+
+The user can customize additional parameters for job creation by selecting the **Job Creation Options**:
+
+![](docs/images/job_creation_options.png)
+
+Use the **Job Name** setting for changing the created pipeline job name.  Default is *VectorCASTProjectName*\_vcast\_pipeline
+
+The **Shared Artifact Directory** option allows VectorCAST Project's build artifacts to be stored in a different location from the default *VectorCASTProjectName*/build.  If stored in a location that can be maintained between builds, VectorCAST's Change Based Testing can accelerate testing
+
+**Maximum Parallel Queued Jobs** allows the job to specify the maximum number of unit test jobs to queue up at any one time for parallel execution. To queue all jobs, leave blank or set to zero (0). The use case for this option would be if you don't want to queue the Jenkins server with all VectorCAST environment build/execute jobs; thus, allowing other jobs to queue up as well.
+
+**Use Coverage History** marks build as failed if statement or branch coverage decrease by comparing the previous non-failing build's statement and branch coverage to the current build's statement and branch coverage. If either of the coverages have decreased the job will be marked as failed
+
+**Use Strict Test Case Importing** allows the job to mark individual test cases as failures if errors encountered during test script import.  This option enables strict testcase importing for the VectorCAST Project.  This option give a more reliable metrics for pass/fail test cases as without strict test case import, bad test cases are just ignored.  The default is enabled.
+
+**Use Imported Results** allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with **Use Change Based Testing**. The user can selected between internal imported results or external result files
+
+![](docs/images/use_imported_results.png)
+
+When using imported results and the **Use Local Imported Results** option, the job will export results from the current build and save that result file as an job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
+
+When using imported results and the **Use External Result File** option, the job will use an external results from the a specified location to use as a baseline for the the current job. If existing build artifacts exist, the combined results will be used for change based testing.  The user will need to specify an external result filename (.vcr) in the **External Result Filename** option.  This file would be typically stored in the repository.  This external result file could be updated by a main branch or periodic build to establish a current baseline.
 
 ## Additional Tools
 
@@ -135,7 +159,36 @@ For non-pipeline jobs, JUnit publisher will fail any environments published with
 
 For customers using VectorCAST's requirements gateway, there's a potential for loss of requirements data when running test environments in parallel while using a shared requriments database.
 
+### Test and code coverage reporting with Imported Results
+
+For environments that use imported results with versions of VectorCAST before 2020, reporting of test results and code coverage will not properly generate because of the lack of required build information.
+
+### Using Change Based Testing Imported Results with QA Project
+
+VectorCAST/QA projects cannot use imported results for change based testing
+
+### Disabled environments may add coverage metrics
+
+In rare cases, VectorCAST projects will have disabled environment with results stored before they were disabled.  In cases where the disabled environments share source file with enabled environments, this may lead addition coverage metrics.  It is recommended to clean the 
+environment before disabling.  This takes into account enviornments that are directly disabled or disabled at the Compiler or TestSuite Nodes.
+
 ## Change Log
+
+### Version 0.77 (26 Dec 2023)
+- Updated for findbugs to spotbugs
+- Fixed changed based testing analysis for compound tests being shown as Skipped
+- Fixed getjobs.py script to account for disabled compiler/testsuite nodes
+- Added option for adding strict test importing
+- Added option for using imported results for change based Testing
+    - Local results will be saved as a Jenkins Build artifact
+    - External results will be used from the repository
+    - Added support for DataAPI VCProjectApi for reporting imported results
+- Bump json from 20220320 to 20230227
+- Added maximum number of jobs to be queued so that server won't get flood with jobs and stall other Jenkins jobs
+- Removed Squore script as customer should use script from their Squore installation.
+- Fixed copy_build_dir.py ability to handle relative paths in the database.
+- Removed duplicate code/variables in NewPipeline.java.
+- Switched from CustomReport.report_from_api to api.report to solve corner case
 
 ### Version 0.76 (19 Jan 2023)
 - Added support in VectorCAST version 2023 Projects for environments that are not in a group

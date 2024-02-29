@@ -39,6 +39,7 @@ import jenkins.model.Jenkins;
 import junit.framework.TestCase;
 import net.sf.json.JSONObject;
 import hudson.tasks.junit.JUnitResultArchiver;
+import hudson.plugins.copyartifact.CopyArtifact;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -96,9 +97,10 @@ public class NewSingleJobTest extends TestCase {
 
         // Check build actions...
         DescribableList<Builder,Descriptor<Builder>> bldrsList = job.getTopProject().getBuildersList();
-        Assert.assertEquals(2, bldrsList.size());
-        Assert.assertTrue(bldrsList.get(0) instanceof VectorCASTSetup);
-        Assert.assertTrue(bldrsList.get(1) instanceof VectorCASTCommand);
+        Assert.assertEquals(3, bldrsList.size());
+        Assert.assertTrue(bldrsList.get(0) instanceof CopyArtifact);
+        Assert.assertTrue(bldrsList.get(1) instanceof VectorCASTSetup);
+        Assert.assertTrue(bldrsList.get(2) instanceof VectorCASTCommand);
 
         // Check publishers...
         DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
@@ -106,7 +108,7 @@ public class NewSingleJobTest extends TestCase {
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
-        Assert.assertEquals("**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log",archiver.getArtifacts());
+        Assert.assertEquals("**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr",archiver.getArtifacts());
         Assert.assertFalse(archiver.getAllowEmptyArchive());
         // Publisher 1- JUnitResultArchiver
         Assert.assertTrue(publisherList.get(1) instanceof JUnitResultArchiver);

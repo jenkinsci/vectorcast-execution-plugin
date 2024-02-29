@@ -40,7 +40,11 @@ import tee_print
 from safe_open import open
 
 # adding path
-jenkinsScriptHome = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
+workspace = os.getenv("WORKSPACE")
+if workspace is None:
+    workspace = os.getcwd()
+
+jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
 
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
@@ -57,6 +61,7 @@ from parse_console_for_cbt import ParseConsoleForCBT
 
 using_new_reports = False
 try:
+    ## This tests to see if 2018 is present.
     from vector.apps.ReportBuilder.custom_report import CustomReport
     try:
         from vector.apps.DataAPI.unit_test_api import UnitTestApi
@@ -65,7 +70,13 @@ try:
     using_new_reports = True
 except:
     pass
+    
 
+try:
+    from vector.apps.DataAPI.vcproject_api import VCProjectApi
+except:
+    pass
+    
 #global variables
 global verbose
 global print_exc
@@ -77,6 +88,7 @@ print_exc = False
 need_fixup = False
 
 import getjobs
+
 
 def skipReporting(build_dir, skipReportsForSkippedEnvs, cbtDict):
 
@@ -243,7 +255,8 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_e
                                cbtDict,
                                generate_exec_rpt_each_testcase,
                                use_archive_extract,
-                               report_only_failures)
+                               report_only_failures,
+                               print_exc)
                                
         if xml_file.api != None:
             if verbose:
@@ -255,15 +268,22 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_e
             xml_file.generate_cover()
         else:
             print("   Skipping environment: " + jobNameDotted)
-            
+            print("\n\n")
+            print ("******************************************************")
+            print ("** Environment's that only use imported results     **")
+            print ("** will not properly generate metrics with this     **")
+            print ("** version of VectorCAST.                           **")
+            print ("******************************************************")
+            print("\n\n")
+
     
     except Exception as e:
         parse_traceback.parse(traceback.format_exc(), print_exc, entry["compiler"] , entry["testsuite"],  entry["env"], entry["build_dir"])
 
     try:       
-        return xml_file.failed_count
+        return xml_file.passed_count, xml_file.failed_count
     except:
-        return 0
+        return 0, 0
         
         
 def fixup_css(report_name):
@@ -292,22 +312,33 @@ def fixup_css(report_name):
     with open(report_name, "w") as fd:
         fd.write(newData)
    
-    vc_scripts = os.path.join(os.getenv("WORKSPACE"),"vc_scripts")
+    workspace = os.getenv("WORKSPACE")
+    if workspace is None:
+        workspace = os.getcwd()
+
+    vc_scripts = os.path.join(workspace,"vc_scripts")
     
     shutil.copy(os.path.join(vc_scripts,"vector_style.css"), "management/vector_style.css")
     shutil.copy(os.path.join(vc_scripts,"vectorcast.png"), "management/vectorcast.png")
 
 def generateCoverReport(path, env, level ):
 
-    from vector.apps.ReportBuilder.custom_report import CustomReport
+    def _dummy(*args, **kwargs):
+        return True
+        
     from vector.apps.DataAPI.cover_api import CoverApi
 
     api=CoverApi(path)
 
     report_name = "management/" + level + "_" + env + ".html"
+    
 
     try:
-        CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
+        try:
+            api.commit = _dummy
+            api.report(report_type="AGGREGATE_REPORT", formats=["HTML"], output_file=report_name)
+        except:
+            CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
 
         fixup_css(report_name)
     except Exception as e:
@@ -321,7 +352,6 @@ def generateUTReport(path, env, level):
 
     def _dummy(*args, **kwargs):
         return True
-
     report_name = "management/" + level + "_" + env + ".html"
 
     api=UnitTestApi(path)
@@ -352,9 +382,57 @@ def generateIndividualReports(entry, envName):
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
 
+
+
+def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report):
+    global verbose
+
+    print("Using VCProjectApi")
+    
+    xml_file = ""
+    
+    try:
+        from generate_xml import GenerateManageXml
+
+        xml_file = GenerateManageXml(FullManageProjectName, 
+                               verbose, 
+                               cbtDict,
+                               generate_exec_rpt_each_testcase,
+                               use_archive_extract,
+                               report_only_failures,
+                               no_full_report,
+                               print_exc)
+                               
+        if xml_file.api != None:
+            xml_file.generate_testresults()
+            xml_file.generate_cover()
+        else:
+            print("   Skipping environment: " + jobNameDotted)
+            print("\n\n")
+            print ("******************************************************")
+            print ("** Environment's that only use imported results     **")
+            print ("** will not properly generate metrics with this     **")
+            print ("** version of VectorCAST.                           **")
+            print ("******************************************************")
+            print("\n\n")
+    
+    except Exception as e:
+        parse_traceback.parse(traceback.format_exc(), print_exc)
+        #traceback.print_exc()
+
+
+    try:       
+        return xml_file.passed_count, xml_file.failed_count
+    except:
+        return 0, 0
+
+
 def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report):
 
     failed_count = 0 
+    passed_count = 0
+    
+    print("Using DataAPI per environment")
         
     for currentEnv in manageEnvs:
         if skipReporting(manageEnvs[currentEnv]["build_dir"], use_archive_extract, cbtDict):
@@ -362,24 +440,24 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
             continue 
 
         if envName == None:
-            failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures)
+            pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures)
+            passed_count += pc
+            failed_count += fc
             if not no_full_report:
                 generateIndividualReports(manageEnvs[currentEnv], envName)
             
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
-            if env_level.upper() == level.upper():
-                failed_count += genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures)
+            if level == None or env_level.upper() == level.upper():
+                pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures)
+                passed_count += pc
+                failed_count += fc
+                
                 if not no_full_report:
                     generateIndividualReports(manageEnvs[currentEnv], envName)
                 
-    with open("unit_test_fail_count.txt", "w") as fd:
-        failed_str = str(failed_count)
-        try:
-            fd.write(unicode(failed_str))
-        except:
-            fd.write(failed_str)    
+    return passed_count, failed_count
 
 def cleanupDirectory(path, teePrint):
 
@@ -443,17 +521,53 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             teePrint.teePrint("   *INFO: File System Error removing " + file + ".  Check console for environment build/execution errors")
             if print_exc:  traceback.print_exc()
    
+    failed_count = 0
+    passed_count = 0
     
     ### Using new data API - 2019 and beyond
     if timing:
         print("Cleanup: " + str(time.time()))
     if useNewReport and not legacy:
+        try:
+            api = VCProjectApi(FullManageProjectName)
+            tool_version = api.tool_version
+            if tool_version.startswith("20"):
+                use_manage_api = False
+            else:
+                use_manage_api = True
+            api.close()
+        except:
+            use_manage_api = False
+            
+        if use_manage_api:
+            passed_count, failed_count = useManageAPI(FullManageProjectName, cbtDict, generate_individual_reports, 
+                    use_archive_extract, 
+                    report_only_failures,
+                    no_full_report)
 
-        manageEnvs = getManageEnvs(FullManageProjectName)
-        if timing:
-            print("Using DataAPI for reporting")
-            print("Get Info: " + str(time.time()))
-        useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures, no_full_report)
+            
+        else:
+                
+            manageEnvs = getManageEnvs(FullManageProjectName)
+            if timing:
+                print("Using DataAPI for reporting")
+                print("Get Info: " + str(time.time()))
+            passed_count, failed_count = useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures, no_full_report)
+            
+        with open("unit_test_fail_count.txt", "w") as fd:
+            failed_str = str(failed_count)
+            try:
+                fd.write(unicode(failed_str))
+            except:
+                fd.write(failed_str)    
+           
+        with open("unit_test_passfail_count.txt", "w") as fd:
+            passfail_str = str(passed_count) + " " + str(failed_count)
+            try:
+                fd.write(unicode(passfail_str))
+            except:
+                fd.write(passfail_str)    
+           
         if timing:
             print("XML and Individual reports: " + str(time.time()))
 
@@ -479,6 +593,18 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
         # capture the output of the manage call
         out_mgt = runManageWithWait(callStr)
+        
+        if "Database error:" in out_mgt:
+            print("\n\n")
+            print ("******************************************************")
+            print ("** May have failed to create individual environment **")
+            print ("**   reports because of a database error).          **")
+            print ("**                                                  **")
+            print ("** FYI: Environments that only use imported results **")
+            print ("**   will not properly generate metrics with this   **")
+            print ("**   version of VectorCAST.                         **")
+            print ("******************************************************")
+            print("\n\n")
 
         coverProjectInManageProject = False
         if "database missing or inaccessible" in out_mgt:
@@ -502,6 +628,19 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 
             out_exe = runManageWithWait(callStr)
             out = out_mgt + "\n" + out_exe
+            
+            if "Database error:" in out_exe:
+                print("\n\n")
+                print ("******************************************************")
+                print ("** May have failed to create individual environment **")
+                print ("**   reports because of a database error).          **")
+                print ("**                                                  **")
+                print ("** FYI: Environments that only use imported results **")
+                print ("**   will not properly generate metrics with this   **")
+                print ("**   version of VectorCAST.                         **")
+                print ("******************************************************")
+                print("\n\n")
+
         else:
             out = out_mgt
 
@@ -589,6 +728,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             generate_qa_results_xml.genQATestResults(FullManageProjectName,saved_level,saved_envName)
             
         failed_count = 0
+        passed_count = 0
         try:
             for file in glob.glob("xml_data/test_results_*.xml"):
                 with open(file,"r") as fd:
@@ -597,6 +737,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 for line in lines:
                     if "failures" in line:
                         failed_count += int(line.split("\"")[5])
+                        passed_count += int(line.split("\"")[3]) - failed_count
                         break
         except:
             teePrint.teePrint ("   *INFO: Problem parsing test results file for unit testcase failure count: " + file)
@@ -608,6 +749,14 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 fd.write(unicode(failed_str))
             except:
                 fd.write(failed_str)    
+
+        with open("unit_test_passfail_count.txt", "w") as fd:
+            passfail_str = str(passed_count) + " " + str(failed_count)
+            try:
+                fd.write(unicode(passfail_str))
+            except:
+                fd.write(passfail_str)    
+           
 
         for file in copyList:
 

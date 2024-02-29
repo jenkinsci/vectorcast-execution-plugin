@@ -30,7 +30,10 @@ import os
 import sys
 
 # adding path
-jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
+workspace = os.getenv("WORKSPACE")
+if workspace is None:
+    workspace = os.getcwd()
+jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
 python_path_updates += os.sep + "vpython-addons"

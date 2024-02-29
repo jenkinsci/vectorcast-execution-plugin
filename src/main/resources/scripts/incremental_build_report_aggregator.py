@@ -35,7 +35,11 @@ from safe_open import open
 #     into one comprehensive report.
 # 
 # adding path
-jenkinsScriptHome = os.getenv("WORKSPACE") + os.sep + "vc_scripts"
+workspace = os.getenv("WORKSPACE")
+if workspace is None:
+    workspace = os.getcwd()
+
+jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
 
@@ -130,28 +134,38 @@ def parse_html_files(mpName):
     if len(report_file_list) == 0:
         print("No incrementatal rebuild reports found in the workspace...skipping")
         return
+    keepLooping = True
         
-    with open(report_file_list[0],"r") as fd:
+    while keepLooping:
         try:
-            main_soup = BeautifulSoup((fd),features="lxml")
-        except:
-            main_soup = BeautifulSoup(fd)
+            with open(report_file_list[0],"r") as fd:
+                try:
+                    main_soup = BeautifulSoup((fd),features="lxml")
+                except:
+                    main_soup = BeautifulSoup(fd)
 
-    preserved_count = 0
-    executed_count = 0
-    total_count = 0
+            preserved_count = 0
+            executed_count = 0
+            total_count = 0
         
-    if main_soup.find(id="report-title"):
-        main_manage_api_report = True
+            if main_soup.find(id="report-title"):
+                main_manage_api_report = True
         # New Manage reports have div with id=report-title
         # Want second table (skip config data section)
-        main_row_list = main_soup.find_all('table')[1].tr.find_next_siblings()
-        main_count_list = main_row_list[-1].th.find_next_siblings()
-    else:
-        main_manage_api_report = False
-        main_row_list = main_soup.table.table.tr.find_next_siblings()
-        main_count_list = main_row_list[-1].td.find_next_siblings()
-
+                main_row_list = main_soup.find_all('table')[1].tr.find_next_siblings()
+                main_count_list = main_row_list[-1].th.find_next_siblings()
+            else:
+                main_manage_api_report = False
+                main_row_list = main_soup.table.table.tr.find_next_siblings()
+                main_count_list = main_row_list[-1].td.find_next_siblings()
+            keepLooping = False
+        except:
+            if len(report_file_list) > 0:
+                report_file_list.pop(0)
+                keepLooping = True
+            else:
+                print("No valid rebuild reports")
+                return
     preserved_count = preserved_count + int(main_count_list[1].get_text())
     executed_count = executed_count + int(main_count_list[2].get_text())
     total_count = total_count + int(main_count_list[3].get_text())

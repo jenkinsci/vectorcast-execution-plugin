@@ -34,24 +34,37 @@ import shutil
 def generate_full_status(manageProject): 
 
     mpName = os.path.splitext(os.path.basename(manageProject))[0]
-    report_name = mpName + "_full_report.html"
+    full_report_name = mpName + "_full_report.html"
+    metrics_report_name = mpName + "_metrics_report.html"
+
     try:
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         api = VCProjectApi(manageProject)
-        from vector.apps.ReportBuilder.custom_report import CustomReport
         
-        CustomReport.report_from_api(api, report_type="MANAGE_STATUS_FULL_REPORT", formats=["HTML"], output_file=report_name, environments=api.Environment.all(), levels = [] )
-        shutil.copy(report_name,report_name + "_tmp")
-        fixup_reports.fixup_2020_reports(report_name + "_tmp")
+        api.report(report_type="MANAGE_STATUS_FULL_REPORT", formats=["HTML"], output_file=full_report_name   , environments=api.Environment.all(), levels = [])
+        api.report(report_type="MANAGE_METRICS_REPORT"    , formats=["HTML"], output_file=metrics_report_name, environments=api.Environment.all(), levels = [])
+            
+        shutil.copy(full_report_name,full_report_name + "_tmp")
+        fixup_reports.fixup_2020_reports(full_report_name + "_tmp")
+        
+        shutil.copy(metrics_report_name,metrics_report_name + "_tmp")
+        fixup_reports.fixup_2020_reports(metrics_report_name + "_tmp")
+
         api.close()
         
     except:
         from managewait import ManageWait
 
-        cmd = "--project " + manageProject + " --full-status=" + report_name
+        cmd = "--project " + manageProject + " --full-status=" + full_report_name
         manageWait = ManageWait(False, cmd, 30, 1)
         out_mgt = manageWait.exec_manage(True)
-        shutil.copy(report_name,report_name + "_tmp")
+
+        cmd = "--project " + manageProject + " --create-report metrics"
+        manageWait = ManageWait(False, cmd, 30, 1)
+        out_mgt = manageWait.exec_manage(True)
+
+        shutil.copy(full_report_name,full_report_name + "_tmp")
+        shutil.copy(metrics_report_name,metrics_report_name + "_tmp")
         return out_mgt
         
 if __name__ == '__main__':

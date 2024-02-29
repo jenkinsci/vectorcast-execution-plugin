@@ -19,9 +19,10 @@ def get_timestamp():
         hour -= 12
     return dt.strftime('%d %b %Y  @HR@:%M:%S %p').upper().replace('@HR@', str(hour))
 
-def writeJunitHeader(currentEnv, junitfile, failed, total, unit_report_name):
+def writeJunitHeader(currentEnv, junitfile, failed, total, unit_report_name, encoding = 'UTF-8'):
     
-    junitfile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+    junitfile.write("<?xml version=\"1.0\" encoding=\"" + encoding.upper() + "\"?>\n")
+
     junitfile.write("<testsuites>\n  <!--" + unit_report_name + "-->\n")
                     
     junitfile.write("  <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
@@ -34,11 +35,11 @@ def writeJunitFooter(junitfile):
     junitfile.write("  </testsuite>\n")
     junitfile.write("</testsuites>\n")
 
-def write_tc_data(currentEnv, unit_report_name, jobNameDotted, passed, failed, error, testcase_data):
+def write_tc_data(currentEnv, unit_report_name, jobNameDotted, passed, failed, error, testcase_data, encoding = 'utf-8'):
 
     fh = open("xml_data/" + unit_report_name, "w")
 
-    writeJunitHeader(currentEnv, fh, failed, failed+passed, unit_report_name)
+    writeJunitHeader(currentEnv, fh, failed, failed+passed, unit_report_name, encoding)
     writeJunitData(fh, testcase_data)
     writeJunitFooter(fh)
     fh.close()
@@ -117,7 +118,7 @@ def processDataLine(line):
         
     return compiler, testsuite, envName, testcase_name, ratio, percent, pass_fail
 
-def processSystemTestResultsData(lines):
+def processSystemTestResultsData(lines, encoding = 'utf-8'):
     foundData = False
     oneMore = False
     oldEnvName = ""
@@ -147,7 +148,7 @@ def processSystemTestResultsData(lines):
             # new files
             if oldEnvName != envName:
                 if firstEnvFound:
-                    write_tc_data(oldEnvName, unit_report_name, jobNameDotted, passed, failed, error, testcase_data)
+                    write_tc_data(oldEnvName, unit_report_name, jobNameDotted, passed, failed, error, testcase_data, encoding)
                     
                     # reset summary
                     testcase_data = ""
@@ -178,16 +179,16 @@ def processSystemTestResultsData(lines):
             testcase_data += generateJunitTestCase(jobNameDotted, testcase_name, passFail)
                    
     if firstEnvFound:
-        write_tc_data(oldEnvName, unit_report_name, jobNameDotted, passed, failed, error, testcase_data)
+        write_tc_data(oldEnvName, unit_report_name, jobNameDotted, passed, failed, error, testcase_data, encoding)
         
-    return failed
+    return passed, failed
         
 def saveQATestStatus(mp):
     callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status=" + os.path.basename(mp)[:-4] + "_system_tests_status.html"
     p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     out, err = p.communicate()
 
-def genQATestResults(mp, level = None, envName = None, verbose = False):
+def genQATestResults(mp, level = None, envName = None, verbose = False, encoding = 'utf-8'):
     try:
         from vector.apps.DataAPI.manage_models import SystemTest
         if verbose:
@@ -208,11 +209,11 @@ def genQATestResults(mp, level = None, envName = None, verbose = False):
         
     if err:
         print(out, err)
-    failed_count = processSystemTestResultsData(out.splitlines())
+    passed_count, failed_count = processSystemTestResultsData(out.splitlines(), encoding)
     
     saveQATestStatus(mp)
     
-    return failed_count
+    return passed_count, failed_count
         
 if __name__ == '__main__':
     genQATestResults(sys.argv[1])

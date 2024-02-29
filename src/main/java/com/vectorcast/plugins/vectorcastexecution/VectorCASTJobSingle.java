@@ -25,6 +25,7 @@ package com.vectorcast.plugins.vectorcastexecution;
 
 import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
+import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -84,9 +85,10 @@ public class VectorCASTJobSingle extends JobBase {
      */
     @RequirePOST
     public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
-        // Create single-job
-        NewSingleJob job = new NewSingleJob(request, response);
         try {
+            // Create single-job
+            NewSingleJob job = new NewSingleJob(request, response);
+
             job.create(false);
             projectName = job.getProjectName();
             return new HttpRedirect("created");
@@ -97,6 +99,8 @@ public class VectorCASTJobSingle extends JobBase {
             // Can't happen for the single job
             Logger.getLogger(VectorCASTJobSingle.class.getName()).log(Level.SEVERE, null, ex);
             return new HttpRedirect("exists");
+        } catch (ExternalResultsFileException ex) {
+            return new HttpRedirect("extresblank");
         }
     }
 }

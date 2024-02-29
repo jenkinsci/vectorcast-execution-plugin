@@ -40,7 +40,21 @@ class ParseConsoleForCBT(object):
         self.environmentDict = {}
         self.environmentDict["BLANK"] = [{"BLANK"},{"BLANK"},{"BLANK"}]
         self.verbose = verbose
-
+        
+        # get the VC langaguge and encoding
+        self.encFmt = 'utf-8'
+        try:
+            from vector.apps.DataAPI.configuration import vcastqt_global_options
+            self.lang = vcastqt_global_options.get('Translator','english')
+            if self.lang == "english":
+                self.encFmt = "utf-8"
+            if self.lang == "japanese":
+                self.encFmt = "shift-jis"
+            if self.lang == "chinese":
+                self.encFmt = "GBK"
+        except:
+            pass
+              
     def checkForSave(self, compoundTests, initTests, simpleTestcases):
         if len(compoundTests) > 0 or len(initTests) > 0 or  len(simpleTestcases) > 0:
             return True
@@ -77,7 +91,7 @@ class ParseConsoleForCBT(object):
                 
                 # Unicode-objects must be encoded before hashing in Python 3
                 if sys.version_info[0] >= 3:
-                    build_dir = build_dir.encode('utf-8')
+                    build_dir = build_dir.encode(self.encFmt)
 
                 hashCode = hashlib.md5(build_dir).hexdigest()
                 
@@ -125,8 +139,8 @@ class ParseConsoleForCBT(object):
                     except:
                         fileName = line.split()[2].split(".",1)[0]
 
-                    # Running all <<COMPOUND>> test cases
-                    if "Running all <<COMPOUND>> test cases" in line:
+                    # Running all <<COMPOUND>>
+                    if "Running all <<COMPOUND>>" in line:
                         runningCompound = True
                         runningInits = False
 

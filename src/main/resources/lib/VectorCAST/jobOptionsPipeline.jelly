@@ -31,26 +31,56 @@
          xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project"
          xmlns:vc="/lib/VectorCAST">
-    <f:section title="${%VCJob.JobOptionsPipeline}">
-      <f:optionalBlock title="Job Creation Options" checked="${instance.showJobOptions}" inline="true" 
-                       help="/plugin/vectorcast-execution/help-JobOptions.html">
+    <f:section title="Job Creation Options">
+    
+        <f:optionalBlock title="Job Creation Options" checked="${instance.showJobOptions}" inline="true" 
+            help="/plugin/vectorcast-execution/help-jobOptions.html">
+            
+            <f:entry title="${%VCJob.JobOptionsPipeline.jobName.title}" 
+                description="${%VCJob.JobOptionsPipeline.jobName.description}"
+                help="/plugin/vectorcast-execution/help-jobOptJobName.html">
+                <f:textbox name="jobName" size="50" value="${instance.jobName}"/>
+            </f:entry>
                        
-        <f:entry title="${%VCJob.JobOptionsPipeline.sharedArtifactDir.title}" description="${%VCJob.JobOptionsPipeline.sharedArtifactDir.description}"
-                 help="/plugin/vectorcast-execution/help-sharedArtifactDir.html">
-          <f:textbox name="sharedArtifactDir" size="260" value="${instance.sharedArtifactDir}"/>
-        </f:entry>
-        
-        <f:entry title="${%VCJob.JobOptionsPipeline.jobName.title}" description="${%VCJob.JobOptionsPipeline.jobName.description}"
-                 help="/plugin/vectorcast-execution/help-jobOptJobName.html">
-          <f:textbox name="jobName" size="50" value="${instance.jobName}"/>
-        </f:entry>
+            <f:entry title="${%VCJob.JobOptionsPipeline.sharedArtifactDir.title}" 
+                description="${%VCJob.JobOptionsPipeline.sharedArtifactDir.description}"
+                help="/plugin/vectorcast-execution/help-sharedArtifactDir.html">
+                <f:textbox name="sharedArtifactDir" size="260" value="${instance.sharedArtifactDir}"/>
+            </f:entry>
 
-        <f:entry title="${%VCJob.JobOptionsPipeline.useCoverageHistory.title}" description="${%VCJob.JobOptionsPipeline.useCoverageHistory.description}"
+            <f:entry title="${%VCJob.JobOptionsPipeline.maxParallel.title}" description="${%VCJob.JobOptionsPipeline.maxParallel.description}" help="/plugin/vectorcast-execution/help-maxParallel.html">
+                <f:number default="0" name="maxParallel" value="${instance.maxParallel}"/>
+            </f:entry>
+            
+            <f:entry title="${%VCJob.JobOptionsPipeline.useCoverageHistory.title}" 
+                description="${%VCJob.JobOptionsPipeline.useCoverageHistory.description}"
                 help="/plugin/vectorcast-execution/help-optuseCoverageHistory.html">
-            <f:checkbox name="useCoverageHistory" checked="${instance.useCoverageHistory}" default="false"/>
-        </f:entry>        
-        
-      </f:optionalBlock>
+                <f:checkbox name="useCoverageHistory" checked="${instance.useCoverageHistory}" default="false"/>
+            </f:entry>        
+            
+            <f:entry title="${%VCJob.JobOptionsPipeline.useStrictTestcaseImport.title}" 
+                description="${%VCJob.JobOptionsPipeline.useStrictTestcaseImport.description}"
+                help="/plugin/vectorcast-execution/help-optuseStrictTestcaseImport.html">
+                <f:checkbox name="useStrictTestcaseImport" checked="${instance.useStrictTestcaseImport}" default="true"/>
+            </f:entry>        
+            <f:optionalBlock title="Use Imported Results" 
+                checked="${instance.useImportedResults}" inline="true" 
+                help="/plugin/vectorcast-execution/help-optuseImportedResults.html"
+                name="useImportedResults">       
+                <f:block>
+                    <f:radioBlock name="importedResults" value="1" title="${%VCJob.JobOptionsPipeline.useLocalImportedResults.title}" 
+                        checked="true" help="/plugin/vectorcast-execution/help-optuseLocalImportedResults.html"/>               
+                    <f:radioBlock name="importedResults" value="2" title="${%VCJob.JobOptionsPipeline.useExternalImportedResults.title}" 
+                        checked="false" help="/plugin/vectorcast-execution/help-optuseExternalImportedResults.html" >
+                        <f:entry title="${%VCJob.JobOptionsPipeline.externalResultsFilename.title}" 
+                            description="${%VCJob.JobOptionsPipeline.externalResultsFilename.description}"
+                            help="/plugin/vectorcast-execution/help-jobOptextFileName.html">
+                            <f:textbox name="externalResultsFilename" size="256" value="${instance.externalResultsFilename}"/>
+                        </f:entry>           
+                    </f:radioBlock>
+                </f:block>
+            </f:optionalBlock>
+        </f:optionalBlock>
     </f:section>
 </j:jelly>
 

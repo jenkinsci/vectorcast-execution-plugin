@@ -79,8 +79,6 @@ public class VectorCASTJobRoot implements RootAction {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            Logger.getLogger(VectorCASTJobRoot.class.getName()).log(Level.INFO, "Jenkins version: " + jenkinsVersion);
             
             if (colorIcon) {
                 iconName = "/plugin/vectorcast-execution/icons/vector_favicon.png";
