@@ -761,7 +761,6 @@ class GenerateManageXml (BaseGenerateXml):
             print("       {}/{}/{}".format(comp, ts, env_name))
             return
 
-        
         xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + key.replace("/","_") + ".xml"
 
         localXML = GenerateXml(self.FullManageProjectName, build_dir, env_name, comp, ts, 
@@ -1002,7 +1001,7 @@ class GenerateXml(BaseGenerateXml):
                                         vctMap = False
                                     if not tc.is_csv_map and not vctMap:
                                         if not tc.for_compound_only or tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
-                                            self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
+                                            self.write_testcase(tc, tc.function.unit.name, tc.function.display_name, unit = unit)
 
             except AttributeError as e:
                 parse_traceback.parse(traceback.format_exc(), self.verbose, self.compiler,  self.testsuite,  self.env,  self.build_dir)
@@ -1110,12 +1109,63 @@ class GenerateXml(BaseGenerateXml):
             return True
             
         return False
+        
+    def get_xml_string(self, fpath = None):
+    
+        if fpath:
+            testcaseStringExtraStatus="""
+        <testcase name="%s" classname="%s" time="%s" file="%s" line="%s">
+            %s
+            <system-out>
+%s                     
+            </system-out>
+        </testcase>
+"""  
 
+            testcaseString ="""
+        <testcase name="%s" classname="%s" time="%s" file="%s" line="%s">
+            %s
+        </testcase>
+"""
+
+        else: 
+            testcaseStringExtraStatus="""
+        <testcase name="%s" classname="%s" time="%s" %s %s>
+            %s
+            <system-out>
+%s                     
+            </system-out>
+        </testcase>
+"""        
+            testcaseString ="""
+        <testcase name="%s" classname="%s" time="%s" %s %s>
+            %s
+        </testcase>
+"""
+        return testcaseString, testcaseStringExtraStatus 
 #
 # GenerateXml - write a testcase to the jUnit XML file
 #
-    def write_testcase(self, tc, unit_name, func_name, st_is_monitored = False):
+    def write_testcase(self, tc, unit_name, func_name, st_is_monitored = False, unit = None):
     
+        fpath = ""
+        startLine = ""
+        unitName = ""
+        
+        if unit: 
+            filePath = unit.sourcefile.normalized_path(normcase=False)
+
+            try:
+                prj_dir = os.environ['WORKSPACE'].replace("\\","/") + "/"
+            except:
+                prj_dir = os.getcwd().replace("\\","/") + "/"
+                
+            fpath = os.path.relpath(filePath,prj_dir).replace("\\","/")
+            
+            startLine = str(tc.function.start_line)
+            
+            unitName = unit.name
+            
         if self.noResults:
             return
             
@@ -1229,6 +1279,8 @@ class GenerateXml(BaseGenerateXml):
             status = "PASS"
             extraStatus = ""
 
+        testcaseString, testcaseStringExtraStatus = self.get_xml_string(fpath)
+        
         if status != "":
             msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)        
             msg = escape(msg, quote=False)
@@ -1236,25 +1288,11 @@ class GenerateXml(BaseGenerateXml):
             msg = msg.replace("\n","&#xA;")
             msg = msg.replace("\r","")
 			
-        testcaseStringExtraStatus="""
-        <testcase name="%s" classname="%s" time="%s">
-            %s
-            <system-out>
-%s                     
-            </system-out>
-        </testcase>
-"""        
-        testcaseString ="""
-        <testcase name="%s" classname="%s" time="%s">
-            %s
-        </testcase>
-"""
-        if status != "":
             testcaseString = testcaseStringExtraStatus
-            self.fh_data += (testcaseString % (tc_name_full, classname, deltaTimeStr, extraStatus, msg))
+            self.fh_data += (testcaseString % (tc_name_full, unitName, deltaTimeStr, fpath, startLine, extraStatus, msg))
         else:
-            self.fh_data += (testcaseString % (tc_name_full, classname, deltaTimeStr, extraStatus))
-
+            self.fh_data += (testcaseString % (tc_name_full, unitName, deltaTimeStr, fpath, startLine, extraStatus))
+                
 ## GenerateXml
 
     def was_test_case_skipped(self, tc, searchName, isSystemTest):
