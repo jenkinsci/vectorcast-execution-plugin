@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>3.54</version>
-        <relativePath />
+        <relativePath/>
     </parent>
-
     <name>VectorCAST Execution</name>
     <description>Run VectorCAST manage jobs from Jenkins</description>
     <artifactId>vectorcast-execution</artifactId>
     <version>0.77-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
-
     <licenses>
         <license>
             <name>MIT License</name>
@@ -23,7 +20,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
@@ -36,12 +32,10 @@
         <jenkins-test-harness.version>2.56</jenkins-test-harness.version>
         <powermock.version>1.6.2</powermock.version>
     </properties>
-
     <organization>
         <name>Vector Informatik, GmbH</name>
         <url>https://www.vector.com/</url>
     </organization>
-
     <developers>
         <developer>
             <id>TimSVector</id>
@@ -50,14 +44,12 @@
             <organization>Vector Informatik, GmbH</organization>
         </developer>
     </developers>
-
     <scm>
         <connection>scm:git:https://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
         <developerConnection>scm:git:https://github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
         <tag>HEAD</tag>
     </scm>
-
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
@@ -70,7 +62,6 @@
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -82,24 +73,23 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <dependencies>
-      <dependency>
-	<groupId>org.jenkins-ci.plugins.workflow</groupId>
-	<artifactId>workflow-aggregator</artifactId>
-	<version>2.5</version>
-      </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-aggregator</artifactId>
+            <version>2.5</version>
+        </dependency>
         <dependency>
             <groupId>org.jenkinsci.plugins</groupId>
             <artifactId>pipeline-model-api</artifactId>
             <version>1.9.3</version>
         </dependency>
-<dependency>
-    <groupId>org.jenkins-ci.plugins.workflow</groupId>
-    <artifactId>workflow-job</artifactId>
-    <version>1145.v7f2433caa07f</version>
-    <scope>test</scope>
-</dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-job</artifactId>
+            <version>1145.v7f2433caa07f</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -130,12 +120,12 @@
             <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
-	<dependency>
-	  <groupId>com.google.code.findbugs</groupId>
-	  <artifactId>jsr305</artifactId>
-	  <version>3.0.1</version>
-	  <scope>test</scope>
-	</dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.1</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
@@ -176,132 +166,128 @@
             <artifactId>commons-io</artifactId>
             <version>2.11.0</version>
         </dependency>
-<dependency>
-    <groupId>io.jenkins.plugins</groupId>
-    <artifactId>warnings-ng</artifactId>
-    <version>9.11.1</version>
-</dependency>
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-api</artifactId>
-    <version>1.7.36</version>
-</dependency>
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>jcl-over-slf4j</artifactId>
-    <version>1.7.36</version>
-</dependency>
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-simple</artifactId>
-    <version>1.6.2</version>
-</dependency>
-<dependency>
-    <groupId>com.github.spotbugs</groupId>
-    <artifactId>spotbugs-annotations</artifactId>
-    <version>4.6.0</version>
-</dependency>
-<dependency>
-    <groupId>io.jenkins.plugins</groupId>
-    <artifactId>echarts-api</artifactId>
-    <version>5.3.0-2</version>
-</dependency>
-<dependency>
-    <groupId>org.ow2.asm</groupId>
-    <artifactId>asm-analysis</artifactId>
-    <version>9.3</version>
-</dependency>
-<dependency>
-    <groupId>org.ow2.asm</groupId>
-    <artifactId>asm-tree</artifactId>
-    <version>9.3</version>
-</dependency>
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>log4j-over-slf4j</artifactId>
-    <version>1.7.36</version>
-</dependency>
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-jdk14</artifactId>
-    <version>1.7.36</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.jenkins-ci</groupId>
-    <artifactId>annotation-indexer</artifactId>
-    <version>1.16</version>
-</dependency>
-<dependency>
-    <groupId>org.kohsuke</groupId>
-    <artifactId>access-modifier-annotation</artifactId>
-    <version>1.27</version>
-    <scope>provided</scope>
-</dependency>
-<dependency>
-    <groupId>org.json</groupId>
-    <artifactId>json</artifactId>
-    <version>20230227</version>
-</dependency>
-<dependency>
-    <groupId>io.jenkins.plugins</groupId>
-    <artifactId>forensics-api</artifactId>
-    <version>1.12.0</version>
-</dependency>
-<dependency>
-    <groupId>io.jenkins.plugins</groupId>
-    <artifactId>bootstrap5-api</artifactId>
-    <version>5.1.3-6</version>
-</dependency>
-<dependency>
-    <groupId>io.jenkins.plugins</groupId>
-    <artifactId>data-tables-api</artifactId>
-    <version>1.11.4-4</version>
-</dependency>
-<dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-lang3</artifactId>
-    <version>3.12.0</version>
-</dependency>
-<dependency>
-    <groupId>org.apache.ant</groupId>
-    <artifactId>ant</artifactId>
-    <version>1.10.12</version>
-</dependency>
-<dependency>
-    <groupId>org.hamcrest</groupId>
-    <artifactId>hamcrest</artifactId>
-    <version>2.2</version>
-    <scope>test</scope>
-</dependency>
-
-<dependency>
-    <groupId>org.jenkins-ci.plugins</groupId>
-    <artifactId>pipeline-utility-steps</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.codehaus.plexus</groupId>
-    <artifactId>plexus-utils</artifactId>
-    <version>3.4.1</version>
-</dependency>
-
-
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>warnings-ng</artifactId>
+            <version>9.11.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <version>4.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>echarts-api</artifactId>
+            <version>5.3.0-2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-analysis</artifactId>
+            <version>9.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-tree</artifactId>
+            <version>9.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.36</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci</groupId>
+            <artifactId>annotation-indexer</artifactId>
+            <version>1.16</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kohsuke</groupId>
+            <artifactId>access-modifier-annotation</artifactId>
+            <version>1.27</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20230227</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>forensics-api</artifactId>
+            <version>1.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>bootstrap5-api</artifactId>
+            <version>5.1.3-6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>data-tables-api</artifactId>
+            <version>1.11.4-4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.10.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>pipeline-utility-steps</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+            <version>3.4.1</version>
+        </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-release-plugin</artifactId>
-              <version>3.0.0-M1</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>3.0.0-M1</version>
             </plugin>
             <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-scm-plugin</artifactId>
-              <version>1.11.2</version>
-              <configuration>
-                <connectionType>connection</connectionType>
-              </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-plugin</artifactId>
+                <version>1.11.2</version>
+                <configuration>
+                    <connectionType>connection</connectionType>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -316,7 +302,6 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
-
                     <!-- Attention Eclipse users: if you see an error here, you 
                     have to install the M2E buildhelper plugin. -->
                     <execution>
@@ -333,7 +318,6 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
@@ -353,25 +337,25 @@
                 <executions>
                     <execution>
                         <id>run-findbugs</id>
-                        <phase>verify</phase> 
+                        <phase>verify</phase>
                         <goals>
-                            <goal>check</goal> 
+                            <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
-	    <plugin>
-	      <groupId>org.apache.maven.plugins</groupId>
-	      <artifactId>maven-javadoc-plugin</artifactId>
-	      <executions>
-		<execution>
-		  <id>attach-javadocs</id>
-		  <goals>
-		    <goal>jar</goal>
-		  </goals>
-		</execution>
-	      </executions>
-	    </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
