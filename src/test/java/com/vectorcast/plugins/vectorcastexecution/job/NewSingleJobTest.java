@@ -1,26 +1,3 @@
-/*
- * The MIT License
- *
- * Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
 import com.vectorcast.plugins.vectorcastcoverage.VectorCASTPublisher;
@@ -43,36 +20,40 @@ import hudson.plugins.copyartifact.CopyArtifact;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mockito;
-import static org.powermock.api.mockito.PowerMockito.when;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Jenkins.class)
-@PowerMockIgnore("jdk.internal.reflect.*")
-public class NewSingleJobTest extends TestCase {
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+import static org.mockito.Mockito.when;
 
+public class NewSingleJobTest {
+
+    @Rule 
+    public JenkinsRule j = new JenkinsRule();
     private static final String PROJECTNAME = "project.vcast.single";
 
-    @Test
+    @BeforeEach
+    void setUpStaticMocks() {
+    }
+
+    @AfterEach
+    void tearDownStaticMocks() {
+    }
+
+    @Test 
     public void testBasic() throws Exception {
-        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy mockStrategy = new MockAuthorizationStrategy();
         mockStrategy.grant(Jenkins.READ).everywhere().to("devel");
         for (Permission p : Item.PERMISSIONS.getPermissions()) {
             mockStrategy.grant(p).everywhere().to("devel");
         }
-        r.jenkins.setAuthorizationStrategy(mockStrategy);
+        j.jenkins.setAuthorizationStrategy(mockStrategy);
 
         StaplerRequest request = Mockito.mock(StaplerRequest.class);
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
@@ -134,7 +115,5 @@ public class NewSingleJobTest extends TestCase {
         // Publisher 3 - GroovyPostbuildRecorder
         Assert.assertTrue(publisherList.get(3) instanceof GroovyPostbuildRecorder);
         GroovyPostbuildRecorder groovyScript = (GroovyPostbuildRecorder)publisherList.get(3);
-        Assert.assertEquals(/*failure*/2, groovyScript.getBehavior());
-    }
-
+        Assert.assertEquals(/*failure*/2, groovyScript.getBehavior());    }
 }

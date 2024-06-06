@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.54</version>
+        <version>4.83</version>
         <relativePath/>
     </parent>
     <name>VectorCAST Execution</name>
     <description>Run VectorCAST manage jobs from Jenkins</description>
     <artifactId>vectorcast-execution</artifactId>
-    <version>0.77-SNAPSHOT</version>
+    <version>0.78-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
     <licenses>
@@ -24,13 +24,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
         <findbugs.failOnError>false</findbugs.failOnError>
-        <!-- Minimum of 2.138.4 required for pipelines -->
-        <jenkins.version>2.289.3</jenkins.version>
-        <java.level>8</java.level>
-        <jenkins-test-harness.version>2.56</jenkins-test-harness.version>
-        <powermock.version>1.6.2</powermock.version>
+        <jenkins.version>2.454</jenkins.version>
     </properties>
     <organization>
         <name>Vector Informatik, GmbH</name>
@@ -55,6 +50,10 @@
             <id>repo.jenkins-ci.org</id>
             <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
+        <repository>
+            <id>incrementals.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/incrementals/</url>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -66,76 +65,105 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.289.x</artifactId>
-                <version>1246.va_b_50630c1d19</version>
+                <artifactId>bom-2.452.x</artifactId>
+                <version>3105.v672692894683</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
+        <!-- Satifying javax-mail-api minimum version -->
         <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-aggregator</artifactId>
-            <version>2.5</version>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>javax-mail-api</artifactId>
+            <version>1.6.2-11-rc98.96ca_fb_762c25</version>
+        </dependency>
+        <!-- Satifying sci-api minimum version -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>scm-api</artifactId>
+            <version>683.vb_16722fb_b_80b_</version>
+        </dependency>
+        <!-- Satifying commons-lang3 minimum version -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.14.0</version>
+        </dependency>
+        <!-- Satifying commons-text minimum version -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.12.0</version>
+        </dependency>
+        <!-- Satifying sshd-core minimum version -->
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-core</artifactId>
+            <version>2.12.1</version>
+        </dependency>
+        <!-- Satifying mina-sshd-api-core minimum version -->
+        <dependency>
+            <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
+            <artifactId>mina-sshd-api-core</artifactId>
+        </dependency>
+        <!-- Satifying json minimum version -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
+        <!-- Satifying structs minimum version -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>structs</artifactId>
+            <version>338.vf374c77e250b_</version>
+        </dependency>
+        <!-- Satifying caffeine-api minimum version -->
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>caffeine-api</artifactId>
+            <version>3.1.8-150.v3c41c9596941</version>
+        </dependency>
+        <!-- Satifying display-url-api minimum version -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>display-url-api</artifactId>
+            <version>2.205.ve04eb_51370c3</version>
+        </dependency>
+        <!-- Satifying ionicons-api minimum version -->
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>ionicons-api</artifactId>
+            <version>75.v56116b_da_f880</version>
+        </dependency>
+        <!-- Satifying script-security minimum version -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>script-security</artifactId>
+            <version>1343.v4ee5332b_718b_</version>
+        </dependency>
+        <!-- Satifying matrix-project minimum version -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>matrix-project</artifactId>
+            <version>835.ve327939f05d0</version>
         </dependency>
         <dependency>
-            <groupId>org.jenkinsci.plugins</groupId>
-            <artifactId>pipeline-model-api</artifactId>
-            <version>1.9.3</version>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>warnings-ng</artifactId>
+            <version>11.3.0</version>
         </dependency>
         <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-job</artifactId>
-            <version>1145.v7f2433caa07f</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-core</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-reflect</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>annotations</artifactId>
-            <version>3.0.1</version>
-            <scope>test</scope>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>coverage</artifactId>
+            <version>1.14.0</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>vectorcast-coverage</artifactId>
-            <version>0.21</version>
+            <version>0.22</version>
         </dependency>
         <dependency>
             <groupId>org.jvnet.hudson.plugins</groupId>
@@ -143,48 +171,14 @@
             <version>2.4</version>
         </dependency>
         <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-cps</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>copyartifact</artifactId>
             <version>1.44</version>
         </dependency>
         <dependency>
-            <groupId>org.jenkins-ci.main</groupId>
-            <artifactId>maven-plugin</artifactId>
-            <version>3.4</version>
-        </dependency>
-        <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>ws-cleanup</artifactId>
-            <version>0.28</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>warnings-ng</artifactId>
-            <version>9.11.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.36</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.36</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.6.2</version>
+            <version>0.47-rc428.5a_149a_5d662a_</version>
         </dependency>
         <dependency>
             <groupId>com.github.spotbugs</groupId>
@@ -192,86 +186,15 @@
             <version>4.6.0</version>
         </dependency>
         <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>echarts-api</artifactId>
-            <version>5.3.0-2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-analysis</artifactId>
-            <version>9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-tree</artifactId>
-            <version>9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-            <version>1.7.36</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>1.7.36</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci</groupId>
-            <artifactId>annotation-indexer</artifactId>
-            <version>1.16</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kohsuke</groupId>
-            <artifactId>access-modifier-annotation</artifactId>
-            <version>1.27</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20230227</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>forensics-api</artifactId>
-            <version>1.12.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>bootstrap5-api</artifactId>
-            <version>5.1.3-6</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>data-tables-api</artifactId>
-            <version>1.11.4-4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant</artifactId>
-            <version>1.10.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest</artifactId>
-            <version>2.2</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.12.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>pipeline-utility-steps</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-utils</artifactId>
-            <version>3.4.1</version>
+            <artifactId>credentials-binding</artifactId>
+            <version>678.v697736529f0c</version>
         </dependency>
     </dependencies>
     <build>
@@ -302,8 +225,6 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
-                    <!-- Attention Eclipse users: if you see an error here, you 
-                    have to install the M2E buildhelper plugin. -->
                     <execution>
                         <id>add-localizer-source-folder</id>
                         <phase>generate-sources</phase>

@@ -174,6 +174,14 @@ environment before disabling.  This takes into account enviornments that are dir
 
 ## Change Log
 
+### Version 0.78 (17 Jun 2024)
+- Adding in following capabilities
+    - Extended Cobertura format output for use with [Jenkins Coverage Plugin](https://github.com/jenkinsci/coverage-plugin)
+    - Unit Test Data format output in SonarQube format 
+    - Adding capability to generate an index.html for all .html reports
+- Refactored New Job code to reduce duplication
+- Moved to Jenkins 2.454 and Java 11
+
 ### Version 0.77 (26 Dec 2023)
 - Updated for findbugs to spotbugs
 - Fixed changed based testing analysis for compound tests being shown as Skipped

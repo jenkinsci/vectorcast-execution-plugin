@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.io.FileNotFoundException;
 
 public class VcastUtils
 {
@@ -39,15 +40,17 @@ public class VcastUtils
         try {
             File file = new File( URLDecoder.decode( VcastUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "utf-8" ) );
             JarFile jarfile = new JarFile( file );
-            version = Optional.ofNullable( jarfile.getManifest().getMainAttributes().getValue( "Plugin-Version" ) );
-            jarfile.close();
-            
-        } catch ( IOException e ) {
+            if (jarfile != null) {
+                version = Optional.ofNullable( jarfile.getManifest().getMainAttributes().getValue( "Plugin-Version" ) );
+                jarfile.close();            
+            }
+        } 
+        catch ( FileNotFoundException e ) {
             e.printStackTrace();
-        } catch ( NullPointerException e ) {
+        }        
+        catch ( IOException e ) {
             e.printStackTrace();
-        }
-
+        } 
 
         return version;
     }    

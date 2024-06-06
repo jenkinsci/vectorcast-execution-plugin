@@ -120,14 +120,16 @@ public class VectorCASTJobRoot implements RootAction {
      * @return dynamic job
      */
     public JobBase getDynamic(String name) {
-        for (JobBase ui : getAll())
-            try {
-                if (ui.getUrlName().equals(name))
-                    return ui;
-            } catch (NullPointerException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+        for (JobBase ui : getAll()) {
+            if (ui != null) {
+                String urlName = ui.getUrlName();
+                if (urlName != null) {
+                    if (urlName.equals(name)) {
+                        return ui;
+                    }
+                }
             }
+        }
         return null;
     }
     /**
