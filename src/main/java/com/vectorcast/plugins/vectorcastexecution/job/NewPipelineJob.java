@@ -353,10 +353,10 @@ public class NewPipelineJob extends BaseJob {
             }
         } finally {
             // cleanup
-            osrw.close();
+            if (osrw != null) osrw.close();
             br.close();
             in.close();
-            fosw.close();
+            if (fosw != null) fosw.close();
         }
 
         return configFile.getAbsoluteFile();
