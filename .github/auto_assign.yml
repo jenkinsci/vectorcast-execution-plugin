@@ -2,7 +2,7 @@ addReviewers: false
 addAssignees: true
 
 assignees:
-  - uhafner
+  - TimSVector
 
 skipKeywords:
   - wip
