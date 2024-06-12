@@ -34,6 +34,8 @@ from pprint import pprint
 
 fileList = []
 
+extended = False
+
 def dump(obj):
     if hasattr(obj, '__dict__'): 
         return vars(obj) 
@@ -325,48 +327,44 @@ def procesCoverage(coverXML, coverApi):
     
     methods, lines = getFileXML(coverXML, coverApi)
 
-    for func in coverApi.functions:
-                  
-        method = etree.SubElement(methods, "method")
-        
-        method.attrib['name'] = func.name
-        method.attrib['signature'] = func.instrumented_functions[0].parameterized_name.replace(func.name,"",1)
-        method.attrib['line-rate'] = str(func.metrics.covered_statements_pct/100.0)
-        
-        statementPercentStr = "{:.2f}".format(func.metrics.covered_statements_pct) + "% (" + str(func.metrics.covered_statements) + "/" + str(func.metrics.statements) + ")"             
-        #method.attrib['statements'] = statementPercentStr
-        
-        func_total_br = func.metrics.branches + func.metrics.mcdc_branches
-        func_cov_br   = func.metrics.covered_branches + func.metrics.covered_mcdc_branches
-        
-        func_branch_rate = 0.0
-        if func_total_br > 0:
-            func_branch_rate = float(func_cov_br) / float(func_total_br)
-        
-        method.attrib['branch-rate'] = str(func_branch_rate)
-        method.attrib['complexity'] = str(func.complexity)
-                
-        if func.metrics.function_calls > 0:
-            funcCallPercentStr = "{:.2f}".format(func.metrics.covered_function_calls_pct) + "% (" + str(func.metrics.covered_function_calls) + "/" + str(func.metrics.function_calls) + ")"    
-            method.attrib['functioncall-coverage'] = funcCallPercentStr
-        if func.metrics.mcdc_pairs > 0:
-            mcdcPairPercentStr = "{:.2f}".format(func.metrics.covered_mcdc_pairs_pct) + "% (" + str(func.metrics.covered_mcdc_pairs) + "/" + str(func.metrics.mcdc_pairs) + ")"             
-            method.attrib['mcdcpair-coverage'] = mcdcPairPercentStr
+    if extended:
+        for func in coverApi.functions:
+                      
+            method = etree.SubElement(methods, "method")
             
-        if (func.metrics.aggregate_covered_functions_pct +  
-            func.metrics.aggregate_covered_statements_pct + 
-            func.metrics.aggregate_covered_branches_pct + 
-            func.metrics.aggregate_covered_mcdc_branches_pct + 
-            func.metrics.aggregate_covered_mcdc_pairs + 
-            func.metrics.aggregate_covered_function_calls_pct) > 0:
-            method.attrib['function-coverage'] = "100% (1/1)"
-        else:
-            method.attrib['function-coverage'] = "0% (0/1)"
+            method.attrib['name'] = func.name
+            method.attrib['signature'] = func.instrumented_functions[0].parameterized_name.replace(func.name,"",1)
+            method.attrib['line-rate'] = str(func.metrics.covered_statements_pct/100.0)
+            
+            statementPercentStr = "{:.2f}".format(func.metrics.covered_statements_pct) + "% (" + str(func.metrics.covered_statements) + "/" + str(func.metrics.statements) + ")"             
+            #method.attrib['statements'] = statementPercentStr
+            
+            func_total_br = func.metrics.branches + func.metrics.mcdc_branches
+            func_cov_br   = func.metrics.covered_branches + func.metrics.covered_mcdc_branches
+            
+            func_branch_rate = 0.0
+            if func_total_br > 0:
+                func_branch_rate = float(func_cov_br) / float(func_total_br)
+            
+            method.attrib['branch-rate'] = str(func_branch_rate)
+            method.attrib['complexity'] = str(func.complexity)
                     
-        # if lines under methods are required
-        # func_lines = etree.SubElement(method, "lines")
-        # processStatementBranchMCDC(func, func_lines)
-
+            if func.metrics.function_calls > 0:
+                funcCallPercentStr = "{:.2f}".format(func.metrics.covered_function_calls_pct) + "% (" + str(func.metrics.covered_function_calls) + "/" + str(func.metrics.function_calls) + ")"    
+                method.attrib['functioncall-coverage'] = funcCallPercentStr
+            if func.metrics.mcdc_pairs > 0:
+                mcdcPairPercentStr = "{:.2f}".format(func.metrics.covered_mcdc_pairs_pct) + "% (" + str(func.metrics.covered_mcdc_pairs) + "/" + str(func.metrics.mcdc_pairs) + ")"             
+                method.attrib['mcdcpair-coverage'] = mcdcPairPercentStr
+                
+            if (func.metrics.aggregate_covered_functions_pct +  
+                func.metrics.aggregate_covered_statements_pct + 
+                func.metrics.aggregate_covered_branches_pct + 
+                func.metrics.aggregate_covered_mcdc_branches_pct + 
+                func.metrics.aggregate_covered_mcdc_pairs + 
+                func.metrics.aggregate_covered_function_calls_pct) > 0:
+                method.attrib['function-coverage'] = "100% (1/1)"
+            else:
+                method.attrib['function-coverage'] = "0% (0/1)"
 
     return processStatementBranchMCDC(coverApi, lines)
     

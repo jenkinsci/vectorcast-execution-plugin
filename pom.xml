@@ -25,7 +25,7 @@
         <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <findbugs.failOnError>false</findbugs.failOnError>
-        <jenkins.version>2.454</jenkins.version>
+        <jenkins.version>2.452.1</jenkins.version>
     </properties>
     <organization>
         <name>Vector Informatik, GmbH</name>
@@ -73,11 +73,19 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
+    
+        <!-- Satifying slf4j-api minimum version -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+
         <!-- Satifying javax-mail-api minimum version -->
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>javax-mail-api</artifactId>
-            <version>1.6.2-11-rc98.96ca_fb_762c25</version>
+            <version>1.6.2-10</version>
         </dependency>
         <!-- Satifying sci-api minimum version -->
         <dependency>
@@ -118,37 +126,37 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>structs</artifactId>
-            <version>338.vf374c77e250b_</version>
+            <version>337.v1b_04ea_4df7c8</version>
         </dependency>
         <!-- Satifying caffeine-api minimum version -->
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>caffeine-api</artifactId>
-            <version>3.1.8-150.v3c41c9596941</version>
+            <version>3.1.8-133.v17b_1ff2e0599</version>
         </dependency>
         <!-- Satifying display-url-api minimum version -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>display-url-api</artifactId>
-            <version>2.205.ve04eb_51370c3</version>
+            <version>2.204.vf6fddd8a_8b_e9</version>
         </dependency>
         <!-- Satifying ionicons-api minimum version -->
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>ionicons-api</artifactId>
-            <version>75.v56116b_da_f880</version>
+            <version>74.v93d5eb_813d5f</version>
         </dependency>
         <!-- Satifying script-security minimum version -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>script-security</artifactId>
-            <version>1343.v4ee5332b_718b_</version>
+            <version>1341.va_2819b_414686</version>
         </dependency>
         <!-- Satifying matrix-project minimum version -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>matrix-project</artifactId>
-            <version>835.ve327939f05d0</version>
+            <version>832.va_66e270d2946</version>
         </dependency>
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
@@ -178,7 +186,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>ws-cleanup</artifactId>
-            <version>0.47-rc428.5a_149a_5d662a_</version>
+            <version>0.46</version>
         </dependency>
         <dependency>
             <groupId>com.github.spotbugs</groupId>
@@ -194,7 +202,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials-binding</artifactId>
-            <version>678.v697736529f0c</version>
+            <version>677.vdc9d38cb_254d</version>
         </dependency>
     </dependencies>
     <build>

@@ -180,7 +180,7 @@ environment before disabling.  This takes into account enviornments that are dir
     - Unit Test Data format output in SonarQube format 
     - Adding capability to generate an index.html for all .html reports
 - Refactored New Job code to reduce duplication
-- Moved to Jenkins 2.454 and Java 11
+- Moved to Jenkins 2.440 and Java 11
 
 ### Version 0.77 (26 Dec 2023)
 - Updated for findbugs to spotbugs
