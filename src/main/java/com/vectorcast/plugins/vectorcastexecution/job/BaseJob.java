@@ -154,8 +154,6 @@ abstract public class BaseJob {
         this.response = response;
         JSONObject json = request.getSubmittedForm();
         
-        Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSON Info for Base Job Create: " + json.toString());
-
         manageProjectName = json.optString("manageProjectName");
         if (!manageProjectName.isEmpty()) {
             // Force unix style path to avoid problems later
@@ -206,7 +204,7 @@ abstract public class BaseJob {
                 JSONObject jsonImportResults  = json.optJSONObject("importedResults");
                 
                 if (jsonImportResults != null) {
-                    Long int_ext = jsonImportResults.optLong("value",0);
+                    final long int_ext = jsonImportResults.optLong("value",0);
                     
                     if (int_ext == 1) {
                         useLocalImportedResults = true;
@@ -221,7 +219,6 @@ abstract public class BaseJob {
                         }
                     }
                 }
-                Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "ImportedResults: " + jsonImportResults);
             }
             externalResultsFilename  = json.optString("externalResultsFilename", "").replace('\\','/');;
             useCoverageHistory = json.optBoolean("useCoverageHistory", false);

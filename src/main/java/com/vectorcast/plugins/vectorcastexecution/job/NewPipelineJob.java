@@ -176,8 +176,6 @@ public class NewPipelineJob extends BaseJob {
         
         if (! MPName.toLowerCase().endsWith(".vcm")) MPName += ".vcm";
         
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "MPName: " + MPName + "   scmSnippet: " + pipelineSCM);
-
         if (pipelineSCM.length() != 0 && absPath) {
             throw new ScmConflictException(pipelineSCM, MPName);
         }
@@ -193,8 +191,6 @@ public class NewPipelineJob extends BaseJob {
      * @return the project name
      */
     public String getProjectName() {
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
-        
         return projectName;
     }
 
@@ -337,6 +333,9 @@ public class NewPipelineJob extends BaseJob {
         
         //InputStream in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
         BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+
+        // TODO: Should switch to Files for CodeQL
+        // Local information disclosure in a temporary directory
         File configFile = File.createTempFile("config_temp", ".xml");
 
         //FileWriter fw = null
@@ -345,23 +344,19 @@ public class NewPipelineJob extends BaseJob {
 
         try {
             // write out to temp file
-            //fw = new FileWriter(configFile);
-            //bw = new BufferedWriter(fw);
             fosw = new FileOutputStream(configFile);
             osrw = new OutputStreamWriter(fosw, StandardCharsets.UTF_8);
 
-            if (fosw != null && osrw != null) {
-                String line = null;
-                while ((line = br.readLine()) != null) {
-                    osrw.write(line + "\n");
-                }
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                osrw.write(line + "\n");
             }
         } finally {
             // cleanup
-            if (osrw != null) osrw.close();
+            osrw.close();
             br.close();
             in.close();
-            if (fosw != null) fosw.close();
+            fosw.close();
         }
 
         return configFile.getAbsoluteFile();

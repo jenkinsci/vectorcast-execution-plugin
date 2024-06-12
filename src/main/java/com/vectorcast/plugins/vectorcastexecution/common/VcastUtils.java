@@ -40,18 +40,14 @@ public class VcastUtils
         try {
             File file = new File( URLDecoder.decode( VcastUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "utf-8" ) );
             JarFile jarfile = new JarFile( file );
-            if (jarfile != null) {
-                version = Optional.ofNullable( jarfile.getManifest().getMainAttributes().getValue( "Plugin-Version" ) );
-                jarfile.close();            
-            }
-        } 
+            version = Optional.ofNullable( jarfile.getManifest().getMainAttributes().getValue( "Plugin-Version" ) );
+            jarfile.close();        } 
         catch ( FileNotFoundException e ) {
             e.printStackTrace();
         }        
         catch ( IOException e ) {
             e.printStackTrace();
         } 
-
         return version;
     }    
 }
