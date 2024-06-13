@@ -45,6 +45,7 @@
         <vc:jobOptionsLabelNoDefault></vc:jobOptionsLabelNoDefault>
           
         </f:section>
+        <vc:coverageDisplay/>
         <vc:retry></vc:retry>
         <vc:jobOptionsNoDefault></vc:jobOptionsNoDefault>
         <vc:scripts></vc:scripts>

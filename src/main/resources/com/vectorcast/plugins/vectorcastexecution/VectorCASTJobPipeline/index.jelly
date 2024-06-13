@@ -23,68 +23,46 @@
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" 
-         xmlns:st="jelly:stapler" 
-         xmlns:d="jelly:define" 
-         xmlns:l="/lib/layout" 
-         xmlns:t="/lib/hudson" 
-         xmlns:f="/lib/form"
-         xmlns:p="/lib/hudson/project"
-         xmlns:vc="/lib/VectorCAST">
-  <l:layout permission="${permission}" title="${%VCJob.Control.Title}">
-    <l:main-panel>
-      <f:form name="create" action="create" method="post">
-        <h1>${%VCJob.Control.Title}</h1>
-        <p>${%VCJob.Control.Description}</p>
-        
-        
-        <f:section title="${%VCJob.Control.Project}">
-          <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}"
-                   help="/plugin/vectorcast-execution/help-projectPath.html">
-            <f:textbox name="manageProjectName" size="50" required="true" />  
-          </f:entry>
-
-          <vc:jobOptionsLabelMaster></vc:jobOptionsLabelMaster>
-          
-            <f:entry title="${%VCJob.Options.useCBT.title}" description="${%VCJob.Options.useCBT.description}"
-                    help="/plugin/vectorcast-execution/help-optuseCBT.html">
-                <f:checkbox name="useCBT" checked="${instance.useCBT}" default="true"/>
-            </f:entry>        
-            <f:entry title="${%VCJob.Options.useParameters.title}" description="${%VCJob.Options.useParameters.description}"
-                    help="/plugin/vectorcast-execution/help-optuseParameters.html">
-                <f:checkbox name="useParameters" checked="${instance.useParameters}" default="false"/>
-            </f:entry>        
-             
-        </f:section>
-        
-        <vc:retry></vc:retry>
-        <vc:jobOptionsPipeline></vc:jobOptionsPipeline>
-        <vc:pipelineScripts></vc:pipelineScripts>
-        <vc:additionalTools></vc:additionalTools>
-
-        <f:section title="${%VCJob.Control.SCMCheckoutLine}">
-          <f:entry title="${%VCJob.Options.singleCheckout.title}" description="${%VCJob.Options.singleCheckout.description}"
-                    help="/plugin/vectorcast-execution/help-optsingleCheckout.html">
-            <f:checkbox name="singleCheckout" checked="${instance.singleCheckout}" default="false"/>
-          </f:entry>        
-          <f:entry title="${%VCJob.Control.SCMCheckoutLine.snippet.title}" 
-                   description="Pipeline Snippet from Jenkins &lt;a href=&quot;${rootURL}/pipeline-syntax&quot; target=&quot;_blank&quot;&gt; Snippet Generator &lt;/a&gt; for your SCM checkout of the VectorCAST Project and related files"
-                   help="/plugin/vectorcast-execution/help-scmSnippet.html">
-            <f:textarea name="scmSnippet" class="fixed-width" required="false" />
-          </f:entry>
-          <f:entry title="${%VCJob.Control.SCMCheckoutLine.postSCMCheckoutCommands.title}" 
-                   description="Commmands to be run after SCM checkout of the VectorCAST Project and related files"
-                   help="/plugin/vectorcast-execution/help-postSCMCheckoutCommands.html">
-            <f:textarea name="postSCMCheckoutCommands" class="fixed-width" required="false" />
-          </f:entry>
-        </f:section>        
-        
-        <f:section>
-          <f:block>
-            <input type="submit" value="${%VCJob.Control.Submit}" />
-          </f:block>
-        </f:section>
-      </f:form>
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project" xmlns:vc="/lib/VectorCAST">
+    <l:layout permission="${permission}" title="${%VCJob.Control.Title}">
+        <l:main-panel>
+            <f:form name="create" action="create" method="post">
+                <h1>${%VCJob.Control.Title}</h1>
+                <p>${%VCJob.Control.Description}</p>
+                <f:section title="${%VCJob.Control.Project}">
+                    <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}" help="/plugin/vectorcast-execution/help-projectPath.html">
+                        <f:textbox name="manageProjectName" size="50" required="true"/>
+                    </f:entry>
+                    <vc:jobOptionsLabelMaster/>
+                    <f:entry title="${%VCJob.Options.useCBT.title}" description="${%VCJob.Options.useCBT.description}" help="/plugin/vectorcast-execution/help-optuseCBT.html">
+                        <f:checkbox name="useCBT" checked="${instance.useCBT}" default="true"/>
+                    </f:entry>
+                    <f:entry title="${%VCJob.Options.useParameters.title}" description="${%VCJob.Options.useParameters.description}" help="/plugin/vectorcast-execution/help-optuseParameters.html">
+                        <f:checkbox name="useParameters" checked="${instance.useParameters}" default="false"/>
+                    </f:entry>
+                </f:section>
+                <vc:coverageDisplay/>
+                <vc:retry/>
+                <vc:jobOptionsPipeline/>
+                <vc:pipelineScripts/>
+                <vc:additionalTools/>
+                <f:section title="${%VCJob.Control.SCMCheckoutLine}">
+                    <f:entry title="${%VCJob.Options.singleCheckout.title}" description="${%VCJob.Options.singleCheckout.description}" help="/plugin/vectorcast-execution/help-optsingleCheckout.html">
+                        <f:checkbox name="singleCheckout" checked="${instance.singleCheckout}" default="false"/>
+                    </f:entry>
+                    <f:entry title="${%VCJob.Control.SCMCheckoutLine.snippet.title}" description="Pipeline Snippet from Jenkins &lt;a href=&quot;${rootURL}/pipeline-syntax&quot; target=&quot;_blank&quot;&gt; Snippet Generator &lt;/a&gt; for your SCM checkout of the VectorCAST Project and related files" help="/plugin/vectorcast-execution/help-scmSnippet.html">
+                        <f:textarea name="scmSnippet" class="fixed-width" required="false"/>
+                    </f:entry>
+                    <f:entry title="${%VCJob.Control.SCMCheckoutLine.postSCMCheckoutCommands.title}" description="Commmands to be run after SCM checkout of the VectorCAST Project and related files" help="/plugin/vectorcast-execution/help-postSCMCheckoutCommands.html">
+                        <f:textarea name="postSCMCheckoutCommands" class="fixed-width" required="false"/>
+                    </f:entry>
+                </f:section>
+                <f:section>
+                    <f:block>
+                        <input type="submit" value="${%VCJob.Control.Submit}"/>
+                    </f:block>
+                </f:section>
+            </f:form>
+        </l:main-panel>
+    </l:layout>
 </j:jelly>
