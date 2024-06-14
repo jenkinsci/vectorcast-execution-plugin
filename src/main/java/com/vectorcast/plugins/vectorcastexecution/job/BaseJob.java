@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+ * Copyright 2024 Vector Software, East Greenwich, Rhode Island USA
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,9 @@ import org.kohsuke.stapler.StaplerResponse;
 import hudson.tasks.junit.JUnitResultArchiver;
 import io.jenkins.plugins.analysis.warnings.PcLint;
 import io.jenkins.plugins.analysis.core.steps.IssuesRecorder;
+import io.jenkins.plugins.coverage.metrics.steps.CoverageRecorder;
+import io.jenkins.plugins.coverage.metrics.steps.CoverageTool;
+import io.jenkins.plugins.coverage.metrics.steps.CoverageTool.Parser;
 import org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper;
 import org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding;
 import org.jenkinsci.plugins.credentialsbinding.MultiBinding;
@@ -53,6 +56,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.ArrayList;
 
 /**
  * Base job management - create/delete/update
@@ -97,6 +101,9 @@ abstract public class BaseJob {
 
     /** Use strict testcase import */
     private boolean useStrictTestcaseImport;
+    
+    /** Use coveagePlugin */
+    private boolean useCoveragePlugin = true;
 
     /** Use imported results */
     private boolean useImportedResults = false;
@@ -198,6 +205,11 @@ abstract public class BaseJob {
             useCILicenses  = json.optBoolean("useCiLicense", false);
             useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
             useImportedResults  = json.optBoolean("useImportedResults", false);
+            if (json.optInt("coverageDisplayOption", 0) == 0) {
+                useCoveragePlugin = true;
+            } else {
+                useCoveragePlugin = false;
+            }
             externalResultsFilename = "";
             
             if (useImportedResults) {
@@ -264,6 +276,7 @@ abstract public class BaseJob {
         useCoverageHistory = savedData.getUseCoverageHistory();
         maxParallel = savedData.getMaxParallel();
 
+        useCoveragePlugin = savedData.getUseCoveragePlugin();
         usingSCM = savedData.getUsingSCM();
         scm = savedData.getSCM();
 
@@ -477,6 +490,20 @@ abstract public class BaseJob {
      */
     protected void setUseStrictTestcaseImport(boolean useStrictTestcaseImport) {
         this.useStrictTestcaseImport = useStrictTestcaseImport;
+    }    
+    /**
+     * Get option to use coverage plugin or vectorcast coverage plugin
+     * @return true use coverage plugin or vectorcast coverage plugin
+     */
+    protected boolean getUseCoveragePlugin() {
+        return useCoveragePlugin;
+    }
+    /**
+     * Set option to use coverage plugin or vectorcast coverage plugin
+     * @param useCoveragePlugin use coverage plugin or vectorcast coverage plugin
+     */
+    protected void setUseCoveragePlugin(boolean useCoveragePlugin) {
+        this.useCoveragePlugin = useCoveragePlugin;
     }    
     /**
      * Get option to Use imported results
@@ -952,6 +979,22 @@ abstract public class BaseJob {
         publisher.includes = "**/coverage_results_*.xml";
         publisher.healthReports = healthReports;
         publisher.setUseCoverageHistory(useCoverageHistory);
+        project.getPublishersList().add(publisher);
+    }
+    /**
+     * Add Jenkins coverage reporting step
+     * @param project project to add step to
+     */
+    protected void addJenkinsCoverage(Project project) {
+        CoverageTool tool = new CoverageTool();
+        tool.setParser(Parser.VECTORCAST);
+        tool.setPattern("xml_data/cobertura/coverage_results*.xml");        
+        List<CoverageTool> list = new ArrayList<CoverageTool>();
+        list.add(tool);
+
+        CoverageRecorder publisher = new CoverageRecorder();
+        publisher.setTools(list);
+        
         project.getPublishersList().add(publisher);
     }
     protected void addCredentialID(Project project) {

@@ -725,6 +725,6 @@ if __name__ == '__main__':
     except Exception as e:
         azure = False        
         
-    generateCoverageResults(inFile, azure, "cov_plugin")
+    generateCoverageResults(inFile, azure)
 
 

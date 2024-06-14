@@ -60,6 +60,7 @@ public class NewSingleJobTest {
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
+        jsonForm.put("coverageDisplayOption", 1);
         when(request.getSubmittedForm()).thenReturn(jsonForm);
 
         NewSingleJob job = new NewSingleJob(request, response);

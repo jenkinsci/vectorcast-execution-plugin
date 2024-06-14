@@ -452,6 +452,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
             "VC_UseCILicense = " + VC_Use_CI + "\n" +  
             "VC_useCBT = " + incremental + "\n" +  
+            "VC_useCoveragePlugin = " + getUseCoveragePlugin() + "\n" +
             "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
             "VC_usePCLintPlus = " + String.valueOf(getPclpCommand().length() != 0) + "\n" +  
             "VC_pclpCommand = '" + getPclpCommand() + "'\n" +  

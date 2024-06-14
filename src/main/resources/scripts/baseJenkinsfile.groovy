@@ -869,6 +869,10 @@ pipeline {
                         // run the metrics at the end
                         buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
 
+                        if (VC_useCoveragePlugin) {
+                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/cobertura.py  ${VC_Manage_Project}""")
+                        }
+                        
                         cmds =  """                         
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py ${mpName} --rptfmt HTML
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/full_report_no_toc.py "${VC_Manage_Project}"
@@ -904,13 +908,19 @@ pipeline {
                             currResult = currentBuild.result
                         }
                         
-                        // Send reports to the code coverage plugin
-                        step([$class: 'VectorCASTPublisher', 
-                            includes: 'xml_data/coverage_results*.xml', 
-                            useThreshold: VC_Use_Threshold,        
-                            healthyTarget:   VC_Healthy_Target,
-                            useCoverageHistory: VC_useCoverageHistory,
-                            maxHistory : 20])
+                        if (VC_useCoveragePlugin) {
+                            // Send reports to the Jenkins Coverage Plugin
+                            recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
+                                
+                        } else {
+                            // Send reports to the VectorCAST Soverage Plugin
+                            step([$class: 'VectorCASTPublisher', 
+                                includes: 'xml_data/coverage_results*.xml', 
+                                useThreshold: VC_Use_Threshold,        
+                                healthyTarget:   VC_Healthy_Target,
+                                useCoverageHistory: VC_useCoverageHistory,
+                                maxHistory : 20])
+                        }
                             
                         if (VC_useCoverageHistory) {
                             if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {

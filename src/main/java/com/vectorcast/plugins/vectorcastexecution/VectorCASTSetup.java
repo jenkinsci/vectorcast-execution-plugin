@@ -86,6 +86,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private boolean useImportedResults = false;
     private boolean useLocalImportedResults = false;
     private boolean useExternalImportedResults = false;
+    private boolean useCoveragePlugin = true;
     private String  externalResultsFilename;
 
     /** Use coverage history to control build status */
@@ -344,6 +345,20 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseStrictTestcaseImport(boolean useStrictTestcaseImport) {
         this.useStrictTestcaseImport = useStrictTestcaseImport;
+    }    
+    /**
+     * Get option to use coverage plugin or vectorcast coverage plugin
+     * @return true use coverage plugin or vectorcast coverage plugin
+     */
+    public boolean getUseCoveragePlugin() {
+        return useCoveragePlugin;
+    }
+    /**
+     * Set option to use coverage plugin or vectorcast coverage plugin
+     * @param useCoveragePlugin use coverage plugin or vectorcast coverage plugin
+     */
+    public void setUseCoveragePlugin(boolean useCoveragePlugin) {
+        this.useCoveragePlugin = useCoveragePlugin;
     }    
     /**
      * Get option to Use imported results

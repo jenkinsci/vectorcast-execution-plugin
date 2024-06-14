@@ -172,7 +172,14 @@ public class NewSingleJob extends BaseJob {
         } else {
             addEnvVars += "set VCAST_USE_IMPORTED_RESULTS=FALSE\n";
         }
-       
+        
+        if (getUseCoveragePlugin()) {
+            addEnvVars += "set VCAST_USE_COVERAGE_PLUGIN=TRUE\n";
+        } else {
+            addEnvVars += "set VCAST_USE_COVERAGE_PLUGIN=FALSE\n";
+        }
+        
+
         String pluginVersion = VcastUtils.getVersion().orElse( "Unknown" );    
         String win = 
 ":: Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
@@ -212,10 +219,11 @@ getExecutePreambleWin() +
             win +=
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + " --buildlog complete_build.log\n" +
-
+"\"%VCAST_USE_COVERAGE_PLUGIN%\"==\"TRUE\" ( \n" +
+"   %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\cobertura.py\" --project \\\"@PROJECT@\\\"\n" +
+")\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\full_report_no_toc.py\" \"@PROJECT@\" \n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\fixup_reports.py\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n" +
-
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=\\\"@PROJECT_BASE@_full_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" + 
@@ -257,6 +265,12 @@ getExecutePreambleWin() +
             addEnvVars += "VCAST_USE_IMPORTED_RESULTS=0\n";
         }
         
+        if (getUseCoveragePlugin()) {
+            addEnvVars += "VCAST_USE_COVERAGE_PLUGIN=1\n";
+        } else {
+            addEnvVars += "VCAST_USE_COVERAGE_PLUGIN=0\n";
+        }
+        
         String unix = 
 "##Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 getEnvironmentSetupUnix() + "\n" +
@@ -295,6 +309,9 @@ if (getOptionUseReporting()) {
             unix +=
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + " --buildlog complete_build.log\n" +
+"if [[ $VCAST_USE_COVERAGE_PLUGIN -eq 1 ]] ; then \n" +
+"   $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/cobertura.py\" --project \\\"@PROJECT@\\\"\n" +
+"fi\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/full_report_no_toc.py\" \"@PROJECT@\" \n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/fixup_reports.py\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
@@ -505,7 +522,11 @@ if (getOptionUseReporting()) {
             addArchiveArtifacts(getTopProject());
             addPCLintPlus(getTopProject());
             addJunit(getTopProject());
-            addVCCoverage(getTopProject());
+            if (getUseCoveragePlugin()) {
+                addJenkinsCoverage(getTopProject());
+            } else {
+                addVCCoverage(getTopProject());
+            }
             addGroovyScriptSingleJob();
             if (getTESTinsights_URL().length() != 0) {
                 addCredentialID(getTopProject());
