@@ -31,10 +31,7 @@ import sys, os
 from collections import defaultdict
 from pprint import pprint
 
-
 fileList = []
-
-extended = False
 
 def dump(obj):
     if hasattr(obj, '__dict__'): 
@@ -323,7 +320,7 @@ def processStatementBranchMCDC(fileApi, lines):
     return linesCovered, linesTotal
     
                         
-def procesCoverage(coverXML, coverApi):             
+def procesCoverage(coverXML, coverApi, extended = False):             
     
     methods, lines = getFileXML(coverXML, coverApi)
 
@@ -368,14 +365,14 @@ def procesCoverage(coverXML, coverApi):
 
     return processStatementBranchMCDC(coverApi, lines)
     
-def runCoverageResultsMP(packages, mpFile, verbose = False):
+def runCoverageResultsMP(packages, mpFile, verbose = False, extended=False):
 
     vcproj = VCProjectApi(mpFile)
     api = vcproj.project.cover_api
     
-    return runCoberturaResults(packages, api)
+    return runCoberturaResults(packages, api, verbose = False, extended = extended)
     
-def runCoberturaResults(packages, api, verbose = False):
+def runCoberturaResults(packages, api, verbose = False, extended = False):
         
     total_br = 0
     total_st = 0
@@ -534,8 +531,7 @@ def runCoberturaResults(packages, api, verbose = False):
             pkg_cov_fc   = 0
             pkg_cov_mcdc = 0
             pkg_vg       = 0
-            
-            
+                
         if verbose:
             print ("adding data for " + path)
             
@@ -568,7 +564,7 @@ def runCoberturaResults(packages, api, verbose = False):
         total_func += funcTotal
         cov_func += funcCovTotal
         
-        linesCovered, linesTotal = procesCoverage(classes, file)
+        linesCovered, linesTotal = procesCoverage(classes, file, extended)
         
         total_lines += linesTotal
         cov_lines   += linesCovered
@@ -652,7 +648,10 @@ def runCoberturaResults(packages, api, verbose = False):
     return total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, vg
             
 
-def generateCoverageResults(inFile, azure, xml_data_dir = "xml_data"):
+def generateCoverageResults(inFile, azure, xml_data_dir = "xml_data", verbose = False, extended = False):
+    
+    cwd = os.getcwd()
+    xml_data_dir = os.path.join(cwd,xml_data_dir)
     
     #coverage results
     coverages=etree.Element("coverage")
@@ -668,11 +667,12 @@ def generateCoverageResults(inFile, azure, xml_data_dir = "xml_data"):
     if inFile.endswith(".vce"):
         api=UnitTestApi(inFile)
         cdb = api.environment.get_coverdb_api()
-        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoberturaResults(packages, cdb, False)
+        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoberturaResults(packages, cdb, verbose=verbose, extended=extended)
     elif inFile.endswith(".vcp"):
-        api=CoverAPI(inFile)
+        api=CoverApi(inFile)
+        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoberturaResults(packages, api, verbose=verbose, extended=extended)
     else:        
-        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoverageResultsMP(packages, inFile)
+        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoverageResultsMP(packages, inFile, verbose=verbose, extended=extended)
 
     if line_rate   != -1.0: coverages.attrib['line-rate']             = str(line_rate) 
     if statement_rate   != -1.0: coverages.attrib['statement-rate']        = str(statement_rate) 
@@ -715,16 +715,20 @@ def generateCoverageResults(inFile, azure, xml_data_dir = "xml_data"):
              
 if __name__ == '__main__':
     
+    extended = False
+    azure = False
+    
     inFile = sys.argv[1]
     try:
         if "--azure" == sys.argv[2]:
             azure = True
             print ("using azure mode")
-        else:
-            azure = False
+        elif "--extended" == sys.argv[2]:
+            extended = True
     except Exception as e:
         azure = False        
+        extended = False        
         
-    generateCoverageResults(inFile, azure)
+    generateCoverageResults(inFile, azure, xml_data_dir = "xml_data", verbose = False, extended = extended)
 
 

@@ -186,7 +186,10 @@ class VectorCASTExecute(object):
         self.failed_count, self.passed_count = generate_results.buildReports(self.FullMP,self.level,self.environment, True, self.timing, xml_data_dir = self.xml_data_dir)
         
         # calculate the failed percentage
-        self.failed_pct = 100 * self.failed_count/ (self.failed_count + self.passed_count)
+        if (self.failed_count + self.passed_count > 0):
+            self.failed_pct = 100 * self.failed_count/ (self.failed_count + self.passed_count)
+        else:
+            self.failed_pct = 0
         
         # if the failed percentage is less that the specified limit (default = 0)
         # clear the failed count
@@ -201,9 +204,7 @@ class VectorCASTExecute(object):
         else:
             print("Creating Cobertura Metrics")
 
-        cobertura.verbose = self.verbose
-        cobertura.extended = self.cobertura_extended
-        cobertura.generateCoverageResults(self.FullMP, self.azure, self.xml_data_dir)
+        cobertura.generateCoverageResults(self.FullMP, self.azure, self.xml_data_dir, verbose = self.verbose, extended=self.cobertura_extended)
 
     def runSonarQubeMetrics(self):
         print("Creating SonarQube Metrics")
