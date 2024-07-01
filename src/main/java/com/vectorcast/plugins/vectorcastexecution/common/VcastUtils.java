@@ -27,9 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Optional;
-import java.util.jar.Attributes;
 import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.io.FileNotFoundException;
 
 public class VcastUtils

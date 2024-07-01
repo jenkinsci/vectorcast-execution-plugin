@@ -28,8 +28,6 @@ import hudson.model.RootAction;
 
 import java.util.List;
 import jenkins.model.Jenkins;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
@@ -123,10 +121,8 @@ public class VectorCASTJobRoot implements RootAction {
         for (JobBase ui : getAll()) {
             if (ui != null) {
                 String urlName = ui.getUrlName();
-                if (urlName != null) {
-                    if (urlName.equals(name)) {
+                if (urlName != null && urlName.equals(name)) {
                         return ui;
-                    }
                 }
             }
         }

@@ -73,7 +73,7 @@ abstract public class BaseJob {
     /** Base name generated from the manage project name */
     private String baseName;
     /** Top-level project */
-    private Project topProject;
+    protected Project topProject;
     /** Environment setup for windows */
     private String environmentSetupWin;
     /** Environment setup for unix */
@@ -171,9 +171,7 @@ abstract public class BaseJob {
         baseName = FilenameUtils.getBaseName(manageProjectName);
 
         this.useSavedData = useSavedData;
-        if (useSavedData) {
-            // Data will be set later
-        } else {
+        if (!useSavedData) {
             this.usingSCM = false;
 
             environmentSetupWin = json.optString("environmentSetupWin");
@@ -232,12 +230,12 @@ abstract public class BaseJob {
                     }
                 }
             }
-            externalResultsFilename  = json.optString("externalResultsFilename", "").replace('\\','/');;
+            externalResultsFilename  = json.optString("externalResultsFilename", "").replace('\\','/');
             useCoverageHistory = json.optBoolean("useCoverageHistory", false);
             maxParallel = json.optLong("maxParallel", 0);
             
             /* Additional Tools */
-            pclpCommand = json.optString("pclpCommand", "").replace('\\','/');;
+            pclpCommand = json.optString("pclpCommand", "").replace('\\','/');
             pclpResultsPattern = json.optString("pclpResultsPattern", "");
             squoreCommand = json.optString("squoreCommand", "").replace('\\','/');
             TESTinsights_URL = json.optString("TESTinsights_URL", "");

@@ -335,13 +335,10 @@ if (getOptionUseReporting()) {
      */
     private void addGroovyScriptSingleJob() {
         String html_text;
-        String html_newline;
         if (getOptionHTMLBuildDesc().equalsIgnoreCase("HTML")) {
             html_text = ".html";
-            html_newline = "<br>";
         } else {
             html_text = ".txt";
-            html_newline = "\\n";
         }
         String script = 
 "import hudson.FilePath\n" +

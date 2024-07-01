@@ -523,7 +523,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @return true/false if we have a PC Lint Command
      */
     public boolean getUsingPCLP() {
-        return (pclpCommand.length() != 0);
+        return pclpCommand.length() != 0;
     }
     /**
      * Get pc-lint plus result pattern
@@ -545,7 +545,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @return true/false if we have a squoreCommand
      */
     public boolean getUsingSquoreCommand() {
-        return (squoreCommand.length() != 0);
+        return squoreCommand.length() != 0;
     }
 
     /**
@@ -856,7 +856,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 try {
                     jFile.close();
                 } catch (IOException ex) {
-                    // Ignore
+                    assert true;
                 }
             }
         }
@@ -868,11 +868,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         {
             for (File file : files) 
             {
-                if (file.isFile()) 
-                {
-                    if (!file.delete()) {
-                        throw new IOException("Unable to delete file: " + file.getAbsolutePath());   
-                    }               
+                if (file.isFile() && !file.delete()) {
+                    throw new IOException("Unable to delete file: " + file.getAbsolutePath());   
                 }
             }
         }
@@ -908,7 +905,6 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             return Messages.VectorCASTSetup_DisplayName();
         }
     }
-    private static final Logger logger = Logger.getLogger(VectorCASTSetup.class.getName());
     
     @Override
     public String toString() {
