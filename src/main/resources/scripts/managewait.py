@@ -44,7 +44,6 @@ class ManageWait(object):
         self.wait_loops = wait_loops
         self.verbose = verbose
         self.command_line = command_line
-        self.encFmt = 'utf-8'
         
         # get the VC langaguge and encoding
         self.encFmt = 'utf-8'
@@ -60,6 +59,8 @@ class ManageWait(object):
         except:
             pass
         
+        os.environ['PYTHONIOENCODING'] = self.encFmt
+                    
     def enqueueOutput(self, io_target, queue, logfile):
         while True:
             line = io_target.readline()
@@ -79,7 +80,7 @@ class ManageWait(object):
         self.io_t.start()
 
     def exec_manage(self, silent=False):
-        with open("command.log", 'a') as logfile:
+        with open("command.log", 'a', encoding=self.encFmt) as logfile:
             return self.__exec_manage(silent, logfile)
 
     def __exec_manage(self, silent, logfile):
@@ -89,12 +90,12 @@ class ManageWait(object):
         
         if self.verbose:
             logfile.write( "\nVerbose: %s\n" % callStr)
-            
+
         # capture the output of the manage call
         loop_count = 0
         while 1:
             loop_count += 1
-            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True, encoding=self.encFmt)
             
             self.startOutputThread(p.stdout, logfile)
             
@@ -156,6 +157,7 @@ class ManageWait(object):
  
 ## main
 if __name__ == '__main__':
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose',   help='Enable verbose output', action="store_true")
     parser.add_argument('--command_line',   help='Command line to pass to Manage', required=True)
