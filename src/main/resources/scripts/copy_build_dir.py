@@ -31,6 +31,7 @@ import tarfile
 import sqlite3
 import shutil
 import tee_print
+from patch_rgw_directory import getReqRepo
 
 global build_dir
 
@@ -87,10 +88,12 @@ def addFile(tf, file, backOneDir = False):
     except:
         pass
         
-def addDirectory(tf, dir):
-    global build_dir
+def addDirectory(tf, build_dir, dir):
     
-    rootDir = os.path.join(build_dir,dir)
+    if build_dir is None:
+        rootDir = dir
+    else:
+        rootDir = os.path.join(build_dir,dir).replace("\\","/")
              
     for dirName, subdirList, fileList in os.walk(rootDir):
         for fname in fileList:
@@ -160,18 +163,28 @@ if __name__ == '__main__':
     os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(ManageProjectName).rsplit(".",1)[0]
 
     manageCMD = os.path.join(os.environ.get('VECTORCAST_DIR'), "manage")
-    p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,
+    cmd = manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env
+    print(cmd)
+    p = subprocess.Popen(cmd,
                          shell=True,
                          stdout=subprocess.PIPE,
                          universal_newlines=True)
     out, err = p.communicate()
     list = out.splitlines()
     build_dir = ''
+
     for str in list:
         if "Build Directory:" in str:
             length = len(str.split()[0]) + 1 + len(str.split()[1]) + 1 
             build_dir = os.path.relpath(str[length:])
 
+    try:
+        rgwDir = getReqRepo(ManageProjectName).replace("\\","/").replace(workspace+"/","")
+        rgwExportDir = os.path.join(rgwDir, "requirements_gateway/export_data")
+    except:
+        pass
+        
+        
     if build_dir != "":
         build_dir = build_dir + os.path.sep + Env
         tf = tarfile.open(BaseName + "_build.tar", mode='w')
@@ -185,7 +198,7 @@ if __name__ == '__main__':
             addFile(tf, "testcase_data.xml")
             addFile(tf, "*.LIS")
             addFile(tf, "system_test_results.xml")
-            addDirectory(tf, "TESTCASES")
+            addDirectory(tf, build_dir, "TESTCASES")
             addFile(tf, Env + ".vce", backOneDir=True)
             addFile(tf, Env + ".vcp", backOneDir=True)
             addFile(tf, Env + ".env", backOneDir=True)
@@ -193,6 +206,8 @@ if __name__ == '__main__':
             addFile(tf, Env + "_cba.cvr", backOneDir=True)
             addFile(tf, "vcast_manage.cfg", backOneDir=True)
             
-           
+            if rgwDir is not None:
+                addDirectory(tf, None, rgwExportDir)
+
         finally:
             tf.close()
