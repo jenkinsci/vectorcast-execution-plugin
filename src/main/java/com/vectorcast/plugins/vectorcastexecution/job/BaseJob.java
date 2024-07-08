@@ -102,6 +102,9 @@ abstract public class BaseJob {
     /** Use strict testcase import */
     private boolean useStrictTestcaseImport;
     
+    /** Allow RGW3 test to be executed and exported  */
+    private boolean useRGW3;
+    
     /** Use coveagePlugin */
     private boolean useCoveragePlugin = true;
 
@@ -202,6 +205,7 @@ abstract public class BaseJob {
             
             useCILicenses  = json.optBoolean("useCiLicense", false);
             useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
+            useRGW3  = json.optBoolean("useRGW3", false);
             useImportedResults  = json.optBoolean("useImportedResults", false);
             if (json.optInt("coverageDisplayOption", 0) == 0) {
                 useCoveragePlugin = true;
@@ -267,6 +271,7 @@ abstract public class BaseJob {
         optionClean = savedData.getOptionClean();
         useCILicenses = savedData.getUseCILicenses();
         useStrictTestcaseImport = savedData.getUseStrictTestcaseImport();
+        useRGW3 = savedData.getUseRGW3();
         useImportedResults = savedData.getUseImportedResults();
         useLocalImportedResults = savedData.getUseLocalImportedResults();
         useExternalImportedResults = savedData.getUseExternalImportedResults();
@@ -488,6 +493,20 @@ abstract public class BaseJob {
      */
     protected void setUseStrictTestcaseImport(boolean useStrictTestcaseImport) {
         this.useStrictTestcaseImport = useStrictTestcaseImport;
+    }    
+    /**
+     * Get option to Use RGW3 capabilities
+     * @return true use RGW3 capabilities, false to not
+     */
+    protected boolean getUseRGW3() {
+        return useRGW3;
+    }
+    /**
+     * Set option to use RGW3 capabilities
+     * @param useRGW3 true to allow RGW3 test cases to run and export
+     */
+    protected void setUseRGW3(boolean useRGW3) {
+        this.useRGW3 = useRGW3;
     }    
     /**
      * Get option to use coverage plugin or vectorcast coverage plugin
@@ -870,6 +889,7 @@ abstract public class BaseJob {
                                     optionClean,
                                     useCILicenses,
                                     useStrictTestcaseImport,
+                                    useRGW3,
                                     useImportedResults,
                                     useLocalImportedResults,
                                     useExternalImportedResults,

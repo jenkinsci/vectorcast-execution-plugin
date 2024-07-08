@@ -164,7 +164,6 @@ if __name__ == '__main__':
 
     manageCMD = os.path.join(os.environ.get('VECTORCAST_DIR'), "manage")
     cmd = manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env
-    print(cmd)
     p = subprocess.Popen(cmd,
                          shell=True,
                          stdout=subprocess.PIPE,
@@ -180,7 +179,7 @@ if __name__ == '__main__':
 
     try:
         rgwDir = getReqRepo(ManageProjectName).replace("\\","/").replace(workspace+"/","")
-        rgwExportDir = os.path.join(rgwDir, "requirements_gateway/export_data")
+        rgwExportDir = os.path.join(rgwDir, "requirements_gateway/export_data").replace("\\","/")
     except:
         pass
         
@@ -205,7 +204,7 @@ if __name__ == '__main__':
             addFile(tf, Env + ".tst", backOneDir=True)
             addFile(tf, Env + "_cba.cvr", backOneDir=True)
             addFile(tf, "vcast_manage.cfg", backOneDir=True)
-            
+
             if rgwDir is not None:
                 addDirectory(tf, None, rgwExportDir)
 

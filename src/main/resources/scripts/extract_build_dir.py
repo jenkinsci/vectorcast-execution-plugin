@@ -26,7 +26,15 @@ from __future__ import print_function
 
 import os
 import tarfile
+import sys
 
+leaveFiles = False
+try:
+    if len(sys.argv) > 1:
+        leaveFiles = True
+except:
+    pass
+    
 for file in os.listdir("."):
     if file.endswith("_build.tar"):
         print("* Extracting " + file)
@@ -36,4 +44,6 @@ for file in os.listdir("."):
             tf.close()
         except:
             print("Problem with tarfile " + file + "...skipping")
-        os.remove(file)
+        
+        if not leaveFiles:
+            os.remove(file)

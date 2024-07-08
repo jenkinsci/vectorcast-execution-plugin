@@ -507,15 +507,25 @@ def transformIntoStep(inputString) {
                     // set options for each manage project pulled out out of SCM
                     setupManageProject()
                 }
-                                
+
                 // setup the commands for building, executing, and transferring information
-                cmds =  """
+                if (VC_useRGW3) {
+                    cmds =  """
+                        ${VC_EnvSetup}
+                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/patch_rgw_directory.py "${VC_Manage_Project}"
+                        ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+                        ${VC_EnvTeardown}
+                    """
+                } else {
+        
+                    cmds =  """
                     ${VC_EnvSetup}
                     ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
                     ${VC_EnvTeardown}
-                """
+                    """
+                }            
                 
-                
+               
                 // setup build lot test variable to hold all VC commands results for this job
                 def buildLogText = ""
                 
@@ -844,8 +854,8 @@ pipeline {
                             }
                         } 
                         
-			concatenateBuildLogs(buildFileNames, "unstashed_build.log")
-			
+            concatenateBuildLogs(buildFileNames, "unstashed_build.log")
+            
                         // get the manage project's base name for use in rebuild naming
                         def mpName = getMPname()
                                                 
@@ -859,7 +869,7 @@ pipeline {
                                
                             cmds = """
                                 _RM ${coverDBpath}
-                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py
+                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py  --leave_files
                                 _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --refresh"
                             """
                             buildLogText += runCommands(cmds)
@@ -868,6 +878,7 @@ pipeline {
 
                         // run the metrics at the end
                         buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --clicast-args rgw export" """)
 
                         if (VC_useCoveragePlugin) {
                             buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/cobertura.py  ${VC_Manage_Project}""")

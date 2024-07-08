@@ -685,6 +685,10 @@ class GenerateManageXml (BaseGenerateXml):
         for env in environments:
             if not env.is_active:
                 continue
+            try:
+                n = len(env.api.SourceFile.all())
+            except:
+                continue
             for srcFile in env.api.SourceFile.all():
                 display_path = srcFile.display_path
                 if display_path not in localDisplayPaths:

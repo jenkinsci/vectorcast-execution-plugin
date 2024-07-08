@@ -53,6 +53,11 @@
                 help="/plugin/vectorcast-execution/help-optuseStrictTestcaseImport.html">
                 <f:checkbox name="useStrictTestcaseImport" checked="${instance.useStrictTestcaseImport}" default="true"/>
             </f:entry>        
+            <f:entry title="${%VCJob.JobOptions.useRGW3.title}" 
+                description="${%VCJob.JobOptions.useRGW3.description}"
+                help="/plugin/vectorcast-execution/help-optuseRGW3.html">
+                <f:checkbox name="useRGW3" checked="${instance.useRGW3}" default="false"/>
+            </f:entry>        
             <f:optionalBlock title="Use Imported Results" 
                 checked="${instance.useImportedResults}" inline="true" 
                 help="/plugin/vectorcast-execution/help-optuseImportedResults.html"

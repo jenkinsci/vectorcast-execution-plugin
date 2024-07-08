@@ -82,6 +82,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private boolean useCILicenses;
     /** Use strict testcase import */
     private boolean useStrictTestcaseImport;
+    /** Use RGW3 */
+    private boolean useRGW3;
     /** Use imported results */
     private boolean useImportedResults = false;
     private boolean useLocalImportedResults = false;
@@ -345,6 +347,21 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseStrictTestcaseImport(boolean useStrictTestcaseImport) {
         this.useStrictTestcaseImport = useStrictTestcaseImport;
+    }    
+    
+    /**
+     * Get option to Use RGW3 capabilities
+     * @return true use RGW3 capabilities, false to not
+     */
+    public boolean getUseRGW3() {
+        return useRGW3;
+    }
+    /**
+     * Set option to use RGW3 capabilities
+     * @param useRGW3 true to allow RGW3 test cases to run and export
+     */
+    public void setUseRGW3(boolean useRGW3) {
+        this.useRGW3 = useRGW3;
     }    
     /**
      * Get option to use coverage plugin or vectorcast coverage plugin
@@ -664,6 +681,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param optionClean clean
      * @param useCILicenses use CI licenses
      * @param useStrictTestcaseImport Use strict testcase import
+     * @param useRGW3 Use RGW3 capabilities
      * @param useImportedResults use imported results
      * @param useLocalImportedResults use local imported results
      * @param useExternalImportedResults use extern imported results
@@ -699,6 +717,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            boolean optionClean,
                            boolean useCILicenses,
                            boolean useStrictTestcaseImport,
+                           boolean useRGW3,
                            boolean useImportedResults,
                            boolean useLocalImportedResults,
                            boolean useExternalImportedResults,
@@ -732,6 +751,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.optionClean = optionClean;
         this.useCILicenses = useCILicenses;
         this.useStrictTestcaseImport = useStrictTestcaseImport;
+        this.useRGW3 = useRGW3;
         this.useImportedResults = useImportedResults;
         this.useLocalImportedResults = useLocalImportedResults;
         this.useExternalImportedResults = useExternalImportedResults;
@@ -923,6 +943,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t optionClean: " + optionClean +  "\n"
     			+ "\t useCILicenses: " + useCILicenses +  "\n"
     			+ "\t useStrictTestcaseImport: " + useStrictTestcaseImport +  "\n"
+    			+ "\t useRGW3: " + useRGW3 +  "\n"
     			+ "\t useImportedResults: " + useImportedResults +  "\n"
     			+ "\t useLocalImportedResults: " + useLocalImportedResults +  "\n"
     			+ "\t useExternalImportedResults: " + useExternalImportedResults +  "\n"

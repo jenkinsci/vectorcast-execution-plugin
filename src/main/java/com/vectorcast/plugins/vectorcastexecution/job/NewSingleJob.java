@@ -154,6 +154,12 @@ public class NewSingleJob extends BaseJob {
             addEnvVars += "set VCAST_USE_STRICT_IMPORT=FALSE\n";
         }
         
+        if (getUseRGW3()) {
+            addEnvVars += "set VCAST_USE_RGW3=TRUE\n";
+        } else {
+            addEnvVars += "set VCAST_USE_RGW3=FALSE\n";
+        }
+        
         if (getUseLocalImportedResults()) {
             addEnvVars += "set VCAST_USE_LOCAL_IMPORTED_RESULTS=TRUE\n";
         } else {
@@ -219,7 +225,10 @@ getExecutePreambleWin() +
             win +=
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + " --buildlog complete_build.log\n" +
-"\"%VCAST_USE_COVERAGE_PLUGIN%\"==\"TRUE\" ( \n" +
+"if \"%VCAST_USE_RGW3\"==\"TRUE\" (\n" +
+"   %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --clicast-args rgw export\"\n" +
+")\n" + 
+"if \"%VCAST_USE_COVERAGE_PLUGIN%\"==\"TRUE\" ( \n" +
 "   %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\cobertura.py\" \"@PROJECT@\"\n" +
 ")\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\full_report_no_toc.py\" \"@PROJECT@\" \n" +
@@ -243,6 +252,12 @@ getExecutePreambleWin() +
         } else {
             addEnvVars += "VCAST_USE_STRICT_IMPORT=0\n";
         }
+        if (getUseRGW3()) {
+            addEnvVars += "VCAST_USE_RGW3=1\n";
+        } else {
+            addEnvVars += "VCAST_USE_RGW3=0\n";
+        }
+        
         if (getUseLocalImportedResults()) {
             addEnvVars += "VCAST_USE_LOCAL_IMPORTED_RESULTS=1\n";
         } else {
@@ -308,6 +323,9 @@ if (getOptionUseReporting()) {
             unix +=
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + " --buildlog complete_build.log\n" +
+"if [[ $VCAST_USE_RGW3 -eq 1 ]] ; then \n" +
+"   $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() +      " --command_line \"--project \\\"@PROJECT@\\\" --clicast-args rgw export\\\"\"\n" +
+")\n" + 
 "if [[ $VCAST_USE_COVERAGE_PLUGIN -eq 1 ]] ; then \n" +
 "   $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/cobertura.py\" \"@PROJECT@\"\n" +
 "fi\n" +

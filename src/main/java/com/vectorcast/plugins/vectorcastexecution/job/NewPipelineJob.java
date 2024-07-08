@@ -464,6 +464,7 @@ public class NewPipelineJob extends BaseJob {
             "VC_TESTinsights_Revision = \"\"\n" +  
             "VC_useCoverageHistory = " + getUseCoverageHistory() + "\n" +           
             "VC_useStrictImport = "    + getUseStrictTestcaseImport() + "\n" +
+            "VC_useRGW3 = "    + getUseRGW3() + "\n" +
             "VC_useImportedResults = " + getUseImportedResults() + "\n" +
             "VC_useLocalImportedResults = " + getUseLocalImportedResults() + "\n" +
             "VC_useExternalImportedResults = " + getUseExternalImportedResults() + "\n" +
