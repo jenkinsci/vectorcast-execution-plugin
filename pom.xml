@@ -250,10 +250,8 @@
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
+                <version>3.55</version>
                 <extensions>true</extensions>
-                <configuration>
-                    <compatibleSinceVersion>2.0</compatibleSinceVersion>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
