@@ -65,10 +65,11 @@
             </f:entry>        
             <f:entry title="${%VCJob.JobOptionsPipeline.useRGW3.title}" 
                 description="${%VCJob.JobOptionsPipeline.useRGW3.description}"
-                help="/plugin/vectorcast-execution/help-help-optuseRGW3.html">
+                help="/plugin/vectorcast-execution/help-optuseRGW3.html">
                 <f:checkbox name="useRGW3" checked="${instance.useRGW3}" default="false"/>
             </f:entry>        
-            <f:optionalBlock title="Use Imported Results" 
+            <f:optionalBlock title="${%VCJob.JobOptionsPipeline.useImportedResultsOption.title" 
+                description="${%VCJob.JobOptionsPipeline.useImportedResultsOption.description}"
                 checked="${instance.useImportedResults}" inline="true" 
                 help="/plugin/vectorcast-execution/help-optuseImportedResults.html"
                 name="useImportedResults">       

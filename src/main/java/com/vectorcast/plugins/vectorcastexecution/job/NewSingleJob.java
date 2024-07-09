@@ -225,7 +225,7 @@ getExecutePreambleWin() +
             win +=
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + " --buildlog complete_build.log\n" +
-"if \"%VCAST_USE_RGW3\"==\"TRUE\" (\n" +
+"if \"%VCAST_USE_RGW3%\"==\"TRUE\" (\n" +
 "   %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --clicast-args rgw export\"\n" +
 ")\n" + 
 "if \"%VCAST_USE_COVERAGE_PLUGIN%\"==\"TRUE\" ( \n" +

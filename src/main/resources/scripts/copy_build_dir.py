@@ -198,6 +198,7 @@ if __name__ == '__main__':
             addFile(tf, "*.LIS")
             addFile(tf, "system_test_results.xml")
             addDirectory(tf, build_dir, "TESTCASES")
+            addFile(tf, "CCAST_.CFG", backOneDir=True)
             addFile(tf, Env + ".vce", backOneDir=True)
             addFile(tf, Env + ".vcp", backOneDir=True)
             addFile(tf, Env + ".env", backOneDir=True)
