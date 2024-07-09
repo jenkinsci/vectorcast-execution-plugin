@@ -67,6 +67,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.nio.charset.StandardCharsets;
 
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.StandardCopyOption;
+
+import java.util.EnumSet;
+
 /**
  * Create a new single job
  */
@@ -236,7 +246,7 @@ public class NewPipelineJob extends BaseJob {
     public void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
         
         // Get config.xml resource from jar and write it to temp
-        File configFile = writeConfigFile();
+        File configFile = writeConfigFile_FILES();
 
         try {
 
@@ -307,55 +317,74 @@ public class NewPipelineJob extends BaseJob {
             topProject = createProject();   
             doCreate(update);
         }
+        
+    static private Path createTempFile(Path tempDirChild) throws UncheckedIOException {
+        try {
+            if (tempDirChild.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+                // Explicit permissions setting is only required on unix-like systems because
+                // the temporary directory is shared between all users.
+                // This is not necessary on Windows, each user has their own temp directory
+                final EnumSet<PosixFilePermission> posixFilePermissions =
+                        EnumSet.of(
+                            PosixFilePermission.OWNER_READ,
+                            PosixFilePermission.OWNER_WRITE
+                        );
+                if (!Files.exists(tempDirChild)) {
+                    Files.createFile(
+                        tempDirChild,
+                        PosixFilePermissions.asFileAttribute(posixFilePermissions)
+                        ); // GOOD: Directory has permissions `-rw-------`
+                } else {
+                    Files.setPosixFilePermissions(
+                    tempDirChild,
+                    posixFilePermissions
+                    ); // GOOD: Good has permissions `-rw-------`, or will throw an exception if this fails
+                }
+            } else if (!Files.exists(tempDirChild)) {
+                // On Windows, we still need to create the directory, when it doesn't already exist.
+                Files.createDirectory(tempDirChild); // GOOD: Windows doesn't share the temp directory between users
+            }
+            
+            return tempDirChild.toAbsolutePath();
+        } catch (IOException exception) {
+            throw new UncheckedIOException("Failed to create temp file", exception);
+        }
+    }
     
     /**
      * Retrieves config.xml from the jar and writes it to the systems temp
      * directory.
      * 
      * @return
-     * @throws IOException
+     * @throws UncheckedIOException
      */
-    private File writeConfigFile() throws IOException {
-
+    private File writeConfigFile_FILES() throws IOException {
         
         InputStream in;
-
+        Path configFile;
+        
         if (useParameters) {
             in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
         } else {
             in = getClass().getResourceAsStream("/scripts/config.xml");
         }
         
-        //InputStream in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
-        BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-
-        // TODO: Should switch to Files for CodeQL
-        // Local information disclosure in a temporary directory
-        File configFile = File.createTempFile("config_temp", ".xml");
-
-        //FileWriter fw = null
-        FileOutputStream fosw = null;
-        OutputStreamWriter osrw = null;
+        configFile = createTempFile(Paths.get("config_temp.xml"));
 
         try {
-            // write out to temp file
-            fosw = new FileOutputStream(configFile);
-            osrw = new OutputStreamWriter(fosw, StandardCharsets.UTF_8);
-
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                osrw.write(line + "\n");
-            }
-        } finally {
-            // cleanup
-            if (osrw != null) osrw.close();
-            br.close();
-            in.close();
-            if (fosw != null) fosw.close();
+            Files.copy(in, configFile, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException  exception) {
+            Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, null, exception);
+        } catch (UnsupportedOperationException exception) {
+            Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, null, exception);            
+        } catch (SecurityException exception) {
+            Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, null, exception);
         }
+        
+        return configFile.toFile();
 
-        return configFile.getAbsoluteFile();
     }
+    
 
     /**
      * Get getSharedArtifactDirectory

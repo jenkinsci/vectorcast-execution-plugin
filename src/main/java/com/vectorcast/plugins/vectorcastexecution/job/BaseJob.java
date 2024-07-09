@@ -947,15 +947,14 @@ abstract public class BaseJob {
      */
     protected void addCopyResultsToImport(Project project) {
         StatusBuildSelector selector = new StatusBuildSelector();
-        CopyArtifact archiverCopier = new CopyArtifact(
-                /* ProjectName   */  project.getName(),
-                /* Parameters    */  "", 
-                /* BuildSelector */  selector, 
-                /* filter        */  baseName + "_results.vcr",
-                /* target        */  "",
-                /* flatten       */  false,
-                /* optional      */  true
-                );
+        CopyArtifact archiverCopier = new CopyArtifact(project.getName());
+        archiverCopier.setParameters("");
+        archiverCopier.setSelector(selector);
+        archiverCopier.setFilter(baseName + "_results.vcr");
+        archiverCopier.setTarget("");
+        archiverCopier.setFlatten(false);
+        archiverCopier.setOptional(true);
+        
         project.getBuildersList().add(archiverCopier);
     }
 
