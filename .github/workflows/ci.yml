@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - main
   pull_request:
 
 jobs:
@@ -13,7 +12,7 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest]
-        jdk: [17, 21]
+        jdk: [11, 17, 21]
 
     runs-on: ${{ matrix.platform }}
     name: on ${{ matrix.platform }} with JDK ${{ matrix.jdk }}
