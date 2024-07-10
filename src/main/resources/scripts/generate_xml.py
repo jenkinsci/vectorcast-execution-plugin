@@ -762,7 +762,7 @@ class GenerateManageXml (BaseGenerateXml):
             return
 
         
-        xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + key.replace("/","_") + ".xml"
+        xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + "_".join([comp, ts, env_name]) + ".xml"
 
         localXML = GenerateXml(self.FullManageProjectName, build_dir, env_name, comp, ts, 
                                None, key, xmlUnitReportName, None, None, False, 
