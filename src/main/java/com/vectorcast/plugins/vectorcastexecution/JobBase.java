@@ -88,12 +88,7 @@ public abstract class JobBase implements ExtensionPoint, Action, Describable<Job
      */
     @Override
     public JobBaseDescriptor getDescriptor() {
-        Jenkins instance = Jenkins.get();
-        if (instance == null) {
-            return null;
-        } else {
-            return (JobBaseDescriptor) instance.getDescriptorOrDie(getClass());
-        }
+        return (JobBaseDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -101,11 +96,6 @@ public abstract class JobBase implements ExtensionPoint, Action, Describable<Job
      * @return all extensions based on JobBase
      */
     public static ExtensionList<JobBase> all() {
-        Jenkins instance = Jenkins.get();
-        if (instance == null) {
-            return null;
-        } else {
-            return instance.getExtensionList(JobBase.class);
-        }
+        return Jenkins.get().getExtensionList(JobBase.class);
     }
 }
