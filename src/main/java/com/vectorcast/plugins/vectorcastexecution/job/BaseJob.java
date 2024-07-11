@@ -57,11 +57,14 @@ import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.ArrayList;
+import java.lang.UnsupportedOperationException;
 
 /**
  * Base job management - create/delete/update
  */
 abstract public class BaseJob {
+    private String projectName;
+
     /** Jenkins instance */    
     private Jenkins instance;
     /** Request */
@@ -73,7 +76,7 @@ abstract public class BaseJob {
     /** Base name generated from the manage project name */
     private String baseName;
     /** Top-level project */
-    protected Project topProject;
+    protected Project<?,?> topProject;
     /** Environment setup for windows */
     private String environmentSetupWin;
     /** Environment setup for unix */
@@ -159,7 +162,7 @@ abstract public class BaseJob {
      * @throws ExternalResultsFileException exception
      */
     protected BaseJob(final StaplerRequest request, final StaplerResponse response, boolean useSavedData) throws ServletException, IOException, ExternalResultsFileException {
-        instance = Jenkins.getInstance();
+        instance = Jenkins.get();
         this.request = request;
         this.response = response;
         JSONObject json = request.getSubmittedForm();
@@ -234,7 +237,6 @@ abstract public class BaseJob {
                     }
                 }
             }
-            externalResultsFilename  = json.optString("externalResultsFilename", "").replace('\\','/');
             useCoverageHistory = json.optBoolean("useCoverageHistory", false);
             maxParallel = json.optLong("maxParallel", 0);
             
@@ -586,7 +588,7 @@ abstract public class BaseJob {
      * Get option to Use coverage history to control build status
      * @return true to Use imported results, false to not
      */
-    protected boolean getUseCoverageHistory() {
+    public boolean getUseCoverageHistory() {
         return useCoverageHistory;
     }
     /**
@@ -656,7 +658,7 @@ abstract public class BaseJob {
      * Get top-level project
      * @return project
      */
-    protected Project getTopProject() {
+    protected Project<?,?> getTopProject() {
         return topProject;
     }
     /**
@@ -781,6 +783,20 @@ abstract public class BaseJob {
         return instance;
     }
     /**
+     * Get the name of the project
+     * @return the project name
+     */
+    public String getProjectName() {
+        return projectName;
+    }
+    /**
+     * Sets the name of the project
+     * @param projectName - project name
+     */
+    public void setProjectName(final String projectName) {
+        this.projectName = projectName;
+    }
+    /**
      * Get response
      * @return response
      */
@@ -791,9 +807,9 @@ abstract public class BaseJob {
      * Add the delete workspace before build starts option
      * @param project project to add to
      */
-    protected void addDeleteWorkspaceBeforeBuildStarts(Project project) {
+    protected void addDeleteWorkspaceBeforeBuildStarts(Project<?,?> project) {
         if (optionClean) {
-            PreBuildCleanup cleanup = new PreBuildCleanup(/*patterns*/null, true, /*cleanup param*/"", /*external delete*/"");
+            PreBuildCleanup cleanup = new PreBuildCleanup(/*patterns*/null, true, /*cleanup param*/"", /*external delete*/"", /*disableDeferredWipeout*/ false);
             project.getBuildWrappersList().add(cleanup);
         }
     }
@@ -854,7 +870,7 @@ abstract public class BaseJob {
      * @throws IOException exception
      * @throws JobAlreadyExistsException exception
      */
-    abstract protected Project createProject() throws IOException, JobAlreadyExistsException;
+    abstract protected Project<?,?> createProject() throws IOException, JobAlreadyExistsException;
     /**
      * Cleanup top-level project, as in delete
      */
@@ -874,7 +890,7 @@ abstract public class BaseJob {
      * @param project project
      * @return the setup build step
      */
-    protected VectorCASTSetup addSetup(Project project) {
+    protected VectorCASTSetup addSetup(Project<?,?> project) throws IOException{
         VectorCASTSetup setup = 
                 new VectorCASTSetup(environmentSetupWin,
                                     environmentSetupUnix,
@@ -915,13 +931,14 @@ abstract public class BaseJob {
         setup.setSCM(scm);
 
         project.getBuildersList().add(setup);
+        
         return setup;
     }
     /**
      * Add archive artifacts step
      * @param project project to add to
      */
-    protected void addArchiveArtifacts(Project project) {
+    protected void addArchiveArtifacts(Project<?,?> project) {
         String pclpArchive = "";
         String TIArchive = "";
         
@@ -932,12 +949,11 @@ abstract public class BaseJob {
             TIArchive = ", TESTinsights_Push.log";            
         }
         String addToolsArchive = pclpArchive + TIArchive;
+        String defaultArchive = "**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr";
         
-        ArtifactArchiver archiver = new ArtifactArchiver(
-                /*artifacts*/"**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr" + addToolsArchive,
-                /*excludes*/"",
-                /*latest only*/false,
-                /*allow empty archive*/false);
+        ArtifactArchiver archiver = new ArtifactArchiver(defaultArchive + addToolsArchive);
+        archiver.setExcludes("");
+        archiver.setAllowEmptyArchive(false);
         project.getPublishersList().add(archiver);
     }
 
@@ -945,7 +961,7 @@ abstract public class BaseJob {
      * Add archive artifacts step
      * @param project project to add to
      */
-    protected void addCopyResultsToImport(Project project) {
+    protected void addCopyResultsToImport(Project<?,?> project) {
         StatusBuildSelector selector = new StatusBuildSelector();
         CopyArtifact archiverCopier = new CopyArtifact(project.getName());
         archiverCopier.setParameters("");
@@ -963,7 +979,7 @@ abstract public class BaseJob {
      * @param project project to add step to
      */
 
-    protected void addJunit(Project project) {
+    protected void addJunit(Project<?,?> project) {
         JUnitResultArchiver junit = new JUnitResultArchiver("**/test_results_*.xml");
         project.getPublishersList().add(junit);
     }
@@ -972,7 +988,7 @@ abstract public class BaseJob {
      * @param project project to add step to do PC-Lint Plus
      */
 
-    protected void addPCLintPlus(Project project) {
+    protected void addPCLintPlus(Project<?,?> project) {
         if (pclpCommand.length() != 0) {
             IssuesRecorder recorder = new IssuesRecorder();
 
@@ -990,7 +1006,7 @@ abstract public class BaseJob {
      * Add VectorCAST coverage reporting step
      * @param project project to add step to
      */
-    protected void addVCCoverage(Project project) {
+    protected void addVCCoverage(Project<?,?> project) {
         VectorCASTHealthReportThresholds healthReports = new VectorCASTHealthReportThresholds(0, 100, 0, 70, 0, 80, 0, 80, 0, 80, 0, 80);
         VectorCASTPublisher publisher = new VectorCASTPublisher();
         publisher.includes = "**/coverage_results_*.xml";
@@ -1002,7 +1018,7 @@ abstract public class BaseJob {
      * Add Jenkins coverage reporting step
      * @param project project to add step to
      */
-    protected void addJenkinsCoverage(Project project) {
+    protected void addJenkinsCoverage(Project<?,?> project) {
         CoverageTool tool = new CoverageTool();
         tool.setParser(Parser.VECTORCAST);
         tool.setPattern("xml_data/cobertura/coverage_results*.xml");        
@@ -1014,7 +1030,8 @@ abstract public class BaseJob {
         
         project.getPublishersList().add(publisher);
     }
-    protected void addCredentialID(Project project) {
-        project.getBuildWrappersList().add(new SecretBuildWrapper(Collections.<MultiBinding<?>>singletonList(new UsernamePasswordMultiBinding("VC_TI_USR","VC_TI_PWS",TESTinsights_credentials_id))));
+    protected void addCredentialID(Project<?,?> project) {
+        project.getBuildWrappersList().add(new SecretBuildWrapper(Collections.<MultiBinding<?>>singletonList(
+                new UsernamePasswordMultiBinding("VC_TI_USR","VC_TI_PWS",TESTinsights_credentials_id))));
     }
 }

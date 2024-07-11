@@ -82,7 +82,6 @@ import java.util.EnumSet;
  */
 public class NewPipelineJob extends BaseJob {
     /** project name */
-    private String projectName;
    
     private String sharedArtifactDirectory;
     
@@ -191,15 +190,6 @@ public class NewPipelineJob extends BaseJob {
     }
 
     /**
-     * Get the name of the project
-     * 
-     * @return the project name
-     */
-    public String getProjectName() {
-        return projectName;
-    }
-
-    /**
      * Create project
      * 
      * @return project
@@ -208,8 +198,9 @@ public class NewPipelineJob extends BaseJob {
      
      */
     @Override
-    protected Project createProject() throws IOException, JobAlreadyExistsException {
+    protected Project<?,?> createProject() throws IOException, JobAlreadyExistsException {
 
+        String projectName;
 
         if (getBaseName().isEmpty()) {
             getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED, "No project name specified");
@@ -226,6 +217,8 @@ public class NewPipelineJob extends BaseJob {
         // Remove all non-alphanumeric characters from the Jenkins Job name
         projectName = projectName.replaceAll("[^a-zA-Z0-9_]","_");
         
+        setProjectName(projectName);
+
         if (getInstance().getJobNames().contains(projectName)) {
             throw new JobAlreadyExistsException(projectName);
         }
@@ -277,7 +270,7 @@ public class NewPipelineJob extends BaseJob {
                  * cannot be cast to Project
                  */
 
-                getInstance().createProjectFromXML(this.projectName, xmlInput);
+                getInstance().createProjectFromXML(getProjectName(), xmlInput);
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -403,7 +396,7 @@ public class NewPipelineJob extends BaseJob {
         InputStream in = getClass().getResourceAsStream("/scripts/baseJenkinsfile.groovy");
 
         try {
-            result = IOUtils.toString(in);
+            result = IOUtils.toString(in, "UTF-8");
         } catch (IOException ex) {
             Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, null, ex);
         } finally {

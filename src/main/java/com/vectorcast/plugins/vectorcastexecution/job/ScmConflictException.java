@@ -27,6 +27,8 @@ package com.vectorcast.plugins.vectorcastexecution.job;
  * Exception raised if job being created already exists
  */
 public class ScmConflictException extends Exception {
+    private static final long serialVersionUID = -1889207053537494684L;
+
     /** Name of project */
     private final String scmSnippet;
     private final String pathToManageProject;

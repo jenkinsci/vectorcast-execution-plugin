@@ -51,7 +51,7 @@
             <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
         <repository>
-            <id>incrementals.jenkins-ci.org</id>
+            <id>incremental.jenkins-ci.org</id>
             <url>https://repo.jenkins-ci.org/incrementals/</url>
         </repository>
     </repositories>
@@ -74,85 +74,85 @@
     </dependencyManagement>
     <dependencies>
     
-        <!-- Satifying slf4j-api minimum version -->
+        <!-- Satisfying slf4j-api minimum version -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>2.0.13</version>
         </dependency>
 
-        <!-- Satifying javax-mail-api minimum version -->
+        <!-- Satisfying javax-mail-api minimum version -->
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>javax-mail-api</artifactId>
             <version>1.6.2-10</version>
         </dependency>
-        <!-- Satifying sci-api minimum version -->
+        <!-- Satisfying sci-api minimum version -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>scm-api</artifactId>
             <version>683.vb_16722fb_b_80b_</version>
         </dependency>
-        <!-- Satifying commons-lang3 minimum version -->
+        <!-- Satisfying commons-lang3 minimum version -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.14.0</version>
         </dependency>
-        <!-- Satifying commons-text minimum version -->
+        <!-- Satisfying commons-text minimum version -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.12.0</version>
         </dependency>
-        <!-- Satifying sshd-core minimum version -->
+        <!-- Satisfying sshd-core minimum version -->
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-core</artifactId>
             <version>2.12.1</version>
         </dependency>
-        <!-- Satifying mina-sshd-api-core minimum version -->
+        <!-- Satisfying mina-sshd-api-core minimum version -->
         <dependency>
             <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
             <artifactId>mina-sshd-api-core</artifactId>
         </dependency>
-        <!-- Satifying json minimum version -->
+        <!-- Satisfying json minimum version -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20240303</version>
         </dependency>
-        <!-- Satifying structs minimum version -->
+        <!-- Satisfying structs minimum version -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>structs</artifactId>
             <version>337.v1b_04ea_4df7c8</version>
         </dependency>
-        <!-- Satifying caffeine-api minimum version -->
+        <!-- Satisfying caffeine-api minimum version -->
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>caffeine-api</artifactId>
             <version>3.1.8-133.v17b_1ff2e0599</version>
         </dependency>
-        <!-- Satifying display-url-api minimum version -->
+        <!-- Satisfying display-url-api minimum version -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>display-url-api</artifactId>
             <version>2.204.vf6fddd8a_8b_e9</version>
         </dependency>
-        <!-- Satifying ionicons-api minimum version -->
+        <!-- Satisfying ionicons-api minimum version -->
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>ionicons-api</artifactId>
             <version>74.v93d5eb_813d5f</version>
         </dependency>
-        <!-- Satifying script-security minimum version -->
+        <!-- Satisfying script-security minimum version -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>script-security</artifactId>
             <version>1341.va_2819b_414686</version>
         </dependency>
-        <!-- Satifying matrix-project minimum version -->
+        <!-- Satisfying matrix-project minimum version -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>matrix-project</artifactId>
@@ -227,6 +227,10 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+<!--                     <compilerArgs>
+                        <arg>-Xlint:all,-processing</arg>
+                    </compilerArgs>
+ -->                    
                 </configuration>
             </plugin>
             <plugin>

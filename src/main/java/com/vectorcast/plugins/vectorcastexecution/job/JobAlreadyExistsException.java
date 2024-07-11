@@ -27,6 +27,8 @@ package com.vectorcast.plugins.vectorcastexecution.job;
  * Exception raised if job being created already exists
  */
 public class JobAlreadyExistsException extends Exception {
+    private static final long serialVersionUID = 2678119599631146760L;
+
     /** Name of project */
     private final String project;
     /**

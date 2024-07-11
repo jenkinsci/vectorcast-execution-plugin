@@ -40,11 +40,11 @@ import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 @Extension
 public class VectorCASTJobRoot implements RootAction {
     
-	public static final PermissionGroup PERMISSIONS_GROUP = new PermissionGroup(
-			VectorCASTJobRoot.class,Messages._VectorCASTRootAction_PermissionGroup());
+    public static final PermissionGroup PERMISSIONS_GROUP = new PermissionGroup(
+            VectorCASTJobRoot.class,Messages._VectorCASTRootAction_PermissionGroup());
     private static final PermissionScope scope[] = {PermissionScope.JENKINS};
- 	public static final Permission VIEW = new Permission(PERMISSIONS_GROUP,
-			"View", Messages._VectorCASTRootAction_ViewPermissionDescription(),
+    public static final Permission VIEW = new Permission(PERMISSIONS_GROUP,
+            "View", Messages._VectorCASTRootAction_ViewPermissionDescription(),
             Jenkins.ADMINISTER, true, scope);
             
             
@@ -63,7 +63,7 @@ public class VectorCASTJobRoot implements RootAction {
         // will catch and report any permissions issues
         if (permission) {
             String iconName;
-            String jenkinsVersion = Jenkins.getInstance().VERSION;
+            String jenkinsVersion = Jenkins.VERSION;
             String version[] = jenkinsVersion.split("\\.");
             Integer major, minor;
             Boolean colorIcon = true;

@@ -44,8 +44,6 @@ import org.kohsuke.stapler.StaplerResponse;
  * Create a new single job
  */
 public class NewSingleJob extends BaseJob {
-    /** project name */
-    private String projectName;
     /**
      * Constructor
      * @param request request object
@@ -56,13 +54,6 @@ public class NewSingleJob extends BaseJob {
      */
     public NewSingleJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, ExternalResultsFileException {
         super(request, response, false);
-    }
-    /**
-     * Get the name of the project
-     * @return the project name
-     */
-    public String getProjectName() {
-        return projectName;
     }
     /**
      * Add build commands step to job
@@ -346,7 +337,9 @@ if (getOptionUseReporting()) {
         unix = StringUtils.replace(unix, "@PROJECT_BASE@", getBaseName());
 
         VectorCASTCommand command = new VectorCASTCommand(win, unix);
-        getTopProject().getBuildersList().add(command);
+        if (!getTopProject().getBuildersList().add(command)) {
+            throw new UnsupportedOperationException("Failed to add VectorCASTCommand to Builders List");
+        }
     }
     /**
      * Add groovy script step to job
@@ -487,7 +480,9 @@ if (getOptionUseReporting()) {
         
         SecureGroovyScript secureScript = new SecureGroovyScript(script, /*sandbox*/false, /*classpath*/null);
         GroovyPostbuildRecorder groovy = new GroovyPostbuildRecorder(secureScript, /*behaviour*/2, /*matrix parent*/false);
-        getTopProject().getPublishersList().add(groovy);
+        if (!getTopProject().getPublishersList().add(groovy)) {
+            throw new UnsupportedOperationException("Failed to add GroovyPostbuildRecorder to Publishers List");
+        }
     }
     /**
      * Create project
@@ -496,19 +491,22 @@ if (getOptionUseReporting()) {
      * @throws JobAlreadyExistsException exception
      */
     @Override
-    protected Project createProject() throws IOException, JobAlreadyExistsException {
+    protected Project<?,?> createProject() throws IOException, JobAlreadyExistsException {
         if (getBaseName().isEmpty()) {
             getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED, "No project name specified");
             return null;
         }
-        projectName = getBaseName() + ".vcast.single";
+        String projectName = getBaseName() + ".vcast.single";
         if (getJobName() != null && !getJobName().isEmpty()) {
             projectName = getJobName();
         }
         if (getInstance().getJobNames().contains(projectName)) {
             throw new JobAlreadyExistsException(projectName);
         }
-        Project project = getInstance().createProject(FreeStyleProject.class, projectName);
+        Project<?,?> project = getInstance().createProject(FreeStyleProject.class, projectName);
+        
+        setProjectName(projectName);
+        
         if (getNodeLabel() != null && !getNodeLabel().isEmpty()) {
             Label label = new LabelAtom(getNodeLabel());
             project.setAssignedLabel(label);

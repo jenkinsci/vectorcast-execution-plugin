@@ -36,6 +36,7 @@ import hudson.tasks.BatchFile;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Shell;
+import hudson.EnvVars;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -79,7 +80,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
     }
     
     @Override
-    public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
+    public void perform(Run<?,?> build, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener) {
         // Windows check and run batch command
         //
         // Get the windows batch command and run it if this node is Windows
@@ -88,7 +89,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
             String windowsCmd = getWinCommand();
             BatchFile batchFile = new BatchFile(windowsCmd);
             try {
-                if (!batchFile.perform((AbstractBuild<?,?>)build, launcher, (BuildListener)listener)) {
+                if (!batchFile.perform((AbstractBuild)build, launcher, (BuildListener)listener)) {
                     build.setResult(Result.FAILURE);
                 }
             } catch (InterruptedException ex) {
@@ -106,7 +107,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
             String unixCmd = getUnixCommand();
             Shell shell = new Shell(unixCmd);
             try {
-                if (!shell.perform((AbstractBuild<?,?>)build, launcher, (BuildListener)listener)) {
+                if (!shell.perform((AbstractBuild)build, launcher, (BuildListener)listener)) {
                     build.setResult(Result.FAILURE);
                 }
             } catch (InterruptedException ex) {
@@ -136,6 +137,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
         }
 
         @Override
+        @SuppressWarnings("rawtypes")
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             // Indicates that this builder can be used with all kinds of project types 
             return true;

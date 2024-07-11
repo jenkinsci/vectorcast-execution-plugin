@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+import hudson.EnvVars;
 
 /**
  * VectorCAST setup build action
@@ -115,7 +116,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private String pclpResultsPattern;
     /** PC Lint Plus Path */
     private String squoreCommand;
-    
+
     /** TESTinsights Push information **/
     private String TESTinsights_URL;
     private String TESTinsights_project;
@@ -286,7 +287,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         return optionHtmlBuildDesc;
     }
     /**
-     * Set option for HTML build description     * 
+     * Set option for HTML build description     *
      * @param optionHtmlBuildDesc HTML or TEXT
      */
     public void setOptionHtmlBuildDesc(String optionHtmlBuildDesc) {
@@ -333,7 +334,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseCILicenses(boolean useCILicenses) {
         this.useCILicenses = useCILicenses;
-    }    
+    }
     /**
      * Get option to Use strict testcase import
      * @return true to Use strict testcase import, false to not
@@ -347,8 +348,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseStrictTestcaseImport(boolean useStrictTestcaseImport) {
         this.useStrictTestcaseImport = useStrictTestcaseImport;
-    }    
-    
+    }
+
     /**
      * Get option to Use RGW3 capabilities
      * @return true use RGW3 capabilities, false to not
@@ -362,7 +363,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseRGW3(boolean useRGW3) {
         this.useRGW3 = useRGW3;
-    }    
+    }
     /**
      * Get option to use coverage plugin or vectorcast coverage plugin
      * @return true use coverage plugin or vectorcast coverage plugin
@@ -376,7 +377,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseCoveragePlugin(boolean useCoveragePlugin) {
         this.useCoveragePlugin = useCoveragePlugin;
-    }    
+    }
     /**
      * Get option to Use imported results
      * @return true to Use imported results, false to not
@@ -390,8 +391,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseImportedResults(boolean useImportedResults) {
         this.useImportedResults = useImportedResults;
-    }   
-    
+    }
+
     /**
      * Get option to Use local imported results
      * @return true to Use local imported results, false to not
@@ -405,7 +406,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseLocalImportedResults(boolean useLocalImportedResults) {
         this.useLocalImportedResults = useLocalImportedResults;
-    }    
+    }
 
     /**
      * Get option to Use external imported results
@@ -420,7 +421,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseExternalImportedResults(boolean useExternalImportedResults) {
         this.useExternalImportedResults = useExternalImportedResults;
-    }    
+    }
 
       /**
      * Get option to Use as external result filename
@@ -435,7 +436,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setExternalResultsFilename(String externalResultsFilename) {
         this.externalResultsFilename = externalResultsFilename;
-    }    
+    }
 
     /**
      * Get option to Use coverage history to control build status
@@ -450,7 +451,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseCoverageHistory(boolean useCoverageHistory) {
         this.useCoverageHistory = useCoverageHistory;
-    }    
+    }
     /**
      * Get using SCM
      * @return true/false
@@ -556,7 +557,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     public void setPclpResultsPattern(String pclpResultsPattern) {
         this.pclpResultsPattern = pclpResultsPattern;
     }
-    
+
     /**
      * Get using getUsingPCLP command
      * @return true/false if we have a squoreCommand
@@ -587,77 +588,77 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public String getTESTinsights_URL() {
         return TESTinsights_URL;
-    }    
+    }
     /**
      * Set URL for TESTinsights
      * @param TESTinsights_URL - TESTinsights URL
      */
     public void setTESTinsights_URL(String TESTinsights_URL) {
         this.TESTinsights_URL = TESTinsights_URL;
-    }    
+    }
     /**
      * Get Project for TESTinsights
      * @return TESTinsights Project
      */
     public String getTESTinsights_project() {
         return TESTinsights_project;
-    }    
+    }
     /**
      * Set Project for TESTinsights
      * @param  TESTinsights_project - Project for TESTinsights
      */
     public void setTESTinsights_project(String TESTinsights_project) {
         this.TESTinsights_project = TESTinsights_project;
-    }    
+    }
     /**
      * Get Proxy for TESTinsights
      * @return TESTinsights proxy
      */
     public String getTESTinsights_proxy() {
         return TESTinsights_proxy;
-    }    
+    }
     /**
      * Set Proxy for TESTinsights
      * @param TESTinsights_proxy TESTinsights proxy
      */
     public void setTESTinsights_proxy(String TESTinsights_proxy) {
         this.TESTinsights_proxy = TESTinsights_proxy;
-    }    
+    }
     /**
      * Get Credentials ID for TESTinsights
      * @return TESTinsights Credentials
      */
     public String getTESTinsights_credentials_id() {
         return TESTinsights_credentials_id;
-    }        
+    }
     /**
      * Set Credentials ID for TESTinsights
      * @param TESTinsights_credentials_id - Credentials ID for TESTinsights
      */
     public void setTESTinsights_credentials_id(String TESTinsights_credentials_id) {
         this.TESTinsights_credentials_id = TESTinsights_credentials_id;
-    }    
+    }
     /**
      * Get SCM URL for TESTinsights
      * @return TESTinsights SCM URL
      */
     public String getTESTinsights_SCM_URL() {
         return TESTinsights_SCM_URL;
-    }    
+    }
     /**
      * Get SCM Technology TESTinsights
      * @return TESTinsights SCM Technology
      */
     public String getTESTinsights_SCM_Tech() {
         return TESTinsights_SCM_Tech;
-    }    
+    }
     /**
      * Set SCM URL for TESTinsights
      * @param TESTinsights_SCM_URL - URL for TESTinsights
      */
     public void setTESTinsights_SCM_URL(String TESTinsights_SCM_URL) {
         this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
-    }    
+    }
     /**
      * Set SCM Technology TESTinsights
      * @param TESTinsights_SCM_Tech - SCM Technology TESTinsights (git or svn)
@@ -665,7 +666,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
     public void setTESTinsights_SCM_Tech(String TESTinsights_SCM_Tech) {
         this.TESTinsights_SCM_Tech = TESTinsights_SCM_Tech;
-    }    
+    }
     /**
      * Create setup step
      * @param environmentSetupWin environment setup for windows
@@ -778,7 +779,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     /**
      * Copy the files in a directory recursively to the job workspace.
      * This is used when the source is NOT a jar file
-     * 
+     *
      * @param dir directory to process
      * @param base base
      * @param destDir destination directory
@@ -811,19 +812,20 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
     private void printVersion( PrintStream logger )
     {
-	logger.println( "[VectorCAST Execution Version]: " + VcastUtils.getVersion().orElse( "Error - Could not determine version" ) );
+    logger.println( "[VectorCAST Execution Version]: " + VcastUtils.getVersion().orElse( "Error - Could not determine version" ) );
     }
 
     /**
      * Perform the build step. Copy the scripts from the archive/directory to the workspace
      * @param build build
      * @param workspace workspace
+     * @param env environment variables
      * @param launcher launcher
      * @param listener  listener
-	 * @throws IOException      exception
-     */    
+     * @throws IOException exception
+     */
     @Override
-    public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException {
+    public void perform(Run<?,?> build, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener) throws IOException {
         FilePath destScriptDir = new FilePath(workspace, "vc_scripts");
         JarFile jFile = null;
         try {
@@ -880,16 +882,16 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 }
             }
         }
-        
+
         // clean up old xml_data files
-        
+
         File[] files = new File(workspace + "/xml_data/").listFiles();
         if (files != null)
         {
-            for (File file : files) 
+            for (File file : files)
             {
                 if (file.isFile() && !file.delete()) {
-                    throw new IOException("Unable to delete file: " + file.getAbsolutePath());   
+                    throw new IOException("Unable to delete file: " + file.getAbsolutePath());
                 }
             }
         }
@@ -905,15 +907,16 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
-         * In order to load the persisted global configuration, you have to 
+         * In order to load the persisted global configuration, you have to
          * call load() in the constructor.
          */
         public DescriptorImpl() {
             load();
         }
         @Override
+        @SuppressWarnings("rawtypes")
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            // Indicates that this builder can be used with all kinds of project types 
+            // Indicates that this builder can be used with all kinds of project types
             return true;
         }
         /**
@@ -925,47 +928,47 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             return Messages.VectorCASTSetup_DisplayName();
         }
     }
-    
+
     @Override
     public String toString() {
-    	
-    	String string = "\nVectorCASTSetup: \n"
-    			+ "\t environmentSetupUnix: " + environmentSetupUnix +  "\n"
-    			+ "\t executePreambleWin: " + executePreambleWin +  "\n"
-    			+ "\t executePreambleUnix: " + executePreambleUnix +  "\n"
-    			+ "\t environmentTeardownWin: " + environmentTeardownWin +  "\n"
-    			+ "\t environmentTeardownUnix: " + environmentTeardownUnix +  "\n"
-    			+ "\t optionUseReporting: " + optionUseReporting +  "\n"
-    			+ "\t optionErrorLevel: " + optionErrorLevel +  "\n"
-    			+ "\t optionHtmlBuildDesc: " + optionHtmlBuildDesc +  "\n"
-    			+ "\t optionHtmlBuildDesc: " + optionHtmlBuildDesc +  "\n"
-    			+ "\t optionExecutionReport: " + optionExecutionReport +  "\n"
-    			+ "\t optionClean: " + optionClean +  "\n"
-    			+ "\t useCILicenses: " + useCILicenses +  "\n"
-    			+ "\t useStrictTestcaseImport: " + useStrictTestcaseImport +  "\n"
-    			+ "\t useRGW3: " + useRGW3 +  "\n"
-    			+ "\t useImportedResults: " + useImportedResults +  "\n"
-    			+ "\t useLocalImportedResults: " + useLocalImportedResults +  "\n"
-    			+ "\t useExternalImportedResults: " + useExternalImportedResults +  "\n"
-    			+ "\t externalResultsFilename: " + externalResultsFilename +  "\n"
-    			+ "\t useCoverageHistory: " + useCoverageHistory +  "\n"
-    			+ "\t usingSCM: " + usingSCM +  "\n"
-    			+ "\t scm: " + scm +  "\n"
-    			+ "\t waitLoops: " + waitLoops +  "\n"
-    			+ "\t waitTime: " + waitTime +  "\n"
-    			+ "\t maxParallel: " + maxParallel +  "\n"
-    			+ "\t manageProjectName: " + manageProjectName +  "\n"
-    			+ "\t jobName: " + jobName +  "\n"
-    			+ "\t nodeLabel: " + nodeLabel +  "\n"
-    			+ "\t pclpCommand: " + pclpCommand +  "\n"
-    			+ "\t pclpResultsPattern: " + pclpResultsPattern +  "\n"
-    			+ "\t squoreCommand: " + squoreCommand +  "\n"
-    			+ "\t TESTinsights_URL: " + TESTinsights_URL +  "\n"
-    			+ "\t TESTinsights_project: " + TESTinsights_project +  "\n"
-    			+ "\t TESTinsights_credentials_id: " + TESTinsights_credentials_id +  "\n"
-    			+ "\t TESTinsights_proxy: " + TESTinsights_proxy +  "\n"
-    			+ "\t TESTinsights_SCM_URL: " + TESTinsights_SCM_URL +  "\n"
-    			+ "\t TESTinsights_SCM_Tech: " + TESTinsights_SCM_Tech +  "\n";
-    	return string;
+
+        String string = "\nVectorCASTSetup: \n"
+                + "\t environmentSetupUnix: " + environmentSetupUnix +  "\n"
+                + "\t executePreambleWin: " + executePreambleWin +  "\n"
+                + "\t executePreambleUnix: " + executePreambleUnix +  "\n"
+                + "\t environmentTeardownWin: " + environmentTeardownWin +  "\n"
+                + "\t environmentTeardownUnix: " + environmentTeardownUnix +  "\n"
+                + "\t optionUseReporting: " + optionUseReporting +  "\n"
+                + "\t optionErrorLevel: " + optionErrorLevel +  "\n"
+                + "\t optionHtmlBuildDesc: " + optionHtmlBuildDesc +  "\n"
+                + "\t optionHtmlBuildDesc: " + optionHtmlBuildDesc +  "\n"
+                + "\t optionExecutionReport: " + optionExecutionReport +  "\n"
+                + "\t optionClean: " + optionClean +  "\n"
+                + "\t useCILicenses: " + useCILicenses +  "\n"
+                + "\t useStrictTestcaseImport: " + useStrictTestcaseImport +  "\n"
+                + "\t useRGW3: " + useRGW3 +  "\n"
+                + "\t useImportedResults: " + useImportedResults +  "\n"
+                + "\t useLocalImportedResults: " + useLocalImportedResults +  "\n"
+                + "\t useExternalImportedResults: " + useExternalImportedResults +  "\n"
+                + "\t externalResultsFilename: " + externalResultsFilename +  "\n"
+                + "\t useCoverageHistory: " + useCoverageHistory +  "\n"
+                + "\t usingSCM: " + usingSCM +  "\n"
+                + "\t scm: " + scm +  "\n"
+                + "\t waitLoops: " + waitLoops +  "\n"
+                + "\t waitTime: " + waitTime +  "\n"
+                + "\t maxParallel: " + maxParallel +  "\n"
+                + "\t manageProjectName: " + manageProjectName +  "\n"
+                + "\t jobName: " + jobName +  "\n"
+                + "\t nodeLabel: " + nodeLabel +  "\n"
+                + "\t pclpCommand: " + pclpCommand +  "\n"
+                + "\t pclpResultsPattern: " + pclpResultsPattern +  "\n"
+                + "\t squoreCommand: " + squoreCommand +  "\n"
+                + "\t TESTinsights_URL: " + TESTinsights_URL +  "\n"
+                + "\t TESTinsights_project: " + TESTinsights_project +  "\n"
+                + "\t TESTinsights_credentials_id: " + TESTinsights_credentials_id +  "\n"
+                + "\t TESTinsights_proxy: " + TESTinsights_proxy +  "\n"
+                + "\t TESTinsights_SCM_URL: " + TESTinsights_SCM_URL +  "\n"
+                + "\t TESTinsights_SCM_Tech: " + TESTinsights_SCM_Tech +  "\n";
+        return string;
     }
 }

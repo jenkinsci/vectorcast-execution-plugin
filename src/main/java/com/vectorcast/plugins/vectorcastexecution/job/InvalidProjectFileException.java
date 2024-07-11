@@ -27,6 +27,7 @@ package com.vectorcast.plugins.vectorcastexecution.job;
  * Exception raised if the supplied manage project file cannot be read
  */
 public class InvalidProjectFileException extends Exception {
+    private static final long serialVersionUID = 3544833590470742391L;
     public InvalidProjectFileException() {
         super();
     }    
