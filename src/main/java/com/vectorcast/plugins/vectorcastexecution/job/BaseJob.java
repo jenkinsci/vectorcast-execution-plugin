@@ -57,7 +57,6 @@ import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.ArrayList;
-import java.lang.UnsupportedOperationException;
 
 /**
  * Base job management - create/delete/update

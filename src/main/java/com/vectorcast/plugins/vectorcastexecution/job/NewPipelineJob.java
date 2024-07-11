@@ -30,14 +30,10 @@ import hudson.model.Descriptor;
 import hudson.model.Project;
 import net.sf.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -65,7 +61,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.nio.charset.StandardCharsets;
 
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -171,7 +166,7 @@ public class NewPipelineJob extends BaseJob {
         /* absoulte path and SCM checkout of manage project conflicts with 
            the copy_build_dir.py ability to make LIS files relative path 
         */
-        String MPName = this.getManageProjectName().replaceAll("^[ \t]+|[ \t]+$", "");
+        String MPName = getManageProjectName().replaceAll("^[ \t]+|[ \t]+$", "");
         Boolean absPath = false;
         
         if (MPName.startsWith("\\\\"))   absPath = true;
@@ -454,7 +449,7 @@ public class NewPipelineJob extends BaseJob {
             "//\n" +  
             "// ===============================================================\n" +  
             "\n" +  
-            "VC_Manage_Project  = \'" + this.getManageProjectName() + "\'\n" + 
+            "VC_Manage_Project  = \'" + getManageProjectName() + "\'\n" + 
             "VC_EnvSetup        = '''" + setup + "'''\n" + 
             "VC_Build_Preamble  = \"" + preamble + "\"\n" + 
             "VC_EnvTeardown     = '''" + teardown + "'''\n" + 
