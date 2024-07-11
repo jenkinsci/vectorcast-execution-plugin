@@ -166,7 +166,7 @@ public class NewPipelineJob extends BaseJob {
         /* absoulte path and SCM checkout of manage project conflicts with 
            the copy_build_dir.py ability to make LIS files relative path 
         */
-        String MPName = getManageProjectName().replaceAll("^[ \t]+|[ \t]+$", "");
+        String MPName = getManageProjectName();
         Boolean absPath = false;
         
         if (MPName.startsWith("\\\\"))   absPath = true;
