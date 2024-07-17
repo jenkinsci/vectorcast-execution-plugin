@@ -96,6 +96,10 @@ class BaseGenerateXml(object):
             self.encFmt = "shift-jis"
         if self.lang == "chinese":
             self.encFmt = "GBK"
+        self.compiler = ""
+        self.testsuite = ""
+        self.env = ""
+        self.build_dir = ""
         
 #
 # BaseGenerateXml - calculate coverage value
@@ -193,7 +197,7 @@ class BaseGenerateXml(object):
             if is_unit:
                 (total_funcs, funcs_covered) = unit_or_func.cover_data.functions_covered
                 entry["function"] = self.calc_cov_values(funcs_covered, total_funcs)
-            else:
+            elif unit_or_func.cover_data.coverdb.has_covered_functions:
                 try:
                     if unit_or_func.has_covered_objects:
                         entry["function"] = '100% (1 / 1)'
@@ -204,6 +208,7 @@ class BaseGenerateXml(object):
                         entry["function"] = '100% (1 / 1)'
                     else:
                         entry["function"] = '0% (0 / 1)'
+
         if self.has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
             
@@ -303,9 +308,9 @@ class BaseGenerateXml(object):
         entry["function"] = None
         entry["functioncall"] = None
         
-        if self.has_function_coverage:
+        if self.toplevel_has_function_coverage:
             entry["function"] = self.calc_cov_values(self.grand_total_max_covered_functions, self.grand_total_max_coverable_functions)
-        if self.has_call_coverage:
+        if self.toplevel_has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)
                
         if "MCDC" in cov_type_str:
@@ -427,6 +432,8 @@ class BaseGenerateXml(object):
         self.our_units = []
         self.has_call_coverage = False
         self.has_function_coverage = False
+        self.toplevel_has_function_coverage = False
+        self.toplevel_has_call_coverage = False
         self.grand_total_complexity = 0
 
         self.grand_total_max_covered_branches = 0
@@ -451,7 +458,13 @@ class BaseGenerateXml(object):
             if not self.hasAnyCov(srcFile):
                 continue
                 
-            self.has_function_coverage, self.has_call_coverage = self.hasEitherFunctionCoverages(srcFile)
+            hasFuncCov, hasFuncCallCov = self.hasEitherFunctionCoverages(srcFile)
+            self.has_function_coverage = hasFuncCov
+            self.has_call_coverage = hasFuncCallCov
+            if hasFuncCov:
+                self.toplevel_has_function_coverage =  True
+            if hasFuncCallCov:
+                self.toplevel_has_call_coverage =  True
 
             try:
                 metrics = srcFile.metrics
@@ -529,8 +542,9 @@ class BaseGenerateXml(object):
             self.grand_total_function_calls += metrics.function_calls
             
             try:
-                self.grand_total_max_covered_functions += metrics.covered_functions
-                self.grand_total_max_coverable_functions += metrics.functions
+                if self.has_function_coverage:
+                    self.grand_total_max_covered_functions += metrics.covered_functions
+                    self.grand_total_max_coverable_functions += metrics.functions
             except:
                 pass
                 
@@ -685,6 +699,10 @@ class GenerateManageXml (BaseGenerateXml):
         for env in environments:
             if not env.is_active:
                 continue
+            try:
+                n = len(env.api.SourceFile.all())
+            except:
+                continue
             for srcFile in env.api.SourceFile.all():
                 display_path = srcFile.display_path
                 if display_path not in localDisplayPaths:
@@ -764,6 +782,7 @@ class GenerateManageXml (BaseGenerateXml):
         
         xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + "_".join([comp, ts, env_name]) + ".xml"
 
+        localXML = None
         localXML = GenerateXml(self.FullManageProjectName, build_dir, env_name, comp, ts, 
                                None, key, xmlUnitReportName, None, None, False, 
                                self.cbtDict, 
