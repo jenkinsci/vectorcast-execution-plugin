@@ -39,12 +39,13 @@ except ImportError:
         from queue import Queue, Empty  # python 3.x
  
 class ManageWait(object):
-    def __init__(self, verbose, command_line, wait_time, wait_loops):
+    def __init__(self, verbose, command_line, wait_time, wait_loops, mpName = "", useCI = ""):
         self.wait_time = wait_time
         self.wait_loops = wait_loops
         self.verbose = verbose
         self.command_line = command_line
-        
+        self.mpName = mpName
+        self.useCI = useCI		
         # get the VC langaguge and encoding
         self.encFmt = 'utf-8'
         try:
@@ -79,6 +80,11 @@ class ManageWait(object):
         self.io_t.daemon = True # thread dies with the program
         self.io_t.start()
 
+    def exec_manage_command(self, cmd_line, silent = False):
+        self.command_line = "--project \"" + self.mpName + "\" " + self.useCI + " " + cmd_line
+        if self.verbose:
+            print (self.command_line)
+        return self.exec_manage(silent)
     def exec_manage(self, silent=False):
         with open("command.log", 'a', encoding=self.encFmt) as logfile:
             return self.__exec_manage(silent, logfile)

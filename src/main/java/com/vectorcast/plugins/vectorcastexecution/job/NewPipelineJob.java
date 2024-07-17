@@ -77,19 +77,19 @@ import java.util.EnumSet;
  */
 public class NewPipelineJob extends BaseJob {
     /** project name */
-   
+
     private String sharedArtifactDirectory;
-    
+
     private String pipelineSCM = "";
-    
+
     private boolean singleCheckout;
-    
+
     private boolean useCBT;
 
     private boolean useParameters;
-    
+
     private String postSCMCheckoutCommands;
-    
+
     /** Environment setup script */
     private String environmentSetup;
     /** Execute preamble */
@@ -99,7 +99,7 @@ public class NewPipelineJob extends BaseJob {
 
     /**
      * Constructor
-     * 
+     *
      * @param request   request object
      * @param response  response object
      * @throws ServletException exception
@@ -110,31 +110,31 @@ public class NewPipelineJob extends BaseJob {
     public NewPipelineJob(final StaplerRequest request, final StaplerResponse response)
             throws ServletException, IOException, ScmConflictException, ExternalResultsFileException {
         super(request, response, false);
-        
+
         JSONObject json = request.getSubmittedForm();
-       
+
         sharedArtifactDirectory = json.optString("sharedArtifactDir","");
         pipelineSCM = json.optString("scmSnippet","").trim();
-        
+
         String[] lines = pipelineSCM.split("\n");
-        
+
         List <String> scm_list = new ArrayList<String>();
         scm_list.add("git");
         scm_list.add("svn");
-        
+
         String url = "";
         String scm_technology = "";
 
         for (String line : lines) {
-            
+
             for (String scm : scm_list) {
                 if (line.startsWith(scm)) {
                     scm_technology = scm;
-                    
+
                     if (line.indexOf("url:") == -2) {
                         String[] elements = line.split(",");
                         for (String ele : elements) {
-                            
+
                             if (ele.startsWith("url:")) {
                                 String[] ele_list = ele.split(" ");
                                 url = ele_list[ele_list.length - 1];
@@ -149,10 +149,10 @@ public class NewPipelineJob extends BaseJob {
         }
         setTESTinsights_SCM_URL(url.replace("'",""));
         setTESTinsights_SCM_Tech(scm_technology);
-        
+
         singleCheckout = json.optBoolean("singleCheckout", false);
-                
-        // remove the win/linux options since there's no platform any more 
+
+        // remove the win/linux options since there's no platform any more
         environmentSetup = json.optString("environmentSetup", null);
         executePreamble = json.optString("executePreamble", null);
         environmentTeardown = json.optString("environmentTeardown", null);
@@ -162,23 +162,23 @@ public class NewPipelineJob extends BaseJob {
         if (sharedArtifactDirectory.length() != 0) {
             sharedArtifactDirectory = "--workspace="+sharedArtifactDirectory.replace("\\","/");
         }
-       
-        /* absoulte path and SCM checkout of manage project conflicts with 
-           the copy_build_dir.py ability to make LIS files relative path 
+
+        /* absoulte path and SCM checkout of manage project conflicts with
+           the copy_build_dir.py ability to make LIS files relative path
         */
         String MPName = getManageProjectName();
         Boolean absPath = false;
-        
+
         if (MPName.startsWith("\\\\"))   absPath = true;
         if (MPName.startsWith("/"))      absPath = true;
         if (MPName.matches("[a-zA-Z]:.*")) absPath = true;
-        
+
         if (! MPName.toLowerCase().endsWith(".vcm")) MPName += ".vcm";
-        
+
         if (pipelineSCM.length() != 0 && absPath) {
             throw new ScmConflictException(pipelineSCM, MPName);
         }
-        
+
         if (getTESTinsights_project() == "env.JOB_BASE_NAME") {
             setTESTinsights_project("${JOB_BASE_NAME}");
         }
@@ -186,11 +186,11 @@ public class NewPipelineJob extends BaseJob {
 
     /**
      * Create project
-     * 
+     *
      * @return project
      * @throws IOException                   exception
      * @throws JobAlreadyExistsException     exception
-     
+
      */
     @Override
     protected Project<?,?> createProject() throws IOException, JobAlreadyExistsException {
@@ -206,25 +206,25 @@ public class NewPipelineJob extends BaseJob {
             projectName = getJobName();
         }
         else {
-            projectName = getBaseName() + ".vcast.pipeline";        
+            projectName = getBaseName() + ".vcast.pipeline";
         }
 
         // Remove all non-alphanumeric characters from the Jenkins Job name
         projectName = projectName.replaceAll("[^a-zA-Z0-9_]","_");
-        
+
         setProjectName(projectName);
 
         if (getInstance().getJobNames().contains(projectName)) {
             throw new JobAlreadyExistsException(projectName);
         }
-            
+
         Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
         return null;
     }
 
     /**
      * Add build steps
-     * 
+     *
      * @param update true to update, false to not
      * @throws IOException      exception
      * @throws ServletException exception
@@ -232,7 +232,7 @@ public class NewPipelineJob extends BaseJob {
      */
     @Override
     public void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException {
-        
+
         // Get config.xml resource from jar and write it to temp
         File configFile = writeConfigFile_FILES();
 
@@ -283,9 +283,9 @@ public class NewPipelineJob extends BaseJob {
         } catch (IllegalArgumentException e) {
              e.printStackTrace();
        }
-       
+
         if (!configFile.delete()) {
-            throw new IOException("Unable to delete file: " + configFile.getAbsolutePath());   
+            throw new IOException("Unable to delete file: " + configFile.getAbsolutePath());
         }
 
     }
@@ -297,15 +297,15 @@ public class NewPipelineJob extends BaseJob {
      * @throws hudson.model.Descriptor.FormException exception
      * @throws JobAlreadyExistsException exception
      * @throws InvalidProjectFileException exception
-     */    
-     public void create(boolean update) throws IOException, ServletException, Descriptor.FormException, 
+     */
+     public void create(boolean update) throws IOException, ServletException, Descriptor.FormException,
         JobAlreadyExistsException, InvalidProjectFileException {
-            
+
             // Create the top-level project
-            topProject = createProject();   
+            topProject = createProject();
             doCreate(update);
         }
-        
+
     static private Path createTempFile(Path tempDirChild) throws UncheckedIOException {
         try {
             if (tempDirChild.getFileSystem().supportedFileAttributeViews().contains("posix")) {
@@ -332,31 +332,31 @@ public class NewPipelineJob extends BaseJob {
                 // On Windows, we still need to create the directory, when it doesn't already exist.
                 Files.createDirectory(tempDirChild); // GOOD: Windows doesn't share the temp directory between users
             }
-            
+
             return tempDirChild.toAbsolutePath();
         } catch (IOException exception) {
             throw new UncheckedIOException("Failed to create temp file", exception);
         }
     }
-    
+
     /**
      * Retrieves config.xml from the jar and writes it to the systems temp
      * directory.
-     * 
+     *
      * @return
      * @throws UncheckedIOException
      */
     private File writeConfigFile_FILES() throws IOException {
-        
+
         InputStream in;
         Path configFile;
-        
+
         if (useParameters) {
             in = getClass().getResourceAsStream("/scripts/config_parameters.xml");
         } else {
             in = getClass().getResourceAsStream("/scripts/config.xml");
         }
-        
+
         configFile = createTempFile(Paths.get("config_temp.xml"));
 
         try {
@@ -364,22 +364,83 @@ public class NewPipelineJob extends BaseJob {
         } catch (IOException  exception) {
             Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, null, exception);
         } catch (UnsupportedOperationException exception) {
-            Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, null, exception);            
+            Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, null, exception);
         } catch (SecurityException exception) {
             Logger.getLogger(NewPipelineJob.class.getName()).log(Level.SEVERE, null, exception);
         }
-        
-        return configFile.toFile();
 
+        return configFile.toFile();
     }
-    
+
+    /**
+     * Get pipelineSCM
+     * @return pipelineSCM String
+     */
+    protected String getPipelineSCM() {
+        return this.pipelineSCM;
+    }
+    /**
+     * Get getPostSCMCheckoutCommands
+     * @return postSCMCheckoutCommands String
+     */
+    protected String getPostSCMCheckoutCommands() {
+        return this.postSCMCheckoutCommands;
+    }
+
+    /**
+     * Get getUseParameters
+     * @return useParameters boolean
+     */
+    protected boolean getUseParameters() {
+        return this.useParameters;
+    }
+
+    /**
+     * Get getSingleCheckout
+     * @return singleCheckout boolean
+     */
+    protected boolean getSingleCheckout() {
+        return this.singleCheckout;
+    }
+
+    /**
+     * Get getEnvironmentSetup
+     * @return environmentSetup String
+     */
+    protected String getEnvironmentSetup() {
+        return this.environmentSetup;
+    }
+
+    /**
+     * Get getExecutePreamble
+     * @return executePreamble String
+     */
+    protected String getExecutePreamble() {
+        return this.executePreamble;
+    }
+
+    /**
+     * Get getExecutePreamble
+     * @return executePreamble String
+     */
+    protected String getEnvironmentTeardown() {
+        return this.environmentTeardown;
+    }
 
     /**
      * Get getSharedArtifactDirectory
      * @return sharedArtifactDirectory string
      */
-    protected String getSharedArtifactDirectory() {
+    protected String getSharedArtifactDir() {
         return this.sharedArtifactDirectory;
+    }
+
+    /**
+     * Get getUseCBT
+     * @return getUseCBT boolean
+     */
+    protected boolean getUseCBT() {
+        return this.useCBT;
     }
 
     /**
@@ -403,12 +464,12 @@ public class NewPipelineJob extends BaseJob {
     /**
      * Generates the <script> portion of the config.xml which defines the pipeline.
      * for this pipeline job.
-     * 
-     * 
+     *
+     *
      * @return script portion of pipeline job.
      * @throws IOException
      */
-     
+
     private String generateJenkinsfile() throws IOException {
         String setup = "";
         String preamble = "";
@@ -433,76 +494,76 @@ public class NewPipelineJob extends BaseJob {
         {
             incremental = "\"--incremental\"";
         }
-        
+
         String VC_Use_CI = "\"\"";
 
         if (getUseCILicenses()) {
             VC_Use_CI = "\"--ci\"";
-        } 
-        
-        String topOfJenkinsfile = "// ===============================================================\n" + 
-            "// \n" +  
-            "// Auto-generated script by VectorCAST Execution Plug-in \n" +  
-            "// based on the information provided when creating the \n" +  
-            "//\n" +  
-            "//     VectorCAST > Pipeline job\n" +  
-            "//\n" +  
-            "// ===============================================================\n" +  
-            "\n" +  
-            "VC_Manage_Project  = \'" + getManageProjectName() + "\'\n" + 
-            "VC_EnvSetup        = '''" + setup + "'''\n" + 
-            "VC_Build_Preamble  = \"" + preamble + "\"\n" + 
-            "VC_EnvTeardown     = '''" + teardown + "'''\n" + 
-            "def scmStep () { " + pipelineSCM + " }\n" + 
-            "VC_usingSCM = " + String.valueOf(pipelineSCM.length() != 0) + "\n" + 
-            "VC_postScmStepsCmds = '''" + postCheckoutCmds + "'''\n" + 
-            "VC_sharedArtifactDirectory = '''" + sharedArtifactDirectory + "'''\n" +  
-            "VC_Agent_Label = '" + getNodeLabel() + "'\n" +  
-            "VC_waitTime = '"  + getWaitTime() + "'\n" +  
-            "VC_waitLoops = '" + getWaitLoops() + "'\n" +  
-            "VC_maxParallel = " + getMaxParallel().toString() + "\n" +  
-            "VC_useOneCheckoutDir = " + singleCheckout + "\n" +  
-            "VC_UseCILicense = " + VC_Use_CI + "\n" +  
-            "VC_useCBT = " + incremental + "\n" +  
+        }
+
+        String topOfJenkinsfile = "// ===============================================================\n" +
+            "// \n" +
+            "// Auto-generated script by VectorCAST Execution Plug-in \n" +
+            "// based on the information provided when creating the \n" +
+            "//\n" +
+            "//     VectorCAST > Pipeline job\n" +
+            "//\n" +
+            "// ===============================================================\n" +
+            "\n" +
+            "VC_Manage_Project  = \'" + getManageProjectName() + "\'\n" +
+            "VC_EnvSetup        = '''" + setup + "'''\n" +
+            "VC_Build_Preamble  = \"" + preamble + "\"\n" +
+            "VC_EnvTeardown     = '''" + teardown + "'''\n" +
+            "def scmStep () { " + pipelineSCM + " }\n" +
+            "VC_usingSCM = " + String.valueOf(pipelineSCM.length() != 0) + "\n" +
+            "VC_postScmStepsCmds = '''" + postCheckoutCmds + "'''\n" +
+            "VC_sharedArtifactDirectory = '''" + sharedArtifactDirectory + "'''\n" +
+            "VC_Agent_Label = '" + getNodeLabel() + "'\n" +
+            "VC_waitTime = '"  + getWaitTime() + "'\n" +
+            "VC_waitLoops = '" + getWaitLoops() + "'\n" +
+            "VC_maxParallel = " + getMaxParallel().toString() + "\n" +
+            "VC_useOneCheckoutDir = " + singleCheckout + "\n" +
+            "VC_UseCILicense = " + VC_Use_CI + "\n" +
+            "VC_useCBT = " + incremental + "\n" +
             "VC_useCoveragePlugin = " + getUseCoveragePlugin() + "\n" +
-            "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +  
-            "VC_usePCLintPlus = " + String.valueOf(getPclpCommand().length() != 0) + "\n" +  
-            "VC_pclpCommand = '" + getPclpCommand() + "'\n" +  
-            "VC_pclpResultsPattern = '" + getPclpResultsPattern() + "'\n" +  
-            "VC_useSquore = " + String.valueOf(getSquoreCommand().length() != 0) + "\n" +  
+            "VC_createdWithVersion = '" + VcastUtils.getVersion().orElse( "Unknown" ) + "'\n" +
+            "VC_usePCLintPlus = " + String.valueOf(getPclpCommand().length() != 0) + "\n" +
+            "VC_pclpCommand = '" + getPclpCommand() + "'\n" +
+            "VC_pclpResultsPattern = '" + getPclpResultsPattern() + "'\n" +
+            "VC_useSquore = " + String.valueOf(getSquoreCommand().length() != 0) + "\n" +
             "VC_squoreCommand = '''" + getSquoreCommand() + "'''\n" +
-            "VC_useTESTinsights = " + String.valueOf(getTESTinsights_URL().length() != 0) + "\n" +  
-            "VC_TESTinsights_URL = '" + getTESTinsights_URL() + "'\n" +  
-            "VC_TESTinsights_Project = \"" + getTESTinsights_project() + "\"\n" +  
-            "VC_TESTinsights_Proxy = '" + getTESTinsights_proxy() + "'\n" +  
-            "VC_TESTinsights_Credential_ID = '" + getTESTinsights_credentials_id() + "'\n" +  
-            "VC_TESTinsights_SCM_URL = '" + getTESTinsights_SCM_URL() + "'\n" +  
-            "VC_TESTinsights_SCM_Tech = '" + getTESTinsights_SCM_Tech() + "'\n" +  
-            "VC_TESTinsights_Revision = \"\"\n" +  
-            "VC_useCoverageHistory = " + getUseCoverageHistory() + "\n" +           
+            "VC_useTESTinsights = " + String.valueOf(getTESTinsights_URL().length() != 0) + "\n" +
+            "VC_TESTinsights_URL = '" + getTESTinsights_URL() + "'\n" +
+            "VC_TESTinsights_Project = \"" + getTESTinsights_project() + "\"\n" +
+            "VC_TESTinsights_Proxy = '" + getTESTinsights_proxy() + "'\n" +
+            "VC_TESTinsights_Credential_ID = '" + getTESTinsights_credentials_id() + "'\n" +
+            "VC_TESTinsights_SCM_URL = '" + getTESTinsights_SCM_URL() + "'\n" +
+            "VC_TESTinsights_SCM_Tech = '" + getTESTinsights_SCM_Tech() + "'\n" +
+            "VC_TESTinsights_Revision = \"\"\n" +
+            "VC_useCoverageHistory = " + getUseCoverageHistory() + "\n" +
             "VC_useStrictImport = "    + getUseStrictTestcaseImport() + "\n" +
             "VC_useRGW3 = "    + getUseRGW3() + "\n" +
             "VC_useImportedResults = " + getUseImportedResults() + "\n" +
             "VC_useLocalImportedResults = " + getUseLocalImportedResults() + "\n" +
             "VC_useExternalImportedResults = " + getUseExternalImportedResults() + "\n" +
             "VC_externalResultsFilename = \"" + getExternalResultsFilename() + "\"\n" +
-            "\n" +   
+            "\n" +
             "";
-            
+
         String baseJenkinsfile = getBaseJenkinsfile();
-        
+
         if (baseJenkinsfile == null) {
             baseJenkinsfile = "\n\n\n *** Errors reading the baseJenkinsfile...check the Jenkins System Logs***\n\n";
         }
-                
+
         return  topOfJenkinsfile + baseJenkinsfile;
 
     }
-   
+
     @Override
     protected void cleanupProject() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
 
 }

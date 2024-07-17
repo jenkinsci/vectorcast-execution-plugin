@@ -123,8 +123,6 @@ abstract public class BaseJob {
     private boolean usingSCM;
     /** The SCM being used */
     private SCM scm;
-    /** Use saved data or not */
-    private boolean useSavedData;
     /** Wait time */
     private Long waitTime;
     /** Wait loops */
@@ -165,139 +163,91 @@ abstract public class BaseJob {
         this.request = request;
         this.response = response;
         JSONObject json = request.getSubmittedForm();
-        
+
+        Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSONObject Submitted Form"+ json.toString());
+
         manageProjectName = json.optString("manageProjectName");
         if (!manageProjectName.isEmpty()) {
             // Force unix style path to avoid problems later
             manageProjectName = manageProjectName.replace('\\','/');
             manageProjectName = manageProjectName.replaceAll("^[ \t]+|[ \t]+$", "");
             if (! manageProjectName.toLowerCase().endsWith(".vcm")) manageProjectName += ".vcm";
-       }
+        }
         baseName = FilenameUtils.getBaseName(manageProjectName);
 
-        this.useSavedData = useSavedData;
-        if (!useSavedData) {
-            this.usingSCM = false;
+        environmentSetupWin = json.optString("environmentSetupWin");
+        executePreambleWin = json.optString("executePreambleWin");
+        environmentTeardownWin = json.optString("environmentTeardownWin");
 
-            environmentSetupWin = json.optString("environmentSetupWin");
-            executePreambleWin = json.optString("executePreambleWin");
-            environmentTeardownWin = json.optString("environmentTeardownWin");
+        environmentSetupUnix = json.optString("environmentSetupUnix");
+        executePreambleUnix = json.optString("executePreambleUnix");
+        environmentTeardownUnix = json.optString("environmentTeardownUnix");
 
-            environmentSetupUnix = json.optString("environmentSetupUnix");
-            executePreambleUnix = json.optString("executePreambleUnix");
-            environmentTeardownUnix = json.optString("environmentTeardownUnix");
+        optionUseReporting = json.optBoolean("optionUseReporting", true);
+        optionErrorLevel = json.optString("optionErrorLevel", "Unstable");
+        optionHtmlBuildDesc = json.optString("optionHtmlBuildDesc", "HTML");
+        optionExecutionReport = json.optBoolean("optionExecutionReport", true);
+        optionClean = json.optBoolean("optionClean", false);
 
-            optionUseReporting = json.optBoolean("optionUseReporting", true);
-            optionErrorLevel = json.optString("optionErrorLevel", "Unstable");
-            optionHtmlBuildDesc = json.optString("optionHtmlBuildDesc", "HTML");
-            optionExecutionReport = json.optBoolean("optionExecutionReport", true);
-            optionClean = json.optBoolean("optionClean", false);
+        waitTime = json.optLong("waitTime", 5);
+        waitLoops = json.optLong("waitLoops", 2);
 
-            waitTime = json.optLong("waitTime", 5);
-            waitLoops = json.optLong("waitLoops", 2);
+        jobName = json.optString("jobName", null);
+
+        if (jobName != null) {
+            // Remove all non-alphanumeric characters from the Jenkins Job name
+            jobName = jobName.replaceAll("[^a-zA-Z0-9_]","_");
+        }
+
+        nodeLabel = json.optString("nodeLabel", "");
+
+        useCILicenses  = json.optBoolean("useCiLicense", false);
+        useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
+        useRGW3  = json.optBoolean("useRGW3", false);
+        useImportedResults  = json.optBoolean("useImportedResults", false);
+        if (json.optInt("coverageDisplayOption", 0) == 0) {
+            useCoveragePlugin = true;
+        } else {
+            useCoveragePlugin = false;
+        }
+        externalResultsFilename = "";
+
+        if (useImportedResults) {
+            JSONObject jsonImportResults  = json.optJSONObject("importedResults");
             
-            jobName = json.optString("jobName", null);
-            
-            if (jobName != null) {
-                // Remove all non-alphanumeric characters from the Jenkins Job name
-                jobName = jobName.replaceAll("[^a-zA-Z0-9_]","_");
-            }
-            
-            nodeLabel = json.optString("nodeLabel", "");
-            
-            useCILicenses  = json.optBoolean("useCiLicense", false);
-            useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
-            useRGW3  = json.optBoolean("useRGW3", false);
-            useImportedResults  = json.optBoolean("useImportedResults", false);
-            if (json.optInt("coverageDisplayOption", 0) == 0) {
-                useCoveragePlugin = true;
-            } else {
-                useCoveragePlugin = false;
-            }
-            externalResultsFilename = "";
-            
-            if (useImportedResults) {
-                JSONObject jsonImportResults  = json.optJSONObject("importedResults");
+            if (jsonImportResults != null) {
+                final long int_ext = jsonImportResults.optLong("value",0);
                 
-                if (jsonImportResults != null) {
-                    final long int_ext = jsonImportResults.optLong("value",0);
-                    
-                    if (int_ext == 1) {
-                        useLocalImportedResults = true;
-                        useExternalImportedResults = false;
-                        externalResultsFilename = "";
-                    } else if (int_ext == 2) {
-                        useLocalImportedResults = false;
-                        useExternalImportedResults = true;
-                        externalResultsFilename = jsonImportResults.optString("externalResultsFilename","");
-                        if (externalResultsFilename.length() == 0) {
-                            throw new ExternalResultsFileException();
-                        }
+                if (int_ext == 1) {
+                    useLocalImportedResults = true;
+                    useExternalImportedResults = false;
+                    externalResultsFilename = "";
+                } else if (int_ext == 2) {
+                    useLocalImportedResults = false;
+                    useExternalImportedResults = true;
+                    externalResultsFilename = jsonImportResults.optString("externalResultsFilename","");
+                    if (externalResultsFilename.length() == 0) {
+                        throw new ExternalResultsFileException();
                     }
                 }
             }
-            useCoverageHistory = json.optBoolean("useCoverageHistory", false);
-            maxParallel = json.optLong("maxParallel", 0);
-            
-            /* Additional Tools */
-            pclpCommand = json.optString("pclpCommand", "").replace('\\','/');
-            pclpResultsPattern = json.optString("pclpResultsPattern", "");
-            squoreCommand = json.optString("squoreCommand", "").replace('\\','/');
-            TESTinsights_URL = json.optString("TESTinsights_URL", "");
-            TESTinsights_project = json.optString("TESTinsights_project", "");
-            if (TESTinsights_project.length() == 0) {
-                    TESTinsights_project = "env.JOB_BASE_NAME";
-            }
-            TESTinsights_credentials_id = json.optString("TESTinsights_credentials_id", "");
-            TESTinsights_proxy = json.optString("TESTinsights_proxy", "");
-       }
+        }
+        useCoverageHistory = json.optBoolean("useCoverageHistory", false);
+        maxParallel = json.optLong("maxParallel", 0);
+
+        /* Additional Tools */
+        pclpCommand = json.optString("pclpCommand", "").replace('\\','/');
+        pclpResultsPattern = json.optString("pclpResultsPattern", "");
+        squoreCommand = json.optString("squoreCommand", "").replace('\\','/');
+        TESTinsights_URL = json.optString("TESTinsights_URL", "");
+        TESTinsights_project = json.optString("TESTinsights_project", "");
+        if (TESTinsights_project.length() == 0) {
+                TESTinsights_project = "env.JOB_BASE_NAME";
+        }
+        TESTinsights_credentials_id = json.optString("TESTinsights_credentials_id", "");
+        TESTinsights_proxy = json.optString("TESTinsights_proxy", "");
     }
-    /**
-     * Use Saved Data
-     * @param savedData saved data to use
-     */
-    public void useSavedData(VectorCASTSetup savedData) {
-        environmentSetupWin = savedData.getEnvironmentSetupWin();
-        executePreambleWin = savedData.getExecutePreambleWin();
-        environmentTeardownWin = savedData.getEnvironmentTeardownWin();
 
-        environmentSetupUnix = savedData.getEnvironmentSetupUnix();
-        executePreambleUnix = savedData.getExecutePreambleUnix();
-        environmentTeardownUnix = savedData.getEnvironmentTeardownUnix();
-
-        optionUseReporting = savedData.getOptionUseReporting();
-        optionErrorLevel = savedData.getOptionErrorLevel();
-        optionHtmlBuildDesc = savedData.getOptionHtmlBuildDesc();
-        optionExecutionReport = savedData.getOptionExecutionReport();
-        optionClean = savedData.getOptionClean();
-        useCILicenses = savedData.getUseCILicenses();
-        useStrictTestcaseImport = savedData.getUseStrictTestcaseImport();
-        useRGW3 = savedData.getUseRGW3();
-        useImportedResults = savedData.getUseImportedResults();
-        useLocalImportedResults = savedData.getUseLocalImportedResults();
-        useExternalImportedResults = savedData.getUseExternalImportedResults();
-        externalResultsFilename = savedData.getExternalResultsFilename();
-        useCoverageHistory = savedData.getUseCoverageHistory();
-        maxParallel = savedData.getMaxParallel();
-
-        useCoveragePlugin = savedData.getUseCoveragePlugin();
-        usingSCM = savedData.getUsingSCM();
-        scm = savedData.getSCM();
-
-        waitTime = savedData.getWaitTime();
-        waitLoops = savedData.getWaitLoops();
-        jobName = savedData.getJobName();
-        nodeLabel = savedData.getNodeLabel();
-        pclpCommand = savedData.getPclpCommand();
-        pclpResultsPattern = savedData.getPclpResultsPattern();
-        squoreCommand = savedData.getSquoreCommand();
-        TESTinsights_URL = savedData.getTESTinsights_URL();
-        TESTinsights_project = savedData.getTESTinsights_project();
-        TESTinsights_proxy = savedData.getTESTinsights_proxy();
-        TESTinsights_credentials_id = savedData.getTESTinsights_credentials_id();
-        TESTinsights_SCM_URL = savedData.getTESTinsights_SCM_URL();
-        TESTinsights_SCM_Tech = savedData.getTESTinsights_SCM_Tech();
-    }
     /**
      * Using some form of SCM
      * @return true or false
@@ -829,28 +779,26 @@ abstract public class BaseJob {
             return;
         }
 
-        if (!useSavedData) {
-            // Read the SCM setup
-            scm = SCMS.parseSCM(request, topProject);
-            if (scm == null) {
-                scm = new NullSCM();
-            }
-            if (scm instanceof NullSCM) {
-                usingSCM = false;
+        // Read the SCM setup
+        scm = SCMS.parseSCM(request, topProject);
+        if (scm == null) {
+            scm = new NullSCM();
+        }
+        if (scm instanceof NullSCM) {
+            usingSCM = false;
+        } else {
+            usingSCM = true;
+            
+            // for TESTinsights SCM connector
+            String scmName = scm.getDescriptor().getDisplayName();
+            if (scmName == "Git") {
+                TESTinsights_SCM_Tech = "git";
+            } else if (scmName == "Subversion") {
+                TESTinsights_SCM_Tech = "svn";
             } else {
-                usingSCM = true;
-                
-                // for TESTinsights SCM connector
-                String scmName = scm.getDescriptor().getDisplayName();
-                if (scmName == "Git") {
-                    TESTinsights_SCM_Tech = "git";
-                } else if (scmName == "Subversion") {
-                    TESTinsights_SCM_Tech = "svn";
-                } else {
-                    TESTinsights_SCM_Tech = "";
-                }
-                Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "SCM Info: " + scmName);
+                TESTinsights_SCM_Tech = "";
             }
+            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "SCM Info: " + scmName);
         }
         topProject.setScm(scm);
 

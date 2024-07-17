@@ -60,6 +60,8 @@ import generate_qa_results_xml
 from parse_console_for_cbt import ParseConsoleForCBT
 
 using_new_reports = False
+legacy = False
+
 try:
     ## This tests to see if 2018 is present.
     from vector.apps.ReportBuilder.custom_report import CustomReport
@@ -486,7 +488,8 @@ def cleanupOldBuilds(teePrint):
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
-def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None,use_archive_extract = False, report_only_failures = False, no_full_report = False):
+# def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None,use_archive_extract = False, report_only_failures = False, no_full_report = False):
+def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None, use_archive_extract = False, report_only_failures = False, no_full_report = False, use_ci = "", xml_data_dir = "xml_data"):
 
     if timing:
         print("Start report generation: " + str(time.time()))
@@ -768,7 +771,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if timing:
         print("Complete report generate: " + str(time.time()))
         
-        
+    return failed_count, passed_count
+
         
 if __name__ == '__main__':
 

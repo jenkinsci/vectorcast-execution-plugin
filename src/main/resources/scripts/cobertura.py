@@ -433,6 +433,8 @@ def runCoberturaResults(packages, api, verbose = False, extended = False):
     for file in api.SourceFile.all():  
         if file.display_name == "":
             continue
+        if not file.has_any_coverage:
+            continue
             
         fname = file.display_name
         fpath = file.display_path.rsplit('.',1)[0]
@@ -445,7 +447,7 @@ def runCoberturaResults(packages, api, verbose = False, extended = False):
     for path in sorted(fileDict.keys()):
         file = fileDict[path]        
         new_path = path.rsplit('/',1)[0]
-                
+
         # when we switch paths
         if new_path != path_name:
         

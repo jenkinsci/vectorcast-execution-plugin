@@ -25,9 +25,10 @@
 import os, subprocess,argparse, glob, sys, shutil
 
 from managewait import ManageWait
-import generate_results 
 import cobertura
 import create_index_html
+import importlib
+generate_results = importlib.import_module("generate-results")
 
 try:
     import vector.apps.parallel.parallel_build_execute as parallel_build_execute
@@ -183,6 +184,7 @@ class VectorCASTExecute(object):
         generate_results.verbose = self.verbose
         generate_results.print_exc = self.print_exc
         generate_results.timing = self.timing
+        
         self.failed_count, self.passed_count = generate_results.buildReports(self.FullMP,self.level,self.environment, True, self.timing, xml_data_dir = self.xml_data_dir)
         
         # calculate the failed percentage
