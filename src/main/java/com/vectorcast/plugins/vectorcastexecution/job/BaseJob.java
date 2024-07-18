@@ -158,13 +158,15 @@ abstract public class BaseJob {
      * @throws IOException exception
      * @throws ExternalResultsFileException exception
      */
-    protected BaseJob(final StaplerRequest request, final StaplerResponse response, boolean useSavedData) throws ServletException, IOException, ExternalResultsFileException {
+    protected BaseJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, ExternalResultsFileException {
         instance = Jenkins.get();
         this.request = request;
         this.response = response;
         JSONObject json = request.getSubmittedForm();
-
-        Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSONObject Submitted Form"+ json.toString());
+        
+        if (json.toString().matches("\\w*")) {
+            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSONObject Submitted Form"+ json.toString());
+        }
 
         manageProjectName = json.optString("manageProjectName");
         if (!manageProjectName.isEmpty()) {
@@ -791,9 +793,9 @@ abstract public class BaseJob {
             
             // for TESTinsights SCM connector
             String scmName = scm.getDescriptor().getDisplayName();
-            if (scmName == "Git") {
+            if (scmName.equals("Git")) {
                 TESTinsights_SCM_Tech = "git";
-            } else if (scmName == "Subversion") {
+            } else if (scmName.equals("Subversion")) {
                 TESTinsights_SCM_Tech = "svn";
             } else {
                 TESTinsights_SCM_Tech = "";

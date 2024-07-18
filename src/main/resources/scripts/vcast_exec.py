@@ -215,11 +215,11 @@ class VectorCASTExecute(object):
         
     def runPcLintPlusMetrics(self, input_xml):
         print("Creating PC-lint Plus Metrics")
-        import generate_plcp_reports 
+        import generate_pclp_reports 
         os.makedirs(os.path.join(self.xml_data_dir,"pclp"))
         report_name = os.path.join(self.xml_data_dir,"pclp","gl-code-quality-report.json")
         print("PC-lint Plus Metrics file: ", report_name)
-        generate_plcp_reports.generate_reports(input_xml, output_gitlab = report_name)
+        generate_pclp_reports.generate_reports(input_xml, output_gitlab = report_name)
 
     def runReports(self):
         if self.aggregate:

@@ -53,7 +53,7 @@ public class NewSingleJob extends BaseJob {
      * @throws ExternalResultsFileException exception
      */
     public NewSingleJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, ExternalResultsFileException {
-        super(request, response, false);
+        super(request, response);
     }
     /**
      * Add build commands step to job

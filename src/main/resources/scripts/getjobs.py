@@ -94,24 +94,34 @@ def checkForEnvChanges(vcm_fname, build_dir, env_name):
 def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
     somethingPrinted = False
     output = ""
+    
+    print("starting api loop")
+
     for env in api.Environment.all():
+        print("env: " , env.name)
         
         if not env.is_active:
+            print("inactive: " , env.name)
             continue        
         
         somethingPrinted = True
                 
+        print("starting type def")
         if (printEnvType):
             if env.system_tests or env.definition.env_type == EnvironmentType.COVER:
                 output += "ST: "
             else:
                 output += "UT: "
-                
+        print("DONE - starting type def")                
         output += "%s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name)
 
+    print("printing output")  
+    
     if printData:
         with tee_print.TeePrint() as teePrint:
             printOutput(somethingPrinted, api.vcm_file, output, teePrint)
+            
+    print("DONE - printing output")              
 
     return output
     
@@ -190,9 +200,13 @@ def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = Fal
         if (legacy): raise KeyError
             
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
+        print("opening api")
         api = VCProjectApi(ManageProjectName)
+        print("getting env info")
         ret_info = printEnvInfoDataAPI(api, printData, printEnvType)
+        print("DONE - getting env info")
         api.close()
+        print("DONE - opening api")
         return ret_info
 
     

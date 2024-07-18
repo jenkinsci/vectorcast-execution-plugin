@@ -109,7 +109,7 @@ public class NewPipelineJob extends BaseJob {
      */
     public NewPipelineJob(final StaplerRequest request, final StaplerResponse response)
             throws ServletException, IOException, ScmConflictException, ExternalResultsFileException {
-        super(request, response, false);
+        super(request, response);
 
         JSONObject json = request.getSubmittedForm();
 
@@ -298,6 +298,7 @@ public class NewPipelineJob extends BaseJob {
      * @throws JobAlreadyExistsException exception
      * @throws InvalidProjectFileException exception
      */
+     @Override 
      public void create(boolean update) throws IOException, ServletException, Descriptor.FormException,
         JobAlreadyExistsException, InvalidProjectFileException {
 

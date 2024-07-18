@@ -177,9 +177,6 @@ public class NewPipelineTest {
     
     @Test
     public void testOptions() throws Exception {
-        JSONObject jsonImportResults  = new JSONObject();
-        jsonImportResults.put("value", USE_LOCAL_IMPORTED_RESULTS);
-        
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "project.vcm");
         jsonForm.put("optionClean", true);
