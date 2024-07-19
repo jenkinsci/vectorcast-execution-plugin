@@ -153,7 +153,6 @@ abstract public class BaseJob {
      * Constructor
      * @param request request object
      * @param response response object
-     * @param useSavedData use saved data true/false
      * @throws ServletException exception
      * @throws IOException exception
      * @throws ExternalResultsFileException exception
