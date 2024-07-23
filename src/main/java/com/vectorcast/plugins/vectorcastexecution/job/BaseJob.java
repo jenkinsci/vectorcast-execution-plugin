@@ -156,18 +156,25 @@ abstract public class BaseJob {
      * @throws ServletException exception
      * @throws IOException exception
      * @throws ExternalResultsFileException exception
+     * @throws IllegalArgumentException exception
      */
-    protected BaseJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, ExternalResultsFileException {
+    protected BaseJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, ExternalResultsFileException, IllegalArgumentException {
         instance = Jenkins.get();
         this.request = request;
         this.response = response;
         JSONObject json = request.getSubmittedForm();
         
         if (json.toString().matches("\\w*")) {
-            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSONObject Submitted Form"+ json.toString());
+            if (json.toString().length() < 2048) {
+                Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSONObject Submitted Form"+ json.toString());
+            }
         }
 
         manageProjectName = json.optString("manageProjectName");
+        if (manageProjectName.length() > 1000) {
+            throw new IllegalArgumentException("manageProjectName too long > 1000");
+        }
+
         if (!manageProjectName.isEmpty()) {
             // Force unix style path to avoid problems later
             manageProjectName = manageProjectName.replace('\\','/');

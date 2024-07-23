@@ -36,6 +36,7 @@ import hudson.scm.SCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -780,26 +781,34 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * Copy the files in a directory recursively to the job workspace.
      * This is used when the source is NOT a jar file
      *
-     * @param dir directory to process
+     * @param scriptDir directory to process
      * @param base base
      * @param destDir destination directory
      * @throws IOException exception
      * @throws InterruptedException exception
      */
-    private void processDir(File dir, String base, FilePath destDir, Boolean directDir) throws IOException, InterruptedException {
+    private void processDir(File scriptDir, String base, FilePath destDir, Boolean directDir) throws IOException, InterruptedException {
         destDir.mkdirs();
-        File[] files = dir.listFiles();
+        File[] files = scriptDir.listFiles();
         if (files == null) {
             return;
         }
         for (File file : files) {
+            
             if (file.isDirectory()) {
                 FilePath newDest = new FilePath(destDir, file.getName());
                 processDir(file, base + "/" + file.getName(), newDest, directDir);
             } else {
                 if (directDir) {
+                    // change the copy mechanism
+                    // to copy file to remote node
                     File newFile = new File(destDir + File.separator + file.getName());
-                    FileUtils.copyFile(file, newFile);
+                    File inFile = new File(scriptDir + File.separator + file.getName());
+                                        
+                    FilePath dest = new FilePath(destDir, newFile.getName());
+                    InputStream is = new FileInputStream(inFile);                    
+                    dest.copyFrom(is);                    
+                    
                 } else {
                     FilePath newFile = new FilePath(destDir, file.getName());
                     try (InputStream is = VectorCASTSetup.class.getResourceAsStream(SCRIPT_DIR + base + "/" + file.getName())) {
@@ -812,7 +821,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
     private void printVersion( PrintStream logger )
     {
-    logger.println( "[VectorCAST Execution Version]: " + VcastUtils.getVersion().orElse( "Error - Could not determine version" ) );
+        logger.println( "[VectorCAST Execution Version]: " + VcastUtils.getVersion().orElse( "Error - Could not determine version" ) );
     }
 
     /**
@@ -870,9 +879,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 processDir(scriptDir, "./", destScriptDir, directDir);
             }
         } catch (IOException ex) {
-            Logger.getLogger(VectorCASTSetup.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(VectorCASTSetup.class.getName()).log(Level.INFO, null, ex);
         } catch (InterruptedException ex) {
-            Logger.getLogger(VectorCASTSetup.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(VectorCASTSetup.class.getName()).log(Level.INFO, null, ex);
         } finally {
             if (jFile != null) {
                 try {
