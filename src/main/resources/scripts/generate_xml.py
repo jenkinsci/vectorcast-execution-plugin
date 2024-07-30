@@ -827,7 +827,8 @@ class GenerateManageXml (BaseGenerateXml):
         results = self.api.project.repository.get_full_status([])
         all_envs = []
         for env in self.api.Environment.all():
-            all_envs.append(env.level._full_path)
+            if env.is_active:
+                all_envs.append(env.level._full_path)
 
         self.fh_data = ""            
         self.localDataOnly = True

@@ -188,6 +188,7 @@ environment before disabling.  This takes into account enviornments that are dir
 - Moved to Jenkins 2.440 and Java 11
 - Added BETA support for RGW3
 - Removed VectorCAST Project Environment report
+- Fixed remote copy of VCAST_VC_SCRIPTS
 
 ### Version 0.77 (26 Dec 2023)
 - Updated for findbugs to spotbugs
