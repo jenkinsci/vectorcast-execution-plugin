@@ -806,8 +806,16 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                     File inFile = new File(scriptDir + File.separator + file.getName());
                                         
                     FilePath dest = new FilePath(destDir, newFile.getName());
-                    InputStream is = new FileInputStream(inFile);                    
-                    dest.copyFrom(is);                    
+                    InputStream is = null;
+                    try {
+                        is = new FileInputStream(inFile);                    
+                        dest.copyFrom(is);    
+                    }
+                    finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
                     
                 } else {
                     FilePath newFile = new FilePath(destDir, file.getName());

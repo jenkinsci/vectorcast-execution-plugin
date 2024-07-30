@@ -164,11 +164,10 @@ abstract public class BaseJob {
         this.response = response;
         JSONObject json = request.getSubmittedForm();
         
-        if (json.toString().matches("\\w*")) {
-            if (json.toString().length() < 2048) {
-                Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSONObject Submitted Form"+ json.toString());
-            }
-        }
+        // Debug Code
+        // if (json.toString().matches("\\w*")) {
+        //     Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSONObject Submitted Form"+ json.toString());
+        // }
 
         manageProjectName = json.optString("manageProjectName");
         if (manageProjectName.length() > 1000) {
