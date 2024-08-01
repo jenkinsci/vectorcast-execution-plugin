@@ -223,7 +223,6 @@ abstract public class BaseJob {
                 }
                 Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "ImportedResults: " + jsonImportResults);
             }
-            externalResultsFilename  = json.optString("externalResultsFilename", "").replace('\\','/');;
             useCoverageHistory = json.optBoolean("useCoverageHistory", false);
             maxParallel = json.optLong("maxParallel", 0);
             

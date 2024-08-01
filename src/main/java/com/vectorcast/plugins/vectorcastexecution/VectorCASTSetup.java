@@ -36,6 +36,7 @@ import hudson.scm.SCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -46,8 +47,8 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.tasks.SimpleBuildStep;
-import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+import hudson.EnvVars;
 
 /**
  * VectorCAST setup build action
@@ -750,9 +751,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @throws IOException exception
      * @throws InterruptedException exception
      */
-    private void processDir(File dir, String base, FilePath destDir, Boolean directDir) throws IOException, InterruptedException {
+    private void processDir(File scriptDir, String base, FilePath destDir, Boolean directDir) throws IOException, InterruptedException {
         destDir.mkdirs();
-        File[] files = dir.listFiles();
+        File[] files = scriptDir.listFiles();
         if (files == null) {
             return;
         }
@@ -763,7 +764,18 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             } else {
                 if (directDir) {
                     File newFile = new File(destDir + File.separator + file.getName());
-                    FileUtils.copyFile(file, newFile);
+                    File inFile = new File(scriptDir + File.separator + file.getName());
+                    FilePath dest = new FilePath(destDir, newFile.getName());
+                    InputStream is = null;
+                    try {
+                        is = new FileInputStream(inFile);                    
+                        dest.copyFrom(is);    
+                    }
+                    finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
                 } else {
                     FilePath newFile = new FilePath(destDir, file.getName());
                     try (InputStream is = VectorCASTSetup.class.getResourceAsStream(SCRIPT_DIR + base + "/" + file.getName())) {

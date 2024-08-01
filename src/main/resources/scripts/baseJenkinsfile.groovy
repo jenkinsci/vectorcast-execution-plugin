@@ -340,7 +340,7 @@ def runCommands(cmds) {
             """
         }
         cmds = localCmds + cmds
-        cmds = stripLeadingWhitespace(cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ").replaceAll("_COPY","cp -p ").replaceAll("_IF_EXIST","if [[ -f ").replaceAll("_IF_THEN"," ]] ; then ").replaceAll("_ENDIF"," fi") )
+        cmds = stripLeadingWhitespace(cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ").replaceAll("_COPY","cp -p ").replaceAll("_IF_EXIST","if [[ -f ").replaceAll("_IF_THEN"," ]] ; then ").replaceAll("_ENDIF","; fi") )
         println "Running commands: " + cmds
         
         // run command in shell
