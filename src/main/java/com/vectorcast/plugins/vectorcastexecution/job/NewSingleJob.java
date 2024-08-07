@@ -198,7 +198,7 @@ addEnvVars +
 "        if exist @PROJECT_BASE@_results.vcr  ( copy @PROJECT_BASE@_results.vcr @PROJECT_BASE@_results_orig.vcr ) \n" +
 "    )\n" + 
 "    if \"%VCAST_USE_EXTERNAL_IMPORTED_RESULTS%\"==\"TRUE\" if exist \"%VCAST_USE_EXTERNAL_FILENAME%\" ( \n" +
-"        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result\"%VCAST_USE_EXTERNAL_FILENAME%\"\"\n" +
+"        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\"%VCAST_USE_EXTERNAL_FILENAME%\"\"\n" +
 "        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status\"\"\n" +
 "    )\n" + 
 ")\n" +
