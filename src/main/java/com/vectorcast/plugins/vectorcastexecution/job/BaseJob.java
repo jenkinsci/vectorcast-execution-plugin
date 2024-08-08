@@ -233,6 +233,7 @@ abstract public class BaseJob {
                     useLocalImportedResults = false;
                     useExternalImportedResults = true;
                     externalResultsFilename = jsonImportResults.optString("externalResultsFilename","");
+                        externalResultsFilename = externalResultsFilename.replace('\\','/');
                     if (externalResultsFilename.length() == 0) {
                         throw new ExternalResultsFileException();
                     }
