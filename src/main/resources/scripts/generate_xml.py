@@ -38,6 +38,7 @@ import sys
 try:
     from vector.apps.DataAPI.unit_test_api import UnitTestApi
     from vector.apps.DataAPI.unit_test_models import TestCase
+    import vector.apps.DataAPI.unit_test_models as unit_test_models
 except:
     from vector.apps.DataAPI.api import Api as UnitTestApi
     from vector.apps.DataAPI.models import TestCase
@@ -806,6 +807,7 @@ class GenerateManageXml (BaseGenerateXml):
         
         ##need_fixup
         if not self.no_full_reports:
+            unit_test_models.clear_caches(localXML.api)
             report_name = os.path.join("management", comp + "_" + ts + "_" + env_name + ".html")
             try:
                 if isinstance(localXML.api, CoverApi):
@@ -1147,7 +1149,7 @@ class GenerateXml(BaseGenerateXml):
         <testcase name="%s" classname="%s" time="%s" file="%s" line="%s">
             %s
             <system-out>
-%s                     
+%s
             </system-out>
         </testcase>
 """  
@@ -1163,7 +1165,7 @@ class GenerateXml(BaseGenerateXml):
         <testcase name="%s" classname="%s" time="%s" %s %s>
             %s
             <system-out>
-%s                     
+%s
             </system-out>
         </testcase>
 """        
@@ -1379,6 +1381,7 @@ class GenerateXml(BaseGenerateXml):
         import time
 
         try:
+            unit_test_models.clear_caches(self.api.connection)
             self.api.report(
                 testcases=[tc],
                 single_testcase=True,
