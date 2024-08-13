@@ -242,13 +242,12 @@ public class NewPipelineJob extends BaseJob {
     /**
      * Add build steps.
      *
-     * @param update true to update, false to not
      * @throws IOException      exception
      * @throws ServletException exception
      * @throws hudson.model.Descriptor.FormException exception
      */
     @Override
-    public void doCreate(final boolean update)
+    public void doCreate()
             throws IOException, ServletException, Descriptor.FormException {
 
         // Get config.xml resource from jar and write it to temp
@@ -323,13 +322,13 @@ public class NewPipelineJob extends BaseJob {
      * @throws InvalidProjectFileException exception
      */
      @Override
-     public void create(final boolean update)
+     public void create()
             throws IOException, ServletException, Descriptor.FormException,
             JobAlreadyExistsException, InvalidProjectFileException {
 
         // Create the top-level project
         createProject();
-        doCreate(update);
+        doCreate();
     }
 
     private static Path createTempFile(final Path tempDirChild)
@@ -372,14 +371,14 @@ public class NewPipelineJob extends BaseJob {
                 exception);
         }
     }
-    
+
     /**
      * Gets the baseline file.
      * @param fname filename
      * @return String of baseline file
      * @throws IOException exception
      */
-    @Override 
+    @Override
     protected String getBaselineFile(final String fname) throws IOException {
         String baseline = "";
 
@@ -625,7 +624,8 @@ public class NewPipelineJob extends BaseJob {
             + getExternalResultsFilename() + "\"\n"
             + "\n";
 
-        String baseJenkinsfile = getBaselineFile("/scripts/baseJenkinsfile.groovy");
+        String baseJenkinsfile =
+            getBaselineFile("/scripts/baseJenkinsfile.groovy");
 
         if (baseJenkinsfile == null) {
             baseJenkinsfile = "\n\n\n *** Errors reading the baseJenkinsfile..."

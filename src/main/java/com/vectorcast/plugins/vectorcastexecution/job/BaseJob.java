@@ -107,7 +107,7 @@ public abstract class BaseJob {
     /** Use Jenkins reporting. */
     private boolean optionUseReporting;
     /** What error-level to use. */
-    private String optionErrorLevel;
+    private int optionErrorLevel;
     /** Use HTML in build description. */
     private String optionHtmlBuildDesc;
     /** Generate execution report. */
@@ -202,8 +202,7 @@ public abstract class BaseJob {
         if (!manageProjectName.isEmpty()) {
             // Force unix style path to avoid problems later
             manageProjectName = manageProjectName.replace('\\', '/');
-            manageProjectName = manageProjectName.
-                replaceAll("^[ \t]+|[ \t]+$", "");
+            manageProjectName = manageProjectName.trim();
             if (!manageProjectName.toLowerCase().endsWith(".vcm")) {
                 manageProjectName += ".vcm";
             }
@@ -219,7 +218,15 @@ public abstract class BaseJob {
         environmentTeardownUnix = json.optString("environmentTeardownUnix");
 
         optionUseReporting = json.optBoolean("optionUseReporting", true);
-        optionErrorLevel = json.optString("optionErrorLevel", "Unstable");
+        String errLevel = json.optString("optionErrorLevel", "unstable");
+        if (errLevel.equals("nothing")) {
+            optionErrorLevel = 0;
+        } else if (errLevel.equals("unstable")) {
+            optionErrorLevel = 1;
+        } else if (errLevel.equals("failure")) {
+            optionErrorLevel = 2;
+        }
+
         optionHtmlBuildDesc = json.optString("optionHtmlBuildDesc", "HTML");
         optionExecutionReport = json.optBoolean("optionExecutionReport", true);
         optionClean = json.optBoolean("optionClean", false);
@@ -354,9 +361,9 @@ public abstract class BaseJob {
     }
     /**
      * Get error level.
-     * @return Unstable or Failure
+     * @return int 0 - Do nothing, 1 - Unstable, 2 - Error
      */
-    protected String getOptionErrorLevel() {
+    protected int getOptionErrorLevel() {
         return optionErrorLevel;
     }
     /**
@@ -666,14 +673,13 @@ public abstract class BaseJob {
     }
     /**
      * Create the job(s).
-     * @param update true/false
      * @throws IOException exception
      * @throws ServletException exception
      * @throws hudson.model.Descriptor.FormException exception
      * @throws JobAlreadyExistsException exception
      * @throws InvalidProjectFileException exception
      */
-    public void create(final boolean update)
+    public void create()
             throws IOException, ServletException,
             Descriptor.FormException,
             JobAlreadyExistsException,
@@ -713,7 +719,7 @@ public abstract class BaseJob {
         addDelWSBeforeBuild(topProject);
 
         try {
-            doCreate(update);
+            doCreate();
         } catch (InvalidProjectFileException ex) {
             cleanupProject();
             throw ex;
@@ -733,22 +739,21 @@ public abstract class BaseJob {
     * @return String of baseline file
     * @throws IOException exception
     */
-    protected abstract String getBaselineFile(final String fname) 
+    protected abstract String getBaselineFile(String fname)
         throws IOException;
-        
+
     /**
      * Cleanup top-level project, as in delete.
      */
     protected abstract void cleanupProject();
     /**
      * Do create of project details.
-     * @param update true if doing an update rather than a create
      * @throws IOException exception
      * @throws ServletException exception
      * @throws hudson.model.Descriptor.FormException exception
      * @throws InvalidProjectFileException exception
      */
-    protected abstract void doCreate(boolean update)
+    protected abstract void doCreate()
         throws IOException,
         ServletException,
         Descriptor.FormException,
@@ -763,40 +768,40 @@ public abstract class BaseJob {
     protected VectorCASTSetup addSetup(final Project<?, ?> project)
             throws IOException {
         VectorCASTSetup setup =
-                new VectorCASTSetup(environmentSetupWin,
-                                    environmentSetupUnix,
-                                    executePreambleWin,
-                                    executePreambleUnix,
-                                    environmentTeardownWin,
-                                    environmentTeardownUnix,
-                                    optionUseReporting,
-                                    optionErrorLevel,
-                                    optionHtmlBuildDesc,
-                                    optionExecutionReport,
-                                    optionClean,
-                                    useCILicenses,
-                                    useStrictTestcaseImport,
-                                    useRGW3,
-                                    useImportedResults,
-                                    useLocalImportedResults,
-                                    useExternalImportedResults,
-                                    externalResultsFilename,
-                                    useCoverageHistory,
-                                    waitLoops,
-                                    waitTime,
-                                    maxParallel,
-                                    manageProjectName,
-                                    jobName,
-                                    nodeLabel,
-                                    pclpCommand,
-                                    pclpResultsPattern,
-                                    squoreCommand,
-                                    testInsightsUrl,
-                                    testInsightsProject,
-                                    testInsightsCredentialsId,
-                                    testInsightsProxy,
-                                    testInsightsScmUrl,
-                                    testInsightsScmTech);
+            new VectorCASTSetup(environmentSetupWin,
+                                environmentSetupUnix,
+                                executePreambleWin,
+                                executePreambleUnix,
+                                environmentTeardownWin,
+                                environmentTeardownUnix,
+                                optionUseReporting,
+                                optionErrorLevel,
+                                optionHtmlBuildDesc,
+                                optionExecutionReport,
+                                optionClean,
+                                useCILicenses,
+                                useStrictTestcaseImport,
+                                useRGW3,
+                                useImportedResults,
+                                useLocalImportedResults,
+                                useExternalImportedResults,
+                                externalResultsFilename,
+                                useCoverageHistory,
+                                waitLoops,
+                                waitTime,
+                                maxParallel,
+                                manageProjectName,
+                                jobName,
+                                nodeLabel,
+                                pclpCommand,
+                                pclpResultsPattern,
+                                squoreCommand,
+                                testInsightsUrl,
+                                testInsightsProject,
+                                testInsightsCredentialsId,
+                                testInsightsProxy,
+                                testInsightsScmUrl,
+                                testInsightsScmTech);
 
         setup.setUsingSCM(usingScm);
         setup.setSCM(scm);

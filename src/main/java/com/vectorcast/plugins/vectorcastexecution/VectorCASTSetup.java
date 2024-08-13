@@ -72,7 +72,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     /** Use Jenkins reporting. */
     private boolean optionUseReporting;
     /** What error-level to use. */
-    private String optionErrorLevel;
+    private int optionErrorLevel;
     /** Use HTML in build description. */
     private String optionHtmlBuildDesc;
     /** Generate execution report. */
@@ -280,15 +280,15 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * Get option error level.
      * @return error level
      */
-    public String getOptionErrorLevel() {
+    public int getOptionErrorLevel() {
         return optionErrorLevel;
     }
     /**
      * Set option error level.
-     * @param error error level
+     * @param level error level
      */
-    public void setOptionErrorLevel(final String error) {
-        this.optionErrorLevel = error;
+    public void setOptionErrorLevel(final int level) {
+        this.optionErrorLevel = level;
     }
     /**
      * Get option for HTML Build Description.
@@ -724,7 +724,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            final String environmentTeardownWinLocal,
                            final String environmentTeardownUnixLocal,
                            final boolean optionUseReportingLocal,
-                           final String optionErrorLevelLocal,
+                           final int optionErrorLevelLocal,
                            final String optionHtmlBuildDescLocal,
                            final boolean optionExecutionReportLocal,
                            final boolean optionCleanLocal,
@@ -903,13 +903,39 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
                     if (entry.getName().startsWith("scripts")) {
+
                         String fileOrDir =
                             entry.getName().substring(initPathLen);
+
+                        /* check to solve jenkins security scanner */
+                        File destinationDir =
+                            new File(destScriptDir.toString());
+                        File destinationFile =
+                            new File(destinationDir, fileOrDir);
+                        if (!destinationFile.toPath().normalize()
+                                .startsWith(destinationDir.toPath())) {
+                            throw new IOException("Bad entry in scripts.jar: "
+                                + entry.getName());
+                        }
+
                         FilePath dest = new FilePath(destScriptDir, fileOrDir);
                         if (entry.getName().endsWith("/")) {
                             // Directory, create destination
                             dest.mkdirs();
                         } else {
+
+                            /* check to solve jenkins security scanner */
+                            destinationDir =
+                                new File(destScriptDir.toString());
+                            destinationFile =
+                                new File(destinationDir, entry.getName());
+                            if (!destinationFile.toPath().normalize()
+                                    .startsWith(destinationDir.toPath())) {
+                                throw new IOException(
+                                    "Bad entry in scripts.jar: "
+                                        + entry.getName());
+                            }
+
                             // File, copy it
                             InputStream is = VectorCASTSetup.class.
                                 getResourceAsStream("/" + entry.getName());
@@ -998,8 +1024,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     * Convert current setup to a string to print.
     * @return the display name
     */
-   @Override
-   public String toString() {
+    @Override
+    public String toString() {
         String string = "\nVectorCASTSetup: \n"
                 + "\t environmentSetupUnix: " + environmentSetupUnix + "\n"
                 + "\t executePreambleWin: " + executePreambleWin + "\n"
@@ -1008,7 +1034,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 + "\t environmentTeardownUnix: " + environmentTeardownUnix
                 + "\n"
                 + "\t optionUseReporting: " + optionUseReporting + "\n"
-                + "\t optionErrorLevel: " + optionErrorLevel + "\n"
+                + "\t optionErrorLevel: " + Integer.toString(optionErrorLevel)
+                + "\n"
                 + "\t optionHtmlBuildDesc: " + optionHtmlBuildDesc + "\n"
                 + "\t optionHtmlBuildDesc: " + optionHtmlBuildDesc + "\n"
                 + "\t optionExecutionReport: " + optionExecutionReport + "\n"

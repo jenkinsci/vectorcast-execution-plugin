@@ -87,7 +87,7 @@ public class NewSingleJobTest {
         NewSingleJob job = new NewSingleJob(request, response);
 
         Assert.assertEquals("project", job.getBaseName());
-        job.create(false);
+        job.create();
         Assert.assertEquals(PROJECTNAME, job.getProjectName());
         Assert.assertNotNull(job.getTopProject());
 
@@ -103,7 +103,7 @@ public class NewSingleJobTest {
         // Publisher 3 - GroovyPostbuildRecorder
         Assert.assertTrue(publisherList.get(groovyIndex) instanceof GroovyPostbuildRecorder);
         GroovyPostbuildRecorder groovyScript = (GroovyPostbuildRecorder)publisherList.get(groovyIndex);
-        Assert.assertEquals(/*failure*/2, groovyScript.getBehavior());
+        Assert.assertEquals(/*unstable*/1, groovyScript.getBehavior());
 
     }
 
@@ -423,7 +423,24 @@ public class NewSingleJobTest {
         checkOptions (job, true, true, true, true, true, true, true);
     }
 
-    // TODO: Figure out how to add SCM to be parserd
+    /* TODO: Figure out how to add SCM to be parserd*/
+    /* TODO: TestInsights project name: env.JOB_BASE_NAME */
+    /* TODO: Specify Job name */
+    /* TODO: Multiple jobs with same name */
+    /* TODO: MPname set to none */
+    /* TODO: MPname without .vcm */
+    /* TODO: MPname on network driver abs path \\ */
+    /* TODO: MPname on windows abs path */
+    /* TODO: MPname on abs path and some SCM */
+    /* TODO: use CI license */
+    /* TODO: Unix env sections */
+    /* TODO: Label not set */
+    /* TODO: Windows env sections */
+    /* TODO: Post checkout set to "" */
+    /* TODO: htmlOrText set to text */
+    /* TODO: use Imported results, extFname set to none*/
+    /* TODO: different groovy script behaviors */
+
 /*
     @Test
     public void testGitSCM() throws Exception {

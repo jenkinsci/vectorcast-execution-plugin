@@ -411,7 +411,7 @@ public class NewSingleJob extends BaseJob {
       htmlOrText = ".txt";
     }
 
-    String script = getBaselineFile("/scripts/postBuild.groovy");
+    String script = getBaselineFile("/scripts/baselinePostBuild.groovy");
 
     script = StringUtils.replace(script, "@PROJECT_BASE@", getBaseName());
     script = StringUtils.replace(script, "@htmlOrText@", htmlOrText);
@@ -425,7 +425,7 @@ public class NewSingleJob extends BaseJob {
     GroovyPostbuildRecorder groovy =
         new GroovyPostbuildRecorder(
             secureScript,
-            2, /*behaviour*/
+            getOptionErrorLevel(), /*behaviour*/
             false  /*matrix parent*/
         );
     if (!getTopProject().getPublishersList().add(groovy)) {
@@ -468,13 +468,12 @@ public class NewSingleJob extends BaseJob {
   }
   /**
    * Add build steps.
-   * @param update true to update, false to not
    * @throws IOException exception
    * @throws ServletException exception
    * @throws hudson.model.Descriptor.FormException exception
    */
   @Override
-  public void doCreate(final boolean update)
+  public void doCreate()
         throws IOException, ServletException, Descriptor.FormException {
     getTopProject().setDescription("Single job to run the manage project: "
         + getManageProjectName());
@@ -508,7 +507,7 @@ public class NewSingleJob extends BaseJob {
    * @return String of baseline file
    * @throws IOException exception
    */
-   @Override 
+   @Override
    protected String getBaselineFile(final String fname) throws IOException {
       String baseline = "";
 

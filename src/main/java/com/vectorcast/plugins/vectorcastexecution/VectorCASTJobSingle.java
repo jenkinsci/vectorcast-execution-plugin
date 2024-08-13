@@ -95,7 +95,7 @@ public class VectorCASTJobSingle extends JobBase {
             // Create single-job
             NewSingleJob job = new NewSingleJob(request, response);
 
-            job.create(false);
+            job.create();
             projectName = job.getProjectName();
             return new HttpRedirect("created");
         } catch (JobAlreadyExistsException ex) {

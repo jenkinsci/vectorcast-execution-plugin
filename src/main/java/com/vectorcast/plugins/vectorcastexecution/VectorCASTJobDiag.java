@@ -40,6 +40,13 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @Extension
 public class VectorCASTJobDiag extends JobBase {
+
+    /** The request from jenkins. */
+    private StaplerRequest jenkinsRequest;
+
+    /** The response to jenkins. */
+    private StaplerResponse jenkinsResponse;
+
     /** Name of diagnostic job. */
     public static final String PROJECT_NAME = "VectorCAST-Diagnostics";
 
@@ -220,10 +227,26 @@ public class VectorCASTJobDiag extends JobBase {
     }
 
     /**
+     * Get response.
+     * @return response
+     */
+    protected StaplerResponse getResponse() {
+        return jenkinsResponse;
+    }
+
+    /**
+     * Get request.
+     * @return request
+     */
+    protected StaplerRequest getRequest() {
+        return jenkinsRequest;
+    }
+
+    /**
      * Create the diagnostics job.
      * @param request request objext
      * @param response response object
-     * @return response
+     * @return http response
      * @throws ServletException exception
      * @throws IOException exception
      * @throws hudson.model.Descriptor.FormException exception
@@ -233,6 +256,10 @@ public class VectorCASTJobDiag extends JobBase {
             final StaplerResponse response) throws ServletException,
             IOException, Descriptor.FormException {
         Jenkins j = Jenkins.get();
+
+        this.jenkinsRequest = request;
+        this.jenkinsResponse = response;
+
         if (j != null && !j.getJobNames().contains(PROJECT_NAME)) {
             FreeStyleProject project = j.createProject(
                             FreeStyleProject.class, PROJECT_NAME);

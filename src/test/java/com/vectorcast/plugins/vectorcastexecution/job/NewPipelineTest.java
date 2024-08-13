@@ -62,7 +62,7 @@ public class NewPipelineTest {
         NewPipelineJob job = new NewPipelineJob(request, response);
 
         Assert.assertEquals("project", job.getBaseName());
-        job.create(false);
+        job.create();
         Assert.assertEquals(PROJECTNAME, job.getProjectName());
 
         // Pipeline Jobs have no "topProject"
@@ -270,5 +270,18 @@ public class NewPipelineTest {
 
         Assert.assertEquals("svn", job.getTestInsightsScmTech());
     }
+    
+    /* TODO: Use Parameters */
+    /* TODO: Specify Job name */
+    /* TODO: Multiple jobs with same name */
+    /* TODO: MPname without .vcm */
+    /* TODO: MPname on network driver abs path \\ */
+    /* TODO: MPname on windows abs path */
+    /* TODO: MPname on abs path and some SCM */
+    /* TODO: use CBT */
+    /* TODO: use CI license */
+    /* TODO: env sections and post checkout set to "" */
+    
+    
 }
 

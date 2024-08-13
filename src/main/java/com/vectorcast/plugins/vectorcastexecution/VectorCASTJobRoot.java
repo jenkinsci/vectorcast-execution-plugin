@@ -74,8 +74,8 @@ public class VectorCASTJobRoot implements RootAction {
             String iconName;
             String jenkinsVersion = Jenkins.VERSION;
             String[] version = jenkinsVersion.split("\\.");
-            Integer major;
-            Integer minor;
+            int major;
+            int minor;
             Boolean colorIcon = true;
 
             try {

@@ -128,7 +128,7 @@ public class VectorCASTJobPipeline extends JobBase {
         try {
             // Create Pipeline job
             job = new NewPipelineJob(request, response);
-            job.create(false);
+            job.create();
             projectName = job.getProjectName();
             Logger.getLogger(VectorCASTJobPipeline.class.getName())
                     .log(Level.SEVERE, "Pipeline Project Name: " + projectName,
