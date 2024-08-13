@@ -909,7 +909,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
                         /* check to solve jenkins security scanner */
                         File destinationDir =
-                            new File(destScriptDir.toString());
+                            new File(destScriptDir.getName());
                         File destinationFile =
                             new File(destinationDir, fileOrDir);
                         if (!destinationFile.toPath().normalize()
@@ -924,11 +924,15 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                             dest.mkdirs();
                         } else {
 
+                            // File, copy it
+                            InputStream is = VectorCASTSetup.class.
+                                getResourceAsStream("/" + entry.getName());
+
                             /* check to solve jenkins security scanner */
                             destinationDir =
-                                new File(destScriptDir.toString());
+                                new File(destScriptDir.getName());
                             destinationFile =
-                                new File(destinationDir, entry.getName());
+                                new File(destinationDir, "/" + entry.getName());
                             if (!destinationFile.toPath().normalize()
                                     .startsWith(destinationDir.toPath())) {
                                 throw new IOException(
@@ -936,9 +940,6 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                                         + entry.getName());
                             }
 
-                            // File, copy it
-                            InputStream is = VectorCASTSetup.class.
-                                getResourceAsStream("/" + entry.getName());
                             dest.copyFrom(is);
                         }
                     }

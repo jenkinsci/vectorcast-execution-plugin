@@ -122,7 +122,7 @@ public class NewSingleJob extends BaseJob {
         final String noGenExecReport)
         throws IOException {
 
-    String unix = ":: Created with vectorcast-execution plugin v"
+    String unix = "# Created with vectorcast-execution plugin v"
       + pluginVersion + "\n\n"
       + getEnvironmentSetupUnix() + "\n"
       + getUseCILicensesUnix() + "\n"
@@ -479,7 +479,9 @@ public class NewSingleJob extends BaseJob {
         + getManageProjectName());
 
     // Build actions...
-    addCopyResultsToImport(getTopProject());
+    if (getUseImportedResults() && getUseLocalImportedResults()) {
+        addCopyResultsToImport(getTopProject());
+    }
     addSetup(getTopProject());
     addCommandSingleJob();
 

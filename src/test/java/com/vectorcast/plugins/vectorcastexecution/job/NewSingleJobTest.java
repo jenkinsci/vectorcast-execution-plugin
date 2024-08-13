@@ -161,13 +161,20 @@ public class NewSingleJobTest {
         Assert.assertTrue(cleanup.getDeleteDirs());
     }
 
-    private void checkBuildAction (NewSingleJob job) {
+    private void checkBuildAction (NewSingleJob job, Boolean checkBuildAction) {
         // Check build actions...
         DescribableList<Builder,Descriptor<Builder>> bldrsList = job.getTopProject().getBuildersList();
-        Assert.assertEquals(3, bldrsList.size());
-        Assert.assertTrue(bldrsList.get(0) instanceof CopyArtifact);
-        Assert.assertTrue(bldrsList.get(1) instanceof VectorCASTSetup);
-        Assert.assertTrue(bldrsList.get(2) instanceof VectorCASTCommand);
+        
+        if (checkBuildAction) {
+            Assert.assertEquals(3, bldrsList.size());
+            Assert.assertTrue(bldrsList.get(0) instanceof CopyArtifact);
+            Assert.assertTrue(bldrsList.get(1) instanceof VectorCASTSetup);
+            Assert.assertTrue(bldrsList.get(2) instanceof VectorCASTCommand);
+        } else {
+            Assert.assertEquals(2, bldrsList.size());
+            Assert.assertTrue(bldrsList.get(0) instanceof VectorCASTSetup);
+            Assert.assertTrue(bldrsList.get(1) instanceof VectorCASTCommand);
+        }
     }
 
     private void checkImportedResults(NewSingleJob job, long useLocalResults, Boolean useExternalResults, String externalResultsFilename) {
@@ -233,7 +240,7 @@ public class NewSingleJobTest {
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
 
         checkBuildWrappers(job, 1);
-        checkBuildAction(job);
+        checkBuildAction(job,false);
         checkArchiverList(archiver, DEFAULT_ARTIFACT_LIST);
         checkJunitGroovy(publisherList, 1, 3);
         checkVectorCASTPublisher(publisherList, false, 2);
@@ -268,7 +275,7 @@ public class NewSingleJobTest {
         addToolArtifacts += ", TESTinsights_Push.log";
 
         checkBuildWrappers(job, 2);
-        checkBuildAction(job);
+        checkBuildAction(job,false);
         checkArchiverList(archiver, addToolArtifacts);
         checkJunitGroovy(publisherList,2,4);
         checkVectorCASTPublisher(publisherList, true, 3);
@@ -307,7 +314,7 @@ public class NewSingleJobTest {
         addToolArtifacts += ", TESTinsights_Push.log";
 
         checkBuildWrappers(job, 2);
-        checkBuildAction(job);
+        checkBuildAction(job,false);
         checkArchiverList(archiver, addToolArtifacts);
         checkJunitGroovy(publisherList, 2, 4);
         checkCoveragePlugin(publisherList, 3);
@@ -337,7 +344,7 @@ public class NewSingleJobTest {
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
 
         checkBuildWrappers(job, 1);
-        checkBuildAction(job);
+        checkBuildAction(job, true);
         checkArchiverList(archiver, DEFAULT_ARTIFACT_LIST);
         checkJunitGroovy(publisherList, 1, 3);
         checkCoveragePlugin(publisherList, 2);
@@ -369,7 +376,7 @@ public class NewSingleJobTest {
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
 
         checkBuildWrappers(job, 1);
-        checkBuildAction(job);
+        checkBuildAction(job,false);
         checkArchiverList(archiver, DEFAULT_ARTIFACT_LIST);
         checkJunitGroovy(publisherList, 1, 3);
         checkCoveragePlugin(publisherList, 2);
