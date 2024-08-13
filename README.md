@@ -190,7 +190,7 @@ environment before disabling.  This takes into account enviornments that are dir
 - Removed VectorCAST Project Environment report
 - Fixed remote copy of VCAST_VC_SCRIPTS
 
-### Version 0.77 (26 Dec 2023)
+### Version 0.77 (21 Aug 2024)
 - Updated for findbugs to spotbugs
 - Fixed changed based testing analysis for compound tests being shown as Skipped
 - Fixed getjobs.py script to account for disabled compiler/testsuite nodes

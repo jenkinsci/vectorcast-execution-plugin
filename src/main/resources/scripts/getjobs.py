@@ -98,7 +98,6 @@ def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
     print("starting api loop")
 
     for env in api.Environment.all():
-        print("env: " , env.name)
         
         if not env.is_active:
             print("inactive: " , env.name)
@@ -106,13 +105,11 @@ def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
         
         somethingPrinted = True
                 
-        print("starting type def")
         if (printEnvType):
             if env.system_tests or env.definition.env_type == EnvironmentType.COVER:
                 output += "ST: "
             else:
                 output += "UT: "
-        print("DONE - starting type def")                
         output += "%s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name)
 
     print("printing output")  

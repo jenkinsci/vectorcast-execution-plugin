@@ -33,33 +33,34 @@ import hudson.scm.SCM;
 import jenkins.model.Jenkins;
 
 /**
- * Base job
+ * Base job.
  */
-public abstract class JobBase implements ExtensionPoint, Action, Describable<JobBase> {
-    /** SCM to use initially */
+public abstract class JobBase implements ExtensionPoint, Action,
+        Describable<JobBase> {
+    /** SCM to use initially. */
     private SCM scm;
     /**
-     * Default Constructor
+     * Default Constructor.
      */
     public JobBase() {
         scm = new NullSCM();
     }
     /**
-     * Get the SCM
+     * Get the SCM.
      * @return the SCM
      */
     public SCM getTheScm() {
         return scm;
     }
     /**
-     * Set the SCM object
-     * @param scm new SCM
+     * Set the SCM object.
+     * @param inScm new SCM
      */
-    public void setTheScm(SCM scm) {
-        this.scm = scm;
+    public void setTheScm(final SCM inScm) {
+        this.scm = inScm;
     }
     /**
-     * Default icon name
+     * Default icon name.
      * @return icon name
      */
     @Override
@@ -67,7 +68,7 @@ public abstract class JobBase implements ExtensionPoint, Action, Describable<Job
         return "/plugin/vectorcast-execution/icons/vector_favicon.png";
     }
     /**
-     * Default URL name
+     * Default URL name.
      * @return url name
      */
     @Override
@@ -83,7 +84,7 @@ public abstract class JobBase implements ExtensionPoint, Action, Describable<Job
         return getClass().getSimpleName();
     }
     /**
-     * Default descriptor
+     * Default descriptor.
      * @return descriptor
      */
     @Override

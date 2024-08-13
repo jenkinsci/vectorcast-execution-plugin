@@ -30,22 +30,34 @@ import java.util.Optional;
 import java.util.jar.JarFile;
 import java.io.FileNotFoundException;
 
-public class VcastUtils
-{
-    public static Optional< String > getVersion()
-    {
-        Optional< String > version = Optional.empty();
+/** Utility class for VectorCAST. */
+
+public class VcastUtils {
+    /**
+     * Gets the version of the plugins.
+     * @return Optional returns the version
+     */
+    public static Optional<String> getVersion() {
+        Optional<String> version = Optional.empty();
         try {
-            File file = new File( URLDecoder.decode( VcastUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "utf-8" ) );
-            JarFile jarfile = new JarFile( file );
-            version = Optional.ofNullable( jarfile.getManifest().getMainAttributes().getValue( "Plugin-Version" ) );
-            jarfile.close();        } 
-        catch ( FileNotFoundException e ) {
+            File file = new File(URLDecoder.decode(
+                    VcastUtils.class.getProtectionDomain().getCodeSource()
+                    .getLocation().getPath(), "utf-8"));
+            JarFile jarfile = new JarFile(file);
+            version = Optional.ofNullable(jarfile.getManifest()
+                    .getMainAttributes().getValue("Plugin-Version"));
+            jarfile.close();
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
-        }        
-        catch ( IOException e ) {
+        } catch (IOException e) {
             e.printStackTrace();
-        } 
+        }
         return version;
-    }    
+    }
+
+    protected VcastUtils() {
+        // prevents calls from subclass
+        throw new UnsupportedOperationException();
+    }
+
 }

@@ -42,7 +42,7 @@ public class NewPipelineTest {
     @AfterEach
     void tearDownStaticMocks() {
     }
-    
+
     private NewPipelineJob setupTestBasic(JSONObject jsonForm) throws ServletException, IOException,
             ExternalResultsFileException, FormException, JobAlreadyExistsException,
             InvalidProjectFileException, Exception {
@@ -60,17 +60,17 @@ public class NewPipelineTest {
         when(request.getSubmittedForm()).thenReturn(jsonForm);
 
         NewPipelineJob job = new NewPipelineJob(request, response);
-        
+
         Assert.assertEquals("project", job.getBaseName());
         job.create(false);
         Assert.assertEquals(PROJECTNAME, job.getProjectName());
-        
+
         // Pipeline Jobs have no "topProject"
         Assert.assertNull(job.getTopProject());
 
         return job;
     }
-    
+
     private void checkImportedResults(NewPipelineJob job, long useLocalResults, Boolean useExternalResults, String externalResultsFilename) {
         if (useLocalResults == USE_LOCAL_IMPORTED_RESULTS) {
             Assert.assertTrue(job.getUseLocalImportedResults());
@@ -81,16 +81,16 @@ public class NewPipelineTest {
         Assert.assertEquals(useExternalResults, job.getUseExternalImportedResults());
         Assert.assertEquals(externalResultsFilename, job.getExternalResultsFilename());
     }
-    
-    private void checkOptions (NewPipelineJob job, 
-                Boolean optionExecutionReport, 
-                Boolean optionUseReporting, 
-                Boolean useCiLicense, 
-                Boolean useStrictTestcaseImport, 
-                Boolean useRGW3, 
-                Boolean useImportedResults, 
+
+    private void checkOptions (NewPipelineJob job,
+                Boolean optionExecutionReport,
+                Boolean optionUseReporting,
+                Boolean useCiLicense,
+                Boolean useStrictTestcaseImport,
+                Boolean useRGW3,
+                Boolean useImportedResults,
                 Boolean useCoverageHistory) {
-        
+
         Assert.assertEquals(optionExecutionReport, job.getOptionExecutionReport());
         Assert.assertEquals(optionUseReporting, job.getOptionUseReporting());
         Assert.assertEquals(useCiLicense, job.getUseCILicenses());
@@ -104,14 +104,14 @@ public class NewPipelineTest {
             final String squoreCommand,
             final String pclpCommand,
             final String pclpResultsPattern,
-            final String TESTinsights_URL,
-            final String TI_Proxy) {
-        
+            final String testInsightsUrl,
+            final String tiProxy) {
+
         Assert.assertEquals(squoreCommand, job.getSquoreCommand());
         Assert.assertEquals(pclpCommand, job.getPclpCommand());
         Assert.assertEquals(pclpResultsPattern, job.getPclpResultsPattern());
-        Assert.assertEquals(TESTinsights_URL, job.getTESTinsights_URL());
-        Assert.assertEquals(TI_Proxy, job.getTESTinsights_proxy());
+        Assert.assertEquals(testInsightsUrl, job.getTestInsightsUrl());
+        Assert.assertEquals(tiProxy, job.getTestInsightsProxy());
     }
 
     @Test
@@ -119,7 +119,7 @@ public class NewPipelineTest {
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("nodeLabel","Test_Node");
-        
+
         NewPipelineJob job = setupTestBasic(jsonForm);
 
         Assert.assertEquals(true, job.getUseStrictTestcaseImport());
@@ -131,7 +131,7 @@ public class NewPipelineTest {
         Assert.assertEquals(false, job.getUseRGW3());
         Assert.assertEquals(false, job.getUseCoverageHistory());
         Assert.assertEquals("", job.getSharedArtifactDir());
-        Assert.assertEquals("", job.getTESTinsights_SCM_Tech());
+        Assert.assertEquals("", job.getTestInsightsScmTech());
         Assert.assertNull(job.getEnvironmentSetup());
         Assert.assertNull(job.getExecutePreamble());
         Assert.assertNull(job.getEnvironmentTeardown());
@@ -139,7 +139,7 @@ public class NewPipelineTest {
         Assert.assertEquals("", job.getPipelineSCM());
         Assert.assertEquals(0, job.getMaxParallel().longValue());
     }
-    
+
     @Test
     public void testAdditionalTools() throws Exception {
 
@@ -158,11 +158,11 @@ public class NewPipelineTest {
         checkAdditionalTools(job,
                 "hello squore test world",
                 "call lint_my_code.bat",
-                "lint_results.xml", 
+                "lint_results.xml",
                 "https://teamservices.vector.com/teamareas/pct",
                 "TI Proxy 1234@localhost");
     }
-    
+
     @Test
     public void testCoveragePlugin() throws Exception {
 
@@ -171,10 +171,10 @@ public class NewPipelineTest {
         jsonForm.put("coverageDisplayOption", 0);  // Jenkins Coverage Plugin
 
         NewPipelineJob job = setupTestBasic(jsonForm);
-        
+
         Assert.assertEquals(true, job.getUseCoveragePlugin());
     }
-    
+
     @Test
     public void testOptions() throws Exception {
         JSONObject jsonForm = new JSONObject();
@@ -189,7 +189,7 @@ public class NewPipelineTest {
         jsonForm.put("postSCMCheckoutCommands","chmod a+wr -R *");
         jsonForm.put("coverageDisplayOption",1);
         jsonForm.put("maxParallel",10);
-        
+
         NewPipelineJob job = setupTestBasic(jsonForm);
 
         Assert.assertEquals(true, job.getUseStrictTestcaseImport());
@@ -201,18 +201,17 @@ public class NewPipelineTest {
         Assert.assertEquals(false, job.getUseCoveragePlugin());
         Assert.assertEquals(false, job.getUseCoverageHistory());
         Assert.assertNotEquals(-1, job.getSharedArtifactDir().indexOf("/home/jenkins/sharedArtifactDir"));
-        Assert.assertEquals("git", job.getTESTinsights_SCM_Tech());
+        Assert.assertEquals("git", job.getTestInsightsScmTech());
         Assert.assertEquals("call setup.bat", job.getEnvironmentSetup());
         Assert.assertEquals("wr_env.bat", job.getExecutePreamble());
         Assert.assertEquals("close ports", job.getEnvironmentTeardown());
         Assert.assertEquals("chmod a+wr -R *", job.getPostSCMCheckoutCommands());
         Assert.assertEquals("git 'http://git.com'", job.getPipelineSCM());
         Assert.assertEquals(10, job.getMaxParallel().longValue());
-        Assert.assertEquals(false, job.getUseCoveragePlugin());        
-
+        Assert.assertEquals(false, job.getUseCoveragePlugin());
 
     }
-    
+
     @Test
     public void testLocalImportedResults() throws Exception {
 
@@ -228,7 +227,7 @@ public class NewPipelineTest {
 
         checkImportedResults(job, USE_LOCAL_IMPORTED_RESULTS, false, "");
     }
-    
+
     @Test
     public void testExternalImportedResults() throws Exception {
 
@@ -245,10 +244,10 @@ public class NewPipelineTest {
 
         checkImportedResults(job, USE_EXTERNAL_IMPORTED_RESULTS, true, EXTERNAL_RESULT_FILENAME);
     }
-    
+
     @Test
     public void testGitSCM() throws Exception {
-        
+
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "project.vcm");
         jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
@@ -256,12 +255,12 @@ public class NewPipelineTest {
 
         NewPipelineJob job = setupTestBasic(jsonForm);
 
-        Assert.assertEquals("git", job.getTESTinsights_SCM_Tech());
+        Assert.assertEquals("git", job.getTestInsightsScmTech());
     }
 
     @Test
     public void testSvnSCM() throws Exception {
-        
+
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "project.vcm");
         jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
@@ -269,7 +268,7 @@ public class NewPipelineTest {
 
         NewPipelineJob job = setupTestBasic(jsonForm);
 
-        Assert.assertEquals("svn", job.getTESTinsights_SCM_Tech());
+        Assert.assertEquals("svn", job.getTestInsightsScmTech());
     }
-    
 }
+

@@ -55,7 +55,7 @@ public class NewSingleJobTest {
     final long USE_LOCAL_IMPORTED_RESULTS = 1;
     final long USE_EXTERNAL_IMPORTED_RESULTS = 2;
     final String EXTERNAL_RESULT_FILENAME = "archivedResults/project.vcr";
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
     private static final String PROJECTNAME = "project.vcast.single";
@@ -67,7 +67,7 @@ public class NewSingleJobTest {
     @AfterEach
     void tearDownStaticMocks() {
     }
- 
+
     private NewSingleJob setupTestBasic(JSONObject jsonForm) throws ServletException, IOException,
             ExternalResultsFileException, FormException, JobAlreadyExistsException,
             InvalidProjectFileException, Exception {
@@ -85,7 +85,7 @@ public class NewSingleJobTest {
         when(request.getSubmittedForm()).thenReturn(jsonForm);
 
         NewSingleJob job = new NewSingleJob(request, response);
-        
+
         Assert.assertEquals("project", job.getBaseName());
         job.create(false);
         Assert.assertEquals(PROJECTNAME, job.getProjectName());
@@ -185,25 +185,25 @@ public class NewSingleJobTest {
             final String squoreCommand,
             final String pclpCommand,
             final String pclpResultsPattern,
-            final String TESTinsights_URL,
-            final String TI_Proxy) {
-        
+            final String testInsightsUrl,
+            final String tiProxy) {
+
         Assert.assertEquals(squoreCommand, job.getSquoreCommand());
         Assert.assertEquals(pclpCommand, job.getPclpCommand());
         Assert.assertEquals(pclpResultsPattern, job.getPclpResultsPattern());
-        Assert.assertEquals(TESTinsights_URL, job.getTESTinsights_URL());
-        Assert.assertEquals(TI_Proxy, job.getTESTinsights_proxy());
+        Assert.assertEquals(testInsightsUrl, job.getTestInsightsUrl());
+        Assert.assertEquals(tiProxy, job.getTestInsightsProxy());
     }
 
-    private void checkOptions (NewSingleJob job, 
-                Boolean optionExecutionReport, 
-                Boolean optionUseReporting, 
-                Boolean useCiLicense, 
-                Boolean useStrictTestcaseImport, 
-                Boolean useRGW3, 
-                Boolean useImportedResults, 
+    private void checkOptions (NewSingleJob job,
+                Boolean optionExecutionReport,
+                Boolean optionUseReporting,
+                Boolean useCiLicense,
+                Boolean useStrictTestcaseImport,
+                Boolean useRGW3,
+                Boolean useImportedResults,
                 Boolean useCoverageHistory) {
-        
+
         Assert.assertEquals(optionExecutionReport, job.getOptionExecutionReport());
         Assert.assertEquals(optionUseReporting, job.getOptionUseReporting());
         Assert.assertEquals(useCiLicense, job.getUseCILicenses());
@@ -221,7 +221,7 @@ public class NewSingleJobTest {
         jsonForm.put("coverageDisplayOption", 1);
         jsonForm.put("optionExecutionReport", true);
         jsonForm.put("useStrictTestcaseImport", true);
-                
+
         NewSingleJob job = setupTestBasic(jsonForm);
 
         // Check publishers...
@@ -252,7 +252,7 @@ public class NewSingleJobTest {
         jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
         jsonForm.put("squoreCommand","hello squore test world");
         jsonForm.put("TESTinsights_proxy","TI Proxy 1234@localhost");
-        
+
         NewSingleJob job = setupTestBasic(jsonForm);
 
         // Check publishers...
@@ -275,7 +275,7 @@ public class NewSingleJobTest {
         checkAdditionalTools(job,
                 "hello squore test world",
                 "call lint_my_code.bat",
-                "lint_results.xml", 
+                "lint_results.xml",
                 "https://teamservices.vector.com/teamareas/pct",
                 "TI Proxy 1234@localhost");
     }
@@ -375,18 +375,18 @@ public class NewSingleJobTest {
         checkCoveragePlugin(publisherList, 2);
         checkImportedResults(job, USE_EXTERNAL_IMPORTED_RESULTS, true, EXTERNAL_RESULT_FILENAME);
     }
-    
+
     @Test
     public void testDefaultOptions() throws Exception {
 
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
-        
+
         NewSingleJob job = setupTestBasic(jsonForm);
 
         checkOptions (job, true, true, false, true, false, false, false);
     }
-    
+
     @Test
     public void testFalseOptions() throws Exception {
 
@@ -404,7 +404,7 @@ public class NewSingleJobTest {
 
         checkOptions (job, false, false, false, false, false, false, false);
     }
-    
+
     @Test
     public void testTrueOptions() throws Exception {
 
@@ -415,14 +415,14 @@ public class NewSingleJobTest {
         jsonForm.put("useCiLicense",true);
         jsonForm.put("useStrictTestcaseImport", true);
         jsonForm.put("useRGW3",true);
-        jsonForm.put("useImportedResults", true);  
-        jsonForm.put("useCoverageHistory", true);  
+        jsonForm.put("useImportedResults", true);
+        jsonForm.put("useCoverageHistory", true);
 
         NewSingleJob job = setupTestBasic(jsonForm);
 
         checkOptions (job, true, true, true, true, true, true, true);
     }
-  
+
     // TODO: Figure out how to add SCM to be parserd
 /*
     @Test
@@ -433,10 +433,10 @@ public class NewSingleJobTest {
         jsonUserRemoteConfig.put("credentialsId","credentialsId");
         jsonUserRemoteConfig.put("name","");
         jsonUserRemoteConfig.put("refspec","");
-        
+
         JSONObject jsonBranches = new JSONObject();
         jsonBranches.put("name","master");
-        
+
         JSONObject jsonSCM = new JSONObject();
         jsonSCM.put("value","1");
         jsonSCM.put("stapler-class","hudson.plugins.git.GitSCM");
@@ -444,7 +444,7 @@ public class NewSingleJobTest {
         jsonSCM.put("userRemoteConfigs",jsonUserRemoteConfig);
         jsonSCM.put("branches",jsonBranches);
         jsonSCM.put("","auto");
-        
+
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
@@ -452,7 +452,7 @@ public class NewSingleJobTest {
 
         NewSingleJob job = setupTestBasic(jsonForm);
 
-        Assert.assertEquals("git", job.getTESTinsights_SCM_Tech());
+        Assert.assertEquals("git", job.getTestInsightsScmTech());
     }
 
     @Test
@@ -468,7 +468,7 @@ public class NewSingleJobTest {
 
         NewSingleJob job = setupTestBasic(jsonForm,"Subversion");
 
-        Assert.assertEquals("svn", job.getTESTinsights_SCM_Tech());
+        Assert.assertEquals("svn", job.getTestInsightsScmTech());
     }
 */
 }

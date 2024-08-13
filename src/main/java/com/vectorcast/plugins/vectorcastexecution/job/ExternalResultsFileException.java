@@ -24,11 +24,16 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
 /**
- * Exception raised if the supplied manage project file cannot be read
+ * Exception raised if the supplied manage project file cannot be read.
  */
 public class ExternalResultsFileException extends Exception {
+    /** serial version of class fpr serialization. */
     private static final long serialVersionUID = 7429348150624478731L;
+
+    /**
+     * Classes default construtor to call parent.
+     */
     public ExternalResultsFileException() {
         super();
-    }    
+    }
 }

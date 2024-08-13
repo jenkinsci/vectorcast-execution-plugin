@@ -40,30 +40,31 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- * Create single job
+ * Create single job.
  */
 @Extension
 public class VectorCASTJobSingle extends JobBase {
-    /** Job already exists exception */
+    /** Job already exists exception. */
     private JobAlreadyExistsException exception;
-    /** Project name */
+    /** Project name. */
     private String projectName;
+
     /**
-     * Get the project name
+     * Get the project name.
      * @return project name
      */
     public String getProjectName() {
         return projectName;
     }
     /**
-     * Get job already exists exception
+     * Get job already exists exception.
      * @return exception
      */
     public JobAlreadyExistsException getException() {
         return exception;
     }
     /**
-     * Get url name for creating single job
+     * Get url name for creating single job.
      * @return url
      */
     @Override
@@ -71,11 +72,14 @@ public class VectorCASTJobSingle extends JobBase {
         return "single-job";
     }
 
+    /**
+     * Extension of JobBaseDescriptor.
+     */
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
     }
     /**
-     * Create the single job
+     * Create the single job.
      * @param request request object
      * @param response response object
      * @return response
@@ -84,7 +88,9 @@ public class VectorCASTJobSingle extends JobBase {
      * @throws hudson.model.Descriptor.FormException exception
      */
     @RequirePOST
-    public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
+    public HttpResponse doCreate(final StaplerRequest request,
+            final StaplerResponse response)
+            throws ServletException, IOException, Descriptor.FormException {
         try {
             // Create single-job
             NewSingleJob job = new NewSingleJob(request, response);
@@ -97,7 +103,8 @@ public class VectorCASTJobSingle extends JobBase {
             return new HttpRedirect("exists");
         } catch (InvalidProjectFileException ex) {
             // Can't happen for the single job
-            Logger.getLogger(VectorCASTJobSingle.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(VectorCASTJobSingle.class.getName())
+                .log(Level.SEVERE, null, ex);
             return new HttpRedirect("exists");
         } catch (ExternalResultsFileException ex) {
             return new HttpRedirect("extresblank");

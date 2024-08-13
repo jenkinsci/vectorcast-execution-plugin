@@ -24,22 +24,24 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
 /**
- * Exception raised if job being created already exists
+ * Exception raised if job being created already exists.
  */
 public class JobAlreadyExistsException extends Exception {
+    /** serial Version UID. */
     private static final long serialVersionUID = 2678119599631146760L;
 
-    /** Name of project */
+    /** Name of project. */
     private final String project;
+
     /**
-     * Constructor
-     * @param project name of project
+     * Constructor.
+     * @param proj name of project
      */
-    public JobAlreadyExistsException(String project) {
-        this.project = project;
+    public JobAlreadyExistsException(final String proj) {
+        this.project = proj;
     }
     /**
-     * Get project name
+     * Get project name.
      * @return project name
      */
     public String getProject() {

@@ -45,47 +45,47 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- * Create multiple jobs
+ * Create multiple jobs.
  */
 @Extension
 public class VectorCASTJobPipeline extends JobBase {
-    /** Job exists exception */
+    /** Job exists exception. */
     private JobAlreadyExistsException exception;
 
-    /** Job exists exception */
+    /** Job exists exception. */
     private ScmConflictException scmException;
-    
-    /** Job exists exception */
-    private ExternalResultsFileException extResException;
-    
-	/** project name */
-	private String projectName;
 
-    /** Pipeline job object */
+    /** Job exists exception. */
+    private ExternalResultsFileException extResException;
+
+    /** project name. */
+    private String projectName;
+
+    /** Pipeline job object. */
     private NewPipelineJob job;
     /**
-     * Get the pipeline job object
+     * Get the pipeline job object.
      * @return pipeline job
      */
     public NewPipelineJob getJob() {
         return job;
     }
     /**
-     * Get the project name
+     * Get the project name.
      * @return project name
      */
     public String getProjectName() {
         return projectName;
     }
     /**
-     * Get the job already exists exception
+     * Get the job already exists exception.
      * @return job already exists exception
      */
     public JobAlreadyExistsException getException() {
         return exception;
     }
     /**
-     * Get the job already scm conflict exception
+     * Get the job already scm conflict exception.
      * @return job already scm conflict exception
      */
     public ScmConflictException getScmException() {
@@ -93,7 +93,7 @@ public class VectorCASTJobPipeline extends JobBase {
     }
 
     /**
-     * Get the job already scm conflict exception
+     * Get the job already scm conflict exception.
      * @return job already scm conflict exception
      */
     public ExternalResultsFileException getResException() {
@@ -101,7 +101,7 @@ public class VectorCASTJobPipeline extends JobBase {
     }
 
     /**
-     * URL for creating pipeline job
+     * URL for creating pipeline job.
      * @return url
      */
     @Override
@@ -113,7 +113,7 @@ public class VectorCASTJobPipeline extends JobBase {
     public static final class DescriptorImpl extends JobBaseDescriptor {
     }
     /**
-     * Create pipeline job
+     * Create pipeline job.
      * @param request request objext
      * @param response response object
      * @return response
@@ -122,25 +122,29 @@ public class VectorCASTJobPipeline extends JobBase {
      * @throws hudson.model.Descriptor.FormException exception
      */
     @RequirePOST
-    public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, Descriptor.FormException {
+    public HttpResponse doCreate(final StaplerRequest request,
+            final StaplerResponse response)
+            throws ServletException, IOException, Descriptor.FormException {
         try {
             // Create Pipeline job
             job = new NewPipelineJob(request, response);
             job.create(false);
             projectName = job.getProjectName();
-        	Logger.getLogger(VectorCASTJobPipeline.class.getName()).log(Level.SEVERE, "Pipeline Project Name: " + projectName, "Pipeline Project Name: " + projectName);
+            Logger.getLogger(VectorCASTJobPipeline.class.getName())
+                    .log(Level.SEVERE, "Pipeline Project Name: " + projectName,
+                    "Pipeline Project Name: " + projectName);
             return new HttpRedirect("created");
         } catch (ScmConflictException ex) {
             scmException = ex;
             return new HttpRedirect("conflict");
-        }catch (JobAlreadyExistsException ex) {
+        } catch (JobAlreadyExistsException ex) {
             exception = ex;
             return new HttpRedirect("exists");
         } catch (InvalidProjectFileException ex) {
-			// cannot happen on pipeline job as we don't read the project
+            // cannot happen on pipeline job as we don't read the project
             return new HttpRedirect("exists");
         } catch (ExternalResultsFileException ex) {
-			// blank external results file exception
+            // blank external results file exception
             return new HttpRedirect("extresblank");
         }
     }

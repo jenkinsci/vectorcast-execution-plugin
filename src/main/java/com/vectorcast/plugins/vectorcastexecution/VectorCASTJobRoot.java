@@ -35,62 +35,75 @@ import hudson.security.PermissionScope;
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
 /**
- * Top level of VectorCAST job control
+ * Top level of VectorCAST job control.
  */
 @Extension
 public class VectorCASTJobRoot implements RootAction {
-    
-    public static final PermissionGroup PERMISSIONS_GROUP = new PermissionGroup(
-            VectorCASTJobRoot.class,Messages._VectorCASTRootAction_PermissionGroup());
-    private static final PermissionScope scope[] = {PermissionScope.JENKINS};
+
+    /** Permission for Jenkins. */
+    public static final PermissionGroup PERMISSIONS_GROUP =
+        new PermissionGroup(VectorCASTJobRoot.class,
+            Messages._VectorCASTRootAction_PermissionGroup());
+
+    /** Permission Scope for Jenkins. */
+    private static final PermissionScope[] SCOPE = {PermissionScope.JENKINS};
+
+    /** Permission View for Jenkins. */
     public static final Permission VIEW = new Permission(PERMISSIONS_GROUP,
             "View", Messages._VectorCASTRootAction_ViewPermissionDescription(),
-            Jenkins.ADMINISTER, true, scope);
-            
-            
+            Jenkins.ADMINISTER, true, SCOPE);
+
+
    /**
      * Get the icon to use.
      * @return icon to use or null if user does not have permissions
      */
     public String getIconFileName() {
 
+        final int colorChangeMinor = 361;
+        final int colorChangeMajor = 2;
         Boolean permission = false;
+
         if (Jenkins.get().hasPermission(VIEW)) {
             permission =  true;
         }
-            
+
         // Always display - assume that Jenkins permission checking
         // will catch and report any permissions issues
         if (permission) {
             String iconName;
             String jenkinsVersion = Jenkins.VERSION;
-            String version[] = jenkinsVersion.split("\\.");
-            Integer major, minor;
+            String[] version = jenkinsVersion.split("\\.");
+            Integer major;
+            Integer minor;
             Boolean colorIcon = true;
 
             try {
                 major = Integer.parseInt(version[0]);
                 minor = Integer.parseInt(version[1]);
-                if  ((major >= 2) && (minor >=361)) {
+                if  ((major >= colorChangeMajor)
+                    && (minor >= colorChangeMinor)) {
                     colorIcon = false;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            
+
             if (colorIcon) {
-                iconName = "/plugin/vectorcast-execution/icons/vector_favicon.png";
+                iconName =
+                    "/plugin/vectorcast-execution/icons/vector_favicon.png";
             } else {
-                iconName = "/plugin/vectorcast-execution/icons/vector_favicon_bw.png";
+                iconName =
+                    "/plugin/vectorcast-execution/icons/vector_favicon_bw.png";
             }
-            
+
             return iconName;
         } else {
             return null;
         }
     }
     /**
-     * Display name for the top-level action/menu-item
+     * Display name for the top-level action/menu-item.
      * @return display name
      */
     @Override
@@ -98,7 +111,7 @@ public class VectorCASTJobRoot implements RootAction {
         return Messages.VectorCASTCommand_AddVCJob();
     }
     /**
-     * Get name of top-level action/url
+     * Get name of top-level action/url.
      * @return url
      */
     @Override
@@ -110,14 +123,15 @@ public class VectorCASTJobRoot implements RootAction {
      * @return version
      */
     public String getVersion() {
-        return VcastUtils.getVersion().orElse( "Error - Could not determine version" );
+        return VcastUtils.getVersion().
+            orElse("Error - Could not determine version");
     }
     /**
-     * Get dynamic 'job' - used by Stapler
+     * Get dynamic 'job' - used by Stapler.
      * @param name name to find
      * @return dynamic job
      */
-    public JobBase getDynamic(String name) {
+    public JobBase getDynamic(final String name) {
         for (JobBase ui : getAll()) {
             if (ui != null) {
                 String urlName = ui.getUrlName();
@@ -129,7 +143,7 @@ public class VectorCASTJobRoot implements RootAction {
         return null;
     }
     /**
-     * Get all actions associated with this URL
+     * Get all actions associated with this URL.
      * @return list of actions
      */
     public List<JobBase> getAll() {

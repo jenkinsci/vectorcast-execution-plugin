@@ -24,25 +24,27 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
 /**
- * Exception raised if job being created already exists
+ * Exception raised if job being created already exists.
  */
 public class ScmConflictException extends Exception {
+    /** serial Version UID. */
     private static final long serialVersionUID = -1889207053537494684L;
 
-    /** Name of project */
+    /** Name of project. */
     private final String scmSnippet;
+    /** Path to project. */
     private final String pathToManageProject;
     /**
-     * Constructor
-     * @param scmSnippet scm Snippet entered
-     * @param pathToManageProject path to manage project 
+     * Constructor.
+     * @param snip scm Snippet entered
+     * @param path path to manage project
      */
-    public ScmConflictException(String scmSnippet, String pathToManageProject) {
-        this.scmSnippet = scmSnippet;
-        this.pathToManageProject = pathToManageProject;
+    public ScmConflictException(final String snip, final String path) {
+        this.scmSnippet = snip;
+        this.pathToManageProject = path;
     }
     /**
-     * Get scm snippet name
+     * Get scm snippet name.
      * @return scmSnippet name
      */
     public String getScmSnippet() {
@@ -50,7 +52,7 @@ public class ScmConflictException extends Exception {
     }
 
     /**
-     * Get path to manage project name
+     * Get path to manage project name.
      * @return scmSnippet name
      */
     public String getPathToManageProject() {

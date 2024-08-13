@@ -38,70 +38,70 @@ global build_dir
 def make_relative(path, workspace, teePrint):
 
     path = path.replace("\\","/")
-    
+
     if not os.path.isabs(path):
         return path
-        
+
     # if the paths match
     if path.lower().startswith(workspace.lower()):
         path = path[len(workspace)+1:]
-        
+
     # if the paths match except for first character (d:\ changed to j:\)
     elif path.lower()[1:].startswith(workspace.lower()[1:]):
         path = path[len(workspace)+1:]
-        
+
     elif "workspace" in path:
         # if paths are different, find the workspace in the jenkins path
         workspaceIndex = path.lower().find("workspace")
-        
+
         path = path[workspaceIndex:].split("/",2)[2]
-        
+
     else:
         teePrint.teePrint("  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace)
-    
+
         # something went wildly wrong -- raise an exception
         # raise Exception ("Problem updating database path to remove workspace:\n\n   PATH: " + path + "\n   WORKSPACE: " + workspace)
-    
+
     return path
 
-    
+
 def updateDatabase(conn, nocase, workspace, updateWhat, updateFrom, teePrint):
     sql = "SELECT id, %s FROM %s" % (updateWhat, updateFrom)
     files = conn.execute(sql)
     for id_, path in files:
-        relative = make_relative(path,workspace, teePrint)    
+        relative = make_relative(path,workspace, teePrint)
         sql = "UPDATE %s SET %s = '%s' WHERE id=%s COLLATE NOCASE" % (updateFrom, updateWhat, relative, id_)
         conn.execute(sql)
-        
+
 def addFile(tf, file, backOneDir = False):
     global build_dir
-    
-    local_build_dir = build_dir 
-    
+
+    local_build_dir = build_dir
+
     if backOneDir:
         local_build_dir = os.sep.join(build_dir.split(os.sep)[:-1])
-        
+
     try:
         for f in os.listdir(local_build_dir):
             if fnmatch.fnmatch(f, file):
                 tf.add(os.path.join(local_build_dir, f))
     except:
         pass
-        
+
 def addDirectory(tf, build_dir, dir):
-    
+
     if build_dir is None:
         rootDir = dir
     else:
         rootDir = os.path.join(build_dir,dir).replace("\\","/")
-             
+
     for dirName, subdirList, fileList in os.walk(rootDir):
         for fname in fileList:
             tf.add(os.path.join(dirName, fname))
 
 def addConvertCoverFile(tf, file, workspace, nocase, teePrint):
     global build_dir
-    
+
     teePrint.teePrint("Updating cover.db")
     fullpath = build_dir + os.path.sep + file
     bakpath = fullpath + '.bk'
@@ -117,7 +117,7 @@ def addConvertCoverFile(tf, file, workspace, nocase, teePrint):
                 updateDatabase(conn, nocase, workspace, "path", "lis_files", teePrint)
             updateDatabase(conn, nocase, workspace, "display_path", "source_files", teePrint)
             updateDatabase(conn, nocase, workspace, "path", "source_files", teePrint)
-            
+
             conn.commit()
             conn.close()
             addFile(tf, file)
@@ -146,7 +146,7 @@ def addConvertFiles(tf, workspace, nocase):
         addConvertMasterFile(tf, "master.db", workspace, nocase, teePrint)
 
 if __name__ == '__main__':
-                
+
     ManageProjectName = sys.argv[1]
     Level = sys.argv[2]
     BaseName = sys.argv[3]
@@ -159,7 +159,7 @@ if __name__ == '__main__':
         nocase = "COLLATE NOCASE"
     else:
         nocase = ""
-        
+
     os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(ManageProjectName).rsplit(".",1)[0]
 
     manageCMD = os.path.join(os.environ.get('VECTORCAST_DIR'), "manage")
@@ -174,16 +174,15 @@ if __name__ == '__main__':
 
     for str in list:
         if "Build Directory:" in str:
-            length = len(str.split()[0]) + 1 + len(str.split()[1]) + 1 
+            length = len(str.split()[0]) + 1 + len(str.split()[1]) + 1
             build_dir = os.path.relpath(str[length:])
 
     try:
         rgwDir = getReqRepo(ManageProjectName).replace("\\","/").replace(workspace+"/","")
         rgwExportDir = os.path.join(rgwDir, "requirements_gateway/export_data").replace("\\","/")
     except:
-        pass
-        
-        
+        rgwDir=None
+
     if build_dir != "":
         build_dir = build_dir + os.path.sep + Env
         tf = tarfile.open(BaseName + "_build.tar", mode='w')

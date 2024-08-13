@@ -22,7 +22,7 @@ def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, cursor_new, cursor_orig, 
     values_placeholders = ', '.join(['?' for x in column_names])  # format appropriately
     
     # SQL select columns from table
-    s = "SELECT %s FROM %s" % (', '.join(column_names), table_name)	
+    s = "SELECT %s FROM %s" % (', '.join(column_names), table_name)
     orig_data = cursor_orig.execute(s).fetchall()
     new_data  = cursor_new.execute(s).fetchall()
 

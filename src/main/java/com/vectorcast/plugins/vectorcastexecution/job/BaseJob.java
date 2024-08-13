@@ -58,127 +58,155 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.ArrayList;
 
-/**
- * Base job management - create/delete/update
- */
-abstract public class BaseJob {
-    private String projectName;
 
-    /** Jenkins instance */    
+/**
+ * Base job management - create/delete/update.
+ */
+public abstract class BaseJob {
+    /** Zero percent indicator. */
+    private static final int ZERO_PERCENT = 0;
+    /** Seventy percent indicator. */
+    private static  final int SEVENTY_PERCENT = 70;
+    /** Eighty percent indicator. */
+    private static  final int EIGHTY_PERCENT = 80;
+    /** 100% indicator. */
+    private static  final int ONE_HUNDREAD_PERCENT = 100;
+    /** Maximum string length. */
+    private static  final int MAX_STRING_LEN = 1000;
+    /** Default wait time. */
+    private static  final int DEFAULT_WAIT_TIME = 30;
+    /** Default number of wait loops. */
+    private static  final int DEFAULT_WAIT_LOOP = 1;
+
+    /** Project name. */
+    private String projectName;
+    /** Jenkins instance. */
     private Jenkins instance;
-    /** Request */
+    /** Request. */
     private StaplerRequest request;
-    /** Response */
+    /** Response. */
     private StaplerResponse response;
-    /** Manage project name */
+    /** Manage project name. */
     private String manageProjectName;
-    /** Base name generated from the manage project name */
+    /** Base name generated from the manage project name. */
     private String baseName;
-    /** Top-level project */
-    protected Project<?,?> topProject;
-    /** Environment setup for windows */
+    /** Top-level project. */
+    private Project<?, ?> topProject;
+    /** Environment setup for windows. */
     private String environmentSetupWin;
-    /** Environment setup for unix */
+    /** Environment setup for unix. */
     private String environmentSetupUnix;
-    /** Execute preamble for windows */
+    /** Execute preamble for windows. */
     private String executePreambleWin;
-    /** Execute preamble for unix */
+    /** Execute preamble for unix. */
     private String executePreambleUnix;
-    /** Environment tear down for windows */
+    /** Environment tear down for windows. */
     private String environmentTeardownWin;
-    /** Environment tear down for unix */
+    /** Environment tear down for unix. */
     private String environmentTeardownUnix;
-    /** Use Jenkins reporting */
+    /** Use Jenkins reporting. */
     private boolean optionUseReporting;
-    /** What error-level to use */
+    /** What error-level to use. */
     private String optionErrorLevel;
-    /** Use HTML in build description */
+    /** Use HTML in build description. */
     private String optionHtmlBuildDesc;
-    /** Generate execution report */
+    /** Generate execution report. */
     private boolean optionExecutionReport;
-    /** Clean workspace */
+    /** Clean workspace. */
     private boolean optionClean;
-    /** Use CI license */
+    /** Use CI license. */
     private boolean useCILicenses;
 
-    /** Use strict testcase import */
+    /** Use strict testcase import. */
     private boolean useStrictTestcaseImport;
-    
-    /** Allow RGW3 test to be executed and exported  */
+
+    /** Allow RGW3 test to be executed and exported. */
     private boolean useRGW3;
-    
-    /** Use coveagePlugin */
+
+    /** Use coveagePlugin. */
     private boolean useCoveragePlugin = true;
 
-    /** Use imported results */
+    /** Use imported results. */
     private boolean useImportedResults = false;
+    /** Use local/artifact imported results. */
     private boolean useLocalImportedResults = false;
+    /** Use external file for imported results. */
     private boolean useExternalImportedResults = false;
+    /** Filename for external results. */
     private String  externalResultsFilename;
-    
-    /** Use coverage history to control build status */
+
+    /** Use coverage history to control build status. */
     private boolean useCoverageHistory;
 
-    /** Using some form of SCM */
-    private boolean usingSCM;
-    /** The SCM being used */
+    /** Using some form of SCM. */
+    private boolean usingScm;
+    /** The SCM being used. */
     private SCM scm;
-    /** Wait time */
+    /** Wait time. */
     private Long waitTime;
-    /** Wait loops */
+    /** Wait loops. */
     private Long waitLoops;
-    /** Base Job name */
+    /** Base Job name. */
     private String jobName;
-    /** Node label */
+    /** Node label. */
     private String nodeLabel;
-    /** Maximum number of parallal jobs to queue up */
+    /** Maximum number of parallal jobs to queue up. */
     private Long maxParallel;
-    
-    /** PC Lint Plus Command */
+
+    /** PC Lint Plus Command. */
     private String pclpCommand;
-    /** PC Lint Plus Path */
+    /** PC Lint Plus Path. */
     private String pclpResultsPattern;
-    /* Squore execution command */
+    /** Squore execution command. */
     private String squoreCommand;
 
-    /* TESTinsights Push information */
-    private String TESTinsights_URL;
-    private String TESTinsights_project;
-    private String TESTinsights_credentials_id;
-    private String TESTinsights_proxy;
-    private String TESTinsights_SCM_URL;
-    private String TESTinsights_SCM_Tech;
+    /** TESTinsights URL information. */
+    private String testInsightsUrl;
+    /** TESTinsights Project information. */
+    private String testInsightsProject;
+    /** TESTinsights credentials information. */
+    private String testInsightsCredentialsId;
+    /** TESTinsights Proxy information. */
+    private String testInsightsProxy;
+    /** TESTinsights SCM information. */
+    private String testInsightsScmUrl;
+    /** TESTinsights SCM Tech information. */
+    private String testInsightsScmTech;
 
     /**
-     * Constructor
-     * @param request request object
-     * @param response response object
+     * Constructor.
+     * @param req request object
+     * @param resp response object
      * @throws ServletException exception
      * @throws IOException exception
      * @throws ExternalResultsFileException exception
      * @throws IllegalArgumentException exception
      */
-    protected BaseJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, ExternalResultsFileException, IllegalArgumentException {
+    protected BaseJob(final StaplerRequest req,
+            final StaplerResponse resp)
+            throws ServletException, IOException,
+            ExternalResultsFileException, IllegalArgumentException {
+
         instance = Jenkins.get();
-        this.request = request;
-        this.response = response;
+        request = req;
+        response = resp;
         JSONObject json = request.getSubmittedForm();
-        
-        // Debug Code
-        // if (json.toString().matches("\\w*")) {
-        //     Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSONObject Submitted Form"+ json.toString());
-        // }
 
         manageProjectName = json.optString("manageProjectName");
-        if (manageProjectName.length() > 1000) {
-            throw new IllegalArgumentException("manageProjectName too long > 1000");
+        if (manageProjectName.length() > MAX_STRING_LEN) {
+            throw new IllegalArgumentException(
+                "manageProjectName too long > 1000"
+            );
         }
 
         if (!manageProjectName.isEmpty()) {
             // Force unix style path to avoid problems later
-            manageProjectName = manageProjectName.replace('\\','/');
-            manageProjectName = manageProjectName.replaceAll("^[ \t]+|[ \t]+$", "");
-            if (! manageProjectName.toLowerCase().endsWith(".vcm")) manageProjectName += ".vcm";
+            manageProjectName = manageProjectName.replace('\\', '/');
+            manageProjectName = manageProjectName.
+                replaceAll("^[ \t]+|[ \t]+$", "");
+            if (!manageProjectName.toLowerCase().endsWith(".vcm")) {
+                manageProjectName += ".vcm";
+            }
         }
         baseName = FilenameUtils.getBaseName(manageProjectName);
 
@@ -196,20 +224,21 @@ abstract public class BaseJob {
         optionExecutionReport = json.optBoolean("optionExecutionReport", true);
         optionClean = json.optBoolean("optionClean", false);
 
-        waitTime = json.optLong("waitTime", 5);
-        waitLoops = json.optLong("waitLoops", 2);
+        waitTime = json.optLong("waitTime", DEFAULT_WAIT_TIME);
+        waitLoops = json.optLong("waitLoops", DEFAULT_WAIT_LOOP);
 
         jobName = json.optString("jobName", null);
 
         if (jobName != null) {
             // Remove all non-alphanumeric characters from the Jenkins Job name
-            jobName = jobName.replaceAll("[^a-zA-Z0-9_]","_");
+            jobName = jobName.replaceAll("[^a-zA-Z0-9_]", "_");
         }
 
         nodeLabel = json.optString("nodeLabel", "");
 
         useCILicenses  = json.optBoolean("useCiLicense", false);
-        useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
+        useStrictTestcaseImport  = json
+            .optBoolean("useStrictTestcaseImport", true);
         useRGW3  = json.optBoolean("useRGW3", false);
         useImportedResults  = json.optBoolean("useImportedResults", false);
         if (json.optInt("coverageDisplayOption", 0) == 0) {
@@ -220,20 +249,22 @@ abstract public class BaseJob {
         externalResultsFilename = "";
 
         if (useImportedResults) {
-            JSONObject jsonImportResults  = json.optJSONObject("importedResults");
-            
-            if (jsonImportResults != null) {
-                final long int_ext = jsonImportResults.optLong("value",0);
-                
-                if (int_ext == 1) {
+            JSONObject jsonImpRes = json.optJSONObject("importedResults");
+
+            if (jsonImpRes != null) {
+                final long intExt = jsonImpRes.optLong("value", 0);
+
+                if (intExt == 1) {
                     useLocalImportedResults = true;
                     useExternalImportedResults = false;
                     externalResultsFilename = "";
-                } else if (int_ext == 2) {
+                } else if (intExt == 2) {
                     useLocalImportedResults = false;
                     useExternalImportedResults = true;
-                    externalResultsFilename = jsonImportResults.optString("externalResultsFilename","");
-                        externalResultsFilename = externalResultsFilename.replace('\\','/');
+                    externalResultsFilename = jsonImpRes
+                        .optString("externalResultsFilename", "");
+                    externalResultsFilename =
+                        externalResultsFilename.replace('\\', '/');
                     if (externalResultsFilename.length() == 0) {
                         throw new ExternalResultsFileException();
                     }
@@ -244,534 +275,397 @@ abstract public class BaseJob {
         maxParallel = json.optLong("maxParallel", 0);
 
         /* Additional Tools */
-        pclpCommand = json.optString("pclpCommand", "").replace('\\','/');
+        pclpCommand = json.optString("pclpCommand", "").replace('\\', '/');
         pclpResultsPattern = json.optString("pclpResultsPattern", "");
-        squoreCommand = json.optString("squoreCommand", "").replace('\\','/');
-        TESTinsights_URL = json.optString("TESTinsights_URL", "");
-        TESTinsights_project = json.optString("TESTinsights_project", "");
-        if (TESTinsights_project.length() == 0) {
-                TESTinsights_project = "env.JOB_BASE_NAME";
+        squoreCommand = json.optString("squoreCommand", "").replace('\\', '/');
+        testInsightsUrl = json.optString("TESTinsights_URL", "");
+        testInsightsProject = json.optString("TESTinsights_project", "");
+        if (testInsightsProject.length() == 0) {
+                testInsightsProject = "env.JOB_BASE_NAME";
         }
-        TESTinsights_credentials_id = json.optString("TESTinsights_credentials_id", "");
-        TESTinsights_proxy = json.optString("TESTinsights_proxy", "");
+        testInsightsCredentialsId =
+            json.optString("TESTinsights_credentials_id", "");
+        testInsightsProxy = json.optString("TESTinsights_proxy", "");
     }
 
     /**
-     * Using some form of SCM
+     * Using some form of SCM.
      * @return true or false
      */
-    protected boolean isUsingSCM() {
-        return usingSCM;
+    protected boolean isUsingScm() {
+        return usingScm;
     }
     /**
-     * Set using some form of SCM
-     * @param usingSCM true/false
+     * Set using some form of SCM.
+     * @param useScm true/false
      */
-    protected void setUsingSCM(boolean usingSCM) {
-        this.usingSCM = usingSCM;
+    protected void setUsingSCM(final boolean useScm) {
+        this.usingScm = useScm;
     }
     /**
-     * Get environment setup for windows
+     * Get environment setup for windows.
      * @return setup
      */
     protected String getEnvironmentSetupWin() {
         return environmentSetupWin;
     }
-    
+
     /**
-     * Set environment setup for windows
-     * @param environmentSetupWin windows environment setup
-     */
-    protected void setEnvironmentSetupWin(String environmentSetupWin) {
-        this.environmentSetupWin = environmentSetupWin;
-    }
-    /**
-     * Get execute preamble for windows
+     * Get execute preamble for windows.
      * @return preamble
      */
     protected String getExecutePreambleWin() {
         return executePreambleWin;
     }
     /**
-     * Set execute preamble for windows
-     * @param executePreambleWin execute preamble for windows
-     */
-    protected void setExecutePreambleWin(String executePreambleWin) {
-        this.executePreambleWin = executePreambleWin;
-    }
-    /**
-     * Get environment tear down for windows
+     * Get environment tear down for windows.
      * @return environment tear down for windows
      */
     protected String getEnvironmentTeardownWin() {
         return environmentTeardownWin;
     }
     /**
-     * Set environment tear down for windows
-     * @param environmentTeardownWin environment tear down for windows
-     */
-    protected void setEnvironmentTeardownWin(String environmentTeardownWin) {
-        this.environmentTeardownWin = environmentTeardownWin;
-    }
-    /**
-     * Get environment setup for unix
+     * Get environment setup for unix.
      * @return environment setup
      */
     protected String getEnvironmentSetupUnix() {
         return environmentSetupUnix;
     }
     /**
-     * Set environment setup for unix
-     * @param environmentSetupUnix environment setup for unix
-     */
-    protected void setEnvironmentSetupUnix(String environmentSetupUnix) {
-        this.environmentSetupUnix = environmentSetupUnix;
-    }
-    /**
-     * Get execute preamble for unix
+     * Get execute preamble for unix.
      * @return preamble
      */
     protected String getExecutePreambleUnix() {
         return executePreambleUnix;
     }
     /**
-     * Set execute preamble for unix
-     * @param executePreambleUnix execute preamble for unix
-     */
-    protected void setExecutePreambleUnix(String executePreambleUnix) {
-        this.executePreambleUnix = executePreambleUnix;
-    }
-    /**
-     * Get environment tear down for unix
+     * Get environment tear down for unix.
      * @return teardown
      */
     protected String getEnvironmentTeardownUnix() {
         return environmentTeardownUnix;
     }
     /**
-     * Set environment teardown for unix
-     * @param environmentTeardownUnix environment tear down for unix
-     */
-    protected void setEnvironmentTeardownUnix(String environmentTeardownUnix) {
-        this.environmentTeardownUnix = environmentTeardownUnix;
-    }
-    /**
-     * Get use Jenkins reporting option
+     * Get use Jenkins reporting option.
      * @return true to use, false to not
      */
     protected boolean getOptionUseReporting() {
         return optionUseReporting;
     }
     /**
-     * Set use Jenkins reporting option
-     * @param optionUseReporting true to use, false to not
-     */
-    protected void setOptionUseReporting(boolean optionUseReporting) {
-        this.optionUseReporting = optionUseReporting;
-    }
-    /**
-     * Get error level
+     * Get error level.
      * @return Unstable or Failure
      */
     protected String getOptionErrorLevel() {
         return optionErrorLevel;
     }
     /**
-     * Set option error level
-     * @param optionErrorLevel Unstable or Failure
-     */
-    protected void setOptionErrorLevel(String optionErrorLevel) {
-        this.optionErrorLevel = optionErrorLevel;
-    }
-    /**
-     * Use HTML Build Description
+     * Use HTML Build Description.
      * @return HTML or TEXT
      */
     protected String getOptionHTMLBuildDesc() {
         return optionHtmlBuildDesc;
     }
     /**
-     * Set use HTML Build description
-     * @param optionHtmlBuildDesc HTML build description
-     */
-    protected void setOptionHTMLBuildDesc(String optionHtmlBuildDesc) {
-        this.optionHtmlBuildDesc = optionHtmlBuildDesc;
-    }
-    /**
-     * Use execution report
+     * Use execution report.
      * @return true to use, false to not
      */
     protected boolean getOptionExecutionReport() {
         return optionExecutionReport;
     }
     /**
-     * Set use execution report
-     * @param optionExecutionReport true to use, false to not
-     */
-    protected void setOptionExecutionReport(boolean optionExecutionReport) {
-        this.optionExecutionReport = optionExecutionReport;
-    }
-    /**
-     * Get option to clean workspace before build
+     * Get option to clean workspace before build.
      * @return true to clean, false to not
      */
     protected boolean getOptionClean() {
         return optionClean;
     }
     /**
-     * Set option to clean workspace before build
-     * @param optionClean  true to clean, false to not
-     */
-    protected void setOptionClean(boolean optionClean) {
-        this.optionClean = optionClean;
-    }
-    /**
-     * Get option to use CI licenses
+     * Get option to use CI licenses.
      * @return true to use CI licenses, false to not
      */
     protected boolean getUseCILicenses() {
         return useCILicenses;
     }
     /**
-     * Set option to use CI licenses
-     * @param useCILicenses  true to use CI licenses, false to not
-     */
-    protected void setUseCILicenses(boolean useCILicenses) {
-        this.useCILicenses = useCILicenses;
-    }    
-    /**
-     * Get option to Use strict testcase import
+     * Get option to Use strict testcase import.
      * @return true to Use strict testcase import, false to not
      */
     protected boolean getUseStrictTestcaseImport() {
         return useStrictTestcaseImport;
     }
     /**
-     * Set option to Use strict testcase import
-     * @param useStrictTestcaseImport  true to Use strict testcase import, false to not
-     */
-    protected void setUseStrictTestcaseImport(boolean useStrictTestcaseImport) {
-        this.useStrictTestcaseImport = useStrictTestcaseImport;
-    }    
-    /**
-     * Get option to Use RGW3 capabilities
+     * Get option to Use RGW3 capabilities.
      * @return true use RGW3 capabilities, false to not
      */
     protected boolean getUseRGW3() {
         return useRGW3;
     }
     /**
-     * Set option to use RGW3 capabilities
-     * @param useRGW3 true to allow RGW3 test cases to run and export
-     */
-    protected void setUseRGW3(boolean useRGW3) {
-        this.useRGW3 = useRGW3;
-    }    
-    /**
-     * Get option to use coverage plugin or vectorcast coverage plugin
+     * Get option to use coverage plugin or vectorcast coverage plugin.
      * @return true use coverage plugin or vectorcast coverage plugin
      */
     protected boolean getUseCoveragePlugin() {
         return useCoveragePlugin;
     }
     /**
-     * Set option to use coverage plugin or vectorcast coverage plugin
-     * @param useCoveragePlugin use coverage plugin or vectorcast coverage plugin
-     */
-    protected void setUseCoveragePlugin(boolean useCoveragePlugin) {
-        this.useCoveragePlugin = useCoveragePlugin;
-    }    
-    /**
-     * Get option to Use imported results
+     * Get option to Use imported results.
      * @return true to Use imported results, false to not
      */
     protected boolean getUseImportedResults() {
         return useImportedResults;
     }
-    /**
-     * Set option to Use imported results
-     * @param useImportedResults true to Use imported results, false to not
-     */
-    protected void setUseImportedResults(boolean useImportedResults) {
-        this.useImportedResults = useImportedResults;
-    }    
 
     /**
-     * Get option to Use local imported results
+     * Get option to Use local imported results.
      * @return true to Use local imported results, false to not
      */
     protected boolean getUseLocalImportedResults() {
         return useLocalImportedResults;
     }
     /**
-     * Set option to Use imported results
-     * @param useLocalImportedResults true to Use local imported results, false to not
-     */
-    protected void setUseLocalImportedResults(boolean useLocalImportedResults) {
-        this.useLocalImportedResults = useLocalImportedResults;
-    }    
-
-    /**
-     * Get option to Use external imported results
+     * Get option to Use external imported results.
      * @return true to Use external imported results, false to not
      */
     protected boolean getUseExternalImportedResults() {
         return useExternalImportedResults;
     }
-    /**
-     * Set option to Use imported results
-     * @param useExternalImportedResults true to Use external imported results, false to not
-     */
-    protected void setUseExternalImportedResults(boolean useExternalImportedResults) {
-        this.useExternalImportedResults = useExternalImportedResults;
-    }    
 
     /**
-     * Get option to Use as external result filename
+     * Get option to Use as external result filename.
      * @return string external result filename
      */
     protected String getExternalResultsFilename() {
         return externalResultsFilename;
     }
     /**
-     * Set option to Use imported results
-     * @param externalResultsFilename true to Use external imported results, false to not
-     */
-    protected void setExternalResultsFilename(String externalResultsFilename) {
-        this.externalResultsFilename = externalResultsFilename;
-    }    
-
-    /**
-     * Get option to Use coverage history to control build status
+     * Get option to Use coverage history to control build status.
      * @return true to Use imported results, false to not
      */
     public boolean getUseCoverageHistory() {
         return useCoverageHistory;
     }
     /**
-     * Set option to Use coverage history to control build status
-     * @param useCoverageHistory true to Use imported results, false to not
-     */
-    protected void setUseCoverageHistory(boolean useCoverageHistory) {
-        this.useCoverageHistory = useCoverageHistory;
-    }    
-
-    /**
-     * Get for maxParallel to control maximum number of jobs to be queue at at any one point
+     * Get for maxParallel to control maximum number of
+     * jobs to be queue at at any one point.
      * @return MaxParallel integer number
      */
     protected Long getMaxParallel() {
         return maxParallel;
     }
-    /**
-     * Set option for maxParallel to control maximum number of jobs to be queue at at any one point
-     * @param maxParallel Long number
-     */
-    protected void setMaxParallel(Long maxParallel) {
-        this.maxParallel = maxParallel;
-    }    
      /**
-     * Get environment setup for windows
-     * @return setup
+     * Get use CI license for Linux.
+     * @return String command to set
      */
     protected String getUseCILicensesWin() {
         String ciEnvVars = "";
-        
+
         if (useCILicenses) {
-            ciEnvVars = "set VCAST_USING_HEADLESS_MODE=1\nset VCAST_USE_CI_LICENSES=1\n";
+            ciEnvVars = "set VCAST_USING_HEADLESS_MODE=1\n"
+                + "set VCAST_USE_CI_LICENSES=1\n";
         }
         return ciEnvVars;
     }
+     /**
+     * Get use CI license for Linux.
+     * @return String command to set
+     */
     protected String getUseCILicensesUnix() {
         String ciEnvVars = "";
-        
+
         if (useCILicenses) {
-            ciEnvVars = "export VCAST_USING_HEADLESS_MODE=1\nexport VCAST_USE_CI_LICENSES=1\n";
+            ciEnvVars = "export VCAST_USING_HEADLESS_MODE=1\n"
+                + "export VCAST_USE_CI_LICENSES=1\n";
         }
         return ciEnvVars;
     }
    /**
-     * Get the time to wait between retries
+     * Get the time to wait between retries.
      * @return number of seconds
      */
     protected Long getWaitTime() {
         return waitTime;
     }
     /**
-     * Get the number of wait loops
+     * Get the number of wait loops.
      * @return number of iterations
      */
     protected Long getWaitLoops() {
         return waitLoops;
     }
     /**
-     * Get the user-specified job name
+     * Get the user-specified job name.
      * @return job name (null for use default)
      */
     protected String getJobName() {
         return jobName;
     }
     /**
-     * Get top-level project
+     * Get top-level project.
      * @return project
      */
-    protected Project<?,?> getTopProject() {
+    protected Project<?, ?> getTopProject() {
         return topProject;
     }
     /**
-     * Get manage project name
+     * Get manage project name.
      * @return manage project name
      */
     protected String getManageProjectName() {
         return manageProjectName;
     }
     /**
-     * Get base name of manage project
+     * Get base name of manage project.
      * @return base name
      */
     protected String getBaseName() {
         return baseName;
     }
     /**
-     * Get node label
+     * Get node label.
      * @return node label
      */
     protected String getNodeLabel() {
         return nodeLabel;
     }
     /**
-     * Get pc-lint plus command
+     * Get pc-lint plus command.
      * @return pc-lint plus command
      */
     protected String getPclpCommand() {
         return pclpCommand;
     }
     /**
-     * Get pc-lint plus result pattern
+     * Get pc-lint plus result pattern.
      * @return pc-lint plus result pattern
      */
     protected String getPclpResultsPattern() {
         return pclpResultsPattern;
     }
-    
+
     /**
-     * Get command for running Squore
+     * Get command for running Squore.
      * @return Squore command
      */
     protected String getSquoreCommand() {
         return squoreCommand;
-    }    
+    }
     /**
-     * Get URL for TESTinsights
+     * Get URL for TESTinsights.
      * @return TESTinsights URL
      */
-    protected String getTESTinsights_URL() {
-        return TESTinsights_URL;
-    }    
+    protected String getTestInsightsUrl() {
+        return testInsightsUrl;
+    }
     /**
-     * Get Project for TESTinsights
+     * Get Project for TESTinsights.
      * @return TESTinsights Project
      */
-    protected String getTESTinsights_project() {
-        return TESTinsights_project;
-    }    
+    protected String getTestInsightsProject() {
+        return testInsightsProject;
+    }
     /**
-     * Set Project for TESTinsights
-     * @param TESTinsights_project  TESTinsights project name
+     * set Project for TESTinsights.
+     * @param project TESTinsights Project
      */
-    protected void setTESTinsights_project(String TESTinsights_project) {
-        this.TESTinsights_project = TESTinsights_project;
-    }    
+    protected void setTestInsightsProject(final String project) {
+        this.testInsightsProject = project;
+    }
     /**
-     * Get Proxy for TESTinsights
-     * @return TESTinsights proxy
+     * Get Proxy for TESTinsights.
+     * @return proxy TESTinsights proxy
      */
-    protected String getTESTinsights_proxy() {
-        return TESTinsights_proxy;
-    }    
+    protected String getTestInsightsProxy() {
+        return testInsightsProxy;
+    }
     /**
-     * Get Credentials for TESTinsights
+     * Get Credentials for TESTinsights.
      * @return TESTinsights Credentials
      */
-    protected String getTESTinsights_credentials_id() {
-        return TESTinsights_credentials_id;
-    }        
+    protected String getTestInsightsCredentialsId() {
+        return testInsightsCredentialsId;
+    }
     /**
-     * Get SCM URL for TESTinsights
+     * Set SCM URL for TESTinsights.
+     * @param url TESTinsights SCM URL
+     */
+    protected void setTestInsightsScmUrl(final String url) {
+        this.testInsightsScmUrl = url;
+    }
+    /**
+     * Get SCM URL for TESTinsights.
      * @return TESTinsights SCM URL
      */
-    protected String getTESTinsights_SCM_URL() {
-        return TESTinsights_SCM_URL;
-    }    
+    protected String getTestInsightsScmUrl() {
+        return testInsightsScmUrl;
+    }
     /**
-     * Get SCM Technology TESTinsights
+     * Get SCM Technology TESTinsights.
      * @return TESTinsights SCM Technology
      */
-    protected String getTESTinsights_SCM_Tech() {
-        return TESTinsights_SCM_Tech;
-    }    
+    protected String getTestInsightsScmTech() {
+        return testInsightsScmTech;
+    }
     /**
-     * Set SCM URL for TESTinsights
-     * @param TESTinsights_SCM_URL - String TESTinsights SCM URL
+     * Set SCM Technology TESTinsights.
+     * @param tech TESTinsights SCM Technology
      */
-     
-    protected  void setTESTinsights_SCM_URL(String TESTinsights_SCM_URL) {
-        this.TESTinsights_SCM_URL = TESTinsights_SCM_URL;
-    }    
+    protected void setTestInsightsScmTech(final String tech) {
+        this.testInsightsScmTech = tech;
+    }
     /**
-     * Set SCM Technology TESTinsights
-     * @param TESTinsights_SCM_Tech - String TESTinsights SCM Techology (git or svn)
-     */	 
-    protected void setTESTinsights_SCM_Tech(String TESTinsights_SCM_Tech) {
-        this.TESTinsights_SCM_Tech = TESTinsights_SCM_Tech;
-    }    
-    /**
-     * Get request
+     * Get request.
      * @return request
      */
     protected StaplerRequest getRequest() {
         return request;
     }
     /**
-     * Get Jenkins instance
+     * Get Jenkins instance.
      * @return Jenkins instance
      */
     protected Jenkins getInstance() {
         return instance;
     }
     /**
-     * Get the name of the project
+     * Get the name of the project.
      * @return the project name
      */
     public String getProjectName() {
         return projectName;
     }
     /**
-     * Sets the name of the project
-     * @param projectName - project name
+     * Sets the name of the project.
+     * @param pName - project name
      */
-    public void setProjectName(final String projectName) {
-        this.projectName = projectName;
+    public void setProjectName(final String pName) {
+        this.projectName = pName;
     }
     /**
-     * Get response
+     * Get response.
      * @return response
      */
     protected StaplerResponse getResponse() {
         return response;
     }
     /**
-     * Add the delete workspace before build starts option
+     * Add the delete workspace before build starts option.
      * @param project project to add to
      */
-    protected void addDeleteWorkspaceBeforeBuildStarts(Project<?,?> project) {
+    protected void addDelWSBeforeBuild(final Project<?, ?> project) {
         if (optionClean) {
-            PreBuildCleanup cleanup = new PreBuildCleanup(/*patterns*/null, true, /*cleanup param*/"", /*external delete*/"", /*disableDeferredWipeout*/ false);
+            PreBuildCleanup cleanup = new PreBuildCleanup(
+                null,    /*patterns*/
+                true,
+                "",      /*cleanup param*/
+                "",      /*external delete*/
+                false /*disableDeferredWipeout*/
+            );
             project.getBuildWrappersList().add(cleanup);
         }
     }
     /**
-     * Create the job(s)
+     * Create the job(s).
      * @param update true/false
      * @throws IOException exception
      * @throws ServletException exception
@@ -779,11 +673,16 @@ abstract public class BaseJob {
      * @throws JobAlreadyExistsException exception
      * @throws InvalidProjectFileException exception
      */
-    public void create(boolean update) throws IOException, ServletException, Descriptor.FormException, JobAlreadyExistsException, InvalidProjectFileException {
+    public void create(final boolean update)
+            throws IOException, ServletException,
+            Descriptor.FormException,
+            JobAlreadyExistsException,
+            InvalidProjectFileException {
         // Create the top-level project
         topProject = createProject();
         if (topProject == null) {
-            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "Could not create topProject");
+            Logger.getLogger(BaseJob.class.getName())
+                .log(Level.INFO, "Could not create topProject");
             return;
         }
 
@@ -793,24 +692,25 @@ abstract public class BaseJob {
             scm = new NullSCM();
         }
         if (scm instanceof NullSCM) {
-            usingSCM = false;
+            usingScm = false;
         } else {
-            usingSCM = true;
-            
+            usingScm = true;
+
             // for TESTinsights SCM connector
             String scmName = scm.getDescriptor().getDisplayName();
             if (scmName.equals("Git")) {
-                TESTinsights_SCM_Tech = "git";
+                testInsightsScmTech = "git";
             } else if (scmName.equals("Subversion")) {
-                TESTinsights_SCM_Tech = "svn";
+                testInsightsScmTech = "svn";
             } else {
-                TESTinsights_SCM_Tech = "";
+                testInsightsScmTech = "";
             }
-            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "SCM Info: " + scmName);
+            Logger.getLogger(BaseJob.class.getName())
+                .log(Level.INFO, "SCM Info: " + scmName);
         }
         topProject.setScm(scm);
 
-        addDeleteWorkspaceBeforeBuildStarts(topProject);
+        addDelWSBeforeBuild(topProject);
 
         try {
             doCreate(update);
@@ -820,33 +720,49 @@ abstract public class BaseJob {
         }
     }
     /**
-     * Create top-level project
+     * Create top-level project.
      * @return created project
      * @throws IOException exception
      * @throws JobAlreadyExistsException exception
      */
-    abstract protected Project<?,?> createProject() throws IOException, JobAlreadyExistsException;
+    protected abstract Project<?, ?> createProject()
+            throws IOException, JobAlreadyExistsException;
     /**
-     * Cleanup top-level project, as in delete
+    * Gets the baseline file.
+    * @param fname filename
+    * @return String of baseline file
+    * @throws IOException exception
+    */
+    protected abstract String getBaselineFile(final String fname) 
+        throws IOException;
+        
+    /**
+     * Cleanup top-level project, as in delete.
      */
-    abstract protected void cleanupProject();
+    protected abstract void cleanupProject();
     /**
-     * Do create of project details
+     * Do create of project details.
      * @param update true if doing an update rather than a create
      * @throws IOException exception
      * @throws ServletException exception
      * @throws hudson.model.Descriptor.FormException exception
      * @throws InvalidProjectFileException exception
      */
-    abstract protected void doCreate(boolean update) throws IOException, ServletException, Descriptor.FormException, InvalidProjectFileException ;
+    protected abstract void doCreate(boolean update)
+        throws IOException,
+        ServletException,
+        Descriptor.FormException,
+        InvalidProjectFileException;
+
     /**
-     * Add the VectorCAST setup step to copy the python scripts to
+     * Add the VectorCAST setup step to copy the python scripts to.
      * the workspace
      * @param project project
      * @return the setup build step
      */
-    protected VectorCASTSetup addSetup(Project<?,?> project) throws IOException{
-        VectorCASTSetup setup = 
+    protected VectorCASTSetup addSetup(final Project<?, ?> project)
+            throws IOException {
+        VectorCASTSetup setup =
                 new VectorCASTSetup(environmentSetupWin,
                                     environmentSetupUnix,
                                     executePreambleWin,
@@ -875,48 +791,51 @@ abstract public class BaseJob {
                                     pclpCommand,
                                     pclpResultsPattern,
                                     squoreCommand,
-                                    TESTinsights_URL,
-                                    TESTinsights_project,
-                                    TESTinsights_credentials_id,
-                                    TESTinsights_proxy,
-                                    TESTinsights_SCM_URL,
-                                    TESTinsights_SCM_Tech);
-                                    
-        setup.setUsingSCM(usingSCM);
+                                    testInsightsUrl,
+                                    testInsightsProject,
+                                    testInsightsCredentialsId,
+                                    testInsightsProxy,
+                                    testInsightsScmUrl,
+                                    testInsightsScmTech);
+
+        setup.setUsingSCM(usingScm);
         setup.setSCM(scm);
 
         project.getBuildersList().add(setup);
-        
+
         return setup;
     }
     /**
-     * Add archive artifacts step
+     * Add archive artifacts step.
      * @param project project to add to
      */
-    protected void addArchiveArtifacts(Project<?,?> project) {
+    protected void addArchiveArtifacts(final Project<?, ?> project) {
         String pclpArchive = "";
-        String TIArchive = "";
-        
+        String tiArchive = "";
+
         if (pclpCommand.length() != 0) {
             pclpArchive = ", " + pclpResultsPattern;
         }
-        if (TESTinsights_URL.length() != 0) {
-            TIArchive = ", TESTinsights_Push.log";            
+        if (testInsightsUrl.length() != 0) {
+            tiArchive = ", TESTinsights_Push.log";
         }
-        String addToolsArchive = pclpArchive + TIArchive;
-        String defaultArchive = "**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr";
-        
-        ArtifactArchiver archiver = new ArtifactArchiver(defaultArchive + addToolsArchive);
+        String addToolsArchive = pclpArchive + tiArchive;
+        String defaultArchive = "**/*.html, xml_data/*.xml,"
+                + " unit_test_fail_count.txt, **/*.png, **/*.css,"
+                + " complete_build.log, *_results.vcr";
+
+        ArtifactArchiver archiver =
+                new ArtifactArchiver(defaultArchive + addToolsArchive);
         archiver.setExcludes("");
         archiver.setAllowEmptyArchive(false);
         project.getPublishersList().add(archiver);
     }
 
     /**
-     * Add archive artifacts step
+     * Add archive artifacts step.
      * @param project project to add to
      */
-    protected void addCopyResultsToImport(Project<?,?> project) {
+    protected void addCopyResultsToImport(final Project<?, ?> project) {
         StatusBuildSelector selector = new StatusBuildSelector();
         CopyArtifact archiverCopier = new CopyArtifact(project.getName());
         archiverCopier.setParameters("");
@@ -925,25 +844,26 @@ abstract public class BaseJob {
         archiverCopier.setTarget("");
         archiverCopier.setFlatten(false);
         archiverCopier.setOptional(true);
-        
+
         project.getBuildersList().add(archiverCopier);
     }
 
     /**
-     * Add JUnit rules step
+     * Add JUnit rules step.
      * @param project project to add step to
      */
 
-    protected void addJunit(Project<?,?> project) {
-        JUnitResultArchiver junit = new JUnitResultArchiver("**/test_results_*.xml");
+    protected void addJunit(final Project<?, ?> project) {
+        JUnitResultArchiver junit =
+            new JUnitResultArchiver("**/test_results_*.xml");
         project.getPublishersList().add(junit);
     }
     /**
-     * Add PC-Lint Plus step
+     * Add PC-Lint Plus step.
      * @param project project to add step to do PC-Lint Plus
      */
 
-    protected void addPCLintPlus(Project<?,?> project) {
+    protected void addPCLintPlus(final Project<?, ?> project) {
         if (pclpCommand.length() != 0) {
             IssuesRecorder recorder = new IssuesRecorder();
 
@@ -951,18 +871,25 @@ abstract public class BaseJob {
             pcLintPlus.setPattern(pclpResultsPattern);
             pcLintPlus.setReportEncoding("UTF-8");
             pcLintPlus.setSkipSymbolicLinks(false);
-            
+
             recorder.setTools(pcLintPlus);
 
             project.getPublishersList().add(recorder);
         }
     }
     /**
-     * Add VectorCAST coverage reporting step
+     * Add VectorCAST coverage reporting step.
      * @param project project to add step to
      */
-    protected void addVCCoverage(Project<?,?> project) {
-        VectorCASTHealthReportThresholds healthReports = new VectorCASTHealthReportThresholds(0, 100, 0, 70, 0, 80, 0, 80, 0, 80, 0, 80);
+    protected void addVCCoverage(final Project<?, ?> project) {
+        VectorCASTHealthReportThresholds healthReports =
+                new VectorCASTHealthReportThresholds(
+                    ZERO_PERCENT, ONE_HUNDREAD_PERCENT,
+                    ZERO_PERCENT, SEVENTY_PERCENT,
+                    ZERO_PERCENT, EIGHTY_PERCENT,
+                    ZERO_PERCENT, EIGHTY_PERCENT,
+                    ZERO_PERCENT, EIGHTY_PERCENT,
+                    ZERO_PERCENT, EIGHTY_PERCENT);
         VectorCASTPublisher publisher = new VectorCASTPublisher();
         publisher.includes = "**/coverage_results_*.xml";
         publisher.healthReports = healthReports;
@@ -970,23 +897,29 @@ abstract public class BaseJob {
         project.getPublishersList().add(publisher);
     }
     /**
-     * Add Jenkins coverage reporting step
+     * Add Jenkins coverage reporting step.
      * @param project project to add step to
      */
-    protected void addJenkinsCoverage(Project<?,?> project) {
+    protected void addJenkinsCoverage(final Project<?, ?> project) {
         CoverageTool tool = new CoverageTool();
         tool.setParser(Parser.VECTORCAST);
-        tool.setPattern("xml_data/cobertura/coverage_results*.xml");        
+        tool.setPattern("xml_data/cobertura/coverage_results*.xml");
         List<CoverageTool> list = new ArrayList<CoverageTool>();
         list.add(tool);
 
         CoverageRecorder publisher = new CoverageRecorder();
         publisher.setTools(list);
-        
+
         project.getPublishersList().add(publisher);
     }
-    protected void addCredentialID(Project<?,?> project) {
-        project.getBuildWrappersList().add(new SecretBuildWrapper(Collections.<MultiBinding<?>>singletonList(
-                new UsernamePasswordMultiBinding("VC_TI_USR","VC_TI_PWS",TESTinsights_credentials_id))));
+    /**
+     * Add credentials for coverage reporting step.
+     * @param project project to add step to
+     */
+    protected void addCredentialID(final Project<?, ?> project) {
+        project.getBuildWrappersList().add(
+            new SecretBuildWrapper(Collections.<MultiBinding<?>>singletonList(
+            new UsernamePasswordMultiBinding("VC_TI_USR", "VC_TI_PWS",
+                testInsightsCredentialsId))));
     }
 }

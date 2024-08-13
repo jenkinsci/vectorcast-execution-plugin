@@ -45,7 +45,7 @@ class ManageWait(object):
         self.verbose = verbose
         self.command_line = command_line
         self.mpName = mpName
-        self.useCI = useCI		
+        self.useCI = useCI
         # get the VC langaguge and encoding
         self.encFmt = 'utf-8'
         try:

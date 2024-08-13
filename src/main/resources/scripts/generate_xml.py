@@ -52,7 +52,7 @@ from vector.apps.DataAPI.cover_api import CoverApi
 from vector.apps.ReportBuilder.custom_report import fmt_percent
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
-import hashlib 
+import hashlib
 import traceback
 import parse_traceback
 import tee_print
@@ -60,19 +60,19 @@ from safe_open import open
 from pprint import pprint
 
 import re
- 
+
 def dummy(*args, **kwargs):
     return None
-    
+
 def dump(obj):
-    if hasattr(obj, '__dict__'): 
-        return vars(obj) 
+    if hasattr(obj, '__dict__'):
+        return vars(obj)
     else:
         try:
-            return {attr: getattr(obj, attr, None) for attr in obj.__slots__} 
+            return {attr: getattr(obj, attr, None) for attr in obj.__slots__}
         except:
             return str(obj)
-            
+
 ##########################################################################
 # This class generates the XML (JUnit based) report for the overall
 # (Emma based) report for Coverage
@@ -86,7 +86,7 @@ class BaseGenerateXml(object):
         self.verbose = verbose
         self.has_sfp_enabled = False
         self.print_exc = False
-        
+
         # get the VC langaguge and encoding
         self.encFmt = 'utf-8'
         from vector.apps.DataAPI.configuration import vcastqt_global_options
@@ -97,12 +97,12 @@ class BaseGenerateXml(object):
             self.encFmt = "shift-jis"
         if self.lang == "chinese":
             self.encFmt = "GBK"
-            
+
         self.compiler = ""
         self.testsuite = ""
         self.env = ""
         self.build_dir = ""
-        
+
 #
 # BaseGenerateXml - calculate coverage value
 #
@@ -112,7 +112,7 @@ class BaseGenerateXml(object):
             column = None
         else:
             column = '%s%% (%d / %d)' % (fmt_percent(x, y), x, y)
-            
+
         return column
 
     def convertTcStatus(self, status):
@@ -164,7 +164,7 @@ class BaseGenerateXml(object):
                         'EXEC_HIDING_EXPECTED_RESULTS':'Hiding expected results',
                         'INVALID_TEST_CASE':'Invalid Test Case'
                        }
-        try:                  
+        try:
             s = convertDict[str(status)]
         except:
             s = convertDict[status]
@@ -179,7 +179,7 @@ class BaseGenerateXml(object):
            unit_or_func.coverdb.has_covered_branches:
             return True
         else:
-            return False 
+            return False
 
 #
 # BaseGenerateXml - create coverage data object for given metrics entry
@@ -187,7 +187,7 @@ class BaseGenerateXml(object):
 #
     def add_coverage(self, is_unit, unit_or_func, metrics, cov_type):
         cov_type_str = str(cov_type)
-        
+
         entry = {}
         entry["statement"] = None
         entry["branch"] = None
@@ -215,14 +215,14 @@ class BaseGenerateXml(object):
 
         if self.has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
-            
+
         if self.verbose:
             print("Coverage Type:", cov_type_str)
-            
-      
+
+
         if 'NONE' in cov_type_str:
-            return entry         
-        
+            return entry
+
         if "MCDC" in cov_type_str:
             entry["mcdc"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
             if not self.simplified_mcdc:
@@ -244,9 +244,9 @@ class BaseGenerateXml(object):
 # BaseGenerateXml - write the units to the coverage file
 #
     def write_cov_units(self):
-    
+
         self.reported_units = {}
-        
+
         for unit in self.our_units:
             unit_name = unit["unit"].name
             if unit_name in self.reported_units.keys():
@@ -254,7 +254,7 @@ class BaseGenerateXml(object):
                 unit_name = unit_name + "'%d" % self.reported_units[unit_name]
             else:
                 self.reported_units[unit_name] = 0
-                
+
             self.fh_data += ('        <unit name="%s">\n' % escape(unit_name, quote=False))
             if unit["coverage"]["statement"]:
                 self.fh_data += ('          <coverage type="statement, %%" value="%s"/>\n' % unit["coverage"]["statement"])
@@ -275,11 +275,11 @@ class BaseGenerateXml(object):
                 # if isinstance(self.api, CoverApi) or isinstance(self.api, VCProjectApi):
                     # func_name = escape(func["func"].name, quote=True)
                 # else:
-                    # func_name = escape(func["func"].display_name, quote=True) 
-                    
+                    # func_name = escape(func["func"].display_name, quote=True)
+
                 func_name = escape(func["func"].name, quote=True)
                 self.fh_data += ('          <subprogram name="%s">\n' % func_name)
-                
+
                 if func["coverage"]["statement"]:
                     self.fh_data += ('            <coverage type="statement, %%" value="%s"/>\n' % func["coverage"]["statement"])
                 if func["coverage"]["branch"]:
@@ -301,7 +301,7 @@ class BaseGenerateXml(object):
 # BaseGenerateXml - calculate 'grand total' coverage values for coverage report
 #
     def grand_total_coverage(self, cov_type):
-        
+
         cov_type_str = str(cov_type)
 
         entry = {}
@@ -311,12 +311,12 @@ class BaseGenerateXml(object):
         entry["basispath"] = None
         entry["function"] = None
         entry["functioncall"] = None
-        
+
         if self.toplevel_has_function_coverage:
             entry["function"] = self.calc_cov_values(self.grand_total_max_covered_functions, self.grand_total_max_coverable_functions)
         if self.toplevel_has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)
-               
+
         if "MCDC" in cov_type_str:
             entry["mcdc"] = self.calc_cov_values(self.grand_total_max_mcdc_covered_branches, self.grand_total_mcdc_branches)
             if not self.simplified_mcdc:
@@ -376,16 +376,16 @@ class BaseGenerateXml(object):
 # BaseGenerateXml the XML Modified 'Emma' coverage data
 #
     def hasEitherFunctionCoverages(self, srcFile):
-    
-                    
+
+
         cntFunCov = 0
-        cntFuncCallCov = 0 
-        
+        cntFuncCallCov = 0
+
         try:
             cov_types = srcFile.coverage_types
         except:
-            cov_types = [srcFile.coverage_type]     
-       
+            cov_types = [srcFile.coverage_type]
+
         for cov_type in cov_types:
             if "FUNCTION_FUNCTION_CALL" in str(cov_type):
                 cntFunCov      += 1
@@ -398,31 +398,31 @@ class BaseGenerateXml(object):
         return (cntFunCov > 0), (cntFuncCallCov > 0)
 
     def hasAnyCov(self, srcFile):
-    
+
         try:
             metrics = srcFile.metrics
         except:
             metrics = srcFile.cover_metrics
-            
+
         if metrics is None:
             return False
-        
+
         try:
             covTotals = (
                 metrics.branches +
                 metrics.function_calls +
                 metrics.functions +
                 metrics.mcdc_branches +
-                metrics.mcdc_pairs + 
+                metrics.mcdc_pairs +
                 metrics.statements )
         except:
             covTotals = (
                 metrics.branches +
                 metrics.function_calls +
                 metrics.mcdc_branches +
-                metrics.mcdc_pairs + 
+                metrics.mcdc_pairs +
                 metrics.statements )
-            
+
         return covTotals > 0
 
 #
@@ -454,14 +454,14 @@ class BaseGenerateXml(object):
         self.grand_total_max_coverable_functions = 0
         self.grand_total_total_basis_path = 0
         self.grand_total_cov_basis_path = 0
-        
+
         overallCoverageTypes = set()
-        
+
         for srcFile in self.units:
-        
+
             if not self.hasAnyCov(srcFile):
                 continue
-                
+
             hasFuncCov, hasFuncCallCov = self.hasEitherFunctionCoverages(srcFile)
             self.has_function_coverage = hasFuncCov
             self.has_call_coverage = hasFuncCallCov
@@ -475,14 +475,14 @@ class BaseGenerateXml(object):
                 metrics = srcFile.metrics
             except:
                 metrics = srcFile.cover_metrics
-                
+
             try:
                 cov_type = srcFile.coverage_types
                 overallCoverageTypes.update(srcFile.coverage_types)
             except:
                 cov_type = srcFile.coverage_type
                 overallCoverageTypes.update({srcFile.coverage_type})
-            
+
             entry = {}
             entry["unit"] = srcFile
             entry["functions"] = []
@@ -495,11 +495,11 @@ class BaseGenerateXml(object):
                     hasAnyCov = func.has_coverage_data
                 except:
                     hasAnyCov =  func.instrumented_functions[0].has_coverage_data
-                    
+
                 if hasAnyCov:
                     functions_added = True
                     funcs_with_cover_data.append(func)
-                    
+
             if isinstance(self.api, CoverApi):
                 sorted_funcs = sorted(funcs_with_cover_data,key=attrgetter('cover_data.index'))
             else:
@@ -509,7 +509,7 @@ class BaseGenerateXml(object):
                     sorted_funcs = sorted(funcs_with_cover_data,key=attrgetter('instrumented_functions.index'))
 
             sorted_funcs.sort(key=lambda x: (x.name))
-            
+
             for func in sorted_funcs:
 
 
@@ -522,7 +522,7 @@ class BaseGenerateXml(object):
                     complexity = func.complexity
                 except:
                     complexity = func.metrics.complexity
-                    
+
                 if complexity >= 0:
                     entry["complexity"] += complexity
                     self.grand_total_complexity += complexity
@@ -537,32 +537,32 @@ class BaseGenerateXml(object):
 
             self.grand_total_max_covered_branches += metrics.max_covered_branches + metrics.max_covered_mcdc_branches
             self.grand_total_branches += metrics.branches + metrics.mcdc_branches
-            
+
             self.grand_total_max_covered_statements += metrics.max_covered_statements
             self.grand_total_statements += metrics.statements
-            
+
             self.grand_total_max_mcdc_covered_branches += metrics.max_covered_mcdc_branches
             self.grand_total_mcdc_branches += metrics.mcdc_branches
-            
+
             self.grand_total_max_covered_mcdc_pairs += metrics.max_covered_mcdc_pairs
             self.grand_total_mcdc_pairs += metrics.mcdc_pairs
-            
+
             self.grand_total_max_covered_function_calls += metrics.max_covered_function_calls
             self.grand_total_function_calls += metrics.function_calls
-            
+
             try:
                 if self.has_function_coverage:
                     self.grand_total_max_covered_functions += metrics.covered_functions
                     self.grand_total_max_coverable_functions += metrics.functions
             except:
                 pass
-            
+
             if "BASIS_PATH" in str(cov_type):
                 (cov, total) = srcFile.basis_paths_coverage
                 self.grand_total_total_basis_path += total
                 self.grand_total_cov_basis_path += cov
-                
-        
+
+
         self.coverage = self.grand_total_coverage(overallCoverageTypes)
         self.num_units = len(self.our_units)
 
@@ -576,14 +576,14 @@ class BaseGenerateXml(object):
             self.units.sort(key=lambda x: (x.coverage_type, x.unit_index))
         else:
             self.units = self.api.Unit.all()
-                 
+
         # unbuilt (re: Error) Ada environments causing a crash
         try:
             cov_type = self.api.environment.coverage_type_text
         except Exception as e:
             parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
             return
-            
+
         self._generate_cover(cov_type)
 
         self.start_cov_file_environment()
@@ -601,7 +601,7 @@ class BaseGenerateXml(object):
         self.fh_data += ('    <subprograms value="%d"/>\n' % self.num_functions)
         self.fh_data += ('  </stats>\n')
         self.fh_data += ('  <data>\n')
-        
+
         self.fh_data += ('    <all name="all environments">\n')
         if self.coverage["statement"]:
             self.fh_data += ('      <coverage type="statement, %%" value="%s"/>\n' % self.coverage["statement"])
@@ -617,7 +617,7 @@ class BaseGenerateXml(object):
             self.fh_data += ('      <coverage type="functioncall, %%" value="%s"/>\n' % self.coverage["functioncall"])
         self.fh_data += ('      <coverage type="complexity, %%" value="0%% (%s / 0)"/>\n' % self.grand_total_complexity)
         self.fh_data += ('\n')
-        
+
         if isinstance(self, GenerateManageXml):
             self.fh_data += ('      <environment name="%s">\n' % escape(self.manageProjectName, quote=False))
         else:
@@ -645,23 +645,23 @@ class GenerateManageXml (BaseGenerateXml):
 
 # GenerateManageXml
 
-    def __init__(self, FullManageProjectName, verbose = False, 
-                       cbtDict = None, 
+    def __init__(self, FullManageProjectName, verbose = False,
+                       cbtDict = None,
                        generate_exec_rpt_each_testcase = True,
                        skipReportsForSkippedEnvs = False,
                        report_failed_only = False,
                        no_full_reports = False,
                        print_exc = False):
-                       
+
         super(GenerateManageXml, self).__init__(FullManageProjectName, verbose)
         self.api = VCProjectApi(FullManageProjectName)
-        
+
         try:
-            self.has_sfp_enabled = self.api.environment.get_option("VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE")        
+            self.has_sfp_enabled = self.api.environment.get_option("VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE")
         except:
             self.has_sfp_enabled = False
 
-        self.FullManageProjectName = FullManageProjectName        
+        self.FullManageProjectName = FullManageProjectName
         self.generate_exec_rpt_each_testcase = generate_exec_rpt_each_testcase
         self.skipReportsForSkippedEnvs = skipReportsForSkippedEnvs
         self.report_failed_only = report_failed_only
@@ -670,7 +670,7 @@ class GenerateManageXml (BaseGenerateXml):
         self.failed_count = 0
         self.passed_count = 0
         self.print_exc = print_exc
-        
+
         self.units = []
 
         self.cleanupXmlDataDir()
@@ -695,16 +695,16 @@ class GenerateManageXml (BaseGenerateXml):
                 print("failed making path: " + path)
                 teePrint.teePrint("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
                 if print_exc:  traceback.print_exc()
-                
+
     def __del__(self):
         self.api.close()
 
 # GenerateManageXml
 
     def generate_cover(self):
-    
+
         environments = self.api.Environment.all()
-        
+
         localDisplayPaths = []
         for env in environments:
             if not env.is_active:
@@ -724,7 +724,7 @@ class GenerateManageXml (BaseGenerateXml):
         for unit in localUnits:
             if unit.display_path in localDisplayPaths:
                 self.units.append(unit)
-                        
+
         self._generate_cover(None)
         self.start_cov_file_environment()
         self.write_cov_units()
@@ -740,34 +740,34 @@ class GenerateManageXml (BaseGenerateXml):
 
         if not fixup:
             return
-            
+
         with open(report_name,"r") as fd:
-            data = fd.read() 
+            data = fd.read()
 
         #fix up inline CSS because of Content Security Policy violation
         newData = data[: data.index("<style>")-1] +  """
         <link rel="stylesheet" href="vector_style.css">
         """ + data[data.index("</style>")+8:]
-        
+
         #fix up style directive because of Content Security Policy violation
         newData = newData.replace("<div class='event bs-callout' style=\"position: relative\">","<div class='event bs-callout relative'>")
-        
+
         #fixup the inline VectorCAST image because of Content Security Policy violation
         regex_str = r"<img alt=\"Vector\".*"
         newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
-        
+
         with open(report_name, "w") as fd:
             fd.write(newData)
-       
+
         workspace = os.getenv("WORKSPACE")
         if workspace is None:
             workspace = os.getcwd()
 
         vc_scripts = os.path.join(workspace,"vc_scripts")
-        
+
         shutil.copy(os.path.join(vc_scripts,"vector_style.css"), "management/vector_style.css")
         shutil.copy(os.path.join(vc_scripts,"vectorcast.png"), "management/vectorcast.png")
-        
+
     def generate_local_results(self, results, key):
         # get the level from the name
 
@@ -775,12 +775,12 @@ class GenerateManageXml (BaseGenerateXml):
             comp, ts, group, env_name = key.split("/")
         else:
             comp, ts, env_name = key.split("/")
-            
+
         env_key = comp + "/" + ts + "/" + env_name
-        
+
         env = self.api.project.environments[env_key]
         env_def = self.api.project.environments[env_key].definition
-    
+
         build_dir = env.build_directory
         vceFile =  os.path.join(build_dir, env.name+".vce")
         vcpFile =  os.path.join(build_dir, env.name+".vcp")
@@ -792,22 +792,25 @@ class GenerateManageXml (BaseGenerateXml):
         xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + "_".join([comp, ts, env_name]) + ".xml"
 
         localXML = None
-        
-        localXML = GenerateXml(self.FullManageProjectName, build_dir, env_name, comp, ts, 
-                               None, key, xmlUnitReportName, None, None, False, 
-                               self.cbtDict, 
-                               self.generate_exec_rpt_each_testcase, 
-                               self.skipReportsForSkippedEnvs, 
+
+        localXML = GenerateXml(self.FullManageProjectName, build_dir, env_name, comp, ts,
+                               None, key, xmlUnitReportName, None, None, False,
+                               self.cbtDict,
+                               self.generate_exec_rpt_each_testcase,
+                               self.skipReportsForSkippedEnvs,
                                self.report_failed_only,
                                self.print_exc)
 
         localXML.topLevelAPI = self.api
         localXML.noResults = self.noResults
         localXML.generate_unit()
-        
+
         ##need_fixup
         if not self.no_full_reports:
-            unit_test_models.clear_caches(localXML.api)
+            try:
+                unit_test_models.clear_caches(localXML.api)
+            except:
+                pass
             report_name = os.path.join("management", comp + "_" + ts + "_" + env_name + ".html")
             try:
                 if isinstance(localXML.api, CoverApi):
@@ -818,21 +821,21 @@ class GenerateManageXml (BaseGenerateXml):
             except:
                 print("Error creating report", report_name + ". Contact Vector Support")
                 parse_traceback.parse(traceback.format_exc(), self.verbose, self.compiler,  self.testsuite,  self.env,  self.build_dir)
-                
+
 # GenerateManageXml
     def generate_testresults(self):
         testcaseString = """
         <testcase name="%s" classname="%s" time="0">
             %s
         </testcase>
-"""                    
+"""
         results = self.api.project.repository.get_full_status([])
         all_envs = []
         for env in self.api.Environment.all():
             if env.is_active:
                 all_envs.append(env.level._full_path)
 
-        self.fh_data = ""            
+        self.fh_data = ""
         self.localDataOnly = True
         self.noResults = False
         if results['ALL']['testcase_results'] == {}:
@@ -847,7 +850,7 @@ class GenerateManageXml (BaseGenerateXml):
             self.fh_data += ("<testsuites>\n")
             self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
                 (errors,total,failed,escape(self.manageProjectName, quote=False)))
-                
+
             self.failed_count = errors
             self.passed_count = success
 
@@ -857,9 +860,9 @@ class GenerateManageXml (BaseGenerateXml):
                     comp, ts, group, env_name = result.split("/")
                 else:
                     comp, ts, env_name = result.split("/")
-                    
+
                 if results[result]['local'] != {}:
-                    self.generate_local_results(results,result)                    
+                    self.generate_local_results(results,result)
                 else:
                     for key in results[result]['imported'].keys():
                         self.localDataOnly = False
@@ -882,7 +885,7 @@ class GenerateManageXml (BaseGenerateXml):
                             extraStatus = "\n            <failure type=\"failure\"/>\n"
                             self.fh_data += (testcaseString % (tc_name_full, classname, extraStatus))
                             self.failed_count += 1
-            
+
         self.fh_data += ("   </testsuite>\n")
         self.fh_data += ("</testsuites>\n")
         if not self.localDataOnly:
@@ -892,7 +895,7 @@ class GenerateManageXml (BaseGenerateXml):
                 except:
                     s = unicode(self.fh_data, self.encFmt)
                     fd.write(s)
-        
+
 ##########################################################################
 # This class generates the XML (Junit based) report for dynamic tests and
 # the XML (Emma based) report for Coverage results
@@ -912,19 +915,19 @@ class GenerateXml(BaseGenerateXml):
         self.print_exc = print_exc
         self.topLevelAPI = None
         self.noResults = False
-        
+
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         build_dir = build_dir.replace("\\","/")
-        build_dir = build_dir.replace("/.","")      
+        build_dir = build_dir.replace("/.","")
         build_dir_4hash = build_dir.upper()
         build_dir_4hash = "/".join(build_dir_4hash.split("/")[-2:])
-        
+
         # Unicode-objects must be encoded before hashing in Python 3
         if sys.version_info[0] >= 3:
             build_dir_4hash = build_dir_4hash.encode(self.encFmt)
 
         self.hashCode = hashlib.md5(build_dir_4hash).hexdigest()
-        
+
         if verbose:
             print ("gen Dir: " + str(build_dir_4hash)+ " Hash: " +self.hashCode)
 
@@ -977,7 +980,7 @@ class GenerateXml(BaseGenerateXml):
 # GenerateXml - Find the test case file
 #
     def generate_unit(self):
-        
+
         if isinstance(self.api, CoverApi):
             try:
                 self.start_system_test_file()
@@ -986,7 +989,7 @@ class GenerateXml(BaseGenerateXml):
                     api = VCProjectApi(self.FullManageProjectName)
                 else:
                     api = self.topLevelAPI
-                        
+
                 for env in api.Environment.all():
                     if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
                         for st in env.system_tests:
@@ -999,14 +1002,14 @@ class GenerateXml(BaseGenerateXml):
                                 pass_fail_rerun =  ": Passed"
                             else:
                                 pass_fail_rerun =  ": Failed"
-                                
+
                             level = env.compiler.name + "/" + env.testsuite.name + "/" + env.name
                             if self.verbose:
                                 print (level, st.name, pass_fail_rerun)
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
                 from generate_qa_results_xml import saveQATestStatus
                 saveQATestStatus(self.FullManageProjectName)
-                
+
                 if self.topLevelAPI == None:
                     api.close()
 
@@ -1037,7 +1040,7 @@ class GenerateXml(BaseGenerateXml):
 
             except AttributeError as e:
                 parse_traceback.parse(traceback.format_exc(), self.verbose, self.compiler,  self.testsuite,  self.env,  self.build_dir)
-                
+
         self.end_test_results_file()
 #
 # GenerateXml - write the end of the jUnit XML file and close it
@@ -1051,7 +1054,7 @@ class GenerateXml(BaseGenerateXml):
             except:
                 s = unicode(self.fh_data, self.encFmt)
                 fd.write(s)
-                
+
 #
 # GenerateXml - start the JUnit XML file
 #
@@ -1062,15 +1065,15 @@ class GenerateXml(BaseGenerateXml):
 
         errors = 0
         failed = 0
-        success = 0                                            
-        
-        from vector.apps.DataAPI.vcproject_api import VCProjectApi 
-        
+        success = 0
+
+        from vector.apps.DataAPI.vcproject_api import VCProjectApi
+
         if self.topLevelAPI == None:
             api = VCProjectApi(self.FullManageProjectName)
         else:
             api = self.topLevelAPI
-        
+
         for env in api.Environment.all():
             if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
                 for st in env.system_tests:
@@ -1079,32 +1082,32 @@ class GenerateXml(BaseGenerateXml):
                         self.passed_count += 1
                     else:
                         failed += 1
-                        errors += 1  
+                        errors += 1
                         self.failed_count += 1
-                        
-        if self.topLevelAPI == None:
-            api.close()            
 
-        self.fh_data = ""        
+        if self.topLevelAPI == None:
+            api.close()
+
+        self.fh_data = ""
         self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
         self.fh_data += ("<testsuites>\n")
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
-                
+
     def start_unit_test_file(self):
         if self.verbose:
             print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
         errors = 0
         failed = 0
-        success = 0                                            
-        
+        success = 0
+
         for tc in self.api.TestCase.all():
             try:
                 vctMap = tc.is_vct_map
             except:
                 vctMap = False
-        
+
             if not self.noResults and (not tc.for_compound_only or tc.testcase_status == "TCR_STRICT_IMPORT_FAILED") and not tc.is_csv_map and not vctMap:
                 if not tc.passed:
                     self.failed_count += 1
@@ -1115,18 +1118,18 @@ class GenerateXml(BaseGenerateXml):
                 else:
                     success += 1
                     self.passed_count += 1
-        self.fh_data = ""            
+        self.fh_data = ""
         self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
         self.fh_data += ("<testsuites>\n")
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
 
     def testcase_failed(self, tc):
-        
+
         try:
             from vector.apps.DataAPI.manage_models import SystemTest
             if (isinstance(tc, SystemTest)):
-                if tc.run_needed and tc.type == 2: 
+                if tc.run_needed and tc.type == 2:
                     return False
                 elif tc.run_needed:
                     return False
@@ -1136,14 +1139,14 @@ class GenerateXml(BaseGenerateXml):
                     return True
         except:
             pass
-            
+
         if not tc.passed:
             return True
-            
+
         return False
-        
+
     def get_xml_string(self, fpath = None):
-    
+
         if fpath:
             testcaseStringExtraStatus="""
         <testcase name="%s" classname="%s" time="%s" file="%s" line="%s">
@@ -1152,7 +1155,7 @@ class GenerateXml(BaseGenerateXml):
 %s
             </system-out>
         </testcase>
-"""  
+"""
 
             testcaseString ="""
         <testcase name="%s" classname="%s" time="%s" file="%s" line="%s">
@@ -1160,7 +1163,7 @@ class GenerateXml(BaseGenerateXml):
         </testcase>
 """
 
-        else: 
+        else:
             testcaseStringExtraStatus="""
         <testcase name="%s" classname="%s" time="%s" %s %s>
             %s
@@ -1168,46 +1171,46 @@ class GenerateXml(BaseGenerateXml):
 %s
             </system-out>
         </testcase>
-"""        
+"""
             testcaseString ="""
         <testcase name="%s" classname="%s" time="%s" %s %s>
             %s
         </testcase>
 """
-        return testcaseString, testcaseStringExtraStatus 
+        return testcaseString, testcaseStringExtraStatus
 #
 # GenerateXml - write a testcase to the jUnit XML file
 #
     def write_testcase(self, tc, unit_name, func_name, st_is_monitored = False, unit = None):
-    
+
         fpath = ""
         startLine = ""
         unitName = ""
-        
-        if unit: 
+
+        if unit:
             filePath = unit.sourcefile.normalized_path(normcase=False)
 
             try:
                 prj_dir = os.environ['WORKSPACE'].replace("\\","/") + "/"
             except:
                 prj_dir = os.getcwd().replace("\\","/") + "/"
-                
+
             fpath = os.path.relpath(filePath,prj_dir).replace("\\","/")
-            
+
             startLine = str(tc.function.start_line)
-            
+
             unitName = unit.name
-            
+
         if self.noResults:
             return
-            
+
         failure_message = ""
-        
+
         if self.report_failed_only and not self.testcase_failed(tc):
             return
 
         isSystemTest = False
-        
+
         try:
             from vector.apps.DataAPI.manage_models import SystemTest
             if (isinstance(tc, SystemTest)):
@@ -1217,23 +1220,23 @@ class GenerateXml(BaseGenerateXml):
 
         start_tdo = datetime.now()
         end_tdo   = None
-                
+
         # don't do CBT analysis on migrated cover environments
         if isSystemTest and not st_is_monitored:
-            tcSkipped = False 
-        
-        # If cbtDict is None, no build log was passed in...don't mark anything as skipped 
+            tcSkipped = False
+
+        # If cbtDict is None, no build log was passed in...don't mark anything as skipped
         elif self.skipReportsForSkippedEnvs or self.cbtDict == None:
-            tcSkipped = False 
-            
+            tcSkipped = False
+
         # else there is something check , if the length of cbtDict is greater than zero
         elif len(self.cbtDict) > 0:
             tcSkipped, start_tdo, end_tdo = self.was_test_case_skipped(tc,"/".join([unit_name, func_name, tc.name]),isSystemTest)
-            
+
         # finally - there was nothing to check
         else:
             tcSkipped = False
-         
+
         if end_tdo:
             deltaTimeStr = str((end_tdo - start_tdo).total_seconds())
         else:
@@ -1245,12 +1248,12 @@ class GenerateXml(BaseGenerateXml):
         compiler = escape(self.compiler, quote=False).replace(".","")
         testsuite = escape(self.testsuite, quote=False).replace(".","")
         envName = escape(self.env, quote=False).replace(".","")
-        
+
         tc_name_full =  unit_name + "." + func_name + "." + tc_name
 
         classname = compiler + "." + testsuite + "." + envName
 
-        if isSystemTest:        
+        if isSystemTest:
             exp_total = tc.total
             exp_pass = tc.passed
             result = "  System Test Build Status: " + tc.build_status + ". \n   System Test: " + tc.name + " \n   Execution Status: "
@@ -1265,7 +1268,7 @@ class GenerateXml(BaseGenerateXml):
             else:
                 result += "Failed {} / {} ".format(tc.passed, tc.total)
                 tc.passed = 0
-                
+
         else:
             summary = tc.history.summary
             exp_total = summary.expected_total
@@ -1278,11 +1281,11 @@ class GenerateXml(BaseGenerateXml):
                 tc,
                 classname,
                 tc_name_full)
-            
+
             if tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
                 result += "\nStrict Test Import Failure."
-    
-            # Failure takes priority  
+
+            # Failure takes priority
             if tc.status != "TC_EXECUTION_NONE":
                 failure_message = self.convertExecStatus(tc.execution_status)
             else:
@@ -1296,12 +1299,12 @@ class GenerateXml(BaseGenerateXml):
             msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
 
         elif not tc.passed:
-            if tcSkipped: 
+            if tcSkipped:
                 status = "Testcase may have been skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nFAIL"
             else:
                 status = "FAIL"
             extraStatus = "\n            <failure type=\"failure\" message=\"" + failure_message + "\"/>\n"
-            
+
             msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
         elif tcSkipped:
             extraStatus = "\n            <skipped/>\n"
@@ -1312,19 +1315,19 @@ class GenerateXml(BaseGenerateXml):
             extraStatus = ""
 
         testcaseString, testcaseStringExtraStatus = self.get_xml_string(fpath)
-        
+
         if status != "":
-            msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)        
+            msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
             msg = escape(msg, quote=False)
             msg = msg.replace("\"","")
             msg = msg.replace("\n","&#xA;")
             msg = msg.replace("\r","")
-			
+
             testcaseString = testcaseStringExtraStatus
             self.fh_data += (testcaseString % (tc_name_full, unitName, deltaTimeStr, fpath, startLine, extraStatus, msg))
         else:
             self.fh_data += (testcaseString % (tc_name_full, unitName, deltaTimeStr, fpath, startLine, extraStatus))
-                
+
 ## GenerateXml
 
     def was_test_case_skipped(self, tc, searchName, isSystemTest):
@@ -1341,9 +1344,9 @@ class GenerateXml(BaseGenerateXml):
                 #Failed import TCs don't get any indication in the build.log
                 if tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
                     return [False, None, None]
-                    
+
                 compoundTests, initTests,  simpleTestcases = self.cbtDict[self.hashCode]
-                                
+
                 #Recursive Compound don't get any named indication in the build.log
                 if tc.kind == TestCase.KINDS['compound'] and (tc.testcase_status == "TCR_RECURSIVE_COMPOUND" or searchName in compoundTests.keys()):
                     return [False, compoundTests[searchName][0], compoundTests[searchName][1]]
@@ -1358,7 +1361,7 @@ class GenerateXml(BaseGenerateXml):
         except KeyError:
             self.__print_test_case_was_skipped(tc.name, tc.passed)
             return [True, None, None]
-        except Exception as e: 
+        except Exception as e:
             parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
             if self.print_exc:
                 pprint.pprint ("CBT Dictionary: \n" + self.cbtDict, width = 132)
@@ -1366,10 +1369,10 @@ class GenerateXml(BaseGenerateXml):
 ## GenerateXml
 
     def __get_testcase_execution_results(self, tc, classname, tc_name):
-    
+
         if not self.generate_exec_rpt_each_testcase:
             return "Execution Report disabled by using --dont-generate-individual-reports"
-            
+
         report_name_hash =  '.'.join(
             ["execution_results", classname, tc_name])
         # Unicode-objects must be encoded before hashing in Python 3
@@ -1381,7 +1384,10 @@ class GenerateXml(BaseGenerateXml):
         import time
 
         try:
-            unit_test_models.clear_caches(self.api.connection)
+            try:
+                unit_test_models.clear_caches(self.api.connection)
+            except:
+                pass
             self.api.report(
                 testcases=[tc],
                 single_testcase=True,
@@ -1390,10 +1396,10 @@ class GenerateXml(BaseGenerateXml):
                 output_file=report_name,
                 sections=[ "TESTCASE_SECTIONS"],
                 testcase_sections=["EXECUTION_RESULTS"])
-                
+
             with open(report_name,"rb") as fd:
                 out = fd.read()
-                
+
             out = out.decode(self.encFmt)
             os.remove(report_name)
         except:
@@ -1413,7 +1419,7 @@ class GenerateXml(BaseGenerateXml):
 def __generate_xml(xml_file, envPath, env, xmlCoverReportName, xmlTestingReportName, teePrint):
     if xml_file.api == None:
         teePrint.teePrint ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
-        
+
     elif isinstance(xml_file, CoverApi):
         xml_file.generate_cover()
         teePrint.teePrint ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
@@ -1429,16 +1435,16 @@ if __name__ == '__main__':
     parser.add_argument('environment', help='VectorCAST environment name')
     parser.add_argument('-v', '--verbose', default=False, help='Enable verbose output', action="store_true")
     args = parser.parse_args()
-    
+
     envPath = os.path.dirname(os.path.abspath(args.environment))
     env = os.path.basename(args.environment)
-    
+
     if env.endswith(".vcp"):
         env = env[:-4]
-        
+
     if env.endswith(".vce"):
         env = env[:-4]
-        
+
     jobNameDotted = env
     jenkins_name = env
     jenkins_link = env
@@ -1447,13 +1453,13 @@ if __name__ == '__main__':
 
     xml_file = GenerateXml(env,
                            envPath,
-                           env, "", "", 
+                           env, "", "",
                            xmlCoverReportName,
                            jenkins_name,
                            xmlTestingReportName,
                            jenkins_link,
-                           jobNameDotted, 
-                           args.verbose, 
+                           jobNameDotted,
+                           args.verbose,
                            None)
 
     with tee_print.TeePrint() as teePrint:
