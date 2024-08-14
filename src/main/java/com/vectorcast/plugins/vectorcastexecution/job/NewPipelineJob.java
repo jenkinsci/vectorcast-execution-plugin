@@ -173,7 +173,7 @@ public class NewPipelineJob extends BaseJob {
            the copy_build_dir.py ability to make LIS files relative path
         */
         String mpName = getManageProjectName();
-        Boolean absPath = false;
+        boolean absPath = false;
 
         if (mpName.startsWith("\\\\")) {
             absPath = true;

@@ -58,11 +58,12 @@ public class VectorCASTJobRoot implements RootAction {
      * Get the icon to use.
      * @return icon to use or null if user does not have permissions
      */
+    @Override
     public String getIconFileName() {
 
         final int colorChangeMinor = 361;
         final int colorChangeMajor = 2;
-        Boolean permission = false;
+        boolean permission = false;
 
         if (Jenkins.get().hasPermission(VIEW)) {
             permission =  true;
@@ -76,7 +77,7 @@ public class VectorCASTJobRoot implements RootAction {
             String[] version = jenkinsVersion.split("\\.");
             int major;
             int minor;
-            Boolean colorIcon = true;
+            boolean colorIcon = true;
 
             try {
                 major = Integer.parseInt(version[0]);

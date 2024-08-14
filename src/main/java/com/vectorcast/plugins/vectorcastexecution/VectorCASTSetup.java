@@ -910,7 +910,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                         /* check to solve jenkins security scanner */
                         File destDir  = new File(destScriptDir.getName());
                         File destFile = new File(destDir, fileOrDir);
-                        if (!destFile.toPath().normalize().startsWith(destDir.toPath())) {
+                        if (!destFile.toPath().normalize().
+                                startsWith(destDir.toPath())) {
                             throw new IOException("Bad entry in scripts.jar: "
                                 + entry.getName());
                         }
@@ -925,8 +926,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                             /* check to solve jenkins security scanner */
                             destDir  = new File(destScriptDir.getName());
                             destFile = new File(destDir, destString);
-                            if (!destFile.toPath().normalize().startsWith(destDir.toPath())) {
-                                throw new IOException("Bad entry in scripts.jar: "
+                            if (!destFile.toPath().normalize().
+                                    startsWith(destDir.toPath())) {
+                                throw new IOException(""
+                                    + "Bad entry in scripts.jar: "
                                     + entry.getName());
                             }
 
