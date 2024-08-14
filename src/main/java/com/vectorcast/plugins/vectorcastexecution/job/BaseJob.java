@@ -58,6 +58,8 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.ArrayList;
 
+import java.net.URL;
+
 
 /**
  * Base job management - create/delete/update.
@@ -917,5 +919,55 @@ public abstract class BaseJob {
             new SecretBuildWrapper(Collections.<MultiBinding<?>>singletonList(
             new UsernamePasswordMultiBinding("VC_TI_USR", "VC_TI_PWS",
                 testInsightsCredentialsId))));
+    }
+
+    /**
+     * Call to get baseline windows single job file.
+     * @return URL for baseline file
+     */
+    protected URL getBaselineWindowsSingleFile() {
+        // GOOD: The call is always made on an object of the same type.
+        return BaseJob.class.
+            getResource("/scripts/baselineSingleJobWindows.txt");
+    }
+    /**
+     * Call to get baseline linux single job file.
+     * @return URL for baseline file
+     */
+    protected URL getBaselineLinuxSingleFile() {
+        // GOOD: The call is always made on an object of the same type.
+        return BaseJob.class.getResource("/scripts/baselineSingleJobLinux.txt");
+    }
+    /**
+     * Call to get baseline post-build groovy job file.
+     * @return URL for baseline file
+     */
+    protected URL getBaselinePostBuildGroovyScript() {
+        // GOOD: The call is always made on an object of the same type.
+        return BaseJob.class.getResource("/scripts/baselinePostBuild.groovy");
+    }
+    /**
+     * Call to get baseline config.xml with parameters for pipeline job .
+     * @return URL for baseline file
+     */
+    protected URL getPipelineConfigParametersXML() {
+        // GOOD: The call is always made on an object of the same type.
+        return BaseJob.class.getResource("/scripts/config_parameters.xml");
+    }
+    /**
+     * Call to get baseline config.xml for pipeline job .
+     * @return URL for baseline file
+     */
+    protected URL getPipelineConfigXML() {
+        // GOOD: The call is always made on an object of the same type.
+        return BaseJob.class.getResource("/scripts/config.xml");
+    }
+    /**
+     * Call to get baseline groovy script for pipeline job.
+     * @return URL for baseline file
+     */
+    protected URL getBaselinePipelineGroovy() {
+        // GOOD: The call is always made on an object of the same type.
+        return BaseJob.class.getResource("/scripts/baseJenkinsfile.groovy");
     }
 }

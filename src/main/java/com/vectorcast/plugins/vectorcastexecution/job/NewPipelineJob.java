@@ -385,11 +385,9 @@ public class NewPipelineJob extends BaseJob {
         Path configFile;
 
         if (useParameters) {
-            in = getClass()
-                .getResourceAsStream("/scripts/config_parameters.xml");
+            in = getPipelineConfigParametersXML().openStream();
         } else {
-            in = getClass()
-                .getResourceAsStream("/scripts/config.xml");
+            in = getPipelineConfigXML().openStream();
         }
 
         configFile = createTempFile(Paths.get("config_temp.xml"));
@@ -601,8 +599,7 @@ public class NewPipelineJob extends BaseJob {
         InputStream in = null;
 
         try {
-            in = getClass()
-                .getResourceAsStream("/scripts/baseJenkinsfile.groovy");
+            in = getBaselinePipelineGroovy().openStream();
             baseJenkinsfile = IOUtils.toString(in, "UTF-8");
         } catch (IOException ex) {
             Logger.getLogger(NewSingleJob.class.getName())
@@ -631,6 +628,4 @@ public class NewPipelineJob extends BaseJob {
     protected void cleanupProject() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
-
 }

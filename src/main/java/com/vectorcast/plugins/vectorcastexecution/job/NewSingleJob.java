@@ -98,8 +98,7 @@ public class NewSingleJob extends BaseJob {
     InputStream in = null;
 
     try {
-        in = getClass().
-            getResourceAsStream("/scripts/baselineSingleJobWindows.txt");
+        in = getBaselineWindowsSingleFile().openStream();
         win += IOUtils.toString(in, "UTF-8");
     } catch (IOException ex) {
         Logger.getLogger(NewSingleJob.class.getName())
@@ -155,8 +154,7 @@ public class NewSingleJob extends BaseJob {
     InputStream in = null;
 
     try {
-        in = getClass()
-            .getResourceAsStream("/scripts/baselineSingleJobLinux.txt");
+        in = getBaselineLinuxSingleFile().openStream();
         unix += IOUtils.toString(in, "UTF-8");
     } catch (IOException ex) {
         Logger.getLogger(NewSingleJob.class.getName()).
@@ -444,8 +442,7 @@ public class NewSingleJob extends BaseJob {
     String script = "";
 
     try {
-        in = getClass().
-            getResourceAsStream("/scripts/baselinePostBuild.groovy");
+        in = getBaselinePostBuildGroovyScript().openStream();
         script += IOUtils.toString(in, "UTF-8");
     } catch (IOException ex) {
         Logger.getLogger(NewSingleJob.class.getName())

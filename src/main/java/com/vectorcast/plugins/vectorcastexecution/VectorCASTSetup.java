@@ -924,21 +924,23 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                             dest.mkdirs();
                         } else {
 
-                            // File, copy it
-                            InputStream is = VectorCASTSetup.class.
-                                getResourceAsStream("/" + entry.getName());
+                            String checkDestName = "/" + entry.getName();
 
                             /* check to solve jenkins security scanner */
                             destinationDir =
                                 new File(destScriptDir.getName());
                             destinationFile =
-                                new File(destinationDir, "/" + entry.getName());
+                                new File(destinationDir, checkDestName);
                             if (!destinationFile.toPath().normalize()
                                     .startsWith(destinationDir.toPath())) {
                                 throw new IOException(
                                     "Bad entry in scripts.jar: "
                                         + entry.getName());
                             }
+
+                            // File, copy it
+                            InputStream is = VectorCASTSetup.class.
+                                getResourceAsStream("/" + entry.getName());
 
                             dest.copyFrom(is);
                         }
