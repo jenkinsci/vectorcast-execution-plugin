@@ -1195,7 +1195,10 @@ class GenerateXml(BaseGenerateXml):
             except:
                 prj_dir = os.getcwd().replace("\\","/") + "/"
 
-            fpath = os.path.relpath(filePath,prj_dir).replace("\\","/")
+            try:
+                fpath = os.path.relpath(filePath,prj_dir).replace("\\","/")
+            except:
+                fpath = filePath
 
             startLine = str(tc.function.start_line)
 

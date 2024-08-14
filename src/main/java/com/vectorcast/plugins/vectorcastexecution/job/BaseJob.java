@@ -734,15 +734,6 @@ public abstract class BaseJob {
     protected abstract Project<?, ?> createProject()
             throws IOException, JobAlreadyExistsException;
     /**
-    * Gets the baseline file.
-    * @param fname filename
-    * @return String of baseline file
-    * @throws IOException exception
-    */
-    protected abstract String getBaselineFile(String fname)
-        throws IOException;
-
-    /**
      * Cleanup top-level project, as in delete.
      */
     protected abstract void cleanupProject();

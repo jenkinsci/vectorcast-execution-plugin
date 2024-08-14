@@ -95,7 +95,21 @@ public class NewSingleJob extends BaseJob {
       + "set VCAST_USE_CBT=TRUE"
       + "\n\n";
 
-    win += getBaselineFile("/scripts/baselineSingleJobWindows.txt");
+    InputStream in = null;
+
+    try {
+        in = getClass().
+            getResourceAsStream("/scripts/baselineSingleJobWindows.txt");
+        win += IOUtils.toString(in, "UTF-8");
+    } catch (IOException ex) {
+        Logger.getLogger(NewSingleJob.class.getName())
+            .log(Level.INFO, null, ex);
+        win += "Missing baseline single job script for windows";
+    } finally {
+        if (in != null) {
+            in.close();
+        }
+    }
 
     win += getEnvironmentTeardownWin() + "\n"
       + getPclpCommand() + "\n"
@@ -138,7 +152,21 @@ public class NewSingleJob extends BaseJob {
       + "VCAST_USE_CBT=TRUE"
       + "\n\n";
 
-    unix += getBaselineFile("/scripts/baselineSingleJobLinux.txt");
+    InputStream in = null;
+
+    try {
+        in = getClass()
+            .getResourceAsStream("/scripts/baselineSingleJobLinux.txt");
+        unix += IOUtils.toString(in, "UTF-8");
+    } catch (IOException ex) {
+        Logger.getLogger(NewSingleJob.class.getName()).
+            log(Level.INFO, null, ex);
+        unix += "Missing baseline single job script for windows";
+    } finally {
+        if (in != null) {
+            in.close();
+        }
+    }
 
     unix += getEnvironmentTeardownUnix()
       + getPclpCommand() + "\n"
@@ -259,7 +287,7 @@ public class NewSingleJob extends BaseJob {
     if (getTestInsightsUrl().length() != 0) {
       boolean setupConnect = false;
       if (isUsingScm()) {
-        if (getTestInsightsScmTech() == "git") {
+        if (getTestInsightsScmTech().equals("git")) {
           scmInfoCommandWin = "git config remote.origin.url > scm_url.tmp\n"
             + "set /p SCM_URL= < scm_url.tmp\n"
             + "git rev-parse HEAD > scm_rev.tmp\n"
@@ -269,7 +297,7 @@ public class NewSingleJob extends BaseJob {
           setupConnect = true;
 
         }
-        if (getTestInsightsScmTech() == "svn") {
+        if (getTestInsightsScmTech().equals("svn")) {
           scmInfoCommandWin = " "
             + "svn info --show-item=url --no-newline > scm_url.tmp\n"
             + "set /p SCM_URL= < scm_url.tmp\n"
@@ -316,7 +344,7 @@ public class NewSingleJob extends BaseJob {
       String tiProjectWin = "";
       String tiProjectUnix = "";
 
-      if (getTestInsightsProject() == "env.JOB_BASE_NAME") {
+      if (getTestInsightsProject().equals("env.JOB_BASE_NAME")) {
         tiProjectWin = "%JOB_BASE_NAME%";
         tiProjectUnix = "$JOB_BASE_NAME";
       } else {
@@ -411,7 +439,23 @@ public class NewSingleJob extends BaseJob {
       htmlOrText = ".txt";
     }
 
-    String script = getBaselineFile("/scripts/baselinePostBuild.groovy");
+    InputStream in = null;
+
+    String script = "";
+
+    try {
+        in = getClass().
+            getResourceAsStream("/scripts/baselinePostBuild.groovy");
+        script += IOUtils.toString(in, "UTF-8");
+    } catch (IOException ex) {
+        Logger.getLogger(NewSingleJob.class.getName())
+            .log(Level.INFO, null, ex);
+        script += "Missing baseline single job script for windows";
+    } finally {
+        if (in != null) {
+            in.close();
+        }
+    }
 
     script = StringUtils.replace(script, "@PROJECT_BASE@", getBaseName());
     script = StringUtils.replace(script, "@htmlOrText@", htmlOrText);
@@ -502,33 +546,6 @@ public class NewSingleJob extends BaseJob {
     }
 
     getTopProject().save();
-  }
-  /**
-   * Gets the baseline file.
-   * @param fname filename
-   * @return String of baseline file
-   * @throws IOException exception
-   */
-   @Override
-   protected String getBaselineFile(final String fname) throws IOException {
-      String baseline = "";
-
-      InputStream in = null;
-
-      try {
-          in = getClass().getResourceAsStream(fname);
-          baseline = IOUtils.toString(in, "UTF-8");
-      } catch (IOException ex) {
-          Logger.getLogger(NewSingleJob.class.getName())
-              .log(Level.INFO, null, ex);
-          baseline = "Missing baseline single job script for windows";
-      } finally {
-          if (in != null) {
-              in.close();
-          }
-      }
-
-      return baseline;
   }
 
   /**

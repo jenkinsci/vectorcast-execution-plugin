@@ -193,7 +193,7 @@ public class NewPipelineJob extends BaseJob {
             throw new ScmConflictException(pipelineSCM, mpName);
         }
 
-        if (getTestInsightsProject() == "env.JOB_BASE_NAME") {
+        if (getTestInsightsProject().equals("env.JOB_BASE_NAME")) {
             setTestInsightsProject("${JOB_BASE_NAME}");
         }
     }
@@ -370,34 +370,6 @@ public class NewPipelineJob extends BaseJob {
             throw new UncheckedIOException("Failed to create temp file",
                 exception);
         }
-    }
-
-    /**
-     * Gets the baseline file.
-     * @param fname filename
-     * @return String of baseline file
-     * @throws IOException exception
-     */
-    @Override
-    protected String getBaselineFile(final String fname) throws IOException {
-        String baseline = "";
-
-        InputStream in = null;
-
-        try {
-            in = getClass().getResourceAsStream(fname);
-            baseline = IOUtils.toString(in, "UTF-8");
-        } catch (IOException ex) {
-            Logger.getLogger(NewSingleJob.class.getName())
-                .log(Level.INFO, null, ex);
-            baseline = "Missing baseline single job script for windows";
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-
-        return baseline;
     }
 
     /**
@@ -624,8 +596,22 @@ public class NewPipelineJob extends BaseJob {
             + getExternalResultsFilename() + "\"\n"
             + "\n";
 
-        String baseJenkinsfile =
-            getBaselineFile("/scripts/baseJenkinsfile.groovy");
+        String baseJenkinsfile = "";
+
+        InputStream in = null;
+
+        try {
+            in = getClass()
+                .getResourceAsStream("/scripts/baseJenkinsfile.groovy");
+            baseJenkinsfile = IOUtils.toString(in, "UTF-8");
+        } catch (IOException ex) {
+            Logger.getLogger(NewSingleJob.class.getName())
+                .log(Level.INFO, null, ex);
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
 
         if (baseJenkinsfile == null) {
             baseJenkinsfile = "\n\n\n *** Errors reading the baseJenkinsfile..."
