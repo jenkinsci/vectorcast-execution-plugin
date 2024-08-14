@@ -908,12 +908,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                             entry.getName().substring(initPathLen);
 
                         /* check to solve jenkins security scanner */
-                        File destinationDir =
-                            new File(destScriptDir.getName());
-                        File destinationFile =
-                            new File(destinationDir, fileOrDir);
-                        if (!destinationFile.toPath().normalize()
-                                .startsWith(destinationDir.toPath())) {
+                        File destDir  = new File(destScriptDir.getName());
+                        File destFile = new File(destDir, fileOrDir);
+                        if (!destFile.toPath().normalize().startsWith(destDir.toPath())) {
                             throw new IOException("Bad entry in scripts.jar: "
                                 + entry.getName());
                         }
@@ -924,24 +921,18 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                             dest.mkdirs();
                         } else {
 
-                            String checkDestName = "/" + entry.getName();
-
+                            String destString = "/" + fileOrDir;
                             /* check to solve jenkins security scanner */
-                            destinationDir =
-                                new File(destScriptDir.getName());
-                            destinationFile =
-                                new File(destinationDir, checkDestName);
-                            if (!destinationFile.toPath().normalize()
-                                    .startsWith(destinationDir.toPath())) {
-                                throw new IOException(
-                                    "Bad entry in scripts.jar: "
-                                        + entry.getName());
+                            destDir  = new File(destScriptDir.getName());
+                            destFile = new File(destDir, destString);
+                            if (!destFile.toPath().normalize().startsWith(destDir.toPath())) {
+                                throw new IOException("Bad entry in scripts.jar: "
+                                    + entry.getName());
                             }
 
                             // File, copy it
                             InputStream is = VectorCASTSetup.class.
-                                getResourceAsStream("/" + entry.getName());
-
+                                getResourceAsStream(destString);
                             dest.copyFrom(is);
                         }
                     }
