@@ -1430,6 +1430,8 @@ def __generate_xml(xml_file, envPath, env, xmlCoverReportName, xmlTestingReportN
     else:
         xml_file.generate_unit()
         teePrint.teePrint ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)
+        xml_file.generate_cover()
+        teePrint.teePrint ("\nVCC plugin for Jenkins compatible file generated: " + xmlCoverReportName)
 
 if __name__ == '__main__':
 
