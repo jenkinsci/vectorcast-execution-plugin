@@ -91,7 +91,7 @@ public class NewSingleJob extends BaseJob {
       + "set VCAST_rptFmt=" + rptFmt + "\n"
       + "set VCAST_HTML_OR_TEXT=" + htmlOrText + "\n"
       + "set VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
-      + "set VCAST_PROJECT_NAME=" + getBaseName() + "\n"
+      + "set VCAST_PROJECT_NAME=" + getManageProjectName() + "\n"
       + "set VCAST_USE_CBT=TRUE"
       + "\n\n";
 
@@ -395,10 +395,10 @@ public class NewSingleJob extends BaseJob {
       noGenExecReport = " --dont-gen-exec-rpt";
     }
     if (getOptionHTMLBuildDesc().equalsIgnoreCase("HTML")) {
-      htmlOrText = ".html";
+      htmlOrText = "html";
       rptFmt = "HTML";
     } else {
-      htmlOrText = ".txt";
+      htmlOrText = "txt";
       rptFmt = "TEXT";
     }
 
@@ -432,9 +432,9 @@ public class NewSingleJob extends BaseJob {
   private void addGroovyScriptSingleJob() throws IOException {
     String htmlOrText;
     if (getOptionHTMLBuildDesc().equalsIgnoreCase("HTML")) {
-      htmlOrText = ".html";
+      htmlOrText = "html";
     } else {
-      htmlOrText = ".txt";
+      htmlOrText = "txt";
     }
 
     InputStream in = null;

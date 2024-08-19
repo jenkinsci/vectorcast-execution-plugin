@@ -7,52 +7,54 @@ set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
 set VCAST_NO_FILE_TRUNCATION=1
 set VCAST_RPTS_SELF_CONTAINED=FALSE
 
+set VCAST_PROJECT_BASENAME=%~nVCAST_PROJECT_NAME%
+
 :: Use strict testcase import 
 if "%VCAST_USE_STRICT_IMPORT%"=="TRUE" (
-   %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --config=VCAST_STRICT_TEST_CASE_IMPORT=TRUE"
+   %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --config=VCAST_STRICT_TEST_CASE_IMPORT=TRUE"
 ) 
 
 :: Default Setup
-%VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --full-status"
-%VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --force --release-locks"
-%VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --config VCAST_CUSTOM_REPORT_FORMAT=%VCAST_REPORT_FORMAT%"
+%VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --full-status"
+%VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --force --release-locks"
+%VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --config VCAST_CUSTOM_REPORT_FORMAT=%VCAST_REPORT_FORMAT%"
 
 :: Use Imported Results
 if "%VCAST_USE_IMPORTED_RESULTS%"=="TRUE" (  
-    if "%VCAST_USE_LOCAL_IMPORTED_RESULTS%"=="TRUE" if exist "%VCAST_PROJECT_NAME%_results.vcr" (
-        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --import-result="%VCAST_PROJECT_NAME%_results.vcr""
-        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --full-status""
-        if exist %VCAST_PROJECT_NAME%_results.vcr  ( copy %VCAST_PROJECT_NAME%_results.vcr %VCAST_PROJECT_NAME%_results_orig.vcr ) 
+    if "%VCAST_USE_LOCAL_IMPORTED_RESULTS%"=="TRUE" if exist "%VCAST_PROJECT_BASENAME%_results.vcr" (
+        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --import-result="%VCAST_PROJECT_BASENAME%_results.vcr""
+        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --full-status""
+        if exist %VCAST_PROJECT_BASENAME%_results.vcr  ( copy %VCAST_PROJECT_BASENAME%_results.vcr %VCAST_PROJECT_BASENAME%_results_orig.vcr ) 
     ) 
     if "%VCAST_USE_EXTERNAL_IMPORTED_RESULTS%"=="TRUE" if exist "%VCAST_USE_EXTERNAL_FILENAME%" ( 
-        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --import-result"%VCAST_USE_EXTERNAL_FILENAME%"
-        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --full-status"
+        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --import-result"%VCAST_USE_EXTERNAL_FILENAME%"
+        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --full-status"
     ) 
 )
 del command.log > nul 2>&1
 
-%VCAST_EXECUTE_PREAMBLE_WIN% %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --build-execute %VCAST_USE_CBT% --output %VCAST_PROJECT_NAME%_rebuild.%VCAST_HTML_OR_TEXT% 
+%VCAST_EXECUTE_PREAMBLE_WIN% %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --build-execute %VCAST_USE_CBT% --output %VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT% 
 copy command.log complete_build.log
-copy %VCAST_PROJECT_NAME%_rebuild.%VCAST_HTML_OR_TEXT% %VCAST_PROJECT_NAME%_rebuild.%VCAST_HTML_OR_TEXT%_tmp
+copy %VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT% %VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT%_tmp
 
 if "%VCAST_OPTION_USE_REPORTING%" == "TRUE" (
-    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
-    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\generate-results.py" --junit --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% %VCAST_PROJECT_NAME%.vcm %VCAST_DONT_GENERATE_EXEC_RPT% --buildlog complete_build.log
+    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
+    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\generate-results.py" --junit --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% %VCAST_PROJECT_NAME% %VCAST_DONT_GENERATE_EXEC_RPT% --buildlog complete_build.log
     if "%VCAST_USE_RGW3%"=="TRUE" (
-        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --clicast-args rgw export"
+        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --clicast-args rgw export"
     ) 
     if "%VCAST_USE_COVERAGE_PLUGIN%"=="TRUE" ( 
-        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\cobertura.py" %VCAST_PROJECT_NAME%.vcm
+        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\cobertura.py" %VCAST_PROJECT_NAME%
     )
-    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\full_report_no_toc.py" "%VCAST_PROJECT_NAME%.vcm" 
-    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\fixup_reports.py" "%VCAST_PROJECT_NAME%_rebuild.%VCAST_HTML_OR_TEXT%_tmp"
-    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --full-status=\"%VCAST_PROJECT_NAME%_full_report.html"
-    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --create-report=aggregate --output=\"%VCAST_PROJECT_NAME%_aggregate_report.html"
+    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\full_report_no_toc.py" "%VCAST_PROJECT_NAME%" 
+    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\fixup_reports.py" "%VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT%_tmp"
+    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --full-status=\"%VCAST_PROJECT_BASENAME%_full_report.html"
+    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --create-report=aggregate --output=\"%VCAST_PROJECT_BASENAME%_aggregate_report.html"
 
     :: Use Imported Results
     if "%VCAST_USE_IMPORTED_RESULTS%"=="TRUE" if "%VCAST_USE_LOCAL_IMPORTED_RESULTS%"=="TRUE" ( 
-        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME%.vcm --export-result=%VCAST_PROJECT_NAME%_results.vcr"
-        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\merge_vcr.py" --orig "%VCAST_PROJECT_NAME%_results_orig.vcr" --new %VCAST_PROJECT_NAME%_results.vcr
+        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --export-result=%VCAST_PROJECT_BASENAME%_results.vcr"
+        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\merge_vcr.py" --orig "%VCAST_PROJECT_BASENAME%_results_orig.vcr" --new %VCAST_PROJECT_BASENAME%_results.vcr
     )
 )
 
