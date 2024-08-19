@@ -76,7 +76,8 @@ For Pipeline Jobs, the plugin processes the build log to determine which tests h
 
 The VectorCAST Execution Plugin is transitioning from using the older VectorCAST Coverage Plugin (Legacy Plugin) to the Jenkins Coverage Plugin.  Until that transition is complete, the use is offered a choice to decide which coverage display to use.
 
-![](docs/images/coverage_display_config.png)
+<img src="docs/images/coverage_display_config.png" width="567" height="258" />
+
 
 ## Information about Jenkins Coverage Plugin
 The [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage) publishes a report of the code and mutation coverage in your build, so you can navigate to a summary report from the main build page. Additionally, the plugin gathers several metrics (lines of code, cyclomatic complexity, number of tests per class) and visualizes these results along with the coverage information.
@@ -118,7 +119,7 @@ It shows coverage trends and allows drilling down to more detailed coverage info
 [!NOTE] Legacy Plugin Info
 This is a legacy plugin and will have no futher development beyond bug fixes and security updates
 
-![](docs/images/vcc_cov_report.png)
+<img src="docs/images/vcc_cov_report.png" width="690" height="302" />
 
 
 ## Job Creation Options
@@ -139,9 +140,11 @@ The **Shared Artifact Directory** option allows VectorCAST Project's build artif
 
 **Use Requirements Gateway 3 capabilities** This option allows test environments with existing tests linked to an Requirements Gateway v3 implementation, that uses seperate .json files, to execute in parallel and export data at the end of the run.
 
-**Use Imported Results** allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with **Use Change Based Testing**. The user can selected between internal imported results or external result files
+**Use Imported Results** allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with _Use Change Based Testing_. The user can selected between internal imported results or external result files
 
 ![](docs/images/use_imported_results.png)
+<img src="docs/images/use_imported_results.png" width="690" height="302" />
+
 
 When using imported results and the **Use Local Imported Results** option, the job will export results from the current build and save that result file as an job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
 
