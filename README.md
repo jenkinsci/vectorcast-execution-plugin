@@ -6,7 +6,10 @@
 
 # Summary
 
-This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Coverage is displayed using the [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
+This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Test results are display with the [Jenkins JUnit Plugin](https://plugins.jenkins.io/junit/) and code coverage is displayed using either 
+- [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage) 
+- [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
+
 
 # Usage
 
@@ -76,7 +79,7 @@ For Pipeline Jobs, the plugin processes the build log to determine which tests h
 
 The VectorCAST Execution Plugin is transitioning from using the older VectorCAST Coverage Plugin (Legacy Plugin) to the Jenkins Coverage Plugin.  Until that transition is complete, the use is offered a choice to decide which coverage display to use.
 
-<img src="docs/images/coverage_display_config.png" width="567" height="258" />
+<img src="docs/images/coverage_display_config.png" width="300" height="137" />
 
 
 ## Information about Jenkins Coverage Plugin
@@ -142,9 +145,7 @@ The **Shared Artifact Directory** option allows VectorCAST Project's build artif
 
 **Use Imported Results** allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with _Use Change Based Testing_. The user can selected between internal imported results or external result files
 
-![](docs/images/use_imported_results.png)
-<img src="docs/images/use_imported_results.png" width="690" height="302" />
-
+<img src="docs/images/use_imported_results.png" width="345" height="151" />
 
 When using imported results and the **Use Local Imported Results** option, the job will export results from the current build and save that result file as an job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
 
