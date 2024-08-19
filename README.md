@@ -16,7 +16,7 @@ This plugin adds a new top-level menu item to the Jenkins sidebar. Select the **
 
 ## Job Types
 
-![](docs/images/image2017-10-17_18_14_2.png)
+![](docs/images/job_types.png =592x325)
 
 There are two build/execute job types and one diagnostic job type.
 
