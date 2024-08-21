@@ -95,12 +95,9 @@ def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
     somethingPrinted = False
     output = ""
     
-    print("starting api loop")
-
     for env in api.Environment.all():
         
         if not env.is_active:
-            print("inactive: " , env.name)
             continue        
         
         somethingPrinted = True
@@ -111,15 +108,11 @@ def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
             else:
                 output += "UT: "
         output += "%s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name)
-
-    print("printing output")  
-    
+   
     if printData:
         with tee_print.TeePrint() as teePrint:
             printOutput(somethingPrinted, api.vcm_file, output, teePrint)
             
-    print("DONE - printing output")              
-
     return output
     
 def checkGroupOrEnv(str):
@@ -197,13 +190,9 @@ def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = Fal
         if (legacy): raise KeyError
             
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        print("opening api")
         api = VCProjectApi(ManageProjectName)
-        print("getting env info")
         ret_info = printEnvInfoDataAPI(api, printData, printEnvType)
-        print("DONE - getting env info")
         api.close()
-        print("DONE - opening api")
         return ret_info
 
     

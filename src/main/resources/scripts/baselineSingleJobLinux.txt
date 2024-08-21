@@ -38,8 +38,11 @@ fi
 rm -f command.log
 
 $VCAST_EXECUTE_PREAMBLE_LINUX $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --build-execute --incremental  --output ${VCAST_PROJECT_BASENAME}_rebuild.html "
+
 cp -p command.log complete_build.log
-cp -p ${VCAST_PROJECT_BASENAME}_rebuild.${VCAST_HTML_OR_TEXT} ${VCAST_PROJECT_BASENAME}_rebuild.${VCAST_HTML_OR_TEXT}_tmp
+if [ -f {VCAST_PROJECT_BASENAME}_rebuild.${VCAST_HTML_OR_TEXT} ]; then
+    cp -p ${VCAST_PROJECT_BASENAME}_rebuild.${VCAST_HTML_OR_TEXT} ${VCAST_PROJECT_BASENAME}_rebuild.${VCAST_HTML_OR_TEXT}_tmp
+fi
 
 if [[ $VCAST_OPTION_USE_REPORTING -eq 1 ]]; then
     $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"

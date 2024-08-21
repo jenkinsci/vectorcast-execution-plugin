@@ -7,8 +7,16 @@ set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
 set VCAST_NO_FILE_TRUNCATION=1
 set VCAST_RPTS_SELF_CONTAINED=FALSE
 
-set VCAST_PROJECT_BASENAME=%~nVCAST_PROJECT_NAME%
+call :make_basename VCAST_PROJECT_BASENAME %VCAST_PROJECT_NAME%
 
+goto start_script
+
+:make_basename
+    echo %1 %2
+    Set "%~1=%~n2"
+
+:start_script
+    
 :: Use strict testcase import 
 if "%VCAST_USE_STRICT_IMPORT%"=="TRUE" (
    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --config=VCAST_STRICT_TEST_CASE_IMPORT=TRUE"
@@ -35,7 +43,10 @@ del command.log > nul 2>&1
 
 %VCAST_EXECUTE_PREAMBLE_WIN% %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --build-execute %VCAST_USE_CBT% --output %VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT% 
 copy command.log complete_build.log
-copy %VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT% %VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT%_tmp
+
+if exist "%VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT%" (
+    copy %VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT% %VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT%_tmp
+)
 
 if "%VCAST_OPTION_USE_REPORTING%" == "TRUE" (
     %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --config VCAST_CUSTOM_REPORT_FORMAT=HTML"

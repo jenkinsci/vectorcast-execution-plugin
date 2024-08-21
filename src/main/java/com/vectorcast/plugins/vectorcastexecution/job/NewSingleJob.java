@@ -87,12 +87,13 @@ public class NewSingleJob extends BaseJob {
       + "set VCAST_EXECUTE_PREAMBLE_WIN=" + getExecutePreambleWin() + "\n"
       + "set VCAST_WAIT_TIME=" + getWaitTime() + "\n"
       + "set VCAST_WAIT_LOOPS=" + getWaitLoops() + "\n"
-      + "set VCAST_OPTION_USE_REPORTING=" + getOptionUseReporting() + "\n"
+      + "set VCAST_OPTION_USE_REPORTING="
+      +     (getOptionUseReporting() ? "TRUE" : "FALSE") + "\n"
       + "set VCAST_rptFmt=" + rptFmt + "\n"
       + "set VCAST_HTML_OR_TEXT=" + htmlOrText + "\n"
       + "set VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
       + "set VCAST_PROJECT_NAME=" + getManageProjectName() + "\n"
-      + "set VCAST_USE_CBT=TRUE"
+      + "set VCAST_USE_CBT=--incremental"
       + "\n\n";
 
     InputStream in = null;
@@ -526,9 +527,10 @@ public class NewSingleJob extends BaseJob {
     addSetup(getTopProject());
     addCommandSingleJob();
 
+    addArchiveArtifacts(getTopProject());
+
     // Post-build actions - only is using reporting
     if (getOptionUseReporting()) {
-      addArchiveArtifacts(getTopProject());
       addPCLintPlus(getTopProject());
       addJunit(getTopProject());
       if (getUseCoveragePlugin()) {
@@ -536,11 +538,11 @@ public class NewSingleJob extends BaseJob {
       } else {
         addVCCoverage(getTopProject());
       }
-      addGroovyScriptSingleJob();
       if (getTestInsightsUrl().length() != 0) {
         addCredentialID(getTopProject());
       }
     }
+    addGroovyScriptSingleJob();
 
     getTopProject().save();
   }

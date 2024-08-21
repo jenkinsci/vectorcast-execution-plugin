@@ -59,9 +59,6 @@ def make_relative(path, workspace, teePrint):
     else:
         teePrint.teePrint("  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace)
 
-        # something went wildly wrong -- raise an exception
-        # raise Exception ("Problem updating database path to remove workspace:\n\n   PATH: " + path + "\n   WORKSPACE: " + workspace)
-
     return path
 
 
@@ -72,6 +69,7 @@ def updateDatabase(conn, nocase, workspace, updateWhat, updateFrom, teePrint):
         relative = make_relative(path,workspace, teePrint)
         sql = "UPDATE %s SET %s = '%s' WHERE id=%s COLLATE NOCASE" % (updateFrom, updateWhat, relative, id_)
         conn.execute(sql)
+
 
 def addFile(tf, file, backOneDir = False):
     global build_dir
@@ -99,6 +97,7 @@ def addDirectory(tf, build_dir, dir):
         for fname in fileList:
             tf.add(os.path.join(dirName, fname))
 
+
 def addConvertCoverFile(tf, file, workspace, nocase, teePrint):
     global build_dir
 
@@ -124,6 +123,7 @@ def addConvertCoverFile(tf, file, workspace, nocase, teePrint):
             os.remove(fullpath)
             shutil.move(bakpath, fullpath)
 
+
 def addConvertMasterFile(tf, file, workspace, nocase, teePrint):
     global build_dir
     teePrint.teePrint("Updating master.db")
@@ -139,6 +139,7 @@ def addConvertMasterFile(tf, file, workspace, nocase, teePrint):
             addFile(tf, file)
             os.remove(fullpath)
             shutil.move(bakpath, fullpath)
+
 
 def addConvertFiles(tf, workspace, nocase):
     with tee_print.TeePrint() as teePrint:
@@ -172,15 +173,18 @@ if __name__ == '__main__':
     list = out.splitlines()
     build_dir = ''
 
-    for str in list:
-        if "Build Directory:" in str:
-            length = len(str.split()[0]) + 1 + len(str.split()[1]) + 1
-            build_dir = os.path.relpath(str[length:])
+    for item in list:
+        print(item)
+        if "Build Directory:" in item:
+            length = len(item.split()[0]) + 1 + len(item.split()[1]) + 1
+            build_dir = os.path.relpath(item[length:])
+
+    print(build_dir)
 
     try:
         rgwDir = getReqRepo(ManageProjectName).replace("\\","/").replace(workspace+"/","")
         rgwExportDir = os.path.join(rgwDir, "requirements_gateway/export_data").replace("\\","/")
-    except:
+    except LookupError:
         rgwDir=None
 
     if build_dir != "":

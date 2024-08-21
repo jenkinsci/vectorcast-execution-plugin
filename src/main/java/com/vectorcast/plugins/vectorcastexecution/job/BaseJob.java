@@ -760,44 +760,7 @@ public abstract class BaseJob {
      */
     protected VectorCASTSetup addSetup(final Project<?, ?> project)
             throws IOException {
-        VectorCASTSetup setup =
-            new VectorCASTSetup(environmentSetupWin,
-                                environmentSetupUnix,
-                                executePreambleWin,
-                                executePreambleUnix,
-                                environmentTeardownWin,
-                                environmentTeardownUnix,
-                                optionUseReporting,
-                                optionErrorLevel,
-                                optionHtmlBuildDesc,
-                                optionExecutionReport,
-                                optionClean,
-                                useCILicenses,
-                                useStrictTestcaseImport,
-                                useRGW3,
-                                useImportedResults,
-                                useLocalImportedResults,
-                                useExternalImportedResults,
-                                externalResultsFilename,
-                                useCoverageHistory,
-                                waitLoops,
-                                waitTime,
-                                maxParallel,
-                                manageProjectName,
-                                jobName,
-                                nodeLabel,
-                                pclpCommand,
-                                pclpResultsPattern,
-                                squoreCommand,
-                                testInsightsUrl,
-                                testInsightsProject,
-                                testInsightsCredentialsId,
-                                testInsightsProxy,
-                                testInsightsScmUrl,
-                                testInsightsScmTech);
-
-        setup.setUsingSCM(usingScm);
-        setup.setSCM(scm);
+        VectorCASTSetup setup = new VectorCASTSetup();
 
         project.getBuildersList().add(setup);
 

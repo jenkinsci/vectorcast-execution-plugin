@@ -36,10 +36,8 @@ import hudson.tasks.BatchFile;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Shell;
-import hudson.EnvVars;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,14 +47,15 @@ import java.util.logging.Logger;
  */
 public class VectorCASTCommand extends Builder implements SimpleBuildStep {
 
-    /** windows command. */
+    /** Windows command information. */
     private final String winCommand;
-    /** linux command. */
+
+    /** Liniux command information. */
     private final String unixCommand;
 
     /**
      * Get the windows variant of the command.
-     * @return windows command
+     * @return windows command.
      */
     public final String getWinCommand() {
         return winCommand;
@@ -82,64 +81,52 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
     }
 
     /**
-     * Perform the build step. Copy the scripts from the
-     *   archive/directory to the workspace.
-     * @param build build
-     * @param workspace workspace
-     * @param env environment variables
-     * @param launcher launcher
-     * @param listener  listener
+     * Performs the windows/linux script.
+     * @param build - used to run and set results
+     * @param workspace - not used
+     * @param launcher - tells us of the executor is win/linux
+     * @param listener - used in call to run the tess
      */
     @Override
     public void perform(final Run<?, ?> build, final FilePath workspace,
-            final EnvVars env,
-            final Launcher launcher,
-            final TaskListener listener) {
+            final Launcher launcher, final TaskListener listener) {
+
         // Windows check and run batch command
-        //
-        // Get the windows batch command and run it if this node is Windows
-        //
         if (!launcher.isUnix()) {
+            // Get the windows batch command and run it if this node is Windows
             String windowsCmd = getWinCommand();
             BatchFile batchFile = new BatchFile(windowsCmd);
             try {
-                if (!batchFile.perform((AbstractBuild) build, launcher,
-                        (BuildListener) listener)) {
+                if (!batchFile.perform((AbstractBuild<?, ?>) build,
+                    launcher, (BuildListener) listener)) {
                     build.setResult(Result.FAILURE);
                 }
             } catch (InterruptedException ex) {
                 Logger.getLogger(VectorCASTCommand.class.getName())
-                        .log(Level.SEVERE, null, ex);
+                    .log(Level.SEVERE, null, ex);
                 build.setResult(Result.FAILURE);
             }
         }
 
-        //
         // Linux check and batch command
-        //
-        // Get the Linux/Unix batch command and
-        // run it if this node is not Windows
-        //
         if (launcher.isUnix()) {
+            // Get the Linux/Unix shell script command
             String unixCmd = getUnixCommand();
             Shell shell = new Shell(unixCmd);
             try {
-                if (!shell.perform((AbstractBuild) build, launcher,
-                        (BuildListener) listener)) {
+                if (!shell.perform((AbstractBuild<?, ?>) build,
+                        launcher, (BuildListener) listener)) {
                     build.setResult(Result.FAILURE);
                 }
             } catch (InterruptedException ex) {
                 Logger.getLogger(VectorCASTCommand.class.getName())
-                        .log(Level.SEVERE, null, ex);
+                    .log(Level.SEVERE, null, ex);
                 build.setResult(Result.FAILURE);
             }
         }
     }
 
-    /**
-     * Getst the descriptor for {@link VectorCASTCommand}.
-     * @return DescriptorImpl descriptor
-     */
+    /** Gets the descripter from the parement class. */
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) super.getDescriptor();
@@ -161,15 +148,15 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
         }
 
         /**
-         * OVerrides the isApplicable call.
-         * @return true
+         * See if this class is applicable to this builder.
+         * @param aClass - not used
+         * @return boolean true
          */
         @Override
-        @SuppressWarnings("rawtypes")
         public boolean isApplicable(
                 final Class<? extends AbstractProject> aClass) {
-            // Indicates that this builder can be
-            // used with all kinds of project types
+            // Indicates that this builder can be used
+            // with all kinds of project types
             return true;
         }
 

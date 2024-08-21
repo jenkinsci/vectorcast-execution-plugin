@@ -648,7 +648,7 @@ class GenerateManageXml (BaseGenerateXml):
     def __init__(self, FullManageProjectName, verbose = False,
                        cbtDict = None,
                        generate_exec_rpt_each_testcase = True,
-                       skipReportsForSkippedEnvs = False,
+                       use_archive_extract = False,
                        report_failed_only = False,
                        no_full_reports = False,
                        print_exc = False):
@@ -663,7 +663,7 @@ class GenerateManageXml (BaseGenerateXml):
 
         self.FullManageProjectName = FullManageProjectName
         self.generate_exec_rpt_each_testcase = generate_exec_rpt_each_testcase
-        self.skipReportsForSkippedEnvs = skipReportsForSkippedEnvs
+        self.use_archive_extract = use_archive_extract
         self.report_failed_only = report_failed_only
         self.cbtDict = cbtDict
         self.no_full_reports = no_full_reports
@@ -797,7 +797,7 @@ class GenerateManageXml (BaseGenerateXml):
                                None, key, xmlUnitReportName, None, None, False,
                                self.cbtDict,
                                self.generate_exec_rpt_each_testcase,
-                               self.skipReportsForSkippedEnvs,
+                               self.use_archive_extract,
                                self.report_failed_only,
                                self.print_exc)
 
@@ -822,6 +822,39 @@ class GenerateManageXml (BaseGenerateXml):
                 print("Error creating report", report_name + ". Contact Vector Support")
                 parse_traceback.parse(traceback.format_exc(), self.verbose, self.compiler,  self.testsuite,  self.env,  self.build_dir)
 
+    def skipReporting(self, build_dir):
+
+        ## dataapi not producing the correct information
+        return False
+
+        import hashlib 
+
+        ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
+        
+        build_dir_4hash = build_dir.upper()
+        build_dir_4hash = "/".join(build_dir_4hash.split("/")[-2:])
+        
+        # Unicode-objects must be encoded before hashing in Python 3
+        if sys.version_info[0] >= 3:
+            build_dir_4hash = build_dir_4hash.encode('utf-8')
+
+        hashCode = hashlib.md5(build_dir_4hash).hexdigest()
+        
+        # skip report gen for skipped environments 
+        if self.use_archive_extract and self.cbtDict:
+            if hashCode not in self.cbtDict.keys():
+                if self.verbose:
+                    print("skipping report because hash not found in cbtdict", build_dir)
+
+                return True
+            else:
+                c,i,s = self.cbtDict[hashCode]
+                if len(c)==0 and len(i)==0 and len(s)==0:
+                    if self.verbose:
+                        print("skipping report because c,i,s are all 0 size")
+                    return True
+        return False
+
 # GenerateManageXml
     def generate_testresults(self):
         testcaseString = """
@@ -832,6 +865,13 @@ class GenerateManageXml (BaseGenerateXml):
         results = self.api.project.repository.get_full_status([])
         all_envs = []
         for env in self.api.Environment.all():
+            # All this will be for skipping reporting.  The dataapi was not returning the correct 
+            # original_environment_directory
+            # build_dir = env.definition.original_environment_directory.split("/",1)[1]
+            # print(env.name)
+            # pprint(dump(env.definition))
+            # if self.use_archive_extract and self.cbtDict and self.skipReporting(build_dir):
+                # continue
             if env.is_active:
                 all_envs.append(env.level._full_path)
 
@@ -904,13 +944,13 @@ class GenerateManageXml (BaseGenerateXml):
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, skipReportsForSkippedEnvs = False, report_failed_only = False, print_exc = False):
+    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, use_archive_extract = False, report_failed_only = False, print_exc = False):
         super(GenerateXml, self).__init__(FullManageProjectName, verbose)
 
         self.cbtDict = cbtDict
         self.FullManageProjectName = FullManageProjectName
         self.generate_exec_rpt_each_testcase = generate_exec_rpt_each_testcase
-        self.skipReportsForSkippedEnvs = skipReportsForSkippedEnvs
+        self.use_archive_extract = use_archive_extract
         self.report_failed_only = report_failed_only
         self.print_exc = print_exc
         self.topLevelAPI = None
@@ -1229,7 +1269,7 @@ class GenerateXml(BaseGenerateXml):
             tcSkipped = False
 
         # If cbtDict is None, no build log was passed in...don't mark anything as skipped
-        elif self.skipReportsForSkippedEnvs or self.cbtDict == None:
+        elif self.cbtDict == None:
             tcSkipped = False
 
         # else there is something check , if the length of cbtDict is greater than zero
