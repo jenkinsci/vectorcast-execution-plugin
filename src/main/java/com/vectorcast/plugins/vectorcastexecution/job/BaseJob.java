@@ -32,6 +32,8 @@ import hudson.plugins.ws_cleanup.PreBuildCleanup;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
+import hudson.plugins.copyartifact.CopyArtifact;
+import hudson.plugins.copyartifact.StatusBuildSelector;
 import hudson.tasks.ArtifactArchiver;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -92,6 +94,19 @@ abstract public class BaseJob {
     private boolean optionClean;
     /** Use CI license */
     private boolean useCILicenses;
+
+    /** Use strict testcase import */
+    private boolean useStrictTestcaseImport;
+
+    /** Use imported results */
+    private boolean useImportedResults = false;
+    private boolean useLocalImportedResults = false;
+    private boolean useExternalImportedResults = false;
+    private String  externalResultsFilename;
+    
+    /** Use coverage history to control build status */
+    private boolean useCoverageHistory;
+
     /** Using some form of SCM */
     private boolean usingSCM;
     /** The SCM being used */
@@ -106,6 +121,8 @@ abstract public class BaseJob {
     private String jobName;
     /** Node label */
     private String nodeLabel;
+    /** Maximum number of parallal jobs to queue up */
+    private Long maxParallel;
     
     /** PC Lint Plus Command */
     private String pclpCommand;
@@ -129,12 +146,15 @@ abstract public class BaseJob {
      * @param useSavedData use saved data true/false
      * @throws ServletException exception
      * @throws IOException exception
+     * @throws ExternalResultsFileException exception
      */
-    protected BaseJob(final StaplerRequest request, final StaplerResponse response, boolean useSavedData) throws ServletException, IOException {
+    protected BaseJob(final StaplerRequest request, final StaplerResponse response, boolean useSavedData) throws ServletException, IOException, ExternalResultsFileException {
         instance = Jenkins.getInstance();
         this.request = request;
         this.response = response;
         JSONObject json = request.getSubmittedForm();
+        
+        Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "JSON Info for Base Job Create: " + json.toString());
 
         manageProjectName = json.optString("manageProjectName");
         if (!manageProjectName.isEmpty()) {
@@ -178,6 +198,34 @@ abstract public class BaseJob {
             nodeLabel = json.optString("nodeLabel", "");
             
             useCILicenses  = json.optBoolean("useCiLicense", false);
+            useStrictTestcaseImport  = json.optBoolean("useStrictTestcaseImport", true);
+            useImportedResults  = json.optBoolean("useImportedResults", false);
+            externalResultsFilename = "";
+            
+            if (useImportedResults) {
+                JSONObject jsonImportResults  = json.optJSONObject("importedResults");
+                
+                if (jsonImportResults != null) {
+                    Long int_ext = jsonImportResults.optLong("value",0);
+                    
+                    if (int_ext == 1) {
+                        useLocalImportedResults = true;
+                        useExternalImportedResults = false;
+                        externalResultsFilename = "";
+                    } else if (int_ext == 2) {
+                        useLocalImportedResults = false;
+                        useExternalImportedResults = true;
+                        externalResultsFilename = jsonImportResults.optString("externalResultsFilename","");
+                        externalResultsFilename = externalResultsFilename.replace('\\','/');
+                        if (externalResultsFilename.length() == 0) {
+                            throw new ExternalResultsFileException();
+                        }
+                    }
+                }
+                Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "ImportedResults: " + jsonImportResults);
+            }
+            useCoverageHistory = json.optBoolean("useCoverageHistory", false);
+            maxParallel = json.optLong("maxParallel", 0);
             
             /* Additional Tools */
             pclpCommand = json.optString("pclpCommand", "").replace('\\','/');;
@@ -211,6 +259,13 @@ abstract public class BaseJob {
         optionExecutionReport = savedData.getOptionExecutionReport();
         optionClean = savedData.getOptionClean();
         useCILicenses = savedData.getUseCILicenses();
+        useStrictTestcaseImport = savedData.getUseStrictTestcaseImport();
+        useImportedResults = savedData.getUseImportedResults();
+        useLocalImportedResults = savedData.getUseLocalImportedResults();
+        useExternalImportedResults = savedData.getUseExternalImportedResults();
+        externalResultsFilename = savedData.getExternalResultsFilename();
+        useCoverageHistory = savedData.getUseCoverageHistory();
+        maxParallel = savedData.getMaxParallel();
 
         usingSCM = savedData.getUsingSCM();
         scm = savedData.getSCM();
@@ -398,7 +453,6 @@ abstract public class BaseJob {
     protected void setOptionClean(boolean optionClean) {
         this.optionClean = optionClean;
     }
-    
     /**
      * Get option to use CI licenses
      * @return true to use CI licenses, false to not
@@ -412,6 +466,109 @@ abstract public class BaseJob {
      */
     protected void setUseCILicenses(boolean useCILicenses) {
         this.useCILicenses = useCILicenses;
+    }    
+    /**
+     * Get option to Use strict testcase import
+     * @return true to Use strict testcase import, false to not
+     */
+    protected boolean getUseStrictTestcaseImport() {
+        return useStrictTestcaseImport;
+    }
+    /**
+     * Set option to Use strict testcase import
+     * @param useStrictTestcaseImport  true to Use strict testcase import, false to not
+     */
+    protected void setUseStrictTestcaseImport(boolean useStrictTestcaseImport) {
+        this.useStrictTestcaseImport = useStrictTestcaseImport;
+    }    
+    /**
+     * Get option to Use imported results
+     * @return true to Use imported results, false to not
+     */
+    protected boolean getUseImportedResults() {
+        return useImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useImportedResults true to Use imported results, false to not
+     */
+    protected void setUseImportedResults(boolean useImportedResults) {
+        this.useImportedResults = useImportedResults;
+    }    
+
+    /**
+     * Get option to Use local imported results
+     * @return true to Use local imported results, false to not
+     */
+    protected boolean getUseLocalImportedResults() {
+        return useLocalImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useLocalImportedResults true to Use local imported results, false to not
+     */
+    protected void setUseLocalImportedResults(boolean useLocalImportedResults) {
+        this.useLocalImportedResults = useLocalImportedResults;
+    }    
+
+    /**
+     * Get option to Use external imported results
+     * @return true to Use external imported results, false to not
+     */
+    protected boolean getUseExternalImportedResults() {
+        return useExternalImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useExternalImportedResults true to Use external imported results, false to not
+     */
+    protected void setUseExternalImportedResults(boolean useExternalImportedResults) {
+        this.useExternalImportedResults = useExternalImportedResults;
+    }    
+
+    /**
+     * Get option to Use as external result filename
+     * @return string external result filename
+     */
+    protected String getExternalResultsFilename() {
+        return externalResultsFilename;
+    }
+    /**
+     * Set option to Use imported results
+     * @param externalResultsFilename true to Use external imported results, false to not
+     */
+    protected void setExternalResultsFilename(String externalResultsFilename) {
+        this.externalResultsFilename = externalResultsFilename;
+    }    
+
+    /**
+     * Get option to Use coverage history to control build status
+     * @return true to Use imported results, false to not
+     */
+    protected boolean getUseCoverageHistory() {
+        return useCoverageHistory;
+    }
+    /**
+     * Set option to Use coverage history to control build status
+     * @param useCoverageHistory true to Use imported results, false to not
+     */
+    protected void setUseCoverageHistory(boolean useCoverageHistory) {
+        this.useCoverageHistory = useCoverageHistory;
+    }    
+
+    /**
+     * Get for maxParallel to control maximum number of jobs to be queue at at any one point
+     * @return MaxParallel integer number
+     */
+    protected Long getMaxParallel() {
+        return maxParallel;
+    }
+    /**
+     * Set option for maxParallel to control maximum number of jobs to be queue at at any one point
+     * @param maxParallel Long number
+     */
+    protected void setMaxParallel(Long maxParallel) {
+        this.maxParallel = maxParallel;
     }    
      /**
      * Get environment setup for windows
@@ -612,6 +769,7 @@ abstract public class BaseJob {
         // Create the top-level project
         topProject = createProject();
         if (topProject == null) {
+            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO, "Could not create topProject");
             return;
         }
 
@@ -689,8 +847,15 @@ abstract public class BaseJob {
                                     optionExecutionReport,
                                     optionClean,
                                     useCILicenses,
+                                    useStrictTestcaseImport,
+                                    useImportedResults,
+                                    useLocalImportedResults,
+                                    useExternalImportedResults,
+                                    externalResultsFilename,
+                                    useCoverageHistory,
                                     waitLoops,
                                     waitTime,
+                                    maxParallel,
                                     manageProjectName,
                                     jobName,
                                     nodeLabel,
@@ -727,12 +892,31 @@ abstract public class BaseJob {
         String addToolsArchive = pclpArchive + TIArchive;
         
         ArtifactArchiver archiver = new ArtifactArchiver(
-                /*artifacts*/"**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log" + addToolsArchive,
+                /*artifacts*/"**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr" + addToolsArchive,
                 /*excludes*/"",
                 /*latest only*/false,
                 /*allow empty archive*/false);
         project.getPublishersList().add(archiver);
     }
+
+    /**
+     * Add archive artifacts step
+     * @param project project to add to
+     */
+    protected void addCopyResultsToImport(Project project) {
+        StatusBuildSelector selector = new StatusBuildSelector();
+        CopyArtifact archiverCopier = new CopyArtifact(
+                /* ProjectName   */  project.getName(),
+                /* Parameters    */  "", 
+                /* BuildSelector */  selector, 
+                /* filter        */  baseName + "_results.vcr",
+                /* target        */  "",
+                /* flatten       */  false,
+                /* optional      */  true
+                );
+        project.getBuildersList().add(archiverCopier);
+    }
+
     /**
      * Add JUnit rules step
      * @param project project to add step to
@@ -770,6 +954,7 @@ abstract public class BaseJob {
         VectorCASTPublisher publisher = new VectorCASTPublisher();
         publisher.includes = "**/coverage_results_*.xml";
         publisher.healthReports = healthReports;
+        publisher.setUseCoverageHistory(useCoverageHistory);
         project.getPublishersList().add(publisher);
     }
     protected void addCredentialID(Project project) {

@@ -26,6 +26,22 @@ import os
 
 from io import open as _open
 
+def new_get_file_encoding():
+    # get the VC langaguge and encoding
+    cur_encoding = "utf-8"
+    try:
+        from vector.apps.DataAPI.configuration import vcastqt_global_options
+        lang = vcastqt_global_options.get('Translator','english')
+        if lang == "english":
+            cur_encoding = "utf-8"
+        if lang == "japanese":
+            cur_encoding = "shift-jis"
+        if lang == "chinese":
+            cur_encoding = "GBK"
+    except:
+        pass
+              
+
 
 def get_file_encoding(file, default_encoding="utf-8"):
     try:
@@ -52,11 +68,16 @@ def get_file_encoding(file, default_encoding="utf-8"):
 
 @contextlib.contextmanager
 def open(file, mode="r"):
-    if os.path.exists(file):
-        encoding = get_file_encoding(file)
+
+    if 'b' in mode:
+        fd = _open(file,mode)
     else:
-        encoding = "utf-8"
-    fd = _open(file, mode, encoding=encoding)
+        if os.path.exists(file):
+            #encoding = get_file_encoding(file)
+            encoding = new_get_file_encoding()
+        else:
+            encoding = "utf-8"
+        fd = _open(file, mode, encoding=encoding)
     
     try:
         yield fd

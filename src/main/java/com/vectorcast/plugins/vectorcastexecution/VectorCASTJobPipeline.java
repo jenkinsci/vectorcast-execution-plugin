@@ -27,7 +27,10 @@ package com.vectorcast.plugins.vectorcastexecution;
 import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.ScmConflictException;
+import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewPipelineJob;
+
+
 
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -51,6 +54,9 @@ public class VectorCASTJobPipeline extends JobBase {
 
     /** Job exists exception */
     private ScmConflictException scmException;
+    
+    /** Job exists exception */
+    private ExternalResultsFileException extResException;
     
 	/** project name */
 	private String projectName;
@@ -85,6 +91,15 @@ public class VectorCASTJobPipeline extends JobBase {
     public ScmConflictException getScmException() {
         return scmException;
     }
+
+    /**
+     * Get the job already scm conflict exception
+     * @return job already scm conflict exception
+     */
+    public ExternalResultsFileException getResException() {
+        return extResException;
+    }
+
     /**
      * URL for creating pipeline job
      * @return url
@@ -124,6 +139,9 @@ public class VectorCASTJobPipeline extends JobBase {
         } catch (InvalidProjectFileException ex) {
 			// cannot happen on pipeline job as we don't read the project
             return new HttpRedirect("exists");
+        } catch (ExternalResultsFileException ex) {
+			// blank external results file exception
+            return new HttpRedirect("extresblank");
         }
     }
 }

@@ -52,8 +52,9 @@ public class NewSingleJob extends BaseJob {
      * @param response response object
      * @throws ServletException exception
      * @throws IOException exception
+     * @throws ExternalResultsFileException exception
      */
-    public NewSingleJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException {
+    public NewSingleJob(final StaplerRequest request, final StaplerResponse response) throws ServletException, IOException, ExternalResultsFileException {
         super(request, response, false);
     }
     /**
@@ -94,9 +95,7 @@ public class NewSingleJob extends BaseJob {
             pclpCommandString = getPclpCommand() + "\n";
         }            
         if (getSquoreCommand().length() != 0) {
-            squoreCommandString_win = "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\generate_squore_results.py\" \"@PROJECT@\"";
             squoreCommandString_win += "\n" + getSquoreCommand() + "\n";
-            squoreCommandString_unix = "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate_squore_results.py\" \"@PROJECT@\"";
             squoreCommandString_unix += "\n" + getSquoreCommand() + "\n";
         }            
         if (getTESTinsights_URL().length() != 0) {
@@ -148,19 +147,63 @@ public class NewSingleJob extends BaseJob {
             TESTinsightsCommandString_win  += "testinsights_connector --api " + getTESTinsights_URL() + " --user %VC_TI_USR%  --pass %VC_TI_PWS% --action PUSH --project " + TI_Project_win  + " --test-object %BUILD_NUMBER% --vc-project \"@PROJECT@\" " + TI_Proxy + " --log TESTinsights_Push.log " + TESTinsightsSCMconnect_win;
             TESTinsightsCommandString_unix += "testinsights_connector --api " + getTESTinsights_URL() + " --user $VC_TI_USR   --pass $VC_TI_PWS  --action PUSH --project " + TI_Project_unix + " --test-object $BUILD_NUMBER --vc-project \"@PROJECT@\" " + TI_Proxy + " --log TESTinsights_Push.log " + TESTinsightsSCMconnect_unix;
         }            
+        String addEnvVars = "";
+        if (getUseStrictTestcaseImport()) {
+            addEnvVars += "set VCAST_USE_STRICT_IMPORT=TRUE\n";
+        } else {
+            addEnvVars += "set VCAST_USE_STRICT_IMPORT=FALSE\n";
+        }
+        
+        if (getUseLocalImportedResults()) {
+            addEnvVars += "set VCAST_USE_LOCAL_IMPORTED_RESULTS=TRUE\n";
+        } else {
+            addEnvVars += "set VCAST_USE_LOCAL_IMPORTED_RESULTS=FALSE\n";
+        }
+       
+        if (getUseExternalImportedResults()) {
+            addEnvVars += "set VCAST_USE_EXTERNAL_IMPORTED_RESULTS=TRUE\n";
+            addEnvVars += "set VCAST_USE_EXTERNAL_FILENAME=" + getExternalResultsFilename() + "\n";
+        } else {
+            addEnvVars += "set VCAST_USE_EXTERNAL_IMPORTED_RESULTS=FALSE\n";
+        }
+       
+        if (getUseImportedResults()) {
+            addEnvVars += "set VCAST_USE_IMPORTED_RESULTS=TRUE\n";
+        } else {
+            addEnvVars += "set VCAST_USE_IMPORTED_RESULTS=FALSE\n";
+        }
+       
         String pluginVersion = VcastUtils.getVersion().orElse( "Unknown" );    
         String win = 
-"rem Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
+":: Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 getEnvironmentSetupWin() + "\n" +
 getUseCILicensesWin()  + "\n" +
 "set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "set VCAST_NO_FILE_TRUNCATION=1\n" +
 "set VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --status\"\n" +
+addEnvVars +
+"\n:: Use strict testcase import\n" + 
+"if \"%VCAST_USE_STRICT_IMPORT%\"==\"TRUE\" (\n" +
+"   %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config=VCAST_STRICT_TEST_CASE_IMPORT=TRUE\"\n" +
+")\n" + 
+"\n:: Default Setup\n" +
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --force --release-locks\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
-getExecutePreambleWin() +
+"\n:: Use Imported Results\n" +
+"if \"%VCAST_USE_IMPORTED_RESULTS%\"==\"TRUE\" ( \n" + 
+"    if \"%VCAST_USE_LOCAL_IMPORTED_RESULTS%\"==\"TRUE\" if exist \"@PROJECT_BASE@_results.vcr\" (\n" +
+"        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\"@PROJECT_BASE@_results.vcr\"\"\n" +
+"        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status\"\"\n" +
+"        if exist @PROJECT_BASE@_results.vcr  ( copy @PROJECT_BASE@_results.vcr @PROJECT_BASE@_results_orig.vcr ) \n" +
+"    )\n" + 
+"    if \"%VCAST_USE_EXTERNAL_IMPORTED_RESULTS%\"==\"TRUE\" if exist \"%VCAST_USE_EXTERNAL_FILENAME%\" ( \n" +
+"        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\"%VCAST_USE_EXTERNAL_FILENAME%\"\"\n" +
+"        %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status\"\"\n" +
+"    )\n" + 
+")\n" +
 "del command.log > nul 2>&1\n"+
+getExecutePreambleWin() +
 " %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --build-execute --incremental --output \\\"@PROJECT_BASE@_rebuild" + html_text + "\\\" \"\n" +
 "copy command.log complete_build.log\n"+
 "copy \"@PROJECT_BASE@_rebuild" + html_text + "\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n"+
@@ -175,14 +218,45 @@ getExecutePreambleWin() +
 
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status=\\\"@PROJECT_BASE@_full_report.html\\\"\"\n" +
 "%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
-"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n";
+"%VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" + 
+"\n:: Use Imported Results\n" +
+"if \"%VCAST_USE_IMPORTED_RESULTS%\"==\"TRUE\" if \"%VCAST_USE_LOCAL_IMPORTED_RESULTS%\"==\"TRUE\" (\n" + 
+"    %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --export-result=@PROJECT_BASE@_results.vcr\"\n" +
+"    %VECTORCAST_DIR%\\vpython \"%WORKSPACE%\\vc_scripts\\merge_vcr.py\" --orig \"@PROJECT_BASE@_results_orig.vcr\" --new @PROJECT_BASE@_results.vcr\n" +
+")\n";
         }
         win += getEnvironmentTeardownWin() + "\n" +
             pclpCommandString + squoreCommandString_win + TESTinsightsCommandString_win;
         win = StringUtils.replace(win, "@PROJECT@", getManageProjectName());
         win = StringUtils.replace(win, "@PROJECT_BASE@", getBaseName());
 
+        addEnvVars = "";
+        if (getUseStrictTestcaseImport()) {
+            addEnvVars += "VCAST_USE_STRICT_IMPORT=1\n";
+        } else {
+            addEnvVars += "VCAST_USE_STRICT_IMPORT=0\n";
+        }
+        if (getUseLocalImportedResults()) {
+            addEnvVars += "VCAST_USE_LOCAL_IMPORTED_RESULTS=1\n";
+        } else {
+            addEnvVars += "VCAST_USE_LOCAL_IMPORTED_RESULTS=0\n";
+        }
+
+        if (getUseExternalImportedResults()) {
+            addEnvVars += "VCAST_USE_EXTERNAL_IMPORTED_RESULTS=1\n";
+            addEnvVars += "VCAST_USE_EXTERNAL_FILENAME=" + getExternalResultsFilename() + "\n";
+            
+        } else {
+            addEnvVars += "VCAST_USE_EXTERNAL_IMPORTED_RESULTS=0\n";
+            
+        }
+
+        if (getUseImportedResults()) {
+            addEnvVars += "VCAST_USE_IMPORTED_RESULTS=1\n";
+        } else {
+            addEnvVars += "VCAST_USE_IMPORTED_RESULTS=0\n";
+        }
+        
         String unix = 
 "##Created with vectorcast-execution plugin v" + pluginVersion + "\n\n" +
 getEnvironmentSetupUnix() + "\n" +
@@ -190,11 +264,30 @@ getUseCILicensesUnix()  + "\n" +
 "export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE\n" +
 "export VCAST_NO_FILE_TRUNCATION=1\n" +
 "export VCAST_RPTS_SELF_CONTAINED=FALSE\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --status \"\n" +
+addEnvVars +
+"\n# Use strict testcase import\n" + 
+"if [[ $VCAST_USE_STRICT_IMPORT -eq 1 ]]; then\n" +
+"   $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config=VCAST_STRICT_TEST_CASE_IMPORT=TRUE \"\n" +
+"fi\n\n" + 
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status \"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --force --release-locks \"\n" +
-getExecutePreambleUnix() +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=" + report_format + "\"\n" +
+"\n# Use Imported Results\n" +
+"if [[ $VCAST_USE_IMPORTED_RESULTS -eq 1 ]]; then\n" +
+"    if [[ $VCAST_USE_LOCAL_IMPORTED_RESULTS -eq 1 ]] && [[ -f \"@PROJECT_BASE@_results.vcr\" ]] ; then \n" +
+"        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\\\"@PROJECT_BASE@_results.vcr\\\"\"\n" +
+"        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status \"\n" +
+"        if [[ -f @PROJECT_BASE@_results.vcr ]] ; then \n" +
+"            cp -p @PROJECT_BASE@_results.vcr @PROJECT_BASE@_results_orig.vcr \n" + 
+"        fi \n" +
+"    fi\n" + 
+"    if [[ $VCAST_USE_EXTERNAL_IMPORTED_RESULTS -eq 1 ]] && [[ -f \"$VCAST_USE_EXTERNAL_FILENAME\" ]] ; then \n" +
+"        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --import-result=\"$VCAST_USE_EXTERNAL_FILENAME\" \"\n" +
+"        $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --full-status \"\n" +
+"    fi\n" + 
+"fi\n" +
 "rm -f command.log\n"+
+getExecutePreambleUnix() +
 " $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --build-execute --incremental  --output \\\"@PROJECT_BASE@_rebuild" + html_text + "\\\" \"\n" +
 "cp -p command.log complete_build.log\n"+
 "cp -p \"@PROJECT_BASE@_rebuild" + html_text + "\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n";
@@ -202,13 +295,16 @@ if (getOptionUseReporting()) {
             unix +=
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML\"\n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/generate-results.py\" --junit --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " \"@PROJECT@\" " + noGenExecReport + " --buildlog complete_build.log\n" +
-
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/full_report_no_toc.py\" \"@PROJECT@\" \n" +
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/fixup_reports.py\" \"@PROJECT_BASE@_rebuild" + html_text + "_tmp\"\n" +
-
 "$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=aggregate   --output=\\\"@PROJECT_BASE@_aggregate_report.html\\\"\"\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=metrics     --output=\\\"@PROJECT_BASE@_metrics_report.html\\\"\"\n" +
-"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n";
+"$VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --create-report=environment --output=\\\"@PROJECT_BASE@_environment_report.html\\\"\"\n" +
+"\n# Use strict testcase import\n" + 
+"if [[ $VCAST_USE_IMPORTED_RESULTS -eq 1 ]] && [[ $VCAST_USE_LOCAL_IMPORTED_RESULTS -eq 1 ]] ; then\n" +
+"   $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/managewait.py\" --wait_time " + getWaitTime() + " --wait_loops " + getWaitLoops() + " --command_line \"--project \\\"@PROJECT@\\\" --export-result=@PROJECT_BASE@_results.vcr \"\n" +
+"   $VECTORCAST_DIR/vpython \"$WORKSPACE/vc_scripts/merge_vcr.py\" --orig @PROJECT_BASE@_results_orig.vcr --new @PROJECT_BASE@_results.vcr\n" +
+"fi\n\n";
+
         }
         unix += getEnvironmentTeardownUnix() + "\n" + 
             pclpCommandString + squoreCommandString_unix + TESTinsightsCommandString_unix;
@@ -400,6 +496,7 @@ if (getOptionUseReporting()) {
         getTopProject().setDescription("Single job to run the manage project: " + getManageProjectName());
 
         // Build actions...
+        addCopyResultsToImport(getTopProject());
         addSetup(getTopProject());
         addCommandSingleJob();
                 

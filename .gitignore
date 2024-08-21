@@ -14,5 +14,7 @@ hs_err_pid*
 # maven build/work directories
 target/**
 work/**
+/src/main/resources/scripts/__pycache__
+
 /src/main/resources/scripts/*.pyc
 /src/main/resources/scripts/vpython-addons/bs4/*.pyc

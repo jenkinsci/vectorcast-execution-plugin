@@ -35,8 +35,12 @@ import tee_print
 global build_dir
 
 def make_relative(path, workspace, teePrint):
-    path = path.replace("\\","/")
 
+    path = path.replace("\\","/")
+    
+    if not os.path.isabs(path):
+        return path
+        
     # if the paths match
     if path.lower().startswith(workspace.lower()):
         path = path[len(workspace)+1:]
@@ -53,6 +57,7 @@ def make_relative(path, workspace, teePrint):
         
     else:
         teePrint.teePrint("  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace)
+    
         # something went wildly wrong -- raise an exception
         # raise Exception ("Problem updating database path to remove workspace:\n\n   PATH: " + path + "\n   WORKSPACE: " + workspace)
     
@@ -75,10 +80,13 @@ def addFile(tf, file, backOneDir = False):
     if backOneDir:
         local_build_dir = os.sep.join(build_dir.split(os.sep)[:-1])
         
-    for f in os.listdir(local_build_dir):
-        if fnmatch.fnmatch(f, file):
-            tf.add(os.path.join(local_build_dir, f))
-
+    try:
+        for f in os.listdir(local_build_dir):
+            if fnmatch.fnmatch(f, file):
+                tf.add(os.path.join(local_build_dir, f))
+    except:
+        pass
+        
 def addDirectory(tf, dir):
     global build_dir
     
@@ -141,11 +149,15 @@ if __name__ == '__main__':
     BaseName = sys.argv[3]
     Env = sys.argv[4]
     workspace = os.getenv("WORKSPACE")
+    if workspace is None:
+        workspace = os.getcwd()
     if sys.platform.startswith('win32'):
         workspace = workspace.replace("\\", "/")
         nocase = "COLLATE NOCASE"
     else:
         nocase = ""
+        
+    os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(ManageProjectName).rsplit(".",1)[0]
 
     manageCMD = os.path.join(os.environ.get('VECTORCAST_DIR'), "manage")
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env,
@@ -176,5 +188,11 @@ if __name__ == '__main__':
             addDirectory(tf, "TESTCASES")
             addFile(tf, Env + ".vce", backOneDir=True)
             addFile(tf, Env + ".vcp", backOneDir=True)
+            addFile(tf, Env + ".env", backOneDir=True)
+            addFile(tf, Env + ".tst", backOneDir=True)
+            addFile(tf, Env + "_cba.cvr", backOneDir=True)
+            addFile(tf, "vcast_manage.cfg", backOneDir=True)
+            
+           
         finally:
             tf.close()

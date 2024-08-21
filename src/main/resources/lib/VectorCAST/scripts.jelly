@@ -52,7 +52,7 @@
                  help="/plugin/vectorcast-execution/help-optUnixEnvSetup.html">
           <f:textarea name="environmentSetupUnix" class="fixed-width" value="${instance.environmentSetupUnix}"/>
         </f:entry>
-        <f:entry title="${%VCJob.Scripts.execute_preamble.title}" description="${%VCJob.Scripts.execute_preamble.descriptionnix}"
+        <f:entry title="${%VCJob.Scripts.execute_preamble.title}" description="${%VCJob.Scripts.execute_preamble.description_unix}"
                  help="/plugin/vectorcast-execution/help-optUnixEnvPrefix.html">
           <f:textbox name="executePreambleUnix" size="50" value="${instance.executePreambleUnix}"/>
         </f:entry>

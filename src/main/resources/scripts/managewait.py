@@ -44,7 +44,22 @@ class ManageWait(object):
         self.wait_loops = wait_loops
         self.verbose = verbose
         self.command_line = command_line
-
+        self.encFmt = 'utf-8'
+        
+        # get the VC langaguge and encoding
+        self.encFmt = 'utf-8'
+        try:
+            from vector.apps.DataAPI.configuration import vcastqt_global_options
+            self.lang = vcastqt_global_options.get('Translator','english')
+            if self.lang == "english":
+                self.encFmt = "utf-8"
+            if self.lang == "japanese":
+                self.encFmt = "shift-jis"
+            if self.lang == "chinese":
+                self.encFmt = "GBK"
+        except:
+            pass
+        
     def enqueueOutput(self, io_target, queue, logfile):
         while True:
             line = io_target.readline()
@@ -96,8 +111,10 @@ class ManageWait(object):
                         out_mgt = self.q.get(False) 
                         
                         if len(out_mgt) > 0:
+                        
+                            errors = ["Unable to obtain license",  "Licensed number of users already reached", "License server system does not support this feature"]
          
-                            if "Licensed number of users already reached" in out_mgt or "License server system does not support this feature" in out_mgt:
+                            if any(error in out_mgt for error in errors):
                                 license_outage = True
                                 # Change FLEXlm Error to FLEXlm Err.. to avoid Groovy script from
                                 # marking retry attempts as overall job failure
@@ -131,7 +148,7 @@ class ManageWait(object):
                 break #leave outer while loop
                 
         try:
-            ret_out = unicode(ret_out,"utf-8")
+            ret_out = unicode(ret_out,self.encFmt)
         except:
             pass
             

@@ -36,6 +36,7 @@ import hudson.scm.SCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -46,8 +47,8 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.tasks.SimpleBuildStep;
-import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+import hudson.EnvVars;
 
 /**
  * VectorCAST setup build action
@@ -80,10 +81,22 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     private boolean optionClean;
     /** Use CI License */
     private boolean useCILicenses;
+    /** Use strict testcase import */
+    private boolean useStrictTestcaseImport;
+    /** Use imported results */
+    private boolean useImportedResults = false;
+    private boolean useLocalImportedResults = false;
+    private boolean useExternalImportedResults = false;
+    private String  externalResultsFilename;
+
+    /** Use coverage history to control build status */
+    private boolean useCoverageHistory;
     /** Wait loops */
     private Long waitLoops;
     /** Wait time */
     private Long waitTime;
+    /** Maximum number of parallal jobs to queue up */
+    private Long maxParallel;
     /** Using some form of SCM */
     private boolean usingSCM;
     /** SCM if using */
@@ -136,6 +149,20 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setWaitTime(Long waitTime) {
         this.waitTime = waitTime;
+    }
+    /**
+     * Get for maxParallel to control maximum number of jobs to be queue at at any one point
+     * @return maxParallel Long number
+     */
+    public Long getMaxParallel() {
+        return maxParallel;
+    }
+    /**
+     * Set option for maxParallel to control maximum number of jobs to be queue at at any one point
+     * @param maxParallel Long number
+     */
+    public void setMaxParallel(Long maxParallel) {
+        this.maxParallel = maxParallel;
     }
     /**
      * Get environment for windows setup
@@ -304,6 +331,94 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     public void setUseCILicenses(boolean useCILicenses) {
         this.useCILicenses = useCILicenses;
+    }    
+    /**
+     * Get option to Use strict testcase import
+     * @return true to Use strict testcase import, false to not
+     */
+    public boolean getUseStrictTestcaseImport() {
+        return useStrictTestcaseImport;
+    }
+    /**
+     * Set option to Use strict testcase import
+     * @param useStrictTestcaseImport  true to Use strict testcase import, false to not
+     */
+    public void setUseStrictTestcaseImport(boolean useStrictTestcaseImport) {
+        this.useStrictTestcaseImport = useStrictTestcaseImport;
+    }    
+    /**
+     * Get option to Use imported results
+     * @return true to Use imported results, false to not
+     */
+    public boolean getUseImportedResults() {
+        return useImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useImportedResults true to Use imported results, false to not
+     */
+    public void setUseImportedResults(boolean useImportedResults) {
+        this.useImportedResults = useImportedResults;
+    }   
+    
+    /**
+     * Get option to Use local imported results
+     * @return true to Use local imported results, false to not
+     */
+    public boolean getUseLocalImportedResults() {
+        return useLocalImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useLocalImportedResults true to Use local imported results, false to not
+     */
+    public void setUseLocalImportedResults(boolean useLocalImportedResults) {
+        this.useLocalImportedResults = useLocalImportedResults;
+    }    
+
+    /**
+     * Get option to Use external imported results
+     * @return true to Use external imported results, false to not
+     */
+    public boolean getUseExternalImportedResults() {
+        return useExternalImportedResults;
+    }
+    /**
+     * Set option to Use imported results
+     * @param useExternalImportedResults true to Use external imported results, false to not
+     */
+    public void setUseExternalImportedResults(boolean useExternalImportedResults) {
+        this.useExternalImportedResults = useExternalImportedResults;
+    }    
+
+      /**
+     * Get option to Use as external result filename
+     * @return string external result filename
+     */
+    public String getExternalResultsFilename() {
+        return externalResultsFilename;
+    }
+    /**
+     * Set option to Use imported results
+     * @param externalResultsFilename true to Use external imported results, false to not
+     */
+    public void setExternalResultsFilename(String externalResultsFilename) {
+        this.externalResultsFilename = externalResultsFilename;
+    }    
+
+    /**
+     * Get option to Use coverage history to control build status
+     * @return true to Use imported results, false to not
+     */
+    public boolean getUseCoverageHistory() {
+        return useCoverageHistory;
+    }
+    /**
+     * Set option to Use coverage history to control build status
+     * @param useCoverageHistory true to Use imported results, false to not
+     */
+    public void setUseCoverageHistory(boolean useCoverageHistory) {
+        this.useCoverageHistory = useCoverageHistory;
     }    
     /**
      * Get using SCM
@@ -534,8 +649,15 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @param optionExecutionReport execution report
      * @param optionClean clean
      * @param useCILicenses use CI licenses
+     * @param useStrictTestcaseImport Use strict testcase import
+     * @param useImportedResults use imported results
+     * @param useLocalImportedResults use local imported results
+     * @param useExternalImportedResults use extern imported results
+     * @param externalResultsFilename use extern result filename
+     * @param useCoverageHistory use imported results
      * @param waitLoops wait loops
      * @param waitTime wait time
+     * @param maxParallel maximum number of jobs to queue in parallel
      * @param manageProjectName manage project name
      * @param jobName job name
      * @param nodeLabel node label
@@ -562,8 +684,15 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                            boolean optionExecutionReport,
                            boolean optionClean,
                            boolean useCILicenses,
+                           boolean useStrictTestcaseImport,
+                           boolean useImportedResults,
+                           boolean useLocalImportedResults,
+                           boolean useExternalImportedResults,
+                           String  externalResultsFilename,
+                           boolean useCoverageHistory,
                            Long waitLoops,
                            Long waitTime,
+                           Long maxParallel,
                            String manageProjectName,
                            String jobName,
                            String nodeLabel,
@@ -588,10 +717,17 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         this.optionExecutionReport = optionExecutionReport;
         this.optionClean = optionClean;
         this.useCILicenses = useCILicenses;
+        this.useStrictTestcaseImport = useStrictTestcaseImport;
+        this.useImportedResults = useImportedResults;
+        this.useLocalImportedResults = useLocalImportedResults;
+        this.useExternalImportedResults = useExternalImportedResults;
+        this.externalResultsFilename = externalResultsFilename;
+        this.useCoverageHistory = useCoverageHistory;
         this.usingSCM = false;
         this.scm = new NullSCM();
         this.waitLoops = waitLoops;
         this.waitTime = waitTime;
+        this.maxParallel = maxParallel;
         this.manageProjectName = manageProjectName;
         this.jobName = jobName;
         this.nodeLabel = nodeLabel;
@@ -615,9 +751,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @throws IOException exception
      * @throws InterruptedException exception
      */
-    private void processDir(File dir, String base, FilePath destDir, Boolean directDir) throws IOException, InterruptedException {
+    private void processDir(File scriptDir, String base, FilePath destDir, Boolean directDir) throws IOException, InterruptedException {
         destDir.mkdirs();
-        File[] files = dir.listFiles();
+        File[] files = scriptDir.listFiles();
         if (files == null) {
             return;
         }
@@ -628,7 +764,18 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             } else {
                 if (directDir) {
                     File newFile = new File(destDir + File.separator + file.getName());
-                    FileUtils.copyFile(file, newFile);
+                    File inFile = new File(scriptDir + File.separator + file.getName());
+                    FilePath dest = new FilePath(destDir, newFile.getName());
+                    InputStream is = null;
+                    try {
+                        is = new FileInputStream(inFile);                    
+                        dest.copyFrom(is);    
+                    }
+                    finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
                 } else {
                     FilePath newFile = new FilePath(destDir, file.getName());
                     try (InputStream is = VectorCASTSetup.class.getResourceAsStream(SCRIPT_DIR + base + "/" + file.getName())) {
@@ -672,10 +819,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 path = URLDecoder.decode(path, "utf-8");
             }
             File testPath = new File(path);
+            printVersion( listener.getLogger() );
             if (testPath.isFile()) {
                 // Have jar file...
                 jFile = new JarFile(testPath);
-                printVersion( listener.getLogger() );
                 Enumeration<JarEntry> entries = jFile.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
@@ -713,7 +860,6 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         
         // clean up old xml_data files
         
-        logger.log(Level.INFO, "Cleaning up old xml_data files");
         File[] files = new File(workspace + "/xml_data/").listFiles();
         if (files != null)
         {
@@ -777,10 +923,17 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     			+ "\t optionExecutionReport: " + optionExecutionReport +  "\n"
     			+ "\t optionClean: " + optionClean +  "\n"
     			+ "\t useCILicenses: " + useCILicenses +  "\n"
+    			+ "\t useStrictTestcaseImport: " + useStrictTestcaseImport +  "\n"
+    			+ "\t useImportedResults: " + useImportedResults +  "\n"
+    			+ "\t useLocalImportedResults: " + useLocalImportedResults +  "\n"
+    			+ "\t useExternalImportedResults: " + useExternalImportedResults +  "\n"
+    			+ "\t externalResultsFilename: " + externalResultsFilename +  "\n"
+    			+ "\t useCoverageHistory: " + useCoverageHistory +  "\n"
     			+ "\t usingSCM: " + usingSCM +  "\n"
     			+ "\t scm: " + scm +  "\n"
     			+ "\t waitLoops: " + waitLoops +  "\n"
     			+ "\t waitTime: " + waitTime +  "\n"
+    			+ "\t maxParallel: " + maxParallel +  "\n"
     			+ "\t manageProjectName: " + manageProjectName +  "\n"
     			+ "\t jobName: " + jobName +  "\n"
     			+ "\t nodeLabel: " + nodeLabel +  "\n"
