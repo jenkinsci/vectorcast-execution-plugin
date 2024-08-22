@@ -822,26 +822,37 @@ class GenerateManageXml (BaseGenerateXml):
                 print("Error creating report", report_name + ". Contact Vector Support")
                 parse_traceback.parse(traceback.format_exc(), self.verbose, self.compiler,  self.testsuite,  self.env,  self.build_dir)
 
-    def skipReporting(self, build_dir):
+    def skipReporting(self, env):
 
-        ## dataapi not producing the correct information
-        return False
-
-        import hashlib 
-
-        ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
-        
-        build_dir_4hash = build_dir.upper()
-        build_dir_4hash = "/".join(build_dir_4hash.split("/")[-2:])
-        
-        # Unicode-objects must be encoded before hashing in Python 3
-        if sys.version_info[0] >= 3:
-            build_dir_4hash = build_dir_4hash.encode('utf-8')
-
-        hashCode = hashlib.md5(build_dir_4hash).hexdigest()
-        
-        # skip report gen for skipped environments 
         if self.use_archive_extract and self.cbtDict:
+            try:
+                prj_dir = os.environ['WORKSPACE'].replace("\\","/") + "/"
+            except:
+                prj_dir = os.getcwd().replace("\\","/") + "/"
+
+            try:
+                build_dir = os.path.relpath(env.build_directory,prj_dir).replace("\\","/")
+            except:
+                build_dir = env.build_directory
+
+            try:
+                build_dir = "build/" + build_dir.rsplit("build/",1)[-1]
+                                
+            except:
+                traceback.print_exc()
+                print("exception converting directory into relative path:", env.build_directory, build_dir)        
+
+            ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
+            
+            build_dir_4hash = build_dir.upper()
+            build_dir_4hash = "/".join(build_dir_4hash.split("/")[-2:])
+            
+            # Unicode-objects must be encoded before hashing in Python 3
+            if sys.version_info[0] >= 3:
+                build_dir_4hash = build_dir_4hash.encode('utf-8')
+
+            hashCode = hashlib.md5(build_dir_4hash).hexdigest()
+            
             if hashCode not in self.cbtDict.keys():
                 if self.verbose:
                     print("skipping report because hash not found in cbtdict", build_dir)
@@ -853,6 +864,10 @@ class GenerateManageXml (BaseGenerateXml):
                     if self.verbose:
                         print("skipping report because c,i,s are all 0 size")
                     return True
+                    
+        if self.verbose:
+            print("not skipping: ", build_dir)
+            
         return False
 
 # GenerateManageXml
@@ -865,13 +880,10 @@ class GenerateManageXml (BaseGenerateXml):
         results = self.api.project.repository.get_full_status([])
         all_envs = []
         for env in self.api.Environment.all():
-            # All this will be for skipping reporting.  The dataapi was not returning the correct 
-            # original_environment_directory
-            # build_dir = env.definition.original_environment_directory.split("/",1)[1]
-            # print(env.name)
-            # pprint(dump(env.definition))
-            # if self.use_archive_extract and self.cbtDict and self.skipReporting(build_dir):
-                # continue
+            
+            if self.skipReporting(env):
+                continue            
+                 
             if env.is_active:
                 all_envs.append(env.level._full_path)
 

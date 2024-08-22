@@ -17,7 +17,7 @@ def extract(verbose = False):
                 if f.name not in new_reports:
                     if verbose:
                         print("extracting old report " + f.name)
-                    ##tf.extract(f)
+                    tf.extract(f)
                         
 def archive(verbose = False):
     if os.path.exists(archive_name):
