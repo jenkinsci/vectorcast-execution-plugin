@@ -183,11 +183,13 @@ public abstract class BaseJob {
      * @throws IOException exception
      * @throws ExternalResultsFileException exception
      * @throws IllegalArgumentException exception
+     * @throws BadOptionComboException exception
      */
     protected BaseJob(final StaplerRequest req,
             final StaplerResponse resp)
             throws ServletException, IOException,
-            ExternalResultsFileException, IllegalArgumentException {
+            ExternalResultsFileException, IllegalArgumentException,
+            BadOptionComboException {
 
         instance = Jenkins.get();
         request = req;
@@ -295,6 +297,10 @@ public abstract class BaseJob {
         testInsightsCredentialsId =
             json.optString("TESTinsights_credentials_id", "");
         testInsightsProxy = json.optString("TESTinsights_proxy", "");
+        
+        if (useCoverageHistory && useCoveragePlugin) {
+            throw new BadOptionComboException("Use Coverage History", "Use Jenkins Coverage Plugin");
+        }            
     }
 
     /**

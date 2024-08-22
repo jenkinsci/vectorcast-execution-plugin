@@ -105,12 +105,14 @@ public class NewPipelineJob extends BaseJob {
      * @throws IOException      exception
      * @throws ScmConflictException      exception
      * @throws ExternalResultsFileException      exception
+     * @throws BadOptionComboException exception
      */
     public NewPipelineJob(
             final StaplerRequest request,
             final StaplerResponse response)
             throws ServletException, IOException,
-            ScmConflictException, ExternalResultsFileException {
+            ScmConflictException, ExternalResultsFileException,
+            BadOptionComboException {
         super(request, response);
 
         final int indexNotFound = -1;

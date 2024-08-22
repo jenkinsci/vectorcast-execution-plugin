@@ -56,10 +56,12 @@ public class NewSingleJob extends BaseJob {
    * @throws ServletException exception
    * @throws IOException exception
    * @throws ExternalResultsFileException exception
+   * @throws BadOptionComboException exception
    */
   public NewSingleJob(final StaplerRequest request,
         final StaplerResponse response)
-        throws ServletException, IOException, ExternalResultsFileException {
+        throws ServletException, IOException, ExternalResultsFileException,
+        BadOptionComboException {
     super(request, response);
   }
   /**

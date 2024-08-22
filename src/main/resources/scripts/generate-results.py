@@ -793,9 +793,13 @@ if __name__ == '__main__':
     parser.add_argument('--no_full_report',   help='Generate just metrics for jenkins consumption', action="store_true", default = False)
 
     parser.add_argument('--legacy',   help='Force legacy reports for testing only', action="store_true", default = False)
-    parser.add_argument('--buildlog',   help='Build Log for CBT Statitics')
+    parser.add_argument('--buildlog',   help='Build Log for CBT Statitics', default = None)
 
     args = parser.parse_args()
+    
+    if not (args.use_archive_extract and args.buildlog and os.path.exists(args.buildlog)):
+        print("Must have a valid --buildlog file to use --use_archive_extract")
+        print("The option use_archive_extract is disabled")
     
     legacy = args.legacy
     timing = args.timing

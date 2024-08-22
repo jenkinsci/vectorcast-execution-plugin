@@ -26,6 +26,7 @@ package com.vectorcast.plugins.vectorcastexecution;
 import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
+import com.vectorcast.plugins.vectorcastexecution.job.BadOptionComboException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -108,6 +109,9 @@ public class VectorCASTJobSingle extends JobBase {
             return new HttpRedirect("exists");
         } catch (ExternalResultsFileException ex) {
             return new HttpRedirect("extresblank");
+        } catch (BadOptionComboException ex) {
+            // blank external results file exception
+            return new HttpRedirect("badoptioncombo");
         }
     }
 }

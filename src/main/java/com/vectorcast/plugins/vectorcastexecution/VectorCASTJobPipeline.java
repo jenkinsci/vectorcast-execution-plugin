@@ -29,8 +29,7 @@ import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.ScmConflictException;
 import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewPipelineJob;
-
-
+import com.vectorcast.plugins.vectorcastexecution.job.BadOptionComboException;
 
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -146,6 +145,9 @@ public class VectorCASTJobPipeline extends JobBase {
         } catch (ExternalResultsFileException ex) {
             // blank external results file exception
             return new HttpRedirect("extresblank");
+        } catch (BadOptionComboException ex) {
+            // blank external results file exception
+            return new HttpRedirect("badoptioncombo");
         }
     }
 }

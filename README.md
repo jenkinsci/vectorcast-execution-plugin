@@ -244,6 +244,8 @@ environment before disabling.  This takes into account enviornments that are dir
 - Moved to Jenkins 2.440 and Java 11
 - Added BETA support for RGW3
 - Removed VectorCAST Project Environment report
+- Removed extra options for Update job as the plugin doesn't support Update job
+- Added a check for bad option combination
 
 ### Version 0.77 (21 Aug 2024)
 - Updated for findbugs to spotbugs
