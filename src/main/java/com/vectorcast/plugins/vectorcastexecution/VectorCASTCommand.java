@@ -26,6 +26,7 @@ package com.vectorcast.plugins.vectorcastexecution;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -84,12 +85,14 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * Performs the windows/linux script.
      * @param build - used to run and set results
      * @param workspace - not used
+     * @param env - environment variables
      * @param launcher - tells us of the executor is win/linux
      * @param listener - used in call to run the tess
      */
     @Override
     public void perform(final Run<?, ?> build, final FilePath workspace,
-            final Launcher launcher, final TaskListener listener) {
+            final EnvVars env, final Launcher launcher,
+            final TaskListener listener) {
 
         // Windows check and run batch command
         if (!launcher.isUnix()) {
@@ -149,14 +152,13 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
 
         /**
          * See if this class is applicable to this builder.
-         * @param aClass - not used
+         * @param jobType - not used
          * @return boolean true
          */
         @Override
+        @SuppressWarnings("rawtypes")
         public boolean isApplicable(
-                final Class<? extends AbstractProject> aClass) {
-            // Indicates that this builder can be used
-            // with all kinds of project types
+                final Class<? extends AbstractProject> jobType) {
             return true;
         }
 

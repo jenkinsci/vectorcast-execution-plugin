@@ -299,7 +299,7 @@ public abstract class BaseJob {
         testInsightsProxy = json.optString("TESTinsights_proxy", "");
 
         if (useCoverageHistory && useCoveragePlugin) {
-            throw new BadOptionComboException("Use Coverage History", 
+            throw new BadOptionComboException("Use Coverage History",
                 "Use Jenkins Coverage Plugin");
         }
     }
