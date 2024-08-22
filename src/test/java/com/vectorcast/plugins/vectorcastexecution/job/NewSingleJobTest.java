@@ -424,6 +424,9 @@ public class NewSingleJobTest {
         jsonForm.put("useRGW3",true);
         jsonForm.put("useImportedResults", true);
         jsonForm.put("useCoverageHistory", true);
+        
+        // cant use Jenkins Coverage with useCoverageHistory
+        jsonForm.put("coverageDisplayOption", 2);
 
         NewSingleJob job = setupTestBasic(jsonForm);
 
