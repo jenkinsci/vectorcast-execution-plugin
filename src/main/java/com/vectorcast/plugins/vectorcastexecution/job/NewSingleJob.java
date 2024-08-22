@@ -296,7 +296,6 @@ public class NewSingleJob extends BaseJob {
           scmInfoCmdUnix = "SCM_URL=`git config remote.origin.url`\n"
             + "SCM_REV=`git rev-parse HEAD`\n";
           setupConnect = true;
-
         }
         if (getTestInsightsScmTech().equals("svn")) {
           scmInfoCommandWin = " "
