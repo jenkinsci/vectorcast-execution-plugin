@@ -35,7 +35,7 @@ if "%VCAST_USE_IMPORTED_RESULTS%"=="TRUE" (
         if exist %VCAST_PROJECT_BASENAME%_results.vcr  ( copy %VCAST_PROJECT_BASENAME%_results.vcr %VCAST_PROJECT_BASENAME%_results_orig.vcr ) 
     ) 
     if "%VCAST_USE_EXTERNAL_IMPORTED_RESULTS%"=="TRUE" if exist "%VCAST_USE_EXTERNAL_FILENAME%" ( 
-        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --import-result"%VCAST_USE_EXTERNAL_FILENAME%"
+        %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --import-result="%VCAST_USE_EXTERNAL_FILENAME%"
         %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --full-status"
     ) 
 )
