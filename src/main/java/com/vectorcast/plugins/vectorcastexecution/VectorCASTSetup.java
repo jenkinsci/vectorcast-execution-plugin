@@ -76,6 +76,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @throws IOException exception
      * @throws InterruptedException exception
      */
+
     private void processDir(final File scriptDir,
             final String base,
             final FilePath destDir,
@@ -95,6 +96,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                     newDest, directDir);
             } else {
                 if (directDir) {
+
                     // change the copy mechanism
                     // to copy file to remote node
                     File newFile = new File(destDir
@@ -110,6 +112,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                         is = new FileInputStream(inFile);
                         dest.copyFrom(is);
                     } finally {
+
                         if (is != null) {
                             is.close();
                         }

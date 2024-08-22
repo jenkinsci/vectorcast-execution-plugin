@@ -200,7 +200,6 @@ class BaseGenerateXml(object):
             if is_unit:
                 (total_funcs, funcs_covered) = unit_or_func.cover_data.functions_covered
                 entry["function"] = self.calc_cov_values(funcs_covered, total_funcs)
-                ##print("UT: ",unit_or_func.name, entry['function'])
             elif unit_or_func.cover_data.coverdb.has_covered_functions:
                 try:
                     if unit_or_func.has_covered_objects:
@@ -461,7 +460,7 @@ class BaseGenerateXml(object):
 
             if not self.hasAnyCov(srcFile):
                 continue
-
+                
             hasFuncCov, hasFuncCallCov = self.hasEitherFunctionCoverages(srcFile)
             self.has_function_coverage = hasFuncCov
             self.has_call_coverage = hasFuncCallCov
