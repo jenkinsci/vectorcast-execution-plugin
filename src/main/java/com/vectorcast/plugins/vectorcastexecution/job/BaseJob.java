@@ -297,10 +297,11 @@ public abstract class BaseJob {
         testInsightsCredentialsId =
             json.optString("TESTinsights_credentials_id", "");
         testInsightsProxy = json.optString("TESTinsights_proxy", "");
-        
+
         if (useCoverageHistory && useCoveragePlugin) {
-            throw new BadOptionComboException("Use Coverage History", "Use Jenkins Coverage Plugin");
-        }            
+            throw new BadOptionComboException("Use Coverage History", 
+                "Use Jenkins Coverage Plugin");
+        }
     }
 
     /**
