@@ -983,7 +983,9 @@ pipeline {
                         def summaryText = ""
 
                         if (fileExists('coverage_diffs.html_tmp')) {
-                            summaryText = readFile('coverage_diffs.html_tmp')
+                            summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " 
+                            summaryText += readFile('coverage_diffs.html_tmp') 
+
                         } else {
                             print "coverage_diffs.html_tmp missing"
                         }
@@ -992,8 +994,13 @@ pipeline {
                             if (fileExists('combined_incr_rebuild.tmp') && fileExists("${mpName}_full_report.html_tmp") && fileExists("${mpName}_metrics_report.html_tmp")) {
                                 // If we have both of these, add them to the summary in the "normal" job view
                                 // Blue ocean view doesn't have a summary
-
-                                summaryText += readFile('combined_incr_rebuild.tmp') + "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " + readFile("${mpName}_full_report.html_tmp") + "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " + readFile("${mpName}_metrics_report.html_tmp")
+                                summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
+                                summaryText += readFile('combined_incr_rebuild.tmp') 
+                                summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " 
+                                summaryText += readFile("${mpName}_full_report.html_tmp") 
+                                summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " 
+                                summaryText += readFile("${mpName}_metrics_report.html_tmp")
+                                    
                                 createSummary icon: "monitor.gif", text: summaryText
 
                             } else {

@@ -26,7 +26,6 @@ package com.vectorcast.plugins.vectorcastexecution;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -39,6 +38,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Shell;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,10 +48,10 @@ import java.util.logging.Logger;
  */
 public class VectorCASTCommand extends Builder implements SimpleBuildStep {
 
-    /** Windows command information. */
+    /** windows environment setup command. */
     private final String winCommand;
 
-    /** Liniux command information. */
+    /** unix environment setup command. */
     private final String unixCommand;
 
     /**
@@ -64,7 +64,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
 
     /**
      * Get the Unix variant of the command.
-     * @return unix command
+     * @return unix command.
      */
     public final String getUnixCommand() {
         return unixCommand;
@@ -72,52 +72,35 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
 
     /**
      * Create a VectorCAST command.
-     * @param winCmd the windows variant of the command
-     * @param unixCmd the unix variant of the command
+     * @param winCommand the windows variant of the command
+     * @param unixCommand the unix variant of the command
      */
     @DataBoundConstructor
-    public VectorCASTCommand(final String winCmd, final String unixCmd) {
-        this.winCommand = winCmd;
-        this.unixCommand = unixCmd;
+    @SuppressWarnings("checkstyle:HiddenField")
+    public VectorCASTCommand(final String winCommand,
+            final String unixCommand) {
+        this.winCommand = winCommand;
+        this.unixCommand = unixCommand;
     }
 
     /**
-     * Performs the windows/linux script.
-     * @param build - used to run and set results
-     * @param workspace - not used
-     * @param env - environment variables
-     * @param launcher - tells us of the executor is win/linux
-     * @param listener - used in call to run the tess
+     * Perform the script to run the job.
+     * @param build info
+     * @param workspace info
+     * @param launcher info
+     * @param listener info
      */
     @Override
     public void perform(final Run<?, ?> build, final FilePath workspace,
-            final EnvVars env, final Launcher launcher,
-            final TaskListener listener) {
-
+            final Launcher launcher, final TaskListener listener) {
         // Windows check and run batch command
         if (!launcher.isUnix()) {
             // Get the windows batch command and run it if this node is Windows
+            //
             String windowsCmd = getWinCommand();
             BatchFile batchFile = new BatchFile(windowsCmd);
             try {
                 if (!batchFile.perform((AbstractBuild<?, ?>) build,
-                    launcher, (BuildListener) listener)) {
-                    build.setResult(Result.FAILURE);
-                }
-            } catch (InterruptedException ex) {
-                Logger.getLogger(VectorCASTCommand.class.getName())
-                    .log(Level.SEVERE, null, ex);
-                build.setResult(Result.FAILURE);
-            }
-        }
-
-        // Linux check and batch command
-        if (launcher.isUnix()) {
-            // Get the Linux/Unix shell script command
-            String unixCmd = getUnixCommand();
-            Shell shell = new Shell(unixCmd);
-            try {
-                if (!shell.perform((AbstractBuild<?, ?>) build,
                         launcher, (BuildListener) listener)) {
                     build.setResult(Result.FAILURE);
                 }
@@ -127,9 +110,32 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
                 build.setResult(Result.FAILURE);
             }
         }
+
+
+        // Linux check and batch command
+        if (launcher.isUnix()) {
+            // Get the Linux/Unix batch command and
+            // run it if this node is not Windows
+            String unixCmd = getUnixCommand();
+            Shell shell = new Shell(unixCmd);
+            try {
+                if (!shell.perform((AbstractBuild<?, ?>) build,
+                        launcher, (BuildListener) listener)) {
+                    build.setResult(Result.FAILURE);
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(VectorCASTCommand.class.getName()).
+                    log(Level.SEVERE, null, ex);
+                build.setResult(Result.FAILURE);
+            }
+        }
     }
 
-    /** Gets the descripter from the parement class. */
+    /**
+     * Get the descriptor.
+     * @return descriptor
+     */
+
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) super.getDescriptor();
@@ -140,8 +146,8 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * The class is marked as public so that it can be accessed from views.
      */
     @Extension
-    public static final class DescriptorImpl
-            extends BuildStepDescriptor<Builder> {
+    public static final class DescriptorImpl extends
+            BuildStepDescriptor<Builder> {
         /**
          * In order to load the persisted global configuration, you have to
          * call load() in the constructor.
@@ -151,14 +157,15 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
         }
 
         /**
-         * See if this class is applicable to this builder.
-         * @param jobType - not used
-         * @return boolean true
+         * Override to fill out the class.
+         * @param aClass - generic class
+         * @return boolean - always true
          */
         @Override
-        @SuppressWarnings("rawtypes")
         public boolean isApplicable(
-                final Class<? extends AbstractProject> jobType) {
+                final Class<? extends AbstractProject> aClass) {
+            // Indicates that this builder can be used
+            // with all kinds of project types
             return true;
         }
 
@@ -173,4 +180,3 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
     }
 
 }
-
