@@ -105,9 +105,6 @@ class ManageWait(object):
             
             self.startOutputThread(p.stdout, logfile)
             
-            if not self.silent:
-                print("Manage started")
-                
             license_outage = False
             edited_license_outage_msg = ""
             actual_license_outage_msg = ""
@@ -135,9 +132,6 @@ class ManageWait(object):
                 except Empty:
                     pass
 
-            if not self.silent:
-                print("Manage has finished")
-                
             # manage finished. Was there a license outage?
             if license_outage == True :
                 if loop_count < self.wait_loops:

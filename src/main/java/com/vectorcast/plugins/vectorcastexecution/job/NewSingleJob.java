@@ -35,7 +35,6 @@ import hudson.model.labels.LabelAtom;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
 import org.kohsuke.stapler.StaplerRequest;
@@ -83,10 +82,12 @@ public class NewSingleJob extends BaseJob {
 
     String win = ":: Created with vectorcast-execution plugin v"
       + pluginVersion + "\n\n"
+      + "set VCAST_PROJECT_NAME=" + getManageProjectName() + "\n"
+      + "set VCAST_PROJECT_BASENAME=" + getBaseName() + "\n"
       + getEnvironmentSetupWin() + "\n"
+      + "set VCAST_EXECUTE_PREAMBLE_WIN=" + getExecutePreambleWin() + "\n"
       + getUseCILicensesWin() + "\n"
       + getAdditonalEnvVarsWindows() + "\n"
-      + "set VCAST_EXECUTE_PREAMBLE_WIN=" + getExecutePreambleWin() + "\n"
       + "set VCAST_WAIT_TIME=" + getWaitTime() + "\n"
       + "set VCAST_WAIT_LOOPS=" + getWaitLoops() + "\n"
       + "set VCAST_OPTION_USE_REPORTING="
@@ -94,7 +95,6 @@ public class NewSingleJob extends BaseJob {
       + "set VCAST_rptFmt=" + rptFmt + "\n"
       + "set VCAST_HTML_OR_TEXT=" + htmlOrText + "\n"
       + "set VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
-      + "set VCAST_PROJECT_NAME=" + getManageProjectName() + "\n"
       + "set VCAST_USE_CBT=--incremental"
       + "\n\n";
 
@@ -140,18 +140,20 @@ public class NewSingleJob extends BaseJob {
 
     String unix = "# Created with vectorcast-execution plugin v"
       + pluginVersion + "\n\n"
+      + "VCAST_PROJECT_NAME=" + getManageProjectName() + "\n"
+      + "VCAST_PROJECT_BASENAME=" + getBaseName() + "\n"
       + getEnvironmentSetupUnix() + "\n"
+      + "VCAST_EXECUTE_PREAMBLE_LINUX=" + getExecutePreambleUnix() + "\n"
       + getUseCILicensesUnix() + "\n"
       + getAdditonalEnvVarsLinux() + "\n"
-      + "VCAST_EXECUTE_PREAMBLE_LINUX=" + getExecutePreambleUnix() + "\n"
       + "VCAST_WAIT_TIME=" + getWaitTime() + "\n"
       + "VCAST_WAIT_LOOPS=" + getWaitLoops() + "\n"
-      + "VCAST_OPTION_USE_REPORTING=" + getOptionUseReporting() + "\n"
+      + "VCAST_OPTION_USE_REPORTING="
+      +     (getOptionUseReporting() ? "1" : "0") + "\n"
       + "VCAST_rptFmt=" + rptFmt + "\n"
       + "VCAST_HTML_OR_TEXT=" + htmlOrText + "\n"
       + "VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
-      + "VCAST_PROJECT_NAME=" + getBaseName() + "\n"
-      + "VCAST_USE_CBT=TRUE"
+      + "VCAST_USE_CBT=--incremental"
       + "\n\n";
 
     InputStream in = null;
@@ -432,12 +434,6 @@ public class NewSingleJob extends BaseJob {
    * Add groovy script step to job.
    */
   private void addGroovyScriptSingleJob() throws IOException {
-    String htmlOrText;
-    if (getOptionHTMLBuildDesc().equalsIgnoreCase("HTML")) {
-      htmlOrText = "html";
-    } else {
-      htmlOrText = "txt";
-    }
 
     InputStream in = null;
 
@@ -456,8 +452,7 @@ public class NewSingleJob extends BaseJob {
         }
     }
 
-    script = StringUtils.replace(script, "@PROJECT_BASE@", getBaseName());
-    script = StringUtils.replace(script, "@htmlOrText@", htmlOrText);
+    script = script.replace("@PROJECT_BASE@", getBaseName());
 
     SecureGroovyScript secureScript =
         new SecureGroovyScript(

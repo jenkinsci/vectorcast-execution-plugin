@@ -82,56 +82,42 @@ FilePath fp_i  = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_rebui
 FilePath fp_f  = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report.html_tmp')
 FilePath fp_m  = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_metrics_report.html_tmp')
 
-if (fp_cd.exists() && fp_i.exists() && fp_f.exists() && fp_m.exists())
-{
-    debugInfo = "all files exist"
+if (fp_cd.exists()) {
     summaryStr  = "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
     summaryStr += fp_cd.readToString() 
+}
+
+if (fp_i.exists()) {
     summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
     summaryStr += fp_i.readToString() 
+}
+
+if (fp_f.exists()) {
     summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
     summaryStr += fp_f.readToString() 
+} 
+
+if (fp_m.exists())
+{
     summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
     summaryStr += fp_m.readToString() 
 
-    manager.createSummary("monitor.png").appendText(summaryStr, false)
 }
-else if (fp_i.exists() && fp_f.exists() && fp_m.exists())
-{
-    debugInfo = "inc build, full-status, manage metrics exist"
-    summaryStr  = "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
-    summaryStr += fp_i.readToString() 
-    summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
-    summaryStr += fp_f.readToString() 
-    summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
-    summaryStr += fp_m.readToString() 
 
-    manager.createSummary("monitor.png").appendText(summaryStr, false)
-}
-else if (fp_f.exists() && fp_m.exists()) {
-    debugInfo = "full-status, manage metrics exist"
-    summaryStr = "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
-    summaryStr += fp_f.readToString() 
-    summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
-    summaryStr += fp_m.readToString() 
+manager.createSummary("monitor.png").appendText(summaryStr, false)
 
-    manager.createSummary("monitor.png").appendText(summaryStr, false)
-}
-else if (fp_f.exists())
+if (!fp_f.exists() && !fp_m.exists())
 {
-    debugInfo = "full-status"
-    manager.createSummary("monitor.png").appendText(fp_f.readToString(), false)
-}
-else
-{
-    debugInfo = "no files exist"
     manager.createSummary("warning.gif").appendText("General Failure", false, false, false, "red")
-    buildUnstable = true
     manager.build.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information"
     manager.addBadge("warning.gif", "General Error")
+
+    if (!buildFailed) {
+        buildUnstable = true
+    }
 }
 
-if (buildFailed && !buildUnstable)
+if (buildFailed)
 {
     manager.buildFailure()
 }

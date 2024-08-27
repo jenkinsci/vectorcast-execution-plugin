@@ -6,16 +6,6 @@
 set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
 set VCAST_NO_FILE_TRUNCATION=1
 set VCAST_RPTS_SELF_CONTAINED=FALSE
-
-call :make_basename VCAST_PROJECT_BASENAME %VCAST_PROJECT_NAME%
-
-goto start_script
-
-:make_basename
-    echo %1 %2
-    Set "%~1=%~n2"
-
-:start_script
     
 :: Use strict testcase import 
 if "%VCAST_USE_STRICT_IMPORT%"=="TRUE" (

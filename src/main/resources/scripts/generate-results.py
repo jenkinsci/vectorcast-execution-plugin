@@ -797,7 +797,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
-    if not (args.use_archive_extract and args.buildlog and os.path.exists(args.buildlog)):
+    if args.use_archive_extract and (not args.buildlog or not os.path.exists(args.buildlog)):
         print("Must have a valid --buildlog file to use --use_archive_extract")
         print("The option use_archive_extract is disabled")
     

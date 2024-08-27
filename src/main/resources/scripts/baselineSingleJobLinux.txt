@@ -7,9 +7,6 @@ VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
 VCAST_NO_FILE_TRUNCATION=1
 VCAST_RPTS_SELF_CONTAINED=FALSE
 VCAST_RPTS_SELF_CONTAINED=FALSE
-VCAST_PROJECT_BASENAME=$(basename $VCAST_PROJECT_NAME)
-VCAST_PROJECT_BASENAME="${VCAST_PROJECT_BASENAME%.*}"
-
 
 # Use strict testcase import
 if [[ $VCAST_USE_STRICT_IMPORT -eq 1 ]]; then
@@ -37,7 +34,7 @@ if [[ $VCAST_USE_IMPORTED_RESULTS -eq 1 ]]; then
 fi
 rm -f command.log
 
-$VCAST_EXECUTE_PREAMBLE_LINUX $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --build-execute --incremental  --output ${VCAST_PROJECT_BASENAME}_rebuild.html "
+$VCAST_EXECUTE_PREAMBLE_LINUX $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --build-execute $VCAST_USE_CBT --output ${VCAST_PROJECT_BASENAME}_rebuild.html "
 
 cp -p command.log complete_build.log
 if [ -f {VCAST_PROJECT_BASENAME}_rebuild.${VCAST_HTML_OR_TEXT} ]; then
