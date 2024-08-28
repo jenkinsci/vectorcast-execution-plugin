@@ -727,7 +727,9 @@ pipeline {
                             runCommands(VC_postScmStepsCmds)
                         }
                     }
-
+                    
+                    // archive existing reports 
+                    tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/**/*.xml", overwrite: true
 
                     println "Created with VectorCAST Execution Version: " + VC_createdWithVersion
 
@@ -917,16 +919,22 @@ pipeline {
                         if (failure) {
                             throw new Exception ("Error in Commands: " + foundKeywords)
                         }
-                        def currResult = ""
-                        if (VC_useCoverageHistory) {
-                            currResult = currentBuild.result
-                        }
 
                         if (VC_useCoveragePlugin) {
                             // Send reports to the Jenkins Coverage Plugin
-                            recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
+                            discoverReferenceBuild()
+                            if (VC_useCoverageHistory) {
+                                recordCoverage qualityGates: [[baseline: 'PROJECT_DELTA', criticality: 'NOTE', metric: 'LINE', threshold: -0.001], [baseline: 'PROJECT_DELTA', criticality: 'FAILURE', metric: 'BRANCH', threshold: -0.001]], tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]                            
+                            } else {
+                                recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
+                            }
 
                         } else {
+                            def currResult = ""
+                            if (VC_useCoverageHistory) {
+                                currResult = currentBuild.result
+                            }
+
                             // Send reports to the VectorCAST Soverage Plugin
                             step([$class: 'VectorCASTPublisher',
                                 includes: 'xml_data/coverage_results*.xml',
@@ -934,15 +942,16 @@ pipeline {
                                 healthyTarget:   VC_Healthy_Target,
                                 useCoverageHistory: VC_useCoverageHistory,
                                 maxHistory : 20])
-                        }
 
-                        if (VC_useCoverageHistory) {
-                            if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
-                                createSummary icon: "error.gif", text: "Code Coverage Decreased"
-                                currentBuild.description += "Code coverage decreased.  See console log for details\n"
-                                addBadge icon: "error.gif", text: "Code Coverage Decreased"
+                            if (VC_useCoverageHistory) {
+                                if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
+                                    createSummary icon: "error.gif", text: "Code Coverage Decreased"
+                                    currentBuild.description += "Code coverage decreased.  See console log for details\n"
+                                    addBadge icon: "error.gif", text: "Code Coverage Decreased"
+                                }
                             }
                         }
+
 
                         // Send test results to JUnit plugin
                         step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])

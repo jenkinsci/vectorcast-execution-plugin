@@ -49,6 +49,11 @@ import io.jenkins.plugins.analysis.core.steps.IssuesRecorder;
 import io.jenkins.plugins.coverage.metrics.steps.CoverageRecorder;
 import io.jenkins.plugins.coverage.metrics.steps.CoverageTool;
 import io.jenkins.plugins.coverage.metrics.steps.CoverageTool.Parser;
+import io.jenkins.plugins.coverage.metrics.steps.CoverageQualityGate;
+import io.jenkins.plugins.coverage.metrics.model.Baseline;
+import io.jenkins.plugins.util.QualityGate.QualityGateCriticality;
+import edu.hm.hafner.coverage.Metric;
+import io.jenkins.plugins.forensics.reference.SimpleReferenceRecorder;
 import org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper;
 import org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding;
 import org.jenkinsci.plugins.credentialsbinding.MultiBinding;
@@ -65,6 +70,15 @@ import java.net.URL;
  * Base job management - create/delete/update.
  */
 public abstract class BaseJob {
+    /** Coverage Delta threshold. */
+    private static final float COVERAGE_THRESHOLD = -0.001f;
+
+    /** Jenkins Coverage plugin selection. */
+    private static final long USE_COVERAGE_PLUGIN = 1;
+
+    /** VectorCAST Coverage plugin selection. */
+    private static final long USE_VCC_PLUGIN = 2;
+
     /** Zero percent indicator. */
     private static final int ZERO_PERCENT = 0;
     /** Seventy percent indicator. */
@@ -126,7 +140,7 @@ public abstract class BaseJob {
     private boolean useRGW3;
 
     /** Use coveagePlugin. */
-    private boolean useCoveragePlugin = true;
+    private boolean useCoveragePlugin;
 
     /** Use imported results. */
     private boolean useImportedResults = false;
@@ -196,6 +210,9 @@ public abstract class BaseJob {
         response = resp;
         JSONObject json = request.getSubmittedForm();
 
+        Logger.getLogger(BaseJob.class.getName())
+                .log(Level.INFO, json.toString());
+
         manageProjectName = json.optString("manageProjectName");
         if (manageProjectName.length() > MAX_STRING_LEN) {
             throw new IllegalArgumentException(
@@ -252,11 +269,29 @@ public abstract class BaseJob {
             .optBoolean("useStrictTestcaseImport", true);
         useRGW3  = json.optBoolean("useRGW3", false);
         useImportedResults  = json.optBoolean("useImportedResults", false);
-        if (json.optInt("coverageDisplayOption", 0) == 0) {
-            useCoveragePlugin = true;
+        
+        
+        /* since Coverage is a radio button, we need to unpack it */
+        JSONObject jsonCovPlugin = json.optJSONObject("coverageDisplayOption");
+        
+        Logger.getLogger(BaseJob.class.getName())
+                .log(Level.INFO, jsonCovPlugin.toString());
+
+        /* If there's something specified, check which one to use */
+        if (jsonCovPlugin != null) {
+            final long whichPlugin = jsonCovPlugin.optLong("value", USE_VCC_PLUGIN);
+            Logger.getLogger(BaseJob.class.getName())
+                    .log(Level.INFO, String.valueOf(whichPlugin));
+            if (whichPlugin == USE_VCC_PLUGIN) {
+                useCoveragePlugin = false;
+            } else {
+                useCoveragePlugin = true;
+            }
         } else {
+            /* If there's nothing specified, use VCC */
             useCoveragePlugin = false;
         }
+        
         externalResultsFilename = "";
 
         if (useImportedResults) {
@@ -298,10 +333,6 @@ public abstract class BaseJob {
             json.optString("TESTinsights_credentials_id", "");
         testInsightsProxy = json.optString("TESTinsights_proxy", "");
 
-        if (useCoverageHistory && useCoveragePlugin) {
-            throw new BadOptionComboException("Use Coverage History",
-                "Use Jenkins Coverage Plugin");
-        }
     }
 
     /**
@@ -868,15 +899,52 @@ public abstract class BaseJob {
      * Add Jenkins coverage reporting step.
      * @param project project to add step to
      */
+    protected void addReferenceBuild(final Project<?, ?> project) {
+        SimpleReferenceRecorder refRec = new SimpleReferenceRecorder();
+
+        project.getPublishersList().add(refRec);
+    }
+
+    /**
+     * Add Jenkins coverage reporting step.
+     * @param project project to add step to
+     */
     protected void addJenkinsCoverage(final Project<?, ?> project) {
+
+        List<CoverageQualityGate> qualityGates = null;
+
         CoverageTool tool = new CoverageTool();
         tool.setParser(Parser.VECTORCAST);
         tool.setPattern("xml_data/cobertura/coverage_results*.xml");
+
+        if (getUseCoverageHistory()) {
+            CoverageQualityGate statement =
+                new CoverageQualityGate(Metric.LINE);
+            statement.setBaseline(Baseline.PROJECT_DELTA);
+            statement.setCriticality(QualityGateCriticality.ERROR);
+            statement.setThreshold(COVERAGE_THRESHOLD);
+
+            CoverageQualityGate branch = new CoverageQualityGate(Metric.BRANCH);
+            branch.setBaseline(Baseline.PROJECT_DELTA);
+            branch.setCriticality(QualityGateCriticality.ERROR);
+            branch.setThreshold(COVERAGE_THRESHOLD);
+
+            qualityGates = new ArrayList<CoverageQualityGate>();
+            qualityGates.add(statement);
+            qualityGates.add(branch);
+
+        }
+
+        //tool.setQualityGate();
         List<CoverageTool> list = new ArrayList<CoverageTool>();
         list.add(tool);
 
         CoverageRecorder publisher = new CoverageRecorder();
         publisher.setTools(list);
+
+        if (qualityGates != null) {
+            publisher.setQualityGates(qualityGates);
+        }
 
         project.getPublishersList().add(publisher);
     }

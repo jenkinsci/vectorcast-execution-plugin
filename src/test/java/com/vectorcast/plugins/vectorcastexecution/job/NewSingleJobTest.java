@@ -100,7 +100,7 @@ public class NewSingleJobTest {
         JUnitResultArchiver jUnit = (JUnitResultArchiver)publisherList.get(jUnitIndex);
         Assert.assertEquals("**/test_results_*.xml", jUnit.getTestResults());
 
-        // Publisher 3 - GroovyPostbuildRecorder
+        // Publisher 5 - GroovyPostbuildRecorder
         Assert.assertTrue(publisherList.get(groovyIndex) instanceof GroovyPostbuildRecorder);
         GroovyPostbuildRecorder groovyScript = (GroovyPostbuildRecorder)publisherList.get(groovyIndex);
         Assert.assertEquals(/*unstable*/1, groovyScript.getBehavior());
@@ -164,7 +164,7 @@ public class NewSingleJobTest {
     private void checkBuildAction (NewSingleJob job, Boolean checkBuildAction) {
         // Check build actions...
         DescribableList<Builder,Descriptor<Builder>> bldrsList = job.getTopProject().getBuildersList();
-        
+
         if (checkBuildAction) {
             Assert.assertEquals(3, bldrsList.size());
             Assert.assertTrue(bldrsList.get(0) instanceof CopyArtifact);
@@ -303,7 +303,7 @@ public class NewSingleJobTest {
 
         // Check publishers...
         DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
-        Assert.assertEquals(5, publisherList.size());
+        Assert.assertEquals(6, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
@@ -316,8 +316,8 @@ public class NewSingleJobTest {
         checkBuildWrappers(job, 2);
         checkBuildAction(job,false);
         checkArchiverList(archiver, addToolArtifacts);
-        checkJunitGroovy(publisherList, 2, 4);
-        checkCoveragePlugin(publisherList, 3);
+        checkJunitGroovy(publisherList, 2, 5);
+        checkCoveragePlugin(publisherList, 4);
     }
 
     @Test
@@ -337,7 +337,7 @@ public class NewSingleJobTest {
 
         // Check publishers...
         DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
-        Assert.assertEquals(4, publisherList.size());
+        Assert.assertEquals(5, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
@@ -346,8 +346,8 @@ public class NewSingleJobTest {
         checkBuildWrappers(job, 1);
         checkBuildAction(job, true);
         checkArchiverList(archiver, DEFAULT_ARTIFACT_LIST);
-        checkJunitGroovy(publisherList, 1, 3);
-        checkCoveragePlugin(publisherList, 2);
+        checkJunitGroovy(publisherList, 1, 4);
+        checkCoveragePlugin(publisherList, 3);
         checkImportedResults(job, USE_LOCAL_IMPORTED_RESULTS, false, "");
     }
 
@@ -369,7 +369,7 @@ public class NewSingleJobTest {
 
         // Check publishers...
         DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
-        Assert.assertEquals(4, publisherList.size());
+        Assert.assertEquals(5, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
         Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
@@ -378,8 +378,8 @@ public class NewSingleJobTest {
         checkBuildWrappers(job, 1);
         checkBuildAction(job,false);
         checkArchiverList(archiver, DEFAULT_ARTIFACT_LIST);
-        checkJunitGroovy(publisherList, 1, 3);
-        checkCoveragePlugin(publisherList, 2);
+        checkJunitGroovy(publisherList, 1, 4);
+        checkCoveragePlugin(publisherList, 3);
         checkImportedResults(job, USE_EXTERNAL_IMPORTED_RESULTS, true, EXTERNAL_RESULT_FILENAME);
     }
 
@@ -424,7 +424,7 @@ public class NewSingleJobTest {
         jsonForm.put("useRGW3",true);
         jsonForm.put("useImportedResults", true);
         jsonForm.put("useCoverageHistory", true);
-        
+
         // cant use Jenkins Coverage with useCoverageHistory
         jsonForm.put("coverageDisplayOption", 2);
 

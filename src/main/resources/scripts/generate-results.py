@@ -465,21 +465,8 @@ def cleanupDirectory(path, teePrint):
 
     # if the path exists, try to delete all file in it
     if os.path.isdir(path):
-        for file in glob.glob(path + "/*.*"):
-            try:
-                os.remove(file);
-            except:
-                teePrint.teePrint("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
-                if print_exc:  traceback.print_exc()
-
-    # we should either have an empty directory or no directory
-    else:
-        try:
-            os.mkdir(path)
-        except:
-            print("failed making path: " + path)
-            teePrint.teePrint("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
-            if print_exc:  traceback.print_exc()
+        shutil.rmtree(path)
+        os.mkdir(path)
 
 def cleanupOldBuilds(teePrint):
     for path in ["xml_data","management","execution"]:

@@ -530,6 +530,7 @@ public class NewSingleJob extends BaseJob {
       addPCLintPlus(getTopProject());
       addJunit(getTopProject());
       if (getUseCoveragePlugin()) {
+        addReferenceBuild(getTopProject());
         addJenkinsCoverage(getTopProject());
       } else {
         addVCCoverage(getTopProject());

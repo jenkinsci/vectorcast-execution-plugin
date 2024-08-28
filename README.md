@@ -75,7 +75,12 @@ For Pipeline Jobs, the plugin processes the build log to determine which tests h
 
 ![](docs/images/test_results.png)
 
-## Coverage Diplay Selection
+## Build Summary Section
+
+
+
+
+## Coverage Display Selection
 
 The VectorCAST Execution Plugin is transitioning from using the older VectorCAST Coverage Plugin (Legacy Plugin) to the Jenkins Coverage Plugin.  Until that transition is complete, the use is offered a choice to decide which coverage display to use.
 
@@ -133,9 +138,9 @@ The user can customize additional parameters for job creation by selecting the *
 
 Use the **Job Name** setting for changing the created pipeline job name.  Default is *VectorCASTProjectName*\_vcast\_pipeline
 
-The **Shared Artifact Directory** option allows VectorCAST Project's build artifacts to be stored in a different location from the default *VectorCASTProjectName*/build.  If stored in a location that can be maintained between builds, VectorCAST's Change Based Testing can accelerate testing
+The **Shared Artifact Directory** (Pipeline Job Only) option allows VectorCAST Project's build artifacts to be stored in a different location from the default *VectorCASTProjectName*/build.  If stored in a location that can be maintained between builds, VectorCAST's Change Based Testing can accelerate testing
 
-**Maximum Parallel Queued Jobs** allows the job to specify the maximum number of unit test jobs to queue up at any one time for parallel execution. To queue all jobs, leave blank or set to zero (0). The use case for this option would be if you don't want to queue the Jenkins server with all VectorCAST environment build/execute jobs; thus, allowing other jobs to queue up as well.
+**Maximum Parallel Queued Jobs** (Pipeline Job Only) allows the job to specify the maximum number of unit test jobs to queue up at any one time for parallel execution. To queue all jobs, leave blank or set to zero (0). The use case for this option would be if you don't want to queue the Jenkins server with all VectorCAST environment build/execute jobs; thus, allowing other jobs to queue up as well.
 
 **Use Coverage History** marks build as failed if statement or branch coverage decrease by comparing the previous non-failing build's statement and branch coverage to the current build's statement and branch coverage. If either of the coverages have decreased the job will be marked as failed
 
@@ -236,6 +241,7 @@ environment before disabling.  This takes into account enviornments that are dir
 ## Change Log
 
 ### Version 0.78 (10 Sep 2024)
+- Moved to minimum Jenkins version: 2.452.1
 - Adding in following capabilities
     - Extended Cobertura format output for use with [Jenkins Coverage Plugin](https://github.com/jenkinsci/coverage-plugin)
     - Unit Test Data format output in SonarQube format 
