@@ -17,7 +17,19 @@
       * [Advanced Settings for Jenkins Coverage Plugin](#advanced-settings-for-jenkins-coverage-plugin)
       * [Information about legacy VectorCAST Coverage Plugin](#information-about-legacy-vectorcast-coverage-plugin)
     * [Job Creation Options](#job-creation-options)
+      * [Job Name](#job-name-)
+      * [Shared Artifact Directory](#shared-artifact-directory)
+      * [Maximum Parallel Queued Jobs](#maximum-parallel-queued-jobs)
+      * [Use Coverage History](#use-coverage-history)
+      * [Use Strict Test Case Importing](#use-strict-test-case-importing)
+      * [Use Requirements Gateway 3 capabilities](#use-requirements-gateway-3-capabilities)
+      * [Use Imported Results](#use-imported-results)
+      * [Using Local Imported Results](#using-local-imported-results)
+      * [Using External Imported Results](#using-external-imported-results)
     * [Additional Tools](#additional-tools)
+      * [PC-lint Plus](#pc-lint-plus)
+      * [Sqore](#sqore)
+      * [TESTinsights](#testinsights)
     * [Controlling Where Jobs Run](#controlling-where-jobs-run)
   * [Build Summary](#build-summary)
   * [Test Results](#test-results)
@@ -31,9 +43,7 @@
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
-
 <!-- TOC -->
-
 
 # Summary
 
@@ -55,7 +65,6 @@ This plugin adds a new top-level menu item to the Jenkins sidebar. Select the **
 ![](docs/images/vc_menu_in_sidebar.png)
 
 ## Job Types
-
 
 <img src="docs/images/job_types.png" width="592" height="323" />
 
@@ -112,13 +121,11 @@ For Pipeline Jobs, the plugin processes the build log to determine which tests h
 
 ![](docs/images/test_results.png)
 
-
 ### Coverage Display Selection
 
 The VectorCAST Execution Plugin is transitioning from using the older VectorCAST Coverage Plugin (Legacy Plugin) to the Jenkins Coverage Plugin.  Until that transition is complete, the use is offered a choice to decide which coverage display to use.
 
 <img src="docs/images/coverage_display_config.png" width="300" height="137" />
-
 
 #### Information about Jenkins Coverage Plugin
 The [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage) publishes a report of the code and mutation coverage in your build, so you can navigate to a summary report from the main build page. Additionally, the plugin gathers several metrics (lines of code, cyclomatic complexity, number of tests per class) and visualizes these results along with the coverage information.
@@ -162,55 +169,67 @@ This is a legacy plugin and will have no futher development beyond bug fixes and
 
 <img src="docs/images/vcc_cov_report.png" width="690" height="302" />
 
-
 ### Job Creation Options
 
 The user can customize additional parameters for job creation by selecting the **Job Creation Options**:
 
 ![](docs/images/job_creation_options.png)
 
-Use the **Job Name** setting for changing the created pipeline job name.  Default is *VectorCASTProjectName*\_vcast\_pipeline
+#### Job Name 
+Use the Job Name setting for changing the created pipeline job name.  Default is *VectorCASTProjectName*\_vcast\_pipeline
 
-The **Shared Artifact Directory** (Pipeline Job Only) option allows VectorCAST Project's build artifacts to be stored in a different location from the default *VectorCASTProjectName*/build.  If stored in a location that can be maintained between builds, VectorCAST's Change Based Testing can accelerate testing
+#### Shared Artifact Directory
+The Shared Artifact Directory (Pipeline Job Only) option allows VectorCAST Project's build artifacts to be stored in a different location from the default *VectorCASTProjectName*/build.  If stored in a location that can be maintained between builds, VectorCAST's Change Based Testing can accelerate testing
 
-**Maximum Parallel Queued Jobs** (Pipeline Job Only) allows the job to specify the maximum number of unit test jobs to queue up at any one time for parallel execution. To queue all jobs, leave blank or set to zero (0). The use case for this option would be if you don't want to queue the Jenkins server with all VectorCAST environment build/execute jobs; thus, allowing other jobs to queue up as well.
+#### Maximum Parallel Queued Jobs
+Maximum Parallel Queued Jobs (Pipeline Job Only) allows the job to specify the maximum number of unit test jobs to queue up at any one time for parallel execution. To queue all jobs, leave blank or set to zero (0). The use case for this option would be if you don't want to queue the Jenkins server with all VectorCAST environment build/execute jobs; thus, allowing other jobs to queue up as well.
 
-**Use Coverage History** marks build as failed if statement or branch coverage decrease by comparing the previous non-failing build's statement and branch coverage to the current build's statement and branch coverage. If either of the coverages have decreased the job will be marked as failed.
+#### Use Coverage History
+Use Coverage History marks build as failed if statement or branch coverage decrease by comparing the previous non-failing build's statement and branch coverage to the current build's statement and branch coverage. If either of the coverages have decreased the job will be marked as failed.
 
-:information_source: When using the Jenkins Coverage Plugin, this will be completed by adding a quality gate for any drop in Statement or Branch coverages.  It will be denoted in the Coverage Report section of the Build Status
+_:information_source: When using the Jenkins Coverage Plugin, this will be completed by adding a quality gate for any drop in Statement or Branch coverages.  It will be denoted in the Coverage Report section of the Build Status_
 
 <img src="docs/images/coverage_plugin_quality_gates.png" width="400" />
 
-**Use Strict Test Case Importing** allows the job to mark individual test cases as failures if errors encountered during test script import.  This option enables strict testcase importing for the VectorCAST Project.  This option give a more reliable metrics for pass/fail test cases as without strict test case import, bad test cases are just ignored.  The default is enabled.
+#### Use Strict Test Case Importing
+Use Strict Test Case Importing allows the job to mark individual test cases as failures if errors encountered during test script import.  This option enables strict testcase importing for the VectorCAST Project.  This option give a more reliable metrics for pass/fail test cases as without strict test case import, bad test cases are just ignored.  The default is enabled.
 
-**Use Requirements Gateway 3 capabilities** This option allows test environments with existing tests linked to an Requirements Gateway v3 implementation, that uses seperate .json files, to execute in parallel and export data at the end of the run.
+#### Use Requirements Gateway 3 capabilities
+This option allows test environments with existing tests linked to an Requirements Gateway v3 implementation, that uses seperate .json files, to execute in parallel and export data at the end of the run.
 
-**Use Imported Results** allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with _Use Change Based Testing_. The user can selected between internal imported results or external result files
+#### Use Imported Results
+Use Imported Results allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with _Use Change Based Testing_. The user can selected between internal imported results or external result files
 
 <img src="docs/images/use_imported_results.png" width="345" height="151" />
 
-When using imported results and the **Use Local Imported Results** option, the job will export results from the current build and save that result file as an job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
+#### Using Local Imported Results
+When using imported results and the Use Local Imported Results option, the job will export results from the current build and save that result file as an job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
 
-When using imported results and the **Use External Result File** option, the job will use an external results from the a specified location to use as a baseline for the the current job. If existing build artifacts exist, the combined results will be used for change based testing.  The user will need to specify an external result filename (.vcr) in the **External Result Filename** option.  This file would be typically stored in the repository.  This external result file could be updated by a main branch or periodic build to establish a current baseline.
+#### Using External Imported Results
+When using imported results and the Use External Result File option, the job will use an external results from the a specified location to use as a baseline for the the current job. If existing build artifacts exist, the combined results will be used for change based testing.  The user will need to specify an external result filename (.vcr) in the External Result Filename option.  This file would be typically stored in the repository.  This external result file could be updated by a main branch or periodic build to establish a current baseline.
 
 ### Additional Tools
 
 Other Vector tool integrations are supported by this plugin.  
--   **PC-lint Plus**
--   **Squore**
--   **TESTinsights**
+-   PC-lint Plus
+-   Squore
+-   TESTinsights
 
 ![](docs/images/additional.png)
 
-- For **PC-lint Plus**, the user must provide the command or script that executes PC-lint Plus analysis. It is important that the following format properties are included to ensure the results file is readable by the Warnings-NG plugin:
+#### PC-lint Plus
+For [PC-lint Plus](https://pclintplus.com/), the user must provide the command or script that executes PC-lint Plus analysis. It is important that the following format properties are included to ensure the results file is readable by the Warnings-NG plugin:
 ```        
     -v // turn off verbosity
     -width(0) // don't insert line breaks (unlimited output width)
     -"format=%f(%l): %t %n: %m"
     -hs1 // The height of a message should be 1
-```        
-- For **Squore** analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
-- For **TESTinsights**, if the user is using Git or Subversion for SCM, the plugin will attempt to have the SCM version linked to the TESTinsights project for team access and distributed change based testing. The user must provide the following:
+```
+#### Sqore
+For [Squore](https://www.vector.com/int/en/products/products-a-z/software/squore/) analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
+
+#### TESTinsights
+For [TESTinsights](https://www.vector.com/int/en/products/products-a-z/software/vectorcast/vectorcast-testinsights), if the user is using Git or Subversion for SCM, the plugin will attempt to have the SCM version linked to the TESTinsights project for team access and distributed change based testing. The user must provide the following:
     - TESTinsights URL - The URL to TESTinsights server and project (Use Copy Team Area Url).
     - TESTinsights Project - The Project Name in TESTinsights to push the results (leave blank to use the Jenkins Job Name).
     - TESTinsights Credential ID - The Credential ID from Jenkins for TESTinsights.
@@ -243,8 +262,7 @@ The build summary show the following sections:
 
 ## Test Results
 
-Test results will show the user which test cases passed, failed, or were skipped by Change Based Testing. 
-
+Test results will show the user which test cases passed, failed, or were skipped by Change Based Testing.
 
 By selecting individual cases, you can see the execution reports for that test case.  This can give the user insight into why a test case failed.
 
