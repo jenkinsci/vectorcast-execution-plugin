@@ -32,6 +32,12 @@ public class NewPipelineTest {
     final long USE_EXTERNAL_IMPORTED_RESULTS = 2;
     final String EXTERNAL_RESULT_FILENAME = "archivedResults/project.vcr";
 
+    /** Jenkins Coverage plugin selection. */
+    private static final long USE_COVERAGE_PLUGIN = 1;
+
+    /** VectorCAST Coverage plugin selection. */
+    private static final long USE_VCC_PLUGIN = 2;
+
     @Rule public JenkinsRule j = new JenkinsRule();
     private static final String PROJECTNAME = "project_vcast_pipeline";
 
@@ -123,7 +129,7 @@ public class NewPipelineTest {
         NewPipelineJob job = setupTestBasic(jsonForm);
 
         Assert.assertEquals(true, job.getUseStrictTestcaseImport());
-        Assert.assertEquals(true, job.getUseCoveragePlugin());
+        Assert.assertEquals(false, job.getUseCoveragePlugin());
         Assert.assertEquals(false, job.getUseCILicenses());
         Assert.assertEquals(true, job.getUseCBT());
         Assert.assertEquals(false, job.getSingleCheckout());
@@ -144,9 +150,13 @@ public class NewPipelineTest {
     public void testAdditionalTools() throws Exception {
 
         JSONObject jsonForm = new JSONObject();
+
+        JSONObject jsonCovDisplay  = new JSONObject();
+        jsonCovDisplay.put("value", USE_COVERAGE_PLUGIN);
+
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
-        jsonForm.put("coverageDisplayOption", 1);  // VectorCAST Coverage Plugin
+        jsonForm.put("coverageDisplayOption", jsonCovDisplay);  // VectorCAST Coverage Plugin
         jsonForm.put("useCoverageHistory", true);
         jsonForm.put("pclpCommand","call lint_my_code.bat");
         jsonForm.put("pclpResultsPattern","lint_results.xml");
@@ -167,8 +177,12 @@ public class NewPipelineTest {
     public void testCoveragePlugin() throws Exception {
 
         JSONObject jsonForm = new JSONObject();
+
+        JSONObject jsonCovDisplay  = new JSONObject();
+        jsonCovDisplay.put("value", USE_COVERAGE_PLUGIN);
+
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
-        jsonForm.put("coverageDisplayOption", 0);  // Jenkins Coverage Plugin
+        jsonForm.put("coverageDisplayOption", jsonCovDisplay);  // Jenkins Coverage Plugin
 
         NewPipelineJob job = setupTestBasic(jsonForm);
 
@@ -178,6 +192,10 @@ public class NewPipelineTest {
     @Test
     public void testOptions() throws Exception {
         JSONObject jsonForm = new JSONObject();
+
+        JSONObject jsonCovDisplay  = new JSONObject();
+        jsonCovDisplay.put("value", USE_VCC_PLUGIN);
+
         jsonForm.put("manageProjectName", "project.vcm");
         jsonForm.put("optionClean", true);
         jsonForm.put("nodeLabel","Test_Node");
@@ -187,7 +205,7 @@ public class NewPipelineTest {
         jsonForm.put("executePreamble","wr_env.bat");
         jsonForm.put("environmentTeardown","close ports");
         jsonForm.put("postSCMCheckoutCommands","chmod a+wr -R *");
-        jsonForm.put("coverageDisplayOption",1);
+        jsonForm.put("coverageDisplayOption",jsonCovDisplay);
         jsonForm.put("maxParallel",10);
 
         NewPipelineJob job = setupTestBasic(jsonForm);

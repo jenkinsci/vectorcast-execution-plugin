@@ -56,6 +56,13 @@ public class NewSingleJobTest {
     final long USE_EXTERNAL_IMPORTED_RESULTS = 2;
     final String EXTERNAL_RESULT_FILENAME = "archivedResults/project.vcr";
 
+    /** Jenkins Coverage plugin selection. */
+    private static final long USE_COVERAGE_PLUGIN = 1;
+
+    /** VectorCAST Coverage plugin selection. */
+    private static final long USE_VCC_PLUGIN = 2;
+
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
     private static final String PROJECTNAME = "project.vcast.single";
@@ -223,9 +230,13 @@ public class NewSingleJobTest {
     @Test
     public void testBasic() throws Exception {
         JSONObject jsonForm = new JSONObject();
+
+        JSONObject jsonCovDisplay  = new JSONObject();
+        jsonCovDisplay.put("value", USE_VCC_PLUGIN);
+
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
-        jsonForm.put("coverageDisplayOption", 1);
+        jsonForm.put("coverageDisplayOption", jsonCovDisplay);
         jsonForm.put("optionExecutionReport", true);
         jsonForm.put("useStrictTestcaseImport", true);
 
@@ -250,9 +261,12 @@ public class NewSingleJobTest {
     public void testAdditionalTools() throws Exception {
 
         JSONObject jsonForm = new JSONObject();
+        JSONObject jsonCovDisplay  = new JSONObject();
+        jsonCovDisplay.put("value", USE_VCC_PLUGIN);
+
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
-        jsonForm.put("coverageDisplayOption", 1);  // VectorCAST Coverage Plugin
+        jsonForm.put("coverageDisplayOption", jsonCovDisplay);  // VectorCAST Coverage Plugin
         jsonForm.put("useCoverageHistory", true);
         jsonForm.put("pclpCommand","call lint_my_code.bat");
         jsonForm.put("pclpResultsPattern","lint_results.xml");
@@ -291,9 +305,13 @@ public class NewSingleJobTest {
     public void testCoveragePlugin() throws Exception {
 
         JSONObject jsonForm = new JSONObject();
+
+        JSONObject jsonCovDisplay  = new JSONObject();
+        jsonCovDisplay.put("value", USE_COVERAGE_PLUGIN);
+
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
-        jsonForm.put("coverageDisplayOption", 0);  // Jenkins Coverage Plugin
+        jsonForm.put("coverageDisplayOption", jsonCovDisplay);  // Jenkins Coverage Plugin
         jsonForm.put("useCoverageHistory", false);  // VectorCAST Coverage Plugin
         jsonForm.put("pclpCommand","call lint_my_code.bat");
         jsonForm.put("pclpResultsPattern","lint_results.xml");
@@ -326,10 +344,13 @@ public class NewSingleJobTest {
         JSONObject jsonImportResults  = new JSONObject();
         jsonImportResults.put("value", USE_LOCAL_IMPORTED_RESULTS);
 
+        JSONObject jsonCovDisplay  = new JSONObject();
+        jsonCovDisplay.put("value", USE_COVERAGE_PLUGIN);
+
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
-        jsonForm.put("coverageDisplayOption", 0);
+        jsonForm.put("coverageDisplayOption", jsonCovDisplay);
         jsonForm.put("useImportedResults", true);
         jsonForm.put("importedResults", jsonImportResults);
 
@@ -358,10 +379,13 @@ public class NewSingleJobTest {
         jsonImportResults.put("value", USE_EXTERNAL_IMPORTED_RESULTS);
         jsonImportResults.put("externalResultsFilename",EXTERNAL_RESULT_FILENAME);
 
+        JSONObject jsonCovDisplay  = new JSONObject();
+        jsonCovDisplay.put("value", USE_COVERAGE_PLUGIN);
+
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
-        jsonForm.put("coverageDisplayOption", 0);
+        jsonForm.put("coverageDisplayOption", jsonCovDisplay);
         jsonForm.put("useImportedResults", true);
         jsonForm.put("importedResults", jsonImportResults);
 
@@ -426,7 +450,10 @@ public class NewSingleJobTest {
         jsonForm.put("useCoverageHistory", true);
 
         // cant use Jenkins Coverage with useCoverageHistory
-        jsonForm.put("coverageDisplayOption", 2);
+        JSONObject jsonCovDisplay  = new JSONObject();
+        jsonCovDisplay.put("value", USE_VCC_PLUGIN);
+
+        jsonForm.put("coverageDisplayOption", jsonCovDisplay);
 
         NewSingleJob job = setupTestBasic(jsonForm);
 

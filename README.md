@@ -2,6 +2,37 @@
 [![CodeQL](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/codeql.yml/badge.svg?branch=tms_078)](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/codeql.yml)
 [![GitHub CI](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/ci.yml/badge.svg?branch=tms_078)](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/ci.yml)
 
+# Table of Contents
+
+<!-- TOC -->
+* [Table of Contents](#table-of-contents)
+* [Summary](#summary)
+  * [Setup/Configuration](#setupconfiguration)
+* [Usage](#usage)
+  * [Job Types](#job-types)
+    * [Single Job](#single-job)
+    * [Pipeline Job](#pipeline-job)
+    * [Coverage Display Selection](#coverage-display-selection)
+      * [Information about Jenkins Coverage Plugin](#information-about-jenkins-coverage-plugin)
+      * [Advanced Settings for Jenkins Coverage Plugin](#advanced-settings-for-jenkins-coverage-plugin)
+      * [Information about legacy VectorCAST Coverage Plugin](#information-about-legacy-vectorcast-coverage-plugin)
+    * [Job Creation Options](#job-creation-options)
+    * [Additional Tools](#additional-tools)
+    * [Controlling Where Jobs Run](#controlling-where-jobs-run)
+  * [Build Summary](#build-summary)
+  * [Test Results](#test-results)
+    * [Passing Test Case](#passing-test-case)
+    * [Failing Test Case](#failing-test-case)
+  * [Known Issues](#known-issues)
+    * [VectorCAST Reports and Jenkins Content Security](#vectorcast-reports-and-jenkins-content-security-)
+    * [JUnit publisher failing environment with no test cases](#junit-publisher-failing-environment-with-no-test-cases)
+    * [Potential loss of requirements information](#potential-loss-of-requirements-information)
+    * [Test and code coverage reporting with Imported Results](#test-and-code-coverage-reporting-with-imported-results)
+    * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
+    * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
+  * [Change Log](#change-log)
+
+<!-- TOC -->
 
 
 # Summary
@@ -10,6 +41,12 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
 - [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage) 
 - [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
 
+## Setup/Configuration
+
+- VectorCAST must be installed and setup on each node.
+- The environment variables **VECTORCAST\_DIR** and **VECTOR\_LICENSE** must be set.
+- Jenkins must be installed and setup.
+- **BUILD\_URL** must be defined (in Jenkins-\>Manage Jenkins-\>Configure System and define 'Jenkins URL' and save the settings).
 
 # Usage
 
@@ -75,19 +112,15 @@ For Pipeline Jobs, the plugin processes the build log to determine which tests h
 
 ![](docs/images/test_results.png)
 
-## Build Summary Section
 
-
-
-
-## Coverage Display Selection
+### Coverage Display Selection
 
 The VectorCAST Execution Plugin is transitioning from using the older VectorCAST Coverage Plugin (Legacy Plugin) to the Jenkins Coverage Plugin.  Until that transition is complete, the use is offered a choice to decide which coverage display to use.
 
 <img src="docs/images/coverage_display_config.png" width="300" height="137" />
 
 
-## Information about Jenkins Coverage Plugin
+#### Information about Jenkins Coverage Plugin
 The [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage) publishes a report of the code and mutation coverage in your build, so you can navigate to a summary report from the main build page. Additionally, the plugin gathers several metrics (lines of code, cyclomatic complexity, number of tests per class) and visualizes these results along with the coverage information.
 
 By using the Jenkins Coverage Plugin, users can also dive into the details:
@@ -98,7 +131,7 @@ By using the Jenkins Coverage Plugin, users can also dive into the details:
 
 ![](docs/images/report_overview_screen.png)
 
-## Advanced Settings for Jenkins Coverage Plugin
+#### Advanced Settings for Jenkins Coverage Plugin
 
 Two classes of settings can be accessed in the Jenkins Coverage Plugin
 - Quality Gates
@@ -113,7 +146,7 @@ Settings to process VectorCAST Coverage Results:
     - Code Coverage Tool > Report File Pattern: xml_data/cobertura/coverage_results*.html
 - Single Job - The setup for the Single Job will be one of the post-build steps.
 
-## Information about legacy VectorCAST Coverage Plugin
+#### Information about legacy VectorCAST Coverage Plugin
 The [VectorCAST Coverage Plugin](https://plugins.jenkins.io/vectorcast-coverage/) Processes code coverage metrics from for VectorCAST Projects
 This legacy plugin allows you to capture code coverage reports from VectorCAST Projects. Jenkins will generate the trend report of coverage. This plugin is used automatically with the VectorCAST Execution Plugin
 Coverage information from tests runs that has been converted to XML files is read and displayed by this plugin. 
@@ -122,15 +155,15 @@ It shows coverage trends and allows drilling down to more detailed coverage info
 
 - Tree charts that show the distribution of the metrics by type (line, branch, MC/DC Pairs, Function Coverage, etc.)
 - Tabular listing of all environments/files with their coverage and complexity
--Trend charts of the coverage over time
+- Trend charts of the coverage over time
 
-[!NOTE] Legacy Plugin Info
+:warning: Legacy Plugin Info
 This is a legacy plugin and will have no futher development beyond bug fixes and security updates
 
 <img src="docs/images/vcc_cov_report.png" width="690" height="302" />
 
 
-## Job Creation Options
+### Job Creation Options
 
 The user can customize additional parameters for job creation by selecting the **Job Creation Options**:
 
@@ -142,7 +175,11 @@ The **Shared Artifact Directory** (Pipeline Job Only) option allows VectorCAST P
 
 **Maximum Parallel Queued Jobs** (Pipeline Job Only) allows the job to specify the maximum number of unit test jobs to queue up at any one time for parallel execution. To queue all jobs, leave blank or set to zero (0). The use case for this option would be if you don't want to queue the Jenkins server with all VectorCAST environment build/execute jobs; thus, allowing other jobs to queue up as well.
 
-**Use Coverage History** marks build as failed if statement or branch coverage decrease by comparing the previous non-failing build's statement and branch coverage to the current build's statement and branch coverage. If either of the coverages have decreased the job will be marked as failed
+**Use Coverage History** marks build as failed if statement or branch coverage decrease by comparing the previous non-failing build's statement and branch coverage to the current build's statement and branch coverage. If either of the coverages have decreased the job will be marked as failed.
+
+:information_source: When using the Jenkins Coverage Plugin, this will be completed by adding a quality gate for any drop in Statement or Branch coverages.  It will be denoted in the Coverage Report section of the Build Status
+
+<img src="docs/images/coverage_plugin_quality_gates.png" width="400" />
 
 **Use Strict Test Case Importing** allows the job to mark individual test cases as failures if errors encountered during test script import.  This option enables strict testcase importing for the VectorCAST Project.  This option give a more reliable metrics for pass/fail test cases as without strict test case import, bad test cases are just ignored.  The default is enabled.
 
@@ -156,7 +193,7 @@ When using imported results and the **Use Local Imported Results** option, the j
 
 When using imported results and the **Use External Result File** option, the job will use an external results from the a specified location to use as a baseline for the the current job. If existing build artifacts exist, the combined results will be used for change based testing.  The user will need to specify an external result filename (.vcr) in the **External Result Filename** option.  This file would be typically stored in the repository.  This external result file could be updated by a main branch or periodic build to establish a current baseline.
 
-## Additional Tools
+### Additional Tools
 
 Other Vector tool integrations are supported by this plugin.  
 -   **PC-lint Plus**
@@ -179,7 +216,7 @@ Other Vector tool integrations are supported by this plugin.
     - TESTinsights Credential ID - The Credential ID from Jenkins for TESTinsights.
     - The proxy to push to TESTinsights server in the format **proxy.address:port** (optional)
 
-## Controlling Where Jobs Run
+### Controlling Where Jobs Run
 
 When using a Pipeline Job, the sub jobs are created to run on specific node related to the compiler chosen for the environment. For example:
 
@@ -189,12 +226,35 @@ Make sure to set the labels on the relevant Jenkins nodes. Manage Jenkins -\> Ma
 
 ![](docs/images/restrict_node.png)
 
-## Setup/Configuration
+## Build Summary
 
-- VectorCAST must be installed and setup on each node.
-- The environment variables **VECTORCAST\_DIR** and **VECTOR\_LICENSE** must be set.
-- Jenkins must be installed and setup.
-- **BUILD\_URL** must be defined (in Jenkins-\>Manage Jenkins-\>Configure System and define 'Jenkins URL' and save the settings).
+The build summary show the following sections:
+
+- General Jenkins Information including
+    - Any errors or warnings that occurred during the build will be show beneath the build number and date  
+    - Build Artifacts including HTML reports, XML reports, pass/fail counts in text file, complete build log
+    - [Test Results](#test-results) section that can expand to show you test results
+- Code Coverage Differences (Only available when using the VectorCAST Code Coverage Plugin)
+- VectorCAST Project Incremental Rebuild Report (Only available when using Change Based Testing)
+- VectorCAST Project Full Status Report
+- VectorCAST Project Metrics Report
+
+![](docs/images/build_summary_vcc.png)
+
+## Test Results
+
+Test results will show the user which test cases passed, failed, or were skipped by Change Based Testing. 
+
+
+By selecting individual cases, you can see the execution reports for that test case.  This can give the user insight into why a test case failed.
+
+### Passing Test Case
+
+<img src="docs/images/passed_skipped_test.png" width="600"  />
+
+### Failing Test Case
+
+<img src="docs/images/individual_test_case_exec.png" width="600"  />
 
 ## Known Issues
 

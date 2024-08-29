@@ -959,7 +959,7 @@ pipeline {
                 }
 
                 // Save all the html, xml, and txt files
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr'
+                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, xml_data/*.xml, unit_test_*.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr'
             }
         }
 

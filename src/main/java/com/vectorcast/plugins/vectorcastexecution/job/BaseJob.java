@@ -59,8 +59,6 @@ import org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBindin
 import org.jenkinsci.plugins.credentialsbinding.MultiBinding;
 import java.util.List;
 import java.util.Collections;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.ArrayList;
 
 import java.net.URL;
@@ -72,9 +70,6 @@ import java.net.URL;
 public abstract class BaseJob {
     /** Coverage Delta threshold. */
     private static final float COVERAGE_THRESHOLD = -0.001f;
-
-    /** Jenkins Coverage plugin selection. */
-    private static final long USE_COVERAGE_PLUGIN = 1;
 
     /** VectorCAST Coverage plugin selection. */
     private static final long USE_VCC_PLUGIN = 2;
@@ -210,9 +205,6 @@ public abstract class BaseJob {
         response = resp;
         JSONObject json = request.getSubmittedForm();
 
-        Logger.getLogger(BaseJob.class.getName())
-                .log(Level.INFO, json.toString());
-
         manageProjectName = json.optString("manageProjectName");
         if (manageProjectName.length() > MAX_STRING_LEN) {
             throw new IllegalArgumentException(
@@ -269,19 +261,15 @@ public abstract class BaseJob {
             .optBoolean("useStrictTestcaseImport", true);
         useRGW3  = json.optBoolean("useRGW3", false);
         useImportedResults  = json.optBoolean("useImportedResults", false);
-        
-        
+
+
         /* since Coverage is a radio button, we need to unpack it */
         JSONObject jsonCovPlugin = json.optJSONObject("coverageDisplayOption");
-        
-        Logger.getLogger(BaseJob.class.getName())
-                .log(Level.INFO, jsonCovPlugin.toString());
 
         /* If there's something specified, check which one to use */
         if (jsonCovPlugin != null) {
-            final long whichPlugin = jsonCovPlugin.optLong("value", USE_VCC_PLUGIN);
-            Logger.getLogger(BaseJob.class.getName())
-                    .log(Level.INFO, String.valueOf(whichPlugin));
+            final long whichPlugin =
+                jsonCovPlugin.optLong("value", USE_VCC_PLUGIN);
             if (whichPlugin == USE_VCC_PLUGIN) {
                 useCoveragePlugin = false;
             } else {
@@ -291,7 +279,7 @@ public abstract class BaseJob {
             /* If there's nothing specified, use VCC */
             useCoveragePlugin = false;
         }
-        
+
         externalResultsFilename = "";
 
         if (useImportedResults) {
@@ -727,8 +715,6 @@ public abstract class BaseJob {
         // Create the top-level project
         topProject = createProject();
         if (topProject == null) {
-            Logger.getLogger(BaseJob.class.getName())
-                .log(Level.INFO, "Could not create topProject");
             return;
         }
 
@@ -751,8 +737,6 @@ public abstract class BaseJob {
             } else {
                 testInsightsScmTech = "";
             }
-            Logger.getLogger(BaseJob.class.getName())
-                .log(Level.INFO, "SCM Info: " + scmName);
         }
         topProject.setScm(scm);
 
