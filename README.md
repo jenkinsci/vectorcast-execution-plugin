@@ -28,7 +28,7 @@
       * [Using External Imported Results](#using-external-imported-results)
     * [Additional Tools](#additional-tools)
       * [PC-lint Plus](#pc-lint-plus)
-      * [Sqore](#sqore)
+      * [Squore](#squore)
       * [TESTinsights](#testinsights)
     * [Controlling Where Jobs Run](#controlling-where-jobs-run)
   * [Build Summary](#build-summary)
@@ -225,7 +225,7 @@ For [PC-lint Plus](https://pclintplus.com/), the user must provide the command o
     -"format=%f(%l): %t %n: %m"
     -hs1 // The height of a message should be 1
 ```
-#### Sqore
+#### Squore
 For [Squore](https://www.vector.com/int/en/products/products-a-z/software/squore/) analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
 
 #### TESTinsights

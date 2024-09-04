@@ -803,9 +803,9 @@ public abstract class BaseJob {
             tiArchive = ", TESTinsights_Push.log";
         }
         String addToolsArchive = pclpArchive + tiArchive;
-        String defaultArchive = "**/*.html, xml_data/*.xml,"
-                + " unit_test_fail_count.txt, **/*.png, **/*.css,"
-                + " complete_build.log, *_results.vcr";
+        String defaultArchive = "**/*.html, xml_data/**/*.xml,"
+                + "unit_test_*.txt, **/*.png, **/*.css,"
+                + "complete_build.log, *_results.vcr";
 
         ArtifactArchiver archiver =
                 new ArtifactArchiver(defaultArchive + addToolsArchive);

@@ -51,7 +51,10 @@ import hudson.model.Descriptor.FormException;
 
 public class NewSingleJobTest {
 
-    final String DEFAULT_ARTIFACT_LIST = "**/*.html, xml_data/*.xml, unit_test_fail_count.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr";
+    final String DEFAULT_ARTIFACT_LIST = "**/*.html, xml_data/**/*.xml,"
+                + "unit_test_*.txt, **/*.png, **/*.css,"
+                + "complete_build.log, *_results.vcr";
+
     final long USE_LOCAL_IMPORTED_RESULTS = 1;
     final long USE_EXTERNAL_IMPORTED_RESULTS = 2;
     final String EXTERNAL_RESULT_FILENAME = "archivedResults/project.vcr";
