@@ -466,7 +466,7 @@ def cleanupDirectory(path, teePrint):
     # if the path exists, try to delete all file in it
     if os.path.isdir(path):
         shutil.rmtree(path)
-        os.mkdir(path)
+    os.mkdir(path)
 
 def cleanupOldBuilds(teePrint):
     for path in ["xml_data","management","execution"]:

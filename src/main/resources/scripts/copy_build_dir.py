@@ -184,7 +184,7 @@ if __name__ == '__main__':
     try:
         rgwDir = getReqRepo(ManageProjectName).replace("\\","/").replace(workspace+"/","")
         rgwExportDir = os.path.join(rgwDir, "requirements_gateway/export_data").replace("\\","/")
-    except LookupError:
+    except:
         rgwDir=None
 
     if build_dir != "":

@@ -29,7 +29,14 @@ if "%VCAST_USE_IMPORTED_RESULTS%"=="TRUE" (
         %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --full-status"
     ) 
 )
+
+:: Clean up old files
 del command.log > nul 2>&1
+del *_rebuild.html > nul 2>&1
+del coverage_diffs.html_tmp > nul 2>&1
+del combined_incr_rebuild.tmp > nul 2>&1
+del %VCAST_PROJECT_BASENAME%_full_report.html_tmp > nul 2>&1
+del %VCAST_PROJECT_BASENAME%_metrics_report.html_tmp > nul 2>&1
 
 %VCAST_EXECUTE_PREAMBLE_WIN% %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --build-execute %VCAST_USE_CBT% --output %VCAST_PROJECT_BASENAME%_rebuild.%VCAST_HTML_OR_TEXT% 
 copy command.log complete_build.log

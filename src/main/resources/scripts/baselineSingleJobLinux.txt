@@ -32,7 +32,14 @@ if [[ $VCAST_USE_IMPORTED_RESULTS -eq 1 ]]; then
         $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --full-status "
     fi
 fi
+
+# Clean up old files
 rm -f command.log
+rm -f *_rebuild.html
+rm -f coverage_diffs.html_tmp
+rm -f combined_incr_rebuild.tmp
+rm -f ${VCAST_PROJECT_BASENAME}_full_report.html_tmp
+rm -f ${VCAST_PROJECT_BASENAME}_metrics_report.html
 
 $VCAST_EXECUTE_PREAMBLE_LINUX $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --build-execute $VCAST_USE_CBT --output ${VCAST_PROJECT_BASENAME}_rebuild.html "
 
