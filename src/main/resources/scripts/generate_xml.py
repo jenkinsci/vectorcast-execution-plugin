@@ -457,10 +457,8 @@ class BaseGenerateXml(object):
         overallCoverageTypes = set()
 
         for srcFile in self.units:
-            print("trying file: " , srcFile)
 
             if not self.hasAnyCov(srcFile):
-                print("skipping " , srcFile)
                 continue
                 
             hasFuncCov, hasFuncCallCov = self.hasEitherFunctionCoverages(srcFile)
@@ -716,25 +714,15 @@ class GenerateManageXml (BaseGenerateXml):
                 continue
             for srcFile in env.api.SourceFile.all():
                 display_path = srcFile.display_path
-                
-                if display_path == "":
-                    continue
-
-                display_path = display_path.lower()
-                print("+++: ", display_path)
                 if display_path not in localDisplayPaths:
                     localDisplayPaths.append(display_path)
 
+
         localUnits = self.api.project.cover_api.SourceFile.all() ##self.api.project.cover_api.File.all()
         localUnits.sort(key=lambda x: (x.name))
-        
         for unit in localUnits:
-            unitDispPathLower = unit.display_path.lower()
-            if unitDispPathLower in localDisplayPaths:
+            if unit.display_path in localDisplayPaths:
                 self.units.append(unit)
-                print("***", unitDispPathLower)
-            else:
-                print("---", unitDispPathLower)
 
         self._generate_cover(None)
         self.start_cov_file_environment()
