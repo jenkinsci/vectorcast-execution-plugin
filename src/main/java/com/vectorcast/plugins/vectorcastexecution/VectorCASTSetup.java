@@ -152,8 +152,6 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             final EnvVars env, final Launcher launcher,
             final TaskListener listener) throws IOException {
 
-
-
         final int initPathLen = 8;
         FilePath destScriptDir = new FilePath(workspace, "vc_scripts");
         JarFile jFile = null;
@@ -218,7 +216,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
                             // File, copy it
                             InputStream is = VectorCASTSetup.class.
-                                getResourceAsStream(destString);
+                                getResourceAsStream("/" + entry.getName());
                             dest.copyFrom(is);
                         }
                     }
