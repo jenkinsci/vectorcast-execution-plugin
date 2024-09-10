@@ -25,11 +25,15 @@
 import os, subprocess,argparse, glob, sys, shutil
 
 from managewait import ManageWait
+
 import cobertura
 import create_index_html
-import importlib
-generate_results = importlib.import_module("generate-results")
-
+try:
+    import generate_results 
+except:    
+    import importlib
+    generate_results = importlib.import_module("generate-results")
+    
 try:
     import vector.apps.parallel.parallel_build_execute as parallel_build_execute
 except:
@@ -51,6 +55,7 @@ class VectorCASTExecute(object):
         self.cobertura = args.cobertura
         self.cobertura_extended = args.cobertura_extended
         self.metrics = args.metrics
+        self.fullstatus = args.fullstatus
         self.aggregate = args.aggregate
         
         self.html_base_dir = args.html_base_dir
@@ -143,7 +148,7 @@ class VectorCASTExecute(object):
         self.cleanup("junit", "test_results_")
         self.cleanup("cobertura", "coverage_results_")
         self.cleanup("sonarqube", "test_results_")
-        self.cleanup("pclp", "pclp_results_")
+        self.cleanup("pclp", "gl-code-quality-report.json")
         self.cleanup(".", self.mpName + "_aggregate_report.html")
         self.cleanup(".", self.mpName + "_metrics_report.html")
         
@@ -184,7 +189,6 @@ class VectorCASTExecute(object):
         generate_results.verbose = self.verbose
         generate_results.print_exc = self.print_exc
         generate_results.timing = self.timing
-        
         self.failed_count, self.passed_count = generate_results.buildReports(self.FullMP,self.level,self.environment, True, self.timing, xml_data_dir = self.xml_data_dir)
         
         # calculate the failed percentage
@@ -223,10 +227,13 @@ class VectorCASTExecute(object):
 
     def runReports(self):
         if self.aggregate:
-            self.manageWait.exec_manage_command ("--create-report=aggregate     --output=" + self.mpName + "_aggregate_report.html")
+            self.manageWait.exec_manage_command ("--create-report=aggregate --output=" + self.mpName + "_aggregate_report.html")
             self.needIndexHtml = True
         if self.metrics:
-            self.manageWait.exec_manage_command ("--create-report=metrics       --output=" + self.mpName + "_metrics_report.html")
+            self.manageWait.exec_manage_command ("--create-report=metrics --output=" + self.mpName + "_metrics_report.html")
+            self.needIndexHtml = True
+        if self.fullstatus:
+            self.manageWait.exec_manage_command ("--full-status=" + self.mpName + "_full_status_report.html")
             self.needIndexHtml = True
 
     def runExec(self):
@@ -292,6 +299,7 @@ if __name__ == '__main__':
     reportGroup = parser.add_argument_group('Report Selection', 'VectorCAST Manage reports that can be generated')
     reportGroup.add_argument('--aggregate', help='Generate aggregate coverage report VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--metrics', help='Genenereate metrics reports for VectorCAST Project', action="store_true", default = False)
+    reportGroup.add_argument('--fullstatus', help='Genenereate full status reports for VectorCAST Project', action="store_true", default = False)
 
     beGroup = parser.add_argument_group('Build/Execution Options', 'Options that effect build/execute operation')
     
@@ -340,9 +348,8 @@ if __name__ == '__main__':
     if args.pclp_input:
         vcExec.runPcLintPlusMetrics(args.pclp_input)
 
-    if args.aggregate or args.metrics:
+    if args.aggregate or args.metrics or args.fullstatus:
         vcExec.runReports()
-
 
     if vcExec.useJunitFailCountPct:
         print("--exit_with_failed_count=" + args.exit_with_failed_count + " specified.  Fail Percent = " + str(round(vcExec.failed_pct,0)) + "% Return code: ", str(vcExec.failed_count))

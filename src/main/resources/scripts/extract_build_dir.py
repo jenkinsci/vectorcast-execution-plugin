@@ -28,22 +28,27 @@ import os
 import tarfile
 import sys
 
-leaveFiles = False
-try:
-    if len(sys.argv) > 1:
-        leaveFiles = True
-except:
-    pass
-    
-for file in os.listdir("."):
-    if file.endswith("_build.tar"):
-        print("* Extracting " + file)
-        try:
-            tf = tarfile.open(file, "r")
-            tf.extractall()
-            tf.close()
-        except:
-            print("Problem with tarfile " + file + "...skipping")
-        
+def run(leaveFiles = False):
+
+    for file in os.listdir("."):
+        if file.endswith("_build.tar"):
+            print("* Extracting " + file)
+            try:
+                tf = tarfile.open(file, "r")
+                tf.extractall()
+                tf.close()
+            except:
+                print("Problem with tarfile " + file + "...skipping")
         if not leaveFiles:
             os.remove(file)
+
+
+if __name__ == '__main__':
+
+    leaveFiles = False
+    try:
+        if len(sys.argv) > 1:
+            leaveFiles = True
+    except:
+        pass
+    run(leaveFiles)

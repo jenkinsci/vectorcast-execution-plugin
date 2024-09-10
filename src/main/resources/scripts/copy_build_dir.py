@@ -21,8 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-from __future__ import print_function
-
 import os
 import fnmatch
 import sys
@@ -30,55 +28,50 @@ import subprocess
 import tarfile
 import sqlite3
 import shutil
-import tee_print
-from patch_rgw_directory import getReqRepo
 
-global build_dir
 
-def make_relative(path, workspace, teePrint):
+def make_relative(path, workspace):
 
     path = path.replace("\\","/")
-
+    
     if not os.path.isabs(path):
         return path
-
+        
     # if the paths match
     if path.lower().startswith(workspace.lower()):
         path = path[len(workspace)+1:]
-
+        
     # if the paths match except for first character (d:\ changed to j:\)
     elif path.lower()[1:].startswith(workspace.lower()[1:]):
         path = path[len(workspace)+1:]
-
+        
     elif "workspace" in path:
         # if paths are different, find the workspace in the jenkins path
         workspaceIndex = path.lower().find("workspace")
-
+        
         path = path[workspaceIndex:].split("/",2)[2]
-
+        
     else:
-        teePrint.teePrint("  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace)
+        print("  Warning: Unable to convert source file: " + path + " to relative path based on WORKSPACE: " + workspace)
 
     return path
 
-
-def updateDatabase(conn, nocase, workspace, updateWhat, updateFrom, teePrint):
+    
+def updateDatabase(conn, nocase, workspace, updateWhat, updateFrom):
     sql = "SELECT id, %s FROM %s" % (updateWhat, updateFrom)
     files = conn.execute(sql)
     for id_, path in files:
-        relative = make_relative(path,workspace, teePrint)
+        relative = make_relative(path,workspace)    
         sql = "UPDATE %s SET %s = '%s' WHERE id=%s COLLATE NOCASE" % (updateFrom, updateWhat, relative, id_)
         conn.execute(sql)
-
-
-def addFile(tf, file, backOneDir = False):
-    global build_dir
-
-    local_build_dir = build_dir
-
+        
+def addFile(tf, file, build_dir, backOneDir = False):
+    
+    local_build_dir = build_dir 
+    
     if backOneDir:
         local_build_dir = os.sep.join(build_dir.split(os.sep)[:-1])
-
+        
     try:
         for f in os.listdir(local_build_dir):
             if fnmatch.fnmatch(f, file):
@@ -97,11 +90,9 @@ def addDirectory(tf, build_dir, dir):
         for fname in fileList:
             tf.add(os.path.join(dirName, fname))
 
+def addConvertCoverFile(tf, file, workspace, build_dir, nocase):
 
-def addConvertCoverFile(tf, file, workspace, nocase, teePrint):
-    global build_dir
-
-    teePrint.teePrint("Updating cover.db")
+    print("Updating cover.db")
     fullpath = build_dir + os.path.sep + file
     bakpath = fullpath + '.bk'
     if os.path.isfile(fullpath):
@@ -111,57 +102,44 @@ def addConvertCoverFile(tf, file, workspace, nocase, teePrint):
 
             # update the database paths to be relative from workspace
             try:
-                updateDatabase(conn, nocase, workspace, "LIS_file", "instrumented_files", teePrint)
+                updateDatabase(conn, nocase, workspace, "LIS_file", "instrumented_files")
             except:
-                updateDatabase(conn, nocase, workspace, "path", "lis_files", teePrint)
-            updateDatabase(conn, nocase, workspace, "display_path", "source_files", teePrint)
-            updateDatabase(conn, nocase, workspace, "path", "source_files", teePrint)
-
+                updateDatabase(conn, nocase, workspace, "path", "lis_files")
+            updateDatabase(conn, nocase, workspace, "display_path", "source_files")
+            updateDatabase(conn, nocase, workspace, "path", "source_files")
+            
             conn.commit()
             conn.close()
             addFile(tf, file)
             os.remove(fullpath)
             shutil.move(bakpath, fullpath)
 
-
-def addConvertMasterFile(tf, file, workspace, nocase, teePrint):
-    global build_dir
-    teePrint.teePrint("Updating master.db")
+def addConvertMasterFile(tf, file, workspace, build_dir, nocase):
+    print("Updating master.db")
     fullpath = build_dir + os.path.sep + file
     bakpath = fullpath + '.bk'
     if os.path.isfile(fullpath):
         conn = sqlite3.connect(fullpath)
         if conn:
             shutil.copyfile(fullpath, bakpath)
-            updateDatabase(conn, nocase, workspace, "path", "sourcefiles", teePrint)
+            updateDatabase(conn, nocase, workspace, "path", "sourcefiles")
             conn.commit()
             conn.close()
             addFile(tf, file)
             os.remove(fullpath)
             shutil.move(bakpath, fullpath)
 
+def addConvertFiles(tf, workspace, build_dir, nocase):
+    addConvertCoverFile (tf, "cover.db", workspace, build_dir, nocase)
+    addConvertMasterFile(tf, "master.db", workspace, build_dir, nocase)
 
-def addConvertFiles(tf, workspace, nocase):
-    with tee_print.TeePrint() as teePrint:
-        addConvertCoverFile (tf, "cover.db", workspace, nocase, teePrint)
-        addConvertMasterFile(tf, "master.db", workspace, nocase, teePrint)
+def run(ManageProjectName, Level, BaseName, Env, workspace):
 
-if __name__ == '__main__':
-
-    ManageProjectName = sys.argv[1]
-    Level = sys.argv[2]
-    BaseName = sys.argv[3]
-    Env = sys.argv[4]
-    workspace = os.getenv("WORKSPACE")
-    if workspace is None:
-        workspace = os.getcwd()
     if sys.platform.startswith('win32'):
         workspace = workspace.replace("\\", "/")
         nocase = "COLLATE NOCASE"
     else:
         nocase = ""
-
-    os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(ManageProjectName).rsplit(".",1)[0]
 
     manageCMD = os.path.join(os.environ.get('VECTORCAST_DIR'), "manage")
     cmd = manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env
@@ -174,12 +152,9 @@ if __name__ == '__main__':
     build_dir = ''
 
     for item in list:
-        print(item)
         if "Build Directory:" in item:
             length = len(item.split()[0]) + 1 + len(item.split()[1]) + 1
             build_dir = os.path.relpath(item[length:])
-
-    print(build_dir)
 
     try:
         rgwDir = getReqRepo(ManageProjectName).replace("\\","/").replace(workspace+"/","")
@@ -191,26 +166,43 @@ if __name__ == '__main__':
         build_dir = build_dir + os.path.sep + Env
         tf = tarfile.open(BaseName + "_build.tar", mode='w')
         try:
-            addConvertFiles(tf, workspace, nocase)
-            addFile(tf, "testcase.db")
-            addFile(tf, "COMMONDB.VCD")
-            addFile(tf, "UNITDATA.VCD")
-            addFile(tf, "UNITDYNA.VCD")
-            addFile(tf, "manage.xml")
-            addFile(tf, "testcase_data.xml")
-            addFile(tf, "*.LIS")
-            addFile(tf, "system_test_results.xml")
+            addConvertFiles(tf, workspace, build_dir, nocase)
+            addFile(tf, "testcase.db", build_dir)
+            addFile(tf, "COMMONDB.VCD", build_dir)
+            addFile(tf, "UNITDATA.VCD", build_dir)
+            addFile(tf, "UNITDYNA.VCD", build_dir)
+            addFile(tf, "manage.xml", build_dir)
+            addFile(tf, "testcase_data.xml", build_dir)
+            addFile(tf, "*.LIS", build_dir)
+            addFile(tf, "system_test_results.xml", build_dir)
             addDirectory(tf, build_dir, "TESTCASES")
-            addFile(tf, "CCAST_.CFG", backOneDir=True)
-            addFile(tf, Env + ".vce", backOneDir=True)
-            addFile(tf, Env + ".vcp", backOneDir=True)
-            addFile(tf, Env + ".env", backOneDir=True)
-            addFile(tf, Env + ".tst", backOneDir=True)
-            addFile(tf, Env + "_cba.cvr", backOneDir=True)
-            addFile(tf, "vcast_manage.cfg", backOneDir=True)
+            addFile(tf, "CCAST_.CFG", build_dir, backOneDir=True)
+            addFile(tf, Env + ".vce", build_dir, backOneDir=True)
+            addFile(tf, Env + ".vcp", build_dir, backOneDir=True)
+            addFile(tf, Env + ".env", build_dir, backOneDir=True)
+            addFile(tf, Env + ".tst", build_dir, backOneDir=True)
+            addFile(tf, Env + "_cba.cvr", build_dir, backOneDir=True)
+            addFile(tf, "vcast_manage.cfg", build_dir, backOneDir=True)
 
             if rgwDir is not None:
                 addDirectory(tf, None, rgwExportDir)
 
         finally:
             tf.close()
+
+    
+if __name__ == '__main__':
+                
+    ManageProjectName = sys.argv[1]
+    Level = sys.argv[2]
+    BaseName = sys.argv[3]
+    Env = sys.argv[4]
+    workspace = os.getenv("WORKSPACE")
+        
+    if workspace is None:
+        workspace = os.getcwd()
+
+    os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(ManageProjectName).rsplit(".",1)[0]
+    
+    run(ManageProjectName, Level, BaseName, Env, workspace)
+    
