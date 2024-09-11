@@ -115,6 +115,8 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False):
         file = etree.SubElement(testXml, "class")
         if ".c" in fname:
             fname = fname.split(".c")[0]
+        if ".h" in fname:
+            fname = fname.split(".h")[0]
         file.attrib['name'] = fname.replace(".","_")
         file.attrib['filename'] = fpath 
         
@@ -439,20 +441,21 @@ def runCoberturaResults(packages, api, verbose = False, extended = False):
     for file in api.SourceFile.all():  
         if file.display_name == "":
             continue
-        if not file.has_any_coverage:
+        if not has_any_coverage(file):
             continue
             
-        fname = file.display_name
-        fpath = file.display_path.rsplit('.',1)[0]
+        #fpath = file.display_path.rsplit('.',1)[0]
+        fpath = file.display_name
         fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
         
         # print("*", file.name, file.display_name, fpath)
 
         fileDict[fpath] = file
-        
+    
     for path in sorted(fileDict.keys()):
         file = fileDict[path]        
         new_path = path.rsplit('/',1)[0]
+        
 
         # when we switch paths
         if new_path != path_name:

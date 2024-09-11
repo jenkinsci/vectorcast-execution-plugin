@@ -27,6 +27,7 @@ import os, subprocess,argparse, glob, sys, shutil
 from managewait import ManageWait
 
 import cobertura
+import generate_lcov
 import create_index_html
 try:
     import generate_results 
@@ -204,6 +205,10 @@ class VectorCASTExecute(object):
             
         self.needIndexHtml = True
 
+    def runLcovMetrics(self):
+        print("Creating LCOV Metrics")
+        generate_lcov.generateCoverageResults(self.FullMP, self.xml_data_dir, verbose = self.verbose)
+
     def runCoberturaMetrics(self):
         if self.cobertura_extended:
             print("Creating Extended Cobertura Metrics")
@@ -290,6 +295,7 @@ if __name__ == '__main__':
     metricsGroup.add_argument("--html_base_dir", help='Set the base directory of the html_reports directory. The default is the workspace directory', default = "html_reports")
     metricsGroup.add_argument('--cobertura', help='Generate coverage results in Cobertura xml format', action="store_true", default = False)
     metricsGroup.add_argument('--cobertura_extended', help='Generate coverage results in extended Cobertura xml format', action="store_true", default = False)
+    metricsGroup.add_argument('--lcov', help='Generate coverage results in an LCOV format', action="store_true", default = False)
     metricsGroup.add_argument('--junit', help='Generate test results in Junit xml format', action="store_true", default = False)
     metricsGroup.add_argument('--sonarqube', help='Generate test results in SonarQube Generic test execution report format (CppUnit)', action="store_true", default = False)
     metricsGroup.add_argument('--pclp_input', help='Generate static analysis results from PC-lint Plus XML file to generic static analysis format (codequality)', action="store", default = None)
@@ -338,6 +344,9 @@ if __name__ == '__main__':
         
     if args.cobertura or args.cobertura_extended:
         vcExec.runCoberturaMetrics()
+        
+    if args.lcov:
+        vcExec.runLcovMetrics()
 
     if args.junit or vcExec.useJunitFailCountPct:
         vcExec.runJunitMetrics()
