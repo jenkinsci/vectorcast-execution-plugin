@@ -2,12 +2,18 @@
 [![CodeQL](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/codeql.yml/badge.svg?branch=tms_078)](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/codeql.yml)
 [![GitHub CI](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/ci.yml/badge.svg?branch=tms_078)](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/ci.yml)
 
+# Summary
+
+This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Test results are display with the [Jenkins JUnit Plugin](https://plugins.jenkins.io/junit/) and code coverage is displayed using either
+- [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage)
+- [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
+
 # Table of Contents
 
 <!-- TOC -->
-* [Table of Contents](#table-of-contents)
 * [Summary](#summary)
-  * [Setup/Configuration](#setupconfiguration)
+* [Table of Contents](#table-of-contents)
+* [Setup/Configuration](#setupconfiguration)
 * [Usage](#usage)
   * [Job Types](#job-types)
     * [Single Job](#single-job)
@@ -43,15 +49,79 @@
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
+    * [Version 0.78 (10 Sep 2024)](#version-078-10-sep-2024)
+    * [Version 0.77 (21 Aug 2024)](#version-077-21-aug-2024)
+    * [Version 0.76 (19 Jan 2023)](#version-076-19-jan-2023)
+    * [Version 0.75 (23 Dec 2022)](#version-075-23-dec-2022)
+    * [Version 0.74 (27 Sep 2022)](#version-074-27-sep-2022)
+    * [Version 0.73 (22 Aug 2022)](#version-073-22-aug-2022)
+    * [Version 0.72 (24 May 2022)](#version-072-24-may-2022)
+    * [Version 0.71 (29 Sept 2021)](#version-071-29-sept-2021)
+    * [Version 0.70 (2 Aug 2021)](#version-070-2-aug-2021)
+    * [Version 0.69 (7 Jun 2021)](#version-069-7-jun-2021)
+    * [Version 0.68 (14 May 2021)](#version-068-14-may-2021)
+    * [Version 0.67 (30 March 2021)](#version-067-30-march-2021)
+    * [Version 0.66 (10 Feb 2021)](#version-066-10-feb-2021)
+    * [Version 0.65 (20 Jan 2021)](#version-065-20-jan-2021)
+    * [Version 0.64 (17 Nov 2020)](#version-064-17-nov-2020)
+    * [Version 0.63 (30 April 2020)](#version-063-30-april-2020)
+    * [Version 0.62 (10 March 2020)](#version-062-10-march-2020)
+    * [Version 0.61 (21 Dec 2019)](#version-061-21-dec-2019)
+    * [Version 0.60 (2 Oct 2019)](#version-060-2-oct-2019)
+    * [Version 0.59 (13 Sept 2019)](#version-059-13-sept-2019)
+    * [Version 0.58 (11 Sept 2019)](#version-058-11-sept-2019)
+    * [Version 0.57 (6 Sept 2019)](#version-057-6-sept-2019)
+    * [Version 0.56 (5 Sept 2019)](#version-056-5-sept-2019)
+    * [Version 0.55 (4 Sept 2019)](#version-055-4-sept-2019)
+    * [Version 0.54 (28 Aug 2019)](#version-054-28-aug-2019)
+    * [Version 0.53 (20 Aug 2019)](#version-053-20-aug-2019)
+    * [Version 0.52 (13 Aug 2019)](#version-052-13-aug-2019)
+    * [Version 0.51 (8 Aug 2019)](#version-051-8-aug-2019)
+    * [Version 0.50 (11 Jul 2019)](#version-050-11-jul-2019)
+    * [Version 0.49 (1 Jul 2019)](#version-049-1-jul-2019)
+    * [Version 0.48 (26 Jun 2019)](#version-048-26-jun-2019)
+    * [Version 0.47 (18 Jun 2019)](#version-047-18-jun-2019)
+    * [Version 0.46 (30 May 2019)](#version-046-30-may-2019)
+    * [Version 0.45 (10 May 2019)](#version-045-10-may-2019)
+    * [Version 0.44 (1 May 2019)](#version-044-1-may-2019)
+    * [Version 0.43 (26 Apr 2019)](#version-043-26-apr-2019)
+    * [Version 0.42 (25 Apr 2019)](#version-042-25-apr-2019)
+    * [Version 0.41 (12 Apr 2019)](#version-041-12-apr-2019)
+    * [Version 0.40 (10 Apr 2019)](#version-040-10-apr-2019)
+    * [Version 0.39 (19 Mar 2019)](#version-039-19-mar-2019)
+    * [Version 0.38 (23 Jan 2019)](#version-038-23-jan-2019)
+    * [Version 0.37 (10 Jan 2019)](#version-037-10-jan-2019)
+    * [Version 0.36 (27 Sept 2018)](#version-036-27-sept-2018)
+    * [Version 0.35 (15 May 2018)](#version-035-15-may-2018)
+    * [Version 0.34 (10 May 2018)](#version-034-10-may-2018)
+    * [Version 0.33 (18 Jan 2018)](#version-033-18-jan-2018)
+    * [Version 0.32 (15 Jan 2018)](#version-032-15-jan-2018)
+    * [Version 0.31 (13 Dec 2017)](#version-031-13-dec-2017)
+    * [Version 0.30 (5 Dec 2017)](#version-030-5-dec-2017)
+    * [Version 0.29 (27 Nov 2017)](#version-029-27-nov-2017)
+    * [Version 0.28 (2 Nov 2017)](#version-028-2-nov-2017)
+    * [Version 0.27 (2 Nov 2017)](#version-027-2-nov-2017)
+    * [Version 0.26 (1 Nov 2017](#version-026-1-nov-2017)
+    * [Version 0.25 (26 Oct 2017)](#version-025-26-oct-2017)
+    * [Version 0.24 (25 Oct 2017)](#version-024-25-oct-2017)
+    * [Version 0.23 (17 Oct 2017)](#version-023-17-oct-2017)
+    * [Version 0.22 (26 Sept 2017](#version-022-26-sept-2017)
+    * [Version 0.21 (24 Jul 2017)](#version-021-24-jul-2017)
+    * [Version 0.20 (18 Jul 2017)](#version-020-18-jul-2017)
+    * [Version 0.19 (23 Jun 2017)](#version-019-23-jun-2017)
+    * [Version 0.18 (20 Mar 2017)](#version-018-20-mar-2017)
+    * [Version 0.17 (17 Mar 2017)](#version-017-17-mar-2017)
+    * [Version 0.16 (15 Mar 2017)](#version-016-15-mar-2017)
+    * [Version 0.15 (2 Jan 2017)](#version-015-2-jan-2017)
+    * [Version 0.14 (16 Dec 2016)](#version-014-16-dec-2016)
+    * [Version 0.13 (14 Dec 2016)](#version-013-14-dec-2016)
+    * [Version 0.12 (9 Dec 2016)](#version-012-9-dec-2016)
+    * [Version 0.11 (7 Dec 2016)](#version-011-7-dec-2016)
+    * [Version 0.10 (23 Nov 2016)](#version-010-23-nov-2016)
 <!-- TOC -->
 
-# Summary
 
-This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Test results are display with the [Jenkins JUnit Plugin](https://plugins.jenkins.io/junit/) and code coverage is displayed using either 
-- [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage) 
-- [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
-
-## Setup/Configuration
+# Setup/Configuration
 
 - VectorCAST must be installed and setup on each node.
 - The environment variables **VECTORCAST\_DIR** and **VECTOR\_LICENSE** must be set.
@@ -167,13 +237,13 @@ It shows coverage trends and allows drilling down to more detailed coverage info
 :warning: Legacy Plugin Info
 This is a legacy plugin and will have no futher development beyond bug fixes and security updates
 
-<img src="docs/images/vcc_cov_report.png" width="690" height="302" />
+<img src="docs/images/vcc_cov_report.png" width="700" />
 
 ### Job Creation Options
 
 The user can customize additional parameters for job creation by selecting the **Job Creation Options**:
 
-![](docs/images/job_creation_options.png)
+<img src="docs/images/job_creation_options.png" width="700"/>
 
 #### Job Name 
 Use the Job Name setting for changing the created pipeline job name.  Default is *VectorCASTProjectName*\_vcast\_pipeline
@@ -187,7 +257,7 @@ Maximum Parallel Queued Jobs (Pipeline Job Only) allows the job to specify the m
 #### Use Coverage History
 Use Coverage History marks build as failed if statement or branch coverage decrease by comparing the previous non-failing build's statement and branch coverage to the current build's statement and branch coverage. If either of the coverages have decreased the job will be marked as failed.
 
-_:information_source: When using the Jenkins Coverage Plugin, this will be completed by adding a quality gate for any drop in Statement or Branch coverages.  It will be denoted in the Coverage Report section of the Build Status_
+:information_source: When using the Jenkins Coverage Plugin, this will be completed by adding a quality gate for any drop in Statement or Branch coverages.  It will be denoted in the Coverage Report section of the Build Status_
 
 <img src="docs/images/coverage_plugin_quality_gates.png" width="400" />
 
@@ -250,7 +320,7 @@ Make sure to set the labels on the relevant Jenkins nodes. Manage Jenkins -\> Ma
 The build summary show the following sections:
 
 - General Jenkins Information including
-    - Any errors or warnings that occurred during the build will be show beneath the build number and date  
+    - Any errors or warnings that occurred during the build will be shown beneath the build number and date  
     - Build Artifacts including HTML reports, XML reports, pass/fail counts in text file, complete build log
     - [Test Results](#test-results) section that can expand to show you test results
 - Code Coverage Differences (Only available when using the VectorCAST Code Coverage Plugin)
@@ -262,9 +332,9 @@ The build summary show the following sections:
 
 ## Test Results
 
-Test results will show the user which test cases passed, failed, or were skipped by Change Based Testing.
+The test results will display which test cases passed, failed, or were skipped during Change-Based Testing.
 
-By selecting individual cases, you can see the execution reports for that test case.  This can give the user insight into why a test case failed.
+By selecting individual cases, you can view the execution reports, providing insight into why a test case failed.
 
 ### Passing Test Case
 
@@ -278,14 +348,14 @@ By selecting individual cases, you can see the execution reports for that test c
 
 ### VectorCAST Reports and Jenkins Content Security 
 
-VectorCAST HTML reports for metrics were updated to use cascading style sheets (CSS) in the 2019 release and 2020 for top level project metrics. This was done to give users more flexibility in what and how metrics are displayed. To maintain single file HTML format, VectorCAST Reports used inline CSS. Inline CSS was disallowed under Jenkins more restrictive CSP.
+VectorCAST HTML reports for metrics were updated to use cascading style sheets (CSS) in the 2019 release and 2020 for top level project metrics. This was done to offer users greater flexibility in displaying metrics. To maintain single file HTML format, VectorCAST Reports used inline CSS. Inline CSS was disallowed under Jenkins more restrictive CSP.
 
 "Jenkins 1.641 / Jenkins 1.625.3 introduce the `Content-Security-Policy` header to static files served by Jenkins (specifically, `DirectoryBrowserSupport`). This header is set to a very restrictive default set of permissions to protect Jenkins users from malicious HTML/JS files in workspaces, `/userContent`, or archived
 artifacts."
 
 The result of this combination incorrectly formatted the VectorCAST reports.
 
-Numerous options are available to correct this:
+There are several available options to correct this:
 - Use the Jenkins Resource Root URL (Manage Jenkins > Configure System)
 - Reconfigure VectorCAST Jobs to use external CSS (**VCAST_RPTS_SELF_CONTAINED=FALSE**) combined with enabling anonymous reads from the Manage Jenkins > Configure Global Security > Authorization
 - Reconfigure the Jenkins Content Security Policy
