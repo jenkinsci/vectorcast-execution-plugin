@@ -41,31 +41,6 @@ def new_get_file_encoding():
     except:
         pass
               
-
-
-def get_file_encoding(file, default_encoding="utf-8"):
-    try:
-        import chardet
-    except:
-        return default_encoding
-        
-    try:
-        with _open(file, "rb") as fd:
-            cur_encoding = chardet.detect(fd.read())["encoding"]
-            if cur_encoding == "GB2312":
-                cur_encoding = "GBK"
-    except:
-        print(
-            "Problem detecting encoding of "
-            + file
-            + ".  Defaulting to "
-            + default_encoding
-        )
-        cur_encoding = default_encoding
-
-    return cur_encoding
-
-
 @contextlib.contextmanager
 def open(file, mode="r"):
 
@@ -73,7 +48,6 @@ def open(file, mode="r"):
         fd = _open(file,mode)
     else:
         if os.path.exists(file):
-            #encoding = get_file_encoding(file)
             encoding = new_get_file_encoding()
         else:
             encoding = "utf-8"

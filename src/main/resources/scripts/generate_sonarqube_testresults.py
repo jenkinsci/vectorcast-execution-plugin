@@ -50,7 +50,12 @@ except:
 from vector.enums import ENVIRONMENT_STATUS_TYPE_T
 
 from vector.apps.DataAPI.cover_api import CoverApi
-from vector.apps.ReportBuilder.custom_report import fmt_percent
+try:
+    from vector.apps.ReportBuilder.custom_report import fmt_percent
+except:
+    from vcast_utils import fmt_percent
+    pass
+        
 from operator import attrgetter
 import hashlib 
 import traceback

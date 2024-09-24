@@ -28,6 +28,7 @@ import sys
 import shutil
 
 from bs4 import BeautifulSoup
+from safe_open import open
 
 import re
 def parse_text_files(mpName):

@@ -23,24 +23,24 @@
 #
 
 from lxml import etree
-from vector.apps.DataAPI.vcproject_api import VCProjectApi 
-from vector.apps.DataAPI.vcproject_models import VCProject
+try:
+    from vector.apps.DataAPI.vcproject_api import VCProjectApi 
+    from vector.apps.DataAPI.vcproject_models import VCProject
+except:
+    pass
+try:
+    from vector.apps.DataAPI.unit_test_api import UnitTestApi
+except:
+    from vector.apps.DataAPI.api import Api as UnitTestApi
+
 from vector.apps.DataAPI.cover_api import CoverApi
-from vector.apps.DataAPI.unit_test_api import UnitTestApi
 import sys, os
 from collections import defaultdict
 from pprint import pprint
 
-fileList = []
+from vcast_utils import dump, checkVectorCASTVersion
 
-def dump(obj):
-    if hasattr(obj, '__dict__'): 
-        return vars(obj) 
-    else:
-        try:
-            return {attr: getattr(obj, attr, None) for attr in obj.__slots__} 
-        except:
-            return str(obj)
+fileList = []
 
 def getCoveredFunctionCount(source):
     if len(source.functions) == 0:
@@ -243,6 +243,10 @@ def generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False):
     
 if __name__ == '__main__':
     
+    if not checkVectorCASTVersion(21):
+        print("Cannot create LCOV metrics. Please upgrade VectorCAST")
+        sys.exit()
+            
     try:
         inFile = sys.argv[1]
     except:
@@ -250,5 +254,12 @@ if __name__ == '__main__':
         
     generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False)
     
+    ## if opened from VectorCAST GUI...
+    if not os.getenv('VCAST_MANAGE_PROJECT_DIRECTORY') is None:
+        from vector.lib.core import VC_Report_Client
 
+        # Open report in VectorCAST GUI
+        report_client = VC_Report_Client.ReportClient()
+        if report_client.is_connected():
+            report_client.open_report("out/index.html", "lcov Results")
 

@@ -945,9 +945,9 @@ pipeline {
 
                             if (VC_useCoverageHistory) {
                                 if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
-                                    createSummary icon: "error.gif", text: "Code Coverage Decreased"
+                                    createSummary icon: "icon-error icon-xlg", text: "Code Coverage Decreased"
                                     currentBuild.description += "Code coverage decreased.  See console log for details\n"
-                                    addBadge icon: "error.gif", text: "Code Coverage Decreased"
+                                    addBadge icon: "icon-error icon-xlg", text: "Code Coverage Decreased"
                                 }
                             }
                         }
@@ -1010,7 +1010,7 @@ pipeline {
                                 summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " 
                                 summaryText += readFile("${mpName}_metrics_report.html_tmp")
                                     
-                                createSummary icon: "monitor.gif", text: summaryText
+                                createSummary icon: "icon-document icon-xlg", text: summaryText
 
                             } else {
                                 if (fileExists('combined_incr_rebuild.tmp')) {
@@ -1031,7 +1031,7 @@ pipeline {
 
                                 // If not, something went wrong... Make the build as unstable
                                 currentBuild.result = 'UNSTABLE'
-                                createSummary icon: "warning.gif", text: "General Failure"
+                                createSummary icon: "icon-warning icon-xlg", text: "General Failure"
                                 currentBuild.description += "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
                             }
                         } else {
@@ -1040,12 +1040,12 @@ pipeline {
                                 // Blue ocean view doesn't have a summary
 
                                 summaryText += readFile("${mpName}_full_report.html_tmp") + "<br> " + readFile("${mpName}_metrics_report.html_tmp")
-                                createSummary icon: "monitor.gif", text: summaryText
+                                createSummary icon: "icon-document icon-xlg", text: summaryText
 
                             } else {
                                 // If not, something went wrong... Make the build as unstable
                                 currentBuild.result = 'UNSTABLE'
-                                createSummary icon: "warning.gif", text: "General Failure"
+                                createSummary icon: "icon-warning icon-xlg", text: "General Failure"
                                 currentBuild.description += "General Failure, Full Report or Metrics Report Not Present. Please see the console for more information\n"
                             }
                         }

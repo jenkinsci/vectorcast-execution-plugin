@@ -650,7 +650,8 @@ class GenerateManageXml (BaseGenerateXml):
                        use_archive_extract = False,
                        report_failed_only = False,
                        no_full_reports = False,
-                       print_exc = False):
+                       print_exc = False,
+                       useStartLine = False):
 
         super(GenerateManageXml, self).__init__(FullManageProjectName, verbose)
         self.api = VCProjectApi(FullManageProjectName)
@@ -671,6 +672,8 @@ class GenerateManageXml (BaseGenerateXml):
         self.print_exc = print_exc
 
         self.units = []
+        
+        self.useStartLine = useStartLine
 
         self.cleanupXmlDataDir()
 
@@ -679,7 +682,7 @@ class GenerateManageXml (BaseGenerateXml):
         import glob
         # if the path exists, try to delete all file in it
         if os.path.isdir(path):
-            for file in glob.glob(path + "/*.*"):
+            for file in glob.glob(path + "/*.*", recursive=False):
                 try:
                     os.remove(file);
                 except:
@@ -798,7 +801,8 @@ class GenerateManageXml (BaseGenerateXml):
                                self.generate_exec_rpt_each_testcase,
                                self.use_archive_extract,
                                self.report_failed_only,
-                               self.print_exc)
+                               self.print_exc,
+                               self.useStartLine)
 
         localXML.topLevelAPI = self.api
         localXML.noResults = self.noResults
@@ -955,7 +959,7 @@ class GenerateManageXml (BaseGenerateXml):
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, use_archive_extract = False, report_failed_only = False, print_exc = False):
+    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, use_archive_extract = False, report_failed_only = False, print_exc = False, useStartLine = False):
         super(GenerateXml, self).__init__(FullManageProjectName, verbose)
 
         self.cbtDict = cbtDict
@@ -966,6 +970,7 @@ class GenerateXml(BaseGenerateXml):
         self.print_exc = print_exc
         self.topLevelAPI = None
         self.noResults = False
+        self.useStartLine = useStartLine
 
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         build_dir = build_dir.replace("\\","/")
@@ -1239,7 +1244,10 @@ class GenerateXml(BaseGenerateXml):
         unitName = ""
 
         if unit:
-            filePath = unit.sourcefile.normalized_path(normcase=False)
+            try:
+                filePath = unit.sourcefile.normalized_path(normcase=False)
+            except:
+                filePath = unit.sourcefile.normalized_path
 
             try:
                 prj_dir = os.environ['WORKSPACE'].replace("\\","/") + "/"
@@ -1250,8 +1258,11 @@ class GenerateXml(BaseGenerateXml):
                 fpath = os.path.relpath(filePath,prj_dir).replace("\\","/")
             except:
                 fpath = filePath
-
-            startLine = str(tc.function.start_line)
+                
+            if self.useStartLine:
+                startLine = str(tc.function.start_line)
+            else:
+                startLine = "0"
 
             unitName = unit.name
 
@@ -1295,7 +1306,7 @@ class GenerateXml(BaseGenerateXml):
             deltaTimeStr = str((end_tdo - start_tdo).total_seconds())
         else:
             deltaTimeStr = "0.0"
-
+        
         unit_name = escape(unit_name, quote=False)
         func_name = escape(func_name, quote=True)
         tc_name = escape(tc.name, quote=False)

@@ -37,6 +37,8 @@ try:
         from Queue import Queue, Empty
 except ImportError:
         from queue import Queue, Empty  # python 3.x
+
+from safe_open import open
  
 class ManageWait(object):
     def __init__(self, verbose, command_line, wait_time, wait_loops, mpName = "", useCI = ""):
@@ -71,7 +73,11 @@ class ManageWait(object):
             output = ( datetime.now().strftime("%H:%M:%S.%f") + "  " + line + "\n" )
             if not self.silent:
                 print(line)
-                logfile.write(output)
+                try:
+                    logfile.write(output)
+                except:
+                    logfile.write(output.decode(self.encFmt))
+                    
             queue.put(line)
 
     def startOutputThread(self, io_target, logfile):
@@ -85,8 +91,9 @@ class ManageWait(object):
         if self.verbose:
             print (self.command_line)
         return self.exec_manage(silent)
+        
     def exec_manage(self, silent=False):
-        with open("command.log", 'a', encoding=self.encFmt) as logfile:
+        with open("command.log", 'a') as logfile:
             return self.__exec_manage(silent, logfile)
 
     def __exec_manage(self, silent, logfile):
@@ -101,7 +108,10 @@ class ManageWait(object):
         loop_count = 0
         while 1:
             loop_count += 1
-            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True, encoding=self.encFmt)
+            try:
+                p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True, encoding=self.encFmt)
+            except:
+                p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
             
             self.startOutputThread(p.stdout, logfile)
             

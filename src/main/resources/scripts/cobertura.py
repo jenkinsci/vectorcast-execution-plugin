@@ -23,24 +23,25 @@
 #
 
 from lxml import etree
-from vector.apps.DataAPI.vcproject_api import VCProjectApi 
-from vector.apps.DataAPI.vcproject_models import VCProject
+try:
+    from vector.apps.DataAPI.vcproject_api import VCProjectApi 
+    from vector.apps.DataAPI.vcproject_models import VCProject
+except:
+    pass
+
 from vector.apps.DataAPI.cover_api import CoverApi
-from vector.apps.DataAPI.unit_test_api import UnitTestApi
+try:
+    from vector.apps.DataAPI.unit_test_api import UnitTestApi
+except:
+    from vector.apps.DataAPI.api import Api as UnitTestApi
+
 import sys, os
 from collections import defaultdict
 from pprint import pprint
 
 fileList = []
 
-def dump(obj):
-    if hasattr(obj, '__dict__'): 
-        return vars(obj) 
-    else:
-        try:
-            return {attr: getattr(obj, attr, None) for attr in obj.__slots__} 
-        except:
-            return str(obj)
+from vcast_utils import dump, checkVectorCASTVersion
 
 def write_xml(x, name, verbose = False):
     
@@ -745,9 +746,15 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", ve
         os.makedirs(cob_data_dir)
         
     write_xml(coverages, os.path.join(cob_data_dir,"coverage_results_" + name))
-             
+
+
 if __name__ == '__main__':
     
+   
+    if not checkVectorCASTVersion(21):
+        print("Cannot create Cobertura metrics. Please upgrade VectorCAST")
+        sys.exit()
+            
     extended = False
     azure = False
     

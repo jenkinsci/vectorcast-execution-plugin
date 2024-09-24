@@ -29,16 +29,24 @@ from managewait import ManageWait
 import cobertura
 import generate_lcov
 import create_index_html
+
 try:
     import generate_results 
 except:    
-    import importlib
-    generate_results = importlib.import_module("generate-results")
+    try:
+        import importlib
+        generate_results = importlib.import_module("generate-results")
+    except:
+        vc_script = os.path.join(os.environ['WORKSPACE'], "vc_scripts", "generate-results.py")
+        import imp
+        generate_results = imp.load_source("generate_results", vc_script)
     
 try:
     import vector.apps.parallel.parallel_build_execute as parallel_build_execute
 except:
     import prevcast_parallel_build_execute as parallel_build_execute
+
+from vcast_utils import checkVectorCASTVersion, dump
 
 class VectorCASTExecute(object):
 
@@ -190,7 +198,14 @@ class VectorCASTExecute(object):
         generate_results.verbose = self.verbose
         generate_results.print_exc = self.print_exc
         generate_results.timing = self.timing
-        self.failed_count, self.passed_count = generate_results.buildReports(self.FullMP,self.level,self.environment, True, self.timing, xml_data_dir = self.xml_data_dir)
+        
+        if checkVectorCASTVersion(20, quiet=True):
+            self.useStartLine = True
+        else:
+            self.useStartLine = False
+        
+        self.failed_count, self.passed_count = generate_results.buildReports(self.FullMP,self.level,self.environment, 
+                True, self.timing, xml_data_dir = self.xml_data_dir, useStartLine=self.useStartLine)
         
         # calculate the failed percentage
         if (self.failed_count + self.passed_count > 0):
@@ -206,28 +221,39 @@ class VectorCASTExecute(object):
         self.needIndexHtml = True
 
     def runLcovMetrics(self):
-        print("Creating LCOV Metrics")
-        generate_lcov.generateCoverageResults(self.FullMP, self.xml_data_dir, verbose = self.verbose)
+    
+        if not checkVectorCASTVersion(21):
+            print("XXX Cannot create LCOV metrics. Please upgrade VectorCAST\n")
+        else:
+            print("Creating LCOV Metrics")
+            generate_lcov.generateCoverageResults(self.FullMP, self.xml_data_dir, verbose = self.verbose)
 
     def runCoberturaMetrics(self):
-        if self.cobertura_extended:
-            print("Creating Extended Cobertura Metrics")
+        if not checkVectorCASTVersion(21):
+            print("Cannot create Cobertura metrics. Please upgrade VectorCAST")
         else:
-            print("Creating Cobertura Metrics")
+            if self.cobertura_extended:
+                print("Creating Extended Cobertura Metrics")
+            else:
+                print("Creating Cobertura Metrics")
 
-        cobertura.generateCoverageResults(self.FullMP, self.azure, self.xml_data_dir, verbose = self.verbose, extended=self.cobertura_extended)
+            cobertura.generateCoverageResults(self.FullMP, self.azure, self.xml_data_dir, verbose = self.verbose, extended=self.cobertura_extended)
 
     def runSonarQubeMetrics(self):
-        print("Creating SonarQube Metrics")
         import generate_sonarqube_testresults 
-        generate_sonarqube_testresults.run(self.FullMP, self.xml_data_dir)
+        
+        if not checkVectorCASTVersion(21):
+            print("Cannot create SonarQube metrics. Please upgrade VectorCAST")
+        else:
+            print("Creating SonarQube Metrics")
+            generate_sonarqube_testresults.run(self.FullMP, self.xml_data_dir)
         
     def runPcLintPlusMetrics(self, input_xml):
         print("Creating PC-lint Plus Metrics")
         import generate_pclp_reports 
         os.makedirs(os.path.join(self.xml_data_dir,"pclp"))
         report_name = os.path.join(self.xml_data_dir,"pclp","gl-code-quality-report.json")
-        print("PC-lint Plus Metrics file: ", report_name)
+        print("PC-lint Plus Metrics file: " + report_name)
         generate_pclp_reports.generate_reports(input_xml, output_gitlab = report_name)
 
     def runReports(self):
@@ -252,7 +278,7 @@ class VectorCASTExecute(object):
         else:
             output = ""
             
-        if self.jobs != "1":
+        if self.jobs != "1" and checkVectorCASTVersion(20, True):
 
             # should work for pre-vcast parallel_build_execute or vcast parallel_build_execute
             pstr = "--project " + self.FullMP
@@ -271,6 +297,7 @@ class VectorCASTExecute(object):
                     callList.append(s)
 
             callStr = " ".join(callList)
+            print(callStr)
             parallel_build_execute.parallel_build_execute(callStr)
 
         else:      
@@ -342,14 +369,14 @@ if __name__ == '__main__':
     if args.build_execute or args.build:
         vcExec.runExec()
         
+    if args.junit or vcExec.useJunitFailCountPct:
+        vcExec.runJunitMetrics()
+
     if args.cobertura or args.cobertura_extended:
         vcExec.runCoberturaMetrics()
         
     if args.lcov:
         vcExec.runLcovMetrics()
-
-    if args.junit or vcExec.useJunitFailCountPct:
-        vcExec.runJunitMetrics()
 
     if args.sonarqube:
         vcExec.runSonarQubeMetrics()

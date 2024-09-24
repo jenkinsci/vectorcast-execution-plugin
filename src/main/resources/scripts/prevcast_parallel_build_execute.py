@@ -1,13 +1,21 @@
 #parallel_build_execute.py
 
-from __future__ import unicode_literals
 import sys, os, subprocess, argparse, glob, shutil
 from pprint import pprint
 import pdb, time
 from datetime import timedelta
 from io import open
 
-from vector.apps.DataAPI.vcproject_api import VCProjectApi 
+try:
+    from vector.apps.DataAPI.vcproject_api import VCProjectApi 
+    from vector.apps.DataAPI.vcproject_models import VCProject
+except:
+    pass
+try:
+    from vector.apps.DataAPI.unit_test_api import UnitTestApi
+except:
+    from vector.apps.DataAPI.api import Api as UnitTestApi
+
 from threading import Thread, Lock
 try:
         from Queue import Queue, Empty

@@ -207,5 +207,5 @@ if __name__ == '__main__':
         
     parser = ParseConsoleForCBT(True)
     parser.parse(buildLogData)
-    #pprint(parser.parse(buildLogData), width=132)
+    pprint(parser.parse(buildLogData), width=132)
     

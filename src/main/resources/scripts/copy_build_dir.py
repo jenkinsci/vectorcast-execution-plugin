@@ -110,7 +110,7 @@ def addConvertCoverFile(tf, file, workspace, build_dir, nocase):
             
             conn.commit()
             conn.close()
-            addFile(tf, file)
+            addFile(tf, file, build_dir)
             os.remove(fullpath)
             shutil.move(bakpath, fullpath)
 
@@ -125,7 +125,7 @@ def addConvertMasterFile(tf, file, workspace, build_dir, nocase):
             updateDatabase(conn, nocase, workspace, "path", "sourcefiles")
             conn.commit()
             conn.close()
-            addFile(tf, file)
+            addFile(tf, file, build_dir)
             os.remove(fullpath)
             shutil.move(bakpath, fullpath)
 
@@ -174,6 +174,7 @@ def run(ManageProjectName, Level, BaseName, Env, workspace):
             addFile(tf, "manage.xml", build_dir)
             addFile(tf, "testcase_data.xml", build_dir)
             addFile(tf, "*.LIS", build_dir)
+            addFile(tf, "ENVIRO.AUX*", build_dir)
             addFile(tf, "system_test_results.xml", build_dir)
             addDirectory(tf, build_dir, "TESTCASES")
             addFile(tf, "CCAST_.CFG", build_dir, backOneDir=True)
