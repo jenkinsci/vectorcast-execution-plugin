@@ -541,7 +541,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             passed_count, failed_count = useManageAPI(FullManageProjectName, cbtDict, generate_individual_reports, 
                     use_archive_extract, 
                     report_only_failures,
-                    no_full_reportd,
+                    no_full_report,
                     useStartLine)
 
             
