@@ -746,11 +746,9 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", ve
         os.makedirs(cob_data_dir)
         
     write_xml(coverages, os.path.join(cob_data_dir,"coverage_results_" + name))
-
-
+             
 if __name__ == '__main__':
     
-   
     if not checkVectorCASTVersion(21):
         print("Cannot create Cobertura metrics. Please upgrade VectorCAST")
         sys.exit()

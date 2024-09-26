@@ -39,11 +39,11 @@ def make_relative(path, workspace):
         
     # if the paths match
     if path.lower().startswith(workspace.lower()):
-        path = path[len(workspace)+1:]
+        path = path[len(workspace):]
         
     # if the paths match except for first character (d:\ changed to j:\)
     elif path.lower()[1:].startswith(workspace.lower()[1:]):
-        path = path[len(workspace)+1:]
+        path = path[len(workspace):]
         
     elif "workspace" in path:
         # if paths are different, find the workspace in the jenkins path
@@ -95,6 +95,7 @@ def addConvertCoverFile(tf, file, workspace, build_dir, nocase):
     print("Updating cover.db")
     fullpath = build_dir + os.path.sep + file
     bakpath = fullpath + '.bk'
+    
     if os.path.isfile(fullpath):
         conn = sqlite3.connect(fullpath)
         if conn:

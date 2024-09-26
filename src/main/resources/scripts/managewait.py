@@ -93,9 +93,13 @@ class ManageWait(object):
         return self.exec_manage(silent)
         
     def exec_manage(self, silent=False):
-        with open("command.log", 'a') as logfile:
-            return self.__exec_manage(silent, logfile)
-
+        try:
+            with open("command.log", 'a', encoding=self.encFmt) as logfile:
+                return self.__exec_manage(silent, logfile)
+        except:        
+            with open("command.log", 'a') as logfile:
+                return self.__exec_manage(silent, logfile)
+                
     def __exec_manage(self, silent, logfile):
         self.silent = silent
         callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line

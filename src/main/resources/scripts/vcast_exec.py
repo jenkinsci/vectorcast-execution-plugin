@@ -297,7 +297,6 @@ class VectorCASTExecute(object):
                     callList.append(s)
 
             callStr = " ".join(callList)
-            print(callStr)
             parallel_build_execute.parallel_build_execute(callStr)
 
         else:      
