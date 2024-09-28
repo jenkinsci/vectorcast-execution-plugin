@@ -10,7 +10,6 @@ try:
 except:
     pass
 
-
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
 
 

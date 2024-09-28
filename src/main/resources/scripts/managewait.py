@@ -38,7 +38,10 @@ try:
 except ImportError:
         from queue import Queue, Empty  # python 3.x
 
-from safe_open import open
+try:
+    from safe_open import open
+except:
+    pass    
  
 class ManageWait(object):
     def __init__(self, verbose, command_line, wait_time, wait_loops, mpName = "", useCI = ""):

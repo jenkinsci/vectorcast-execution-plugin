@@ -38,7 +38,6 @@ import sys
 try:
     from vector.apps.DataAPI.unit_test_api import UnitTestApi
     from vector.apps.DataAPI.unit_test_models import TestCase
-    import vector.apps.DataAPI.unit_test_models as unit_test_models
 except:
     from vector.apps.DataAPI.api import Api as UnitTestApi
     from vector.apps.DataAPI.models import TestCase
@@ -52,6 +51,8 @@ from vector.apps.DataAPI.cover_api import CoverApi
 from vector.apps.ReportBuilder.custom_report import fmt_percent
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
+from vcast_utils import dump
+
 import hashlib
 import traceback
 import parse_traceback
@@ -63,15 +64,6 @@ import re
 
 def dummy(*args, **kwargs):
     return None
-
-def dump(obj):
-    if hasattr(obj, '__dict__'):
-        return vars(obj)
-    else:
-        try:
-            return {attr: getattr(obj, attr, None) for attr in obj.__slots__}
-        except:
-            return str(obj)
 
 ##########################################################################
 # This class generates the XML (JUnit based) report for the overall
