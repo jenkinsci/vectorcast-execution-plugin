@@ -255,7 +255,7 @@ class VectorCASTExecute(object):
         os.makedirs(os.path.join(self.xml_data_dir,"pclp"))
         report_name = os.path.join(self.xml_data_dir,"pclp","gl-code-quality-report.json")
         print("PC-lint Plus Metrics file: " + report_name)
-        generate_pclp_reports.generate_reports(input_xml, output_gitlab = report_name)
+        generate_pclp_reports.generate_reports(self.pclp_input, output_gitlab = report_name)
         
         if args.pclp_output_html:
             print("Creating PC-lint Plus Findings")

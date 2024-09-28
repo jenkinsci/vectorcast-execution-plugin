@@ -1,0 +1,9 @@
+<div class='report-block'>
+
+  <h3 id="PC-LintPlusDetails">PC-Lint Plus Details</h3>
+
+  <table class='table table-hover table-bordered'>
+    {{detailHTML}}
+  </table>
+  
+</div>
