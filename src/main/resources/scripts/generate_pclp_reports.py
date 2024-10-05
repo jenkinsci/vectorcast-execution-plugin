@@ -16,13 +16,11 @@ except ImportError:
 import json
 import xml.etree.ElementTree
 import os
-import pathlib
 
 from pprint import pprint
 
-from vector.apps.DataAPI.vcproject_api import VCProjectApi
-from vector.apps.ReportBuilder.custom_report import CustomReport
 from vcast_utils import checkVectorCASTVersion
+
 try:
     from safe_open import open
 except:
@@ -245,6 +243,8 @@ def generate_source():
     if fullMpName is None:
         return output
         
+    from vector.apps.DataAPI.vcproject_api import VCProjectApi
+
     api = VCProjectApi(fullMpName)
 
     localUnits = api.project.cover_api.SourceFile.all()
@@ -328,7 +328,10 @@ def generate_source():
             
     return output, listOfContent
 
-def generate_html_report(mpName: str, input_xml: str, output_html: str) -> None:
+def generate_html_report(mpName, input_xml, output_html):
+    import pathlib
+    from vector.apps.DataAPI.vcproject_api import VCProjectApi
+    from vector.apps.ReportBuilder.custom_report import CustomReport
         
     global g_fullMpName
     global g_msgs

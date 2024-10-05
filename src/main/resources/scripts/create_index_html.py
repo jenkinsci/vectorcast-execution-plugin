@@ -2,10 +2,7 @@ import os
 import sys
 import argparse
 import glob
-import pathlib
 
-from vector.apps.DataAPI.vcproject_api import VCProjectApi
-from vector.apps.ReportBuilder.custom_report import CustomReport
 
 class cd:
     """Context manager for changing the current working directory"""
@@ -54,7 +51,10 @@ def getReportName(filename):
         
     return reportName, reportType
 
-def create_index_html(mpName: str) -> None:
+def create_index_html(mpName):
+    import pathlib
+    from vector.apps.DataAPI.vcproject_api import VCProjectApi
+    from vector.apps.ReportBuilder.custom_report import CustomReport
     with VCProjectApi(mpName) as api:
         # Set custom report directory to the where this script was
         # found. Must contain sections/index_section.py

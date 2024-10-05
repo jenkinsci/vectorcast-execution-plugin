@@ -178,22 +178,27 @@ class VectorCASTExecute(object):
 
     
     def generateIndexHtml(self):
-        try:
-            prj_dir = os.environ['CI_PROJECT_DIR'].replace("\\","/") + "/"
-        except:
-            prj_dir = os.getcwd().replace("\\","/") + "/"
-
-        tempHtmlReportList = glob.glob("*.html")
-        tempHtmlReportList += glob.glob(os.path.join(args.html_base_dir, "*.html"))
-        htmlReportList = []
-
-        for report in tempHtmlReportList:
-            if "index.html" not in report:
-                report = report.replace("\\","/")
-                report = report.replace(prj_dir,"")
-                htmlReportList.append(report)
+        if not checkVectorCASTVersion(21):
+            print("Cannot create index.html. Please upgrade VectorCAST")
+        else:
+            print("Creating index.html")
         
-        create_index_html.run(htmlReportList)
+            try:
+                prj_dir = os.environ['CI_PROJECT_DIR'].replace("\\","/") + "/"
+            except:
+                prj_dir = os.getcwd().replace("\\","/") + "/"
+
+            tempHtmlReportList = glob.glob("*.html")
+            tempHtmlReportList += glob.glob(os.path.join(args.html_base_dir, "*.html"))
+            htmlReportList = []
+
+            for report in tempHtmlReportList:
+                if "index.html" not in report:
+                    report = report.replace("\\","/")
+                    report = report.replace(prj_dir,"")
+                    htmlReportList.append(report)
+            
+            create_index_html(htmlReportList)
     
     def runJunitMetrics(self):
         print("Creating JUnit Metrics")
@@ -202,7 +207,7 @@ class VectorCASTExecute(object):
         generate_results.print_exc = self.print_exc
         generate_results.timing = self.timing
         
-        if checkVectorCASTVersion(20, quiet=True):
+        if checkVectorCASTVersion(21, quiet=True):
             self.useStartLine = True
         else:
             self.useStartLine = False
@@ -258,9 +263,12 @@ class VectorCASTExecute(object):
         generate_pclp_reports.generate_reports(self.pclp_input, output_gitlab = report_name)
         
         if args.pclp_output_html:
-            print("Creating PC-lint Plus Findings")
-            import generate_pclp_reports 
-            generate_pclp_reports.generate_html_report(self.FullMP, self.pclp_input, self.pclp_output_html)
+            if not checkVectorCASTVersion(21):
+                print("Cannot create PC-Lint Plus HTML report. Please upgrade VectorCAST")
+            else:
+                print("Creating PC-lint Plus Findings")
+                import generate_pclp_reports 
+                generate_pclp_reports.generate_html_report(self.FullMP, self.pclp_input, self.pclp_output_html)
             
     def runReports(self):
         if self.aggregate:

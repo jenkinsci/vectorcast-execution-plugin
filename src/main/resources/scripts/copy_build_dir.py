@@ -39,11 +39,11 @@ def make_relative(path, workspace):
         
     # if the paths match
     if path.lower().startswith(workspace.lower()):
-        path = path[len(workspace):]
+        path = path[len(workspace)+1:]
         
     # if the paths match except for first character (d:\ changed to j:\)
     elif path.lower()[1:].startswith(workspace.lower()[1:]):
-        path = path[len(workspace):]
+        path = path[len(workspace)+1:]
         
     elif "workspace" in path:
         # if paths are different, find the workspace in the jenkins path
