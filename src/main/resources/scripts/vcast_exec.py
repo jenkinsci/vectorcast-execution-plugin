@@ -28,7 +28,6 @@ from managewait import ManageWait
 
 import cobertura
 import generate_lcov
-from create_index_html import create_index_html
 
 try:
     import generate_results 
@@ -151,9 +150,9 @@ class VectorCASTExecute(object):
             self.reportsName += "_" + self.environment
                   
         if self.useLevelEnv:
-            self.build_log_name = "build" + self.reportsName + ".log"    
+            self.build_log_name = self.reportsName + "_build.log"    
         else:
-            self.build_log_name = "build" + self.mpName + ".log"    
+            self.build_log_name = self.mpName + "_build.log"    
 
         self.manageWait = ManageWait(self.verbose, "", 30, 1, self.FullMP, self.ci)
             
@@ -198,7 +197,8 @@ class VectorCASTExecute(object):
                     report = report.replace(prj_dir,"")
                     htmlReportList.append(report)
             
-            create_index_html(htmlReportList)
+            from create_index_html import create_index_html
+            create_index_html(self.FullMP)
     
     def runJunitMetrics(self):
         print("Creating JUnit Metrics")
