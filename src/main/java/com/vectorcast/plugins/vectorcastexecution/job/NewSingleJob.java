@@ -39,6 +39,7 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.apache.commons.io.IOUtils;
 import java.io.InputStream;
 import java.util.logging.Logger;
@@ -511,6 +512,7 @@ public class NewSingleJob extends BaseJob {
    * @throws hudson.model.Descriptor.FormException exception
    */
   @Override
+  @RequirePOST
   public void doCreate()
         throws IOException, ServletException, Descriptor.FormException {
     getTopProject().setDescription("Single job to run the manage project: "

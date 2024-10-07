@@ -132,7 +132,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     }
 
     /**
-     * Prints the version of the plugin that's being used
+     * Prints the version of the plugin that's being used.
      * @param logger - where to log the info
      */
     private void printVersion(final PrintStream logger) {

@@ -43,6 +43,7 @@ import org.apache.commons.io.IOUtils;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -249,6 +250,7 @@ public class NewPipelineJob extends BaseJob {
      * @throws hudson.model.Descriptor.FormException exception
      */
     @Override
+    @RequirePOST
     public void doCreate()
             throws IOException, ServletException, Descriptor.FormException {
 
