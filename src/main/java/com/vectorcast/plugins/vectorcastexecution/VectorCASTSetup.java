@@ -131,6 +131,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         }
     }
 
+    /**
+     * Prints the version of the plugin that's being used
+     * @param logger - where to log the info
+     */
     private void printVersion(final PrintStream logger) {
         logger.println("[VectorCAST Execution Version]: "
             + VcastUtils.getVersion().
@@ -216,7 +220,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
                             // File, copy it
                             InputStream is = VectorCASTSetup.class.
-                                getResourceAsStream("/" + entry.getName());
+                                getResourceAsStream(entry.getName());
                             dest.copyFrom(is);
                         }
                     }
