@@ -220,7 +220,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
                             // File, copy it
                             InputStream is = VectorCASTSetup.class.
-                                getResourceAsStream(entry.getName());
+                                getResourceAsStream("/" + entry.getName());
                             dest.copyFrom(is);
                         }
                     }
