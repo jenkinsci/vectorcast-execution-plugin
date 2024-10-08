@@ -382,15 +382,15 @@ class GenerateManageXml (BaseGenerateXml):
                         print("SQ:        *Missing path for environment: " + env_to_investigate[0].name)
                         print("SQ:            Expected Path: " + testPath)
                         continue
-                    if env_to_investigate[0].api.environment.status != ENVIRONMENT_STATUS_TYPE_T.NORMAL:
+                    if isinstance(env_to_investigate[0].api, UnitTestApi) and \
+                            env_to_investigate[0].api.environment.status != ENVIRONMENT_STATUS_TYPE_T.NORMAL:
                         print("SQ:    Skipping environment: "+ env_to_investigate[0].name)
                         print("SQ:        *" + env_to_investigate[0].name + " status is not NORMAL")
                         continue 
                 except:
                     print("    Skipping environment: "+ env_to_investigate[0].name)
-                    print("        *Unable to open DataAPI")
+                    print("        *Issue with DataAPI")
                     continue
-                    
 
                 if isinstance(env_to_investigate[0].api, UnitTestApi):
                     uname = (env_to_investigate[0].api.TestCase.first().unit_display_name)

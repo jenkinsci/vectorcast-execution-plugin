@@ -819,6 +819,8 @@ class GenerateManageXml (BaseGenerateXml):
 
     def skipReporting(self, env):
 
+        build_dir = ""
+        
         if self.use_archive_extract and self.cbtDict:
             try:
                 prj_dir = os.environ['WORKSPACE'].replace("\\","/") + "/"
