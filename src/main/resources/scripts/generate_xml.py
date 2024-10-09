@@ -1080,11 +1080,7 @@ class GenerateXml(BaseGenerateXml):
                         for func in unit.functions:
                             if not func.is_non_testable_stub:
                                 for tc in func.testcases:
-                                    try:
-                                        vctMap = tc.is_vct_map
-                                    except:
-                                        vctMap = False
-                                    if not tc.is_csv_map and not vctMap:
+                                    if not self.isTcPlaceHolder(tc):
                                         if not tc.for_compound_only or tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
                                             self.write_testcase(tc, tc.function.unit.name, tc.function.display_name, unit = unit)
 
@@ -1092,6 +1088,27 @@ class GenerateXml(BaseGenerateXml):
                 parse_traceback.parse(traceback.format_exc(), self.verbose, self.compiler,  self.testsuite,  self.env,  self.build_dir)
 
         self.end_test_results_file()
+
+#
+# GenerateXml - write the end of the jUnit XML file and close it
+#
+    def isTcPlaceHolder(self, tc):
+        placeHolder = False
+        try:
+            vctMap = tc.is_vct_map
+        except:
+            vctMap = False
+        try:
+            vcCodedTestMap = tc.is_coded_tests_map
+        except:
+            vcCodedTestMap = False
+            
+        # Placeholder "testcases" that need to be ignored
+        if tc.is_csv_map or vctMap or vcCodedTestMap:   
+            placeHolder = True
+            
+        return placeHolder 
+
 #
 # GenerateXml - write the end of the jUnit XML file and close it
 #
@@ -1153,12 +1170,7 @@ class GenerateXml(BaseGenerateXml):
         success = 0
 
         for tc in self.api.TestCase.all():
-            try:
-                vctMap = tc.is_vct_map
-            except:
-                vctMap = False
-
-            if not self.noResults and (not tc.for_compound_only or tc.testcase_status == "TCR_STRICT_IMPORT_FAILED") and not tc.is_csv_map and not vctMap:
+            if not self.noResults and (not tc.for_compound_only or tc.testcase_status == "TCR_STRICT_IMPORT_FAILED") and not self.isTcPlaceHolder(tc):
                 if not tc.passed:
                     self.failed_count += 1
                     if tc.execution_status != "EXEC_SUCCESS_FAIL ":
