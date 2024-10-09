@@ -35,9 +35,9 @@ def writeJunitFooter(junitfile):
     junitfile.write("  </testsuite>\n")
     junitfile.write("</testsuites>\n")
 
-def write_tc_data(currentEnv, unit_report_name, jobNameDotted, passed, failed, error, testcase_data, encoding = 'utf-8'):
+def write_tc_data(currentEnv, unit_report_name, jobNameDotted, passed, failed, error, testcase_data, encoding = 'utf-8', xml_data_dir = "xml_data"):
 
-    fh = open("xml_data/" + unit_report_name, "w")
+    fh = open(os.path.join(xml_data_dir,"junit",unit_report_name), "w")
 
     writeJunitHeader(currentEnv, fh, failed, failed+passed, unit_report_name, encoding)
     writeJunitData(fh, testcase_data)
