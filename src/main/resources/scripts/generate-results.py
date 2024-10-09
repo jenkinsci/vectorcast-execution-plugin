@@ -231,7 +231,7 @@ def delete_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
         
-def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, useStartLine):
+def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, useStartLine, teePrint):
     xml_file = ""
     
     try:
@@ -261,7 +261,8 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_e
                                use_archive_extract,
                                report_only_failures,
                                print_exc,
-                               useStartLine)
+                               useStartLine,
+                               teePrint)
                                
         if xml_file.api != None:
             if verbose:
@@ -389,7 +390,7 @@ def generateIndividualReports(entry, envName):
 
 
 
-def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report, useStartLine):
+def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report, useStartLine, teePrint):
     global verbose
 
     print("Using VCProjectApi")
@@ -407,7 +408,7 @@ def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase
                                report_only_failures,
                                no_full_report,
                                print_exc,
-                               useStartLine)
+                               useStartLine, teePrint)
                                
         if xml_file.api != None:
             xml_file.generate_testresults()
@@ -433,7 +434,7 @@ def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase
         return 0, 0
 
 
-def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report, useStartLine):
+def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report, useStartLine, teePrint):
 
     failed_count = 0 
     passed_count = 0
@@ -446,7 +447,7 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
             continue 
 
         if envName == None:
-            pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures, useStartLine)
+            pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures, useStartLine, teePrint)
             passed_count += pc
             failed_count += fc
             if not no_full_report:
@@ -456,7 +457,7 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
             if level == None or env_level.upper() == level.upper():
-                pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures, useStartLine)
+                pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures, useStartLine, teePrint)
                 passed_count += pc
                 failed_count += fc
                 
@@ -482,7 +483,7 @@ def cleanupOldBuilds(teePrint):
 # def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None,use_archive_extract = False, report_only_failures = False, no_full_report = False):
 def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, 
         timing = False, cbtDict = None, use_archive_extract = False, 
-        report_only_failures = False, no_full_report = False, use_ci = "", xml_data_dir = "xml_data", useStartLine = False):
+        report_only_failures = False, no_full_report = False, use_ci = "", xml_data_dir = "xml_data", useStartLine = False, teePrint = None):
 
     if timing:
         print("Start report generation: " + str(time.time()))
@@ -506,8 +507,10 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
     if timing:
         print("Version Check: " + str(time.time()))
 
-    with tee_print.TeePrint() as teePrint:
-        cleanupOldBuilds(teePrint)
+    if teePrint is None:
+        teePrint = tee_print.TeePrint()
+            
+    cleanupOldBuilds(teePrint)
 
 
     for file in glob.glob("*.csv"):
@@ -535,7 +538,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 use_manage_api = True
             api.close()
         except:
-            teePrint.teePrint("   *INFO: iIssue getting tool version from: " + FullManageProjectName)
+            teePrint.teePrint("   *INFO: Issue getting tool version from: " + FullManageProjectName)
             traceback.print_exc()
             use_manage_api = False
             
@@ -544,16 +547,16 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                     use_archive_extract, 
                     report_only_failures,
                     no_full_report,
-                    useStartLine)
+                    useStartLine,
+                    teePrint)
 
-            
         else:
                 
             manageEnvs = getManageEnvs(FullManageProjectName)
             if timing:
                 print("Using DataAPI for reporting")
                 print("Get Info: " + str(time.time()))
-            passed_count, failed_count = useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures, no_full_report, useStartLine)
+            passed_count, failed_count = useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures, no_full_report, useStartLine, teePrint)
             
         with open("unit_test_fail_count.txt", "w") as fd:
             failed_str = str(failed_count)
@@ -868,7 +871,8 @@ if __name__ == '__main__':
     # Set VCAST_MANAGE_PROJECT_DIRECTORY to match .vcm directory
     os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(args.ManageProject).rsplit(".",1)[0]
  
-    buildReports(args.ManageProject,args.level,args.environment,generate_individual_reports, timing, cbtDict, args.use_archive_extract, args.report_only_failures, args.no_full_report)
+    with tee_print.TeePrint() as teePrint:
+        buildReports(args.ManageProject,args.level,args.environment,generate_individual_reports, timing, cbtDict, args.use_archive_extract, args.report_only_failures, args.no_full_report, teePrint)
     
     import archive_extract_reports
         

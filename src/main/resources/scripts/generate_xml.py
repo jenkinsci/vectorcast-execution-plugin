@@ -70,7 +70,7 @@ def dummy(*args, **kwargs):
 # (Emma based) report for Coverage
 #
 class BaseGenerateXml(object):
-    def __init__(self, FullManageProjectName, verbose):
+    def __init__(self, FullManageProjectName, verbose, teePrint):
         projectName = os.path.splitext(os.path.basename(FullManageProjectName))[0]
         self.manageProjectName = projectName
         self.cover_report_name = os.path.join("xml_data","coverage_results_"+ self.manageProjectName + ".xml")
@@ -78,6 +78,7 @@ class BaseGenerateXml(object):
         self.verbose = verbose
         self.has_sfp_enabled = False
         self.print_exc = False
+        self.teePrint = teePrint
 
         # get the VC langaguge and encoding
         self.encFmt = 'utf-8'
@@ -95,6 +96,9 @@ class BaseGenerateXml(object):
         self.env = ""
         self.build_dir = ""
 
+        if self.teePrint is None:
+            self.teePrint = tee_print.TeePrint()
+            self.teePrint.teePrint("BaseGenerateXml called incorrectly, no teePrint")
 #
 # BaseGenerateXml - calculate coverage value
 #
@@ -643,9 +647,10 @@ class GenerateManageXml (BaseGenerateXml):
                        report_failed_only = False,
                        no_full_reports = False,
                        print_exc = False,
-                       useStartLine = False):
+                       useStartLine = False,
+                       teePrint = None):
 
-        super(GenerateManageXml, self).__init__(FullManageProjectName, verbose)
+        super(GenerateManageXml, self).__init__(FullManageProjectName, verbose, teePrint)
         self.api = VCProjectApi(FullManageProjectName)
 
         try:
@@ -678,7 +683,7 @@ class GenerateManageXml (BaseGenerateXml):
                 try:
                     os.remove(file);
                 except:
-                    teePrint.teePrint("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
+                    self.teePrint.teePrint("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
                     if print_exc:  traceback.print_exc()
 
         # we should either have an empty directory or no directory
@@ -687,7 +692,7 @@ class GenerateManageXml (BaseGenerateXml):
                 os.mkdir(path)
             except:
                 print("failed making path: " + path)
-                teePrint.teePrint("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
+                self.teePrint.teePrint("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
                 if print_exc:  traceback.print_exc()
 
     def __del__(self):
@@ -794,7 +799,8 @@ class GenerateManageXml (BaseGenerateXml):
                                self.use_archive_extract,
                                self.report_failed_only,
                                self.print_exc,
-                               self.useStartLine)
+                               self.useStartLine,
+                               self.teePrint)
 
         localXML.topLevelAPI = self.api
         localXML.noResults = self.noResults
@@ -953,8 +959,8 @@ class GenerateManageXml (BaseGenerateXml):
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, use_archive_extract = False, report_failed_only = False, print_exc = False, useStartLine = False):
-        super(GenerateXml, self).__init__(FullManageProjectName, verbose)
+    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, use_archive_extract = False, report_failed_only = False, print_exc = False, useStartLine = False, teePrint = None):
+        super(GenerateXml, self).__init__(FullManageProjectName, verbose, teePrint)
 
         self.cbtDict = cbtDict
         self.FullManageProjectName = FullManageProjectName
@@ -1487,19 +1493,19 @@ class GenerateXml(BaseGenerateXml):
         if self.verbose:
             print("skipping ", self.hashCode, searchName, passed)
 
-def __generate_xml(xml_file, envPath, env, xmlCoverReportName, xmlTestingReportName, teePrint):
+def __generate_xml(xml_file, envPath, env, xmlCoverReportName, xmlTestingReportName):
     if xml_file.api == None:
-        teePrint.teePrint ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
+        self.teePrint.teePrint ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
 
     elif isinstance(xml_file, CoverApi):
         xml_file.generate_cover()
-        teePrint.teePrint ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
+        self.teePrint.teePrint ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
 
     else:
         xml_file.generate_unit()
-        teePrint.teePrint ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)
+        self.teePrint.teePrint ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)
         xml_file.generate_cover()
-        teePrint.teePrint ("\nVCC plugin for Jenkins compatible file generated: " + xmlTestingReportName)
+        self.teePrint.teePrint ("\nVCC plugin for Jenkins compatible file generated: " + xmlTestingReportName)
 
 if __name__ == '__main__':
 
@@ -1524,7 +1530,8 @@ if __name__ == '__main__':
     xmlCoverReportName = "coverage_results_" + env + ".xml"
     xmlTestingReportName = "test_results_" + env + ".xml"
 
-    xml_file = GenerateXml(env,
+    with tee_print.TeePrint() as teePrint:
+        xml_file = GenerateXml(env,
                            envPath,
                            env, "", "",
                            xmlCoverReportName,
@@ -1533,13 +1540,12 @@ if __name__ == '__main__':
                            jenkins_link,
                            jobNameDotted,
                            args.verbose,
-                           None)
+                           None,
+                           teePrint)
 
-    with tee_print.TeePrint() as teePrint:
         __generate_xml(
             xml_file,
             envPath,
             env,
             xmlCoverReportName,
-            xmlTestingReportName,
-            teePrint)
+            xmlTestingReportName)
