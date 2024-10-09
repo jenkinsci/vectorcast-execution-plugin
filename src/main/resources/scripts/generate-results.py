@@ -535,7 +535,7 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
                 use_manage_api = True
             api.close()
         except:
-            teePrint.teePrint("   *INFO: iIssue getting tool version from: ", FullManageProjectName)
+            teePrint.teePrint("   *INFO: iIssue getting tool version from: " + FullManageProjectName)
             traceback.print_exc()
             use_manage_api = False
             
