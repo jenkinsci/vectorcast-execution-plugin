@@ -603,7 +603,7 @@ class GenerateXml(BaseGenerateXml):
                         for func in unit.functions:
                             if not func.is_non_testable_stub:
                                 for tc in func.testcases:
-                                    if not isTcPlaceHolder(tc):
+                                    if not self.isTcPlaceHolder(tc):
                                         if not tc.for_compound_only or tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
                                             self.write_testcase(tc, tc.function.unit.name, tc.function.display_name)
                                             
