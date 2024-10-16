@@ -200,9 +200,12 @@ if __name__ == '__main__':
     BaseName = sys.argv[3]
     Env = sys.argv[4]
     workspace = os.getenv("WORKSPACE")
-        
+
     if workspace is None:
         workspace = os.getcwd()
+
+    if workspace.endswith("/") or workspace.endswith("\\"):
+        workspace = workspace[:-1]
 
     os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(ManageProjectName).rsplit(".",1)[0]
     

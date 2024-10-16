@@ -93,6 +93,29 @@ def checkLogsForErrors(log) {
 
 // ===============================================================
 //
+// Function : pluginCreateSummary
+// Inputs   : log
+// Action   : Scans the input log file to for keywords listed above
+// Returns  : found foundKeywords, failure and/or unstable_flag
+// Notes    : Used to Check for VectorCAST build errors/problems
+//
+// ===============================================================
+
+def pluginCreateSummary(inIcon, inText) {
+
+    try { 
+       //Protected code 
+       createSummary icon: inIcon, text: inText
+
+    } catch(ExceptionName e1) {
+
+       //Catch block 
+       addSummary icon: inIcon, text: inText
+    }
+}
+
+// ===============================================================
+//
 // Function : checkBuildLogForErrors
 // Inputs   : logFile
 // Action   : Scans the input log file to for keywords listed above
@@ -945,7 +968,7 @@ pipeline {
 
                             if (VC_useCoverageHistory) {
                                 if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
-                                    createSummary icon: "icon-error icon-xlg", text: "Code Coverage Decreased"
+                                    pluginCreateSummary("icon-error icon-xlg", "Code Coverage Decreased")
                                     currentBuild.description += "Code coverage decreased.  See console log for details\n"
                                     addBadge icon: "icon-error icon-xlg", text: "Code Coverage Decreased"
                                 }
@@ -1010,7 +1033,7 @@ pipeline {
                                 summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " 
                                 summaryText += readFile("${mpName}_metrics_report.html_tmp")
                                     
-                                createSummary icon: "icon-document icon-xlg", text: summaryText
+                                pluginCreateSummary ("icon-document icon-xlg", summaryText)
 
                             } else {
                                 if (fileExists('combined_incr_rebuild.tmp')) {
@@ -1031,7 +1054,7 @@ pipeline {
 
                                 // If not, something went wrong... Make the build as unstable
                                 currentBuild.result = 'UNSTABLE'
-                                createSummary icon: "icon-warning icon-xlg", text: "General Failure"
+                                pluginCreateSummary ("icon-warning icon-xlg", "General Failure")
                                 currentBuild.description += "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
                             }
                         } else {
@@ -1040,12 +1063,12 @@ pipeline {
                                 // Blue ocean view doesn't have a summary
 
                                 summaryText += readFile("${mpName}_full_report.html_tmp") + "<br> " + readFile("${mpName}_metrics_report.html_tmp")
-                                createSummary icon: "icon-document icon-xlg", text: summaryText
+                                pluginCreateSummary ("icon-document icon-xlg", summaryText)
 
                             } else {
                                 // If not, something went wrong... Make the build as unstable
                                 currentBuild.result = 'UNSTABLE'
-                                createSummary icon: "icon-warning icon-xlg", text: "General Failure"
+                                pluginCreateSummary ("icon-warning icon-xlg", "General Failure")
                                 currentBuild.description += "General Failure, Full Report or Metrics Report Not Present. Please see the console for more information\n"
                             }
                         }
