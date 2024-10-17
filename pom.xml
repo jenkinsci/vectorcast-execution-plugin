@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.83</version>
+        <version>4.88</version>
         <relativePath/>
     </parent>
     <name>VectorCAST Execution</name>
@@ -25,7 +25,7 @@
         <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <findbugs.failOnError>false</findbugs.failOnError>
-        <jenkins.version>2.452.1</jenkins.version>
+        <jenkins.version>2.462.3</jenkins.version>
     </properties>
     <organization>
         <name>Vector Informatik, GmbH</name>
@@ -65,122 +65,43 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.452.x</artifactId>
-                <version>3105.v672692894683</version>
-                <scope>import</scope>
+                <artifactId>bom-2.462.x</artifactId>
+                <version>3387.v0f2773fa_3200</version>
                 <type>pom</type>
-            </dependency>
+            </dependency>            
         </dependencies>
     </dependencyManagement>
     <dependencies>
-        <!-- Satisfying slf4j-api minimum version -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>2.0.13</version>
-        </dependency>
-        <!-- Satisfying javax-mail-api minimum version -->
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>javax-mail-api</artifactId>
-            <version>1.6.2-10</version>
-        </dependency>
-        <!-- Satisfying sci-api minimum version -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>scm-api</artifactId>
-            <version>683.vb_16722fb_b_80b_</version>
-        </dependency>
-        <!-- Satisfying commons-lang3 minimum version -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.14.0</version>
-        </dependency>
-        <!-- Satisfying commons-text minimum version -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.12.0</version>
-        </dependency>
-        <!-- Satisfying sshd-core minimum version -->
-        <dependency>
-            <groupId>org.apache.sshd</groupId>
-            <artifactId>sshd-core</artifactId>
-            <version>2.12.1</version>
-        </dependency>
-        <!-- Satisfying mina-sshd-api-core minimum version -->
-        <dependency>
-            <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
-            <artifactId>mina-sshd-api-core</artifactId>
-        </dependency>
-        <!-- Satisfying json minimum version -->
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20240303</version>
-        </dependency>
-        <!-- Satisfying structs minimum version -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>structs</artifactId>
-            <version>337.v1b_04ea_4df7c8</version>
-        </dependency>
-        <!-- Satisfying caffeine-api minimum version -->
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>caffeine-api</artifactId>
-            <version>3.1.8-133.v17b_1ff2e0599</version>
-        </dependency>
-        <!-- Satisfying display-url-api minimum version -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>display-url-api</artifactId>
-            <version>2.204.vf6fddd8a_8b_e9</version>
-        </dependency>
-        <!-- Satisfying ionicons-api minimum version -->
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>ionicons-api</artifactId>
-            <version>74.v93d5eb_813d5f</version>
-        </dependency>
-        <!-- Satisfying script-security minimum version -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>script-security</artifactId>
-            <version>1341.va_2819b_414686</version>
-        </dependency>
-        <!-- Satisfying matrix-project minimum version -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>matrix-project</artifactId>
-            <version>832.va_66e270d2946</version>
-        </dependency>
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>warnings-ng</artifactId>
-            <version>11.3.0</version>
+            <version>11.10.0</version>
         </dependency>
+        
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>coverage</artifactId>
             <version>1.16.1</version>
         </dependency>
+        
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>vectorcast-coverage</artifactId>
             <version>0.22</version>
         </dependency>
+        
         <dependency>
             <groupId>org.jvnet.hudson.plugins</groupId>
             <artifactId>groovy-postbuild</artifactId>
-            <version>2.4</version>
+            <version>264.vf6e02a_77d5b_c</version>
         </dependency>
+
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>copyartifact</artifactId>
-            <version>1.44</version>
+            <version>749.vfb_dca_a_9b_6549</version>
         </dependency>
+        
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>ws-cleanup</artifactId>
@@ -189,18 +110,76 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.6.0</version>
+            <version>4.8.6</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.12.0</version>
+            <version>5.14.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials-binding</artifactId>
-            <version>677.vdc9d38cb_254d</version>
+            <version>681.vf91669a_32e45</version>
+        </dependency>
+
+        <!-- Satisfying junit minimum version of junit from groovy-postbuild -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>junit</artifactId>
+            <version>1300.v03d9d8a_cf1fb_</version>
+        </dependency>
+        
+
+        <!-- Satisfying display-url-api minimum version from junit -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>display-url-api</artifactId>
+            <version>2.204.vf6fddd8a_8b_e9</version>
+        </dependency>
+       
+        <dependency>
+            <groupId>org.jenkins-ci.main</groupId>
+            <artifactId>maven-plugin</artifactId>
+            <version>3.23</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>commons-text-api</artifactId>
+            <version>1.12.0-129.v99a_50df237f7</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>trilead-api</artifactId>
+            <version>2.147.vb_73cc728a_32e</version>
+        </dependency>
+
+        <!-- Satisfying caffeine-api minimum version from warnings-ng -->
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>caffeine-api</artifactId>
+            <version>3.1.8-152.va_0871507299f</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>commons-lang3-api</artifactId>
+            <version>3.17.0-84.vb_b_938040b_078</version>
+        </dependency>        
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-support</artifactId>
+            <version>930.vf51d22b_ce488</version>
+        </dependency>
+        
+         <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-cps</artifactId>
+            <version>3969.vdc9d3a_efcc6a_</version>
         </dependency>
     </dependencies>
     
@@ -245,6 +224,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>3.0.0-M1</version>
+                
+                
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

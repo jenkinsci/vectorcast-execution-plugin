@@ -42,8 +42,11 @@ def checkVectorCASTVersion(minimumVersion, quiet = False):
     with open(tool_version,"r") as fd:
         ver = fd.read()
     
-    verNo = int(ver.split(".",1)[0])
-    
+    try:
+        verNo = int(ver.split(" ",1)[0])
+    except:
+        verNo = int(ver.split(".",1)[0])
+
     if verNo >= minimumVersion:
         if not quiet:
             print("Running with VC Version: ", ver);

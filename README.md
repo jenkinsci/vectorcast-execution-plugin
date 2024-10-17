@@ -388,7 +388,7 @@ environment before disabling.  This takes into account enviornments that are dir
 
 ## Change Log
 
-### Version 0.78 (10 Sep 2024)
+### Version 0.78 (16 Nov 2024)
 - Moved to minimum Jenkins version: 2.452.1
 - Adding in following capabilities
     - Extended Cobertura format output for use with [Jenkins Coverage Plugin](https://github.com/jenkinsci/coverage-plugin)
