@@ -26,9 +26,13 @@ package com.vectorcast.plugins.vectorcastexecution;
 import hudson.model.Descriptor;
 
 /**
- * Base descriptor for the VectorCAST jobs
+ * Base descriptor for the VectorCAST jobs.
  */
 public abstract class JobBaseDescriptor extends Descriptor<JobBase> {
+    /**
+     * Gets the display name.
+     * @return String display name
+     */
     @Override
     public String getDisplayName() {
         return clazz.getSimpleName();

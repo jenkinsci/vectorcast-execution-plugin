@@ -10,7 +10,6 @@ try:
 except:
     pass
 
-
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
 
 
@@ -94,6 +93,7 @@ def checkForEnvChanges(vcm_fname, build_dir, env_name):
 def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
     somethingPrinted = False
     output = ""
+    
     for env in api.Environment.all():
         
         if not env.is_active:
@@ -106,13 +106,12 @@ def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
                 output += "ST: "
             else:
                 output += "UT: "
-                
         output += "%s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name)
-
+   
     if printData:
         with tee_print.TeePrint() as teePrint:
             printOutput(somethingPrinted, api.vcm_file, output, teePrint)
-
+            
     return output
     
 def checkGroupOrEnv(str):

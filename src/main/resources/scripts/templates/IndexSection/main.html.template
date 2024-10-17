@@ -1,0 +1,30 @@
+<div class='report-block'>
+  <h4>Overall reports</h4>
+
+  <table id="overall" class='table table-hover table-bordered'>
+  <ul>
+  {%- for entry in topLevel %}
+    <li><a href="{{entry[1]}}">{{entry[0]}}</a></li>
+  {%- endfor %}
+  </ul>
+  </table>
+  
+  <h4>Individual Environment Full Reports</h4>
+  <table id = "fullreports" class='table table-hover table-bordered'>
+  <ul>
+  {%- for entry in indFull %}
+    <li><a href="{{entry[1]}}">{{entry[0]}}</a></li>
+  {%- endfor %}
+  </ul>
+  </table>
+  
+  <h4>Miscellaneous HTML docs</h4>
+  <table id = "misc" class='table table-hover table-bordered'>
+  <ul>
+  {%- for entry in misc %}
+    <li><a href="{{entry[1]}}">{{entry[0]}}</a></li>
+  {%- endfor %}
+  </ul>
+  </table>
+
+</div>

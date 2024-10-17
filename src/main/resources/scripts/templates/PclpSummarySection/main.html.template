@@ -1,0 +1,9 @@
+<div class='report-block'>
+
+  <h3 id="PC-LintPlusSummary">PC-Lint Plus Summary</h3>
+
+  <table class='table table-hover table-bordered'>
+    {{summaryHtml}}
+  </table>
+  
+</div>
