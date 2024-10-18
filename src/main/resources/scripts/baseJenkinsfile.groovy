@@ -107,7 +107,7 @@ def pluginCreateSummary(inIcon, inText) {
        //Protected code 
        createSummary icon: inIcon, text: inText
 
-    } catch(ExceptionName e1) {
+    } catch(Exception e) {
 
        //Catch block 
        addSummary icon: inIcon, text: inText

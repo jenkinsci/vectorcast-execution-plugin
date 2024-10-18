@@ -161,7 +161,7 @@
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>caffeine-api</artifactId>
-            <version>3.1.8-152.va_0871507299f</version>
+            <version>3.1.8-133.v17b_1ff2e0599</version>
         </dependency>
 
         <dependency>
