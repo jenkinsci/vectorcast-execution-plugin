@@ -87,8 +87,11 @@ def addDirectory(tf, build_dir, dir):
         rootDir = os.path.join(build_dir,dir).replace("\\","/")
 
     for dirName, subdirList, fileList in os.walk(rootDir):
-        for fname in fileList:
-            tf.add(os.path.join(dirName, fname))
+        if len(fileList) == 0:
+            tf.add(dirName)
+        else:
+            for fname in fileList:
+                tf.add(os.path.join(dirName, fname))
 
 def addConvertCoverFile(tf, file, workspace, build_dir, nocase):
 
@@ -178,6 +181,7 @@ def run(ManageProjectName, Level, BaseName, Env, workspace):
             addFile(tf, "ENVIRO.AUX*", build_dir)
             addFile(tf, "system_test_results.xml", build_dir)
             addDirectory(tf, build_dir, "TESTCASES")
+            addDirectory(tf, build_dir, "results")
             addFile(tf, "CCAST_.CFG", build_dir, backOneDir=True)
             addFile(tf, Env + ".vce", build_dir, backOneDir=True)
             addFile(tf, Env + ".vcp", build_dir, backOneDir=True)
