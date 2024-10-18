@@ -165,7 +165,7 @@ class ParseConsoleForCBT(object):
                     try:
                         self.environmentDict[hashCode][currTestNdx][tc_name][1] = end_tdo
                     except KeyError:
-						# key error would be for the "Error: " when the test case hadn't started
+                        # key error would be for the "Error: " when the test case hadn't started
                         pass                        
 
                 if "Running: " in line:
@@ -207,5 +207,5 @@ if __name__ == '__main__':
         
     parser = ParseConsoleForCBT(True)
     parser.parse(buildLogData)
-    #pprint(parser.parse(buildLogData), width=132)
+    pprint(parser.parse(buildLogData), width=132)
     

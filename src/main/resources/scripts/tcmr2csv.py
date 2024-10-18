@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+# Copyright 2024 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

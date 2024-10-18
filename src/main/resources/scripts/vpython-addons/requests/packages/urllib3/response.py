@@ -196,7 +196,7 @@ class HTTPResponse(io.IOBase):
                         flush_decoder = True
 
             except SocketTimeout:
-                # FIXME: Ideally we'd like to include the url in the ReadTimeoutError but
+                # FIXME: Idealy we'd like to include the url in the ReadTimeoutError but
                 # there is yet no clean way to get at it from this context.
                 raise ReadTimeoutError(self._pool, None, 'Read timed out.')
 

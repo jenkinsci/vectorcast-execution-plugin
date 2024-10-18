@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+# Copyright 2024 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,29 @@ from __future__ import print_function
 
 import os
 import tarfile
+import sys
 
-for file in os.listdir("."):
-    if file.endswith("_build.tar"):
-        print("* Extracting " + file)
-        try:
-            tf = tarfile.open(file, "r")
-            tf.extractall()
-            tf.close()
-        except:
-            print("Problem with tarfile " + file + "...skipping")
-        os.remove(file)
+def run(leaveFiles = False):
+
+    for file in os.listdir("."):
+        if file.endswith("_build.tar"):
+            print("* Extracting " + file)
+            try:
+                tf = tarfile.open(file, "r")
+                tf.extractall()
+                tf.close()
+            except:
+                print("Problem with tarfile " + file + "...skipping")
+        if not leaveFiles:
+            os.remove(file)
+
+
+if __name__ == '__main__':
+
+    leaveFiles = False
+    try:
+        if len(sys.argv) > 1:
+            leaveFiles = True
+    except:
+        pass
+    run(leaveFiles)
