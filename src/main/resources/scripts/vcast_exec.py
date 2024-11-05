@@ -345,8 +345,8 @@ if __name__ == '__main__':
 
     reportGroup = parser.add_argument_group('Report Selection', 'VectorCAST Manage reports that can be generated')
     reportGroup.add_argument('--aggregate', help='Generate aggregate coverage report VectorCAST Project', action="store_true", default = False)
-    reportGroup.add_argument('--metrics', help='Genenereate metrics reports for VectorCAST Project', action="store_true", default = False)
-    reportGroup.add_argument('--fullstatus', help='Genenereate full status reports for VectorCAST Project', action="store_true", default = False)
+    reportGroup.add_argument('--metrics', help='Generate metrics reports for VectorCAST Project', action="store_true", default = False)
+    reportGroup.add_argument('--fullstatus', help='Generate full status reports for VectorCAST Project', action="store_true", default = False)
 
     beGroup = parser.add_argument_group('Build/Execution Options', 'Options that effect build/execute operation')
     

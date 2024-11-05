@@ -239,7 +239,10 @@ def generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False):
     if not os.path.exists(lcov_data_dir):
         os.makedirs(lcov_data_dir)
 
-    open(os.path.join(lcov_data_dir, name + "-info"), "w").write(output)
+    fname = os.path.join(lcov_data_dir, name + "-info")
+    open(fname, "w").write(output)
+    
+    return fname
     
 if __name__ == '__main__':
     
@@ -252,7 +255,7 @@ if __name__ == '__main__':
     except:
         inFile = os.getenv('VCV_ENVIRONMENT_FILE')
         
-    generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False)
+    infoFile = generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False)
     
     ## if opened from VectorCAST GUI...
     if not os.getenv('VCAST_MANAGE_PROJECT_DIRECTORY') is None:
