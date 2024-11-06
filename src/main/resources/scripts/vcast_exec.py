@@ -99,6 +99,7 @@ class VectorCASTExecute(object):
             self.build_execute = ""
             self.vcast_action = ""
         
+        self.source_root = args.source_root
         self.verbose = args.verbose
         self.FullMP = args.ManageProject
         self.mpName = os.path.basename(args.ManageProject)[:-4]
@@ -234,7 +235,7 @@ class VectorCASTExecute(object):
             print("XXX Cannot create LCOV metrics. Please upgrade VectorCAST\n")
         else:
             print("Creating LCOV Metrics")
-            generate_lcov.generateCoverageResults(self.FullMP, self.xml_data_dir, verbose = self.verbose)
+            generate_lcov.generateCoverageResults(self.FullMP, self.xml_data_dir, verbose = self.verbose, source_root = self.source_root)
 
     def runCoberturaMetrics(self):
         if not checkVectorCASTVersion(21):
@@ -245,7 +246,8 @@ class VectorCASTExecute(object):
             else:
                 print("Creating Cobertura Metrics")
 
-            cobertura.generateCoverageResults(self.FullMP, self.azure, self.xml_data_dir, verbose = self.verbose, extended=self.cobertura_extended)
+            cobertura.generateCoverageResults(self.FullMP, self.azure, self.xml_data_dir, verbose = self.verbose, 
+                extended=self.cobertura_extended, source_root = self.source_root)
 
     def runSonarQubeMetrics(self):
         if not checkVectorCASTVersion(21):
@@ -331,7 +333,8 @@ if __name__ == '__main__':
     parser_specify.add_argument('--incremental', help='Use Change Based Testing (Cannot be used with --build)', action="store_true", default = False)
 
     metricsGroup = parser.add_argument_group('Metrics Options', 'Options generating metrics')
-    metricsGroup.add_argument('--output_dir', help='Set the base directory of the xml_data directory. Default is the workspace directory', default = None)
+    metricsGroup.add_argument('--output_dir',  help='Set the base directory of the xml_data directory. Default is the workspace directory', default = None)
+    metricsGroup.add_argument('--source_root', help='Set the absolute path for the source file in coverage reporting', default = "")
     metricsGroup.add_argument("--html_base_dir", help='Set the base directory of the html_reports directory. The default is the workspace directory', default = "html_reports")
     metricsGroup.add_argument('--cobertura', help='Generate coverage results in Cobertura xml format', action="store_true", default = False)
     metricsGroup.add_argument('--cobertura_extended', help='Generate coverage results in extended Cobertura xml format', action="store_true", default = False)

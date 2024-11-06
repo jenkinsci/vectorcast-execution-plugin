@@ -37,6 +37,7 @@ from vector.apps.DataAPI.cover_api import CoverApi
 import sys, os
 from collections import defaultdict
 from pprint import pprint
+import subprocess
 
 from vcast_utils import dump, checkVectorCASTVersion
 
@@ -70,6 +71,13 @@ def has_any_coverage(line):
         line.metrics.mcdc_pairs + 
         line.metrics.functions +
         line.metrics.function_calls)
+        
+def has_branch_coverage(line):
+    
+    return (line.metrics.branches + 
+        line.metrics.mcdc_branches + 
+        line.metrics.mcdc_pairs)
+        
 
 def has_anything_covered(line):
     
@@ -86,14 +94,27 @@ def has_anything_covered(line):
         line.metrics.max_covered_functions +
         line.metrics.max_covered_function_calls)
         
-def runCoverageResultsMP(mpFile, verbose = False):
+def has_branches_covered(line):
+    
+    count = (line.metrics.covered_branches + 
+        line.metrics.covered_mcdc_branches + 
+        line.metrics.covered_mcdc_pairs)
+        
+    if count == 0:
+        count = (line.metrics.max_covered_branches + 
+            line.metrics.max_covered_mcdc_branches + 
+            line.metrics.max_covered_mcdc_pairs)
+        
+    return count
+        
+def runCoverageResultsMP(mpFile, verbose = False, testName = "", source_root = ""):
 
     vcproj = VCProjectApi(mpFile)
     api = vcproj.project.cover_api
     
-    return runGcovResults(api, verbose = False)
+    return runGcovResults(api, verbose = False, testName = vcproj.project.name, source_root=source_root)
     
-def runGcovResults(api, verbose = False):
+def runGcovResults(api, verbose = False, testName = "", source_root = ""):
    
     fileDict = {}
     try:
@@ -105,35 +126,16 @@ def runGcovResults(api, verbose = False):
             prj_dir = os.getcwd().replace("\\","/") + "/"    
     
     # get a sorted listed of all the files with the proj directory stripped off
-     
-    DA = []
-    BRF = []
-    BRH = []
-    
-    ## FN:108,206,BETP_Wrapper
-    functionName_FN = []
-    
-    ## FNDA:2775985,BETP_Wrapper
-    functionSomething_FNDA = []
-    
-    ## totals
-    functionsFound_FNF = 0
-    functionsHit_FNH = 0
-    linesFound_LF = 0
-    linesHit_LH = 0
-    
     for file in api.SourceFile.all():  
         if file.display_name == "":
             continue
-        if not has_any_coverage(file):
+        if not file.has_any_coverage:
             continue
             
-        #fpath = file.display_path.rsplit('.',1)[0]
-        fpath = file.display_name
+        fname = file.display_name
+        fpath = file.display_path.rsplit('.',1)[0]
         fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
         
-        # print("*", file.name, file.display_name, fpath)
-
         fileDict[fpath] = file
     
     output = ""
@@ -148,11 +150,15 @@ def runGcovResults(api, verbose = False):
         BRH = 0
         BRF = 0
         
+        LH = 0
+        LF = 0
+        
         file = fileDict[path]        
-        new_path = path.rsplit('/',1)[0]
+        new_path = os.path.join(source_root,path.rsplit('/',1)[0])
 
-        output += "TN:" + "\n"
-        output += "SF:" + new_path+ "/" + file.name + "\n"
+        output += "TN:" + testName + "\n"
+        new_path = new_path.replace("\\","/")
+        output += "SF:" + new_path + "/" + file.name + "\n"
         
         for func in file.functions:
             fName = func.name + func.instrumented_functions[0].parameterized_name.replace(func.name,"",1)
@@ -168,21 +174,25 @@ def runGcovResults(api, verbose = False):
                 
             for line in func.iterate_coverage():
                 if has_any_coverage(line):
-                    if line.metrics.covered_statements or line.metrics.covered_branches or line.metrics.covered_mcdc_branches:
+                    LF += 1
+                    if has_anything_covered(line): 
                         lineCovered = "1"
+                        LH += 1
                     else:
                         lineCovered = "0"
                     DA.append("DA:" + str(line.line_number) + "," + lineCovered)
                     
                     newBranch = False
-                    if (line.metrics.branches + line.metrics.mcdc_branches) > 0:
-
+                    if has_branch_coverage(line) > 0:
+                        BRF += 1
                         if line.line_number not in line_branch:
                             line_branch.append(line.line_number)
                             newBranch = True
                             
-                        if (line.metrics.covered_branches + line.metrics.covered_mcdc_branches) > 0:
-                            taken = str(line.metrics.covered_branches + line.metrics.covered_mcdc_branches)
+                        branches_covered = has_branches_covered(line)
+                        if branches_covered > 0:
+                            taken = str(branches_covered)
+                            BRH += 1
                         else:
                             taken = "-"
                         BRDA.append("BRDA:" + str(line.line_number) + "," + str(block_count) + "," + str(branch_number) + "," + taken)
@@ -199,24 +209,27 @@ def runGcovResults(api, verbose = False):
         output += "FNF:" + str(FNF) + "\n"
         output += "FNH:" + str(FNH) + "\n"
         
-        for branch in BRDA:
+        sorted_BRDA = sorted(BRDA, key=lambda x: int(x.split(":")[1].split(",")[0]))
+        
+        for branch in sorted_BRDA:
             output += branch + "\n"
         
-        output += "BRF:" + str(file.metrics.branches + file.metrics.mcdc_branches) + "\n"
-        output += "BRH:" + str(file.metrics.aggregate_covered_branches + file.metrics.aggregate_covered_mcdc_branches) + "\n"
+        output += "BRF:" + str(BRF) + "\n"
+        output += "BRH:" + str(BRH) + "\n"
         
-            
-        for data in DA:
+        sorted_DA = sorted(DA, key=lambda x: int(x.split(":")[1].split(",")[0]))
+
+        for data in sorted_DA:
             output += data + "\n"
             
-        output += "LF:"+ str(file.metrics.statements) + "\n"
-        output += "LH:"+ str(file.metrics.aggregate_covered_statements) + "\n"
+        output += "LF:"+ str(LF) + "\n"
+        output += "LH:"+ str(LH) + "\n"
 
         output += "end_of_record" + "\n"
         
     return output
 
-def generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False):
+def generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False, source_root = ""):
     
     cwd = os.getcwd()
     xml_data_dir = os.path.join(cwd,xml_data_dir)
@@ -228,21 +241,27 @@ def generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False):
     if inFile.endswith(".vce"):
         api=UnitTestApi(inFile)
         cdb = api.environment.get_coverdb_api()
-        output = runGcovResults(cdb, verbose=verbose)
+        output = runGcovResults(cdb, verbose=verbose, testName = name, source_root=source_root)
     elif inFile.endswith(".vcp"):
         api=CoverApi(inFile)
-        output = runGcovResults(api, verbose=verbose)
+        output = runGcovResults(api, verbose=verbose, testName = name, source_root=source_root)
     else:        
-        output = runCoverageResultsMP(inFile, verbose=verbose)
+        output = runCoverageResultsMP(inFile, verbose=verbose, testName = name, source_root=source_root)
 
     lcov_data_dir = os.path.join(xml_data_dir,"lcov")
     if not os.path.exists(lcov_data_dir):
         os.makedirs(lcov_data_dir)
 
-    fname = os.path.join(lcov_data_dir, name + "-info")
-    open(fname, "w").write(output)
-    
-    return fname
+    pathToInfo = os.path.join(lcov_data_dir, name + ".info")
+    open(pathToInfo, "w").write(output)
+
+    cmdStr = "genhtml " + pathToInfo + " --output-directory out"
+    cmdArr = cmdStr.split()
+    try:
+        subprocess.Popen(cmdArr).wait()
+        return True
+    except:
+        return False
     
 if __name__ == '__main__':
     
@@ -252,13 +271,15 @@ if __name__ == '__main__':
             
     try:
         inFile = sys.argv[1]
+        if not inFile.endswith(".vcm"):
+           inFile += ".vcm"
     except:
-        inFile = os.getenv('VCV_ENVIRONMENT_FILE')
+        inFile = os.getenv('VCAST_MANAGE_PROJECT_DIRECTORY') + ".vcm"
         
-    infoFile = generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False)
+    passed = generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False, source_root = "")
     
     ## if opened from VectorCAST GUI...
-    if not os.getenv('VCAST_MANAGE_PROJECT_DIRECTORY') is None:
+    if passed and not os.getenv('VCAST_MANAGE_PROJECT_DIRECTORY') is None:
         from vector.lib.core import VC_Report_Client
 
         # Open report in VectorCAST GUI

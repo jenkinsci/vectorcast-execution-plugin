@@ -28,13 +28,11 @@ try:
     from vector.apps.DataAPI.vcproject_models import VCProject
 except:
     pass
-
 from vector.apps.DataAPI.cover_api import CoverApi
 try:
     from vector.apps.DataAPI.unit_test_api import UnitTestApi
 except:
     from vector.apps.DataAPI.api import Api as UnitTestApi
-
 import sys, os
 from collections import defaultdict
 from pprint import pprint
@@ -75,7 +73,7 @@ def getCoveredFunctionCount(source):
         
     return funcCovTotal, funcTotal
 
-def getFileXML(testXml, coverAPI, verbose = False, extended = False):
+def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root = ""):
 
     try:
         prj_dir = os.environ['CI_PROJECT_DIR'].replace("\\","/") + "/"
@@ -85,8 +83,12 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False):
         except:
             prj_dir = os.getcwd().replace("\\","/") + "/"
     
+    
     fname = coverAPI.display_name
     fpath = os.path.relpath(coverAPI.display_path,prj_dir).replace("\\","/")
+
+    new_path = os.path.join(source_root,fpath.rsplit('/',1)[0])
+    fpath = new_path.replace("\\","/")
 
     branch_totals = float(coverAPI.metrics.branches + coverAPI.metrics.mcdc_branches)
     branch_covered = float(coverAPI.metrics.max_covered_branches + coverAPI.metrics.max_covered_mcdc_branches)
@@ -329,9 +331,9 @@ def processStatementBranchMCDC(fileApi, lines, extended = False):
     return linesCovered, linesTotal
     
                         
-def procesCoverage(coverXML, coverApi, extended = False):             
+def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):             
     
-    methods, lines = getFileXML(coverXML, coverApi, extended = extended)
+    methods, lines = getFileXML(coverXML, coverApi, extended = extended, source_root = source_root)
 
     if extended:
         for func in coverApi.functions:
@@ -374,14 +376,14 @@ def procesCoverage(coverXML, coverApi, extended = False):
 
     return processStatementBranchMCDC(coverApi, lines, extended)
     
-def runCoverageResultsMP(packages, mpFile, verbose = False, extended=False):
+def runCoverageResultsMP(packages, mpFile, verbose = False, extended=False, source_root = ""):
 
     vcproj = VCProjectApi(mpFile)
     api = vcproj.project.cover_api
     
-    return runCoberturaResults(packages, api, verbose = False, extended = extended)
+    return runCoberturaResults(packages, api, verbose = False, extended = extended, source_root = source_root)
     
-def runCoberturaResults(packages, api, verbose = False, extended = False):
+def runCoberturaResults(packages, api, verbose = False, extended = False, source_root = ""):
         
     total_br = 0
     total_st = 0
@@ -588,7 +590,7 @@ def runCoberturaResults(packages, api, verbose = False, extended = False):
             total_func += funcTotal
             cov_func += funcCovTotal
         
-        linesCovered, linesTotal = procesCoverage(classes, file, extended)
+        linesCovered, linesTotal = procesCoverage(classes, file, extended, source_root)
         
         total_lines += linesTotal
         cov_lines   += linesCovered
@@ -679,7 +681,7 @@ def runCoberturaResults(packages, api, verbose = False, extended = False):
     return total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, vg
             
 
-def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", verbose = False, extended = False):
+def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", verbose = False, extended = False, source_root = "" ):
     
     cwd = os.getcwd()
     xml_data_dir = os.path.join(cwd,xml_data_dir)
@@ -698,12 +700,12 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", ve
     if inFile.endswith(".vce"):
         api=UnitTestApi(inFile)
         cdb = api.environment.get_coverdb_api()
-        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoberturaResults(packages, cdb, verbose=verbose, extended=extended)
+        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoberturaResults(packages, cdb, verbose=verbose, extended=extended, source_root = source_root)
     elif inFile.endswith(".vcp"):
         api=CoverApi(inFile)
-        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoberturaResults(packages, api, verbose=verbose, extended=extended)
+        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoberturaResults(packages, api, verbose=verbose, extended=extended, source_root = source_root)
     else:        
-        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoverageResultsMP(packages, inFile, verbose=verbose, extended=extended)
+        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoverageResultsMP(packages, inFile, verbose=verbose, extended=extended, source_root = source_root)
 
     if line_rate        != -1.0: coverages.attrib['line-rate']        = str(line_rate) 
     if statement_rate   != -1.0: coverages.attrib['statement-rate']   = str(statement_rate) 
