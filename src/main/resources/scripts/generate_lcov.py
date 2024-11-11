@@ -129,7 +129,7 @@ def runGcovResults(api, verbose = False, testName = "", source_root = ""):
     for file in api.SourceFile.all():  
         if file.display_name == "":
             continue
-        if not file.has_any_coverage:
+        if not has_any_coverage(file):
             continue
             
         fname = file.display_name
