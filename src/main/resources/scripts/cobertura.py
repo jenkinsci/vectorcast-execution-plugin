@@ -87,9 +87,6 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
     fname = coverAPI.display_name
     fpath = os.path.relpath(coverAPI.display_path,prj_dir).replace("\\","/")
 
-    new_path = os.path.join(source_root,fpath.rsplit('/',1)[0])
-    fpath = new_path.replace("\\","/")
-
     branch_totals = float(coverAPI.metrics.branches + coverAPI.metrics.mcdc_branches)
     branch_covered = float(coverAPI.metrics.max_covered_branches + coverAPI.metrics.max_covered_mcdc_branches)
     
@@ -447,8 +444,8 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
         if not has_any_coverage(file):
             continue
             
-        #fpath = file.display_path.rsplit('.',1)[0]
-        fpath = file.display_name
+        fname = file.display_name
+        fpath = file.display_path.rsplit('.',1)[0]
         fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
         
         # print("*", file.name, file.display_name, fpath)
@@ -459,7 +456,6 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
         file = fileDict[path]        
         new_path = path.rsplit('/',1)[0]
         
-
         # when we switch paths
         if new_path != path_name:
         
@@ -500,7 +496,7 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
                 # remove trailing . if present
                 package_name = path_name.replace("/",".")
                 package_name = package_name.lstrip(".")
-
+                
                 if package_name.endswith("."):
                     package_name = package_name[:-1]
 

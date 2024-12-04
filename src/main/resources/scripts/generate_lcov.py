@@ -38,6 +38,7 @@ import sys, os
 from collections import defaultdict
 from pprint import pprint
 import subprocess
+import argparse
 
 from vcast_utils import dump, checkVectorCASTVersion
 
@@ -112,9 +113,9 @@ def runCoverageResultsMP(mpFile, verbose = False, testName = "", source_root = "
     vcproj = VCProjectApi(mpFile)
     api = vcproj.project.cover_api
     
-    return runGcovResults(api, verbose = False, testName = vcproj.project.name, source_root=source_root)
+    return runGcovResults(api, verbose = verbose, testName = vcproj.project.name, source_root=source_root)
     
-def runGcovResults(api, verbose = False, testName = "", source_root = ""):
+def runGcovResults(api, verbose = False, testName = "", source_root = "") :
    
     fileDict = {}
     try:
@@ -167,11 +168,13 @@ def runGcovResults(api, verbose = False, testName = "", source_root = ""):
                 FNDA.append("FNDA:1" + "," + fName)
             else:
                 FNDA.append("FNDA:0" + "," + fName)
-            
+                            
             block_count = 0
             branch_number = 0
             line_branch = []
-                
+
+            last_line = ""
+            
             for line in func.iterate_coverage():
                 if has_any_coverage(line):
                     LF += 1
@@ -182,6 +185,8 @@ def runGcovResults(api, verbose = False, testName = "", source_root = ""):
                         lineCovered = "0"
                     DA.append("DA:" + str(line.line_number) + "," + lineCovered)
                     
+                    last_line = line.text
+ 
                     newBranch = False
                     if has_branch_coverage(line) > 0:
                         BRF += 1
@@ -200,6 +205,13 @@ def runGcovResults(api, verbose = False, testName = "", source_root = ""):
                         if newBranch:
                             block_count += 1
                             branch_number += 1
+            
+
+            if "return" not in last_line:
+                if verbose: print("counting last line: ", func.name, line.line_number,last_line)
+                DA.append("DA:" + str(line.line_number) + ",1")
+            else:
+                if verbose: print("not counting last line: ", func.name, line.line_number,last_line)
         
         for idx in range(0,len(FN)):
             output += FN[idx] + "\n"
@@ -268,22 +280,34 @@ if __name__ == '__main__':
     if not checkVectorCASTVersion(21):
         print("Cannot create LCOV metrics. Please upgrade VectorCAST")
         sys.exit()
-            
+        
+    parser = argparse.ArgumentParser()
+    parser.add_argument('vcProjectName', help='VectorCAST Project Name', action="store")
+    parser.add_argument('-v', '--verbose',   help='Enable versobe output', dest="verbose", action="store_true", default=False)
+    args = parser.parse_args()
+
     try:
-        inFile = sys.argv[1]
+        inFile = args.vcProjectName
         if not inFile.endswith(".vcm"):
            inFile += ".vcm"
     except:
         inFile = os.getenv('VCAST_MANAGE_PROJECT_DIRECTORY') + ".vcm"
-        
-    passed = generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False, source_root = "")
-    
-    ## if opened from VectorCAST GUI...
-    if passed and not os.getenv('VCAST_MANAGE_PROJECT_DIRECTORY') is None:
-        from vector.lib.core import VC_Report_Client
 
-        # Open report in VectorCAST GUI
-        report_client = VC_Report_Client.ReportClient()
-        if report_client.is_connected():
-            report_client.open_report("out/index.html", "lcov Results")
+    if args.verbose: print ("Running in verbose mode")
+        
+    passed = generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = args.verbose, source_root = "")
+    
+    try:
+        ## if opened from VectorCAST GUI...
+        if passed and not os.getenv('VCAST_MANAGE_PROJECT_DIRECTORY') is None:
+            from vector.lib.core import VC_Report_Client
+
+            # Open report in VectorCAST GUI
+            report_client = VC_Report_Client.ReportClient()
+            if report_client.is_connected():
+                report_client.open_report("out/index.html", "lcov Results")
+    except:
+        pass
+
+
 
