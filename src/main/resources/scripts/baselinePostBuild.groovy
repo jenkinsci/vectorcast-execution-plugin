@@ -33,15 +33,25 @@ if (manager.logContains(".*Environment Creation Failed.*")) {
     buildFailed = true
     manager.addBadge("icon-error icon-xlg", "Environment Creation Failed")
 }
-if (manager.logContains(".*Error with Test Case Management Report.*")) {
-    manager.createSummary("icon-error icon-xlg").appendText("Error with Test Case Management Report of at least one Environment", false, false, false, "red")
+if (manager.logContains(".*Environment Creation Failed.*")) {
+    manager.createSummary("icon-error icon-xlg").appendText("Environment Creation Failed", false, false, false, "red")
     buildFailed = true
-    manager.addBadge("icon-error icon-xlg", "Error with Test Case Management Report of at least one Environment")
+    manager.addBadge("icon-error icon-xlg", "Environment Creation Failed")
 }
-if (manager.logContains(".*FLEXlm Error.*") || manager.logContains(".*ERROR: Failed to obtain a license.*")) {
+if (manager.logContains(".*newer version of VectorCAST*")) {
+    manager.createSummary("icon-error icon-xlg").appendText("Error with conflicting versions of VectorCAST and VectorCAST Project", false, false, false, "red")
+    buildFailed = true
+    manager.addBadge("icon-error icon-xlg", "Error with conflicting versions of VectorCAST and VectorCAST Project")
+}
+if (manager.logContains(".*FLEXlm Error.*") || manager.logContains(".*ERROR: Failed to obtain a license.*"))) {
     manager.createSummary("icon-error icon-xlg").appendText("FLEXlm Error", false, false, false, "red")
     buildFailed = true
     manager.addBadge("icon-error icon-xlg", "FLEXlm Error")
+}
+if (manager.logContains(".*Unable to obtain license.*")) {
+    manager.createSummary("icon-error icon-xlg").appendText("Error: Unable to obtain license", false, false, false, "red")
+    buildFailed = true
+    manager.addBadge("icon-error icon-xlg", "Error: Unable to obtain license")
 }
 if (manager.logContains(".*INCR_BUILD_FAILED.*")) {
     manager.createSummary("icon-error icon-xlg").appendText("Build Error", false, false, false, "red")

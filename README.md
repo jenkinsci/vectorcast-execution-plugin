@@ -389,13 +389,12 @@ environment before disabling.  This takes into account enviornments that are dir
 ## Change Log
 
 ### Version 0.78 (16 Nov 2024)
-- Moved to minimum Jenkins version: 2.452.1
+- Moved to minimum Jenkins version: 2.452.1 and Java 11
 - Adding in following capabilities
     - Extended Cobertura format output for use with [Jenkins Coverage Plugin](https://github.com/jenkinsci/coverage-plugin)
     - Unit Test Data format output in SonarQube format 
     - Adding capability to generate an index.html for all .html reports
 - Refactored New Job code to reduce duplication
-- Moved to Jenkins 2.440 and Java 11
 - Added BETA support for RGW3
 - Removed VectorCAST Project Environment report
 - Removed extra options for Update job as the plugin doesn't support Update job

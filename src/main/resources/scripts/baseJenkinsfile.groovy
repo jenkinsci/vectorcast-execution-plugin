@@ -22,6 +22,7 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   "Environment Creation Failed",
                   "Error with Test Case Management Report",
                   "FLEXlm Error",
+                  "Unable to obtain license",
                   "INCR_BUILD_FAILED",
                   "Environment was not successfully built",
                   "NOT_LINKED",
@@ -36,7 +37,8 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   "Invalid Workspace. Please ensure the directory and database contain write permission",
                   "The environment is invalid because",
                   "Please ensure that the project has the proper permissions and that the environment is not being accessed by another process.",
-                  "Error: That command is not permitted in continuous integration mode"
+                  "Error: That command is not permitted in continuous integration mode",
+                  "has been opened by a newer version of VectorCAST.  Please upgrade this version of VectorCAST to open the project"
                   ]
 
 // Unstable phrases for checkLogsForErrors
