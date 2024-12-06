@@ -43,7 +43,7 @@ if (manager.logContains(".*newer version of VectorCAST*")) {
     buildFailed = true
     manager.addBadge("icon-error icon-xlg", "Error with conflicting versions of VectorCAST and VectorCAST Project")
 }
-if (manager.logContains(".*FLEXlm Error.*") || manager.logContains(".*ERROR: Failed to obtain a license.*"))) {
+if (manager.logContains(".*FLEXlm Error.*") || manager.logContains(".*ERROR: Failed to obtain a license.*")) {
     manager.createSummary("icon-error icon-xlg").appendText("FLEXlm Error", false, false, false, "red")
     buildFailed = true
     manager.addBadge("icon-error icon-xlg", "FLEXlm Error")
