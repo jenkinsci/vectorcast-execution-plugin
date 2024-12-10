@@ -70,7 +70,7 @@ def dummy(*args, **kwargs):
 # (Emma based) report for Coverage
 #
 class BaseGenerateXml(object):
-    def __init__(self, FullManageProjectName, verbose, teePrint):
+    def __init__(self, FullManageProjectName, verbose, teePrint, use_cte):
         projectName = os.path.splitext(os.path.basename(FullManageProjectName))[0]
         self.manageProjectName = projectName
         self.cover_report_name = os.path.join("xml_data","coverage_results_"+ self.manageProjectName + ".xml")
@@ -79,6 +79,7 @@ class BaseGenerateXml(object):
         self.has_sfp_enabled = False
         self.print_exc = False
         self.teePrint = teePrint
+        self.use_cte = use_cte
 
         # get the VC langaguge and encoding
         self.encFmt = 'utf-8'
@@ -648,9 +649,10 @@ class GenerateManageXml (BaseGenerateXml):
                        no_full_reports = False,
                        print_exc = False,
                        useStartLine = False,
-                       teePrint = None):
+                       teePrint = None,
+                       use_cte = False):
 
-        super(GenerateManageXml, self).__init__(FullManageProjectName, verbose, teePrint)
+        super(GenerateManageXml, self).__init__(FullManageProjectName, verbose, teePrint, use_cte)
         self.api = VCProjectApi(FullManageProjectName)
 
         try:
@@ -997,8 +999,10 @@ class GenerateManageXml (BaseGenerateXml):
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, use_archive_extract = False, report_failed_only = False, print_exc = False, useStartLine = False, teePrint = None):
-        super(GenerateXml, self).__init__(FullManageProjectName, verbose, teePrint)
+    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, 
+            use_archive_extract = False, report_failed_only = False, print_exc = False, useStartLine = False, teePrint = None, use_cte = False):
+                
+        super(GenerateXml, self).__init__(FullManageProjectName, verbose, teePrint, use_cte)
 
         self.cbtDict = cbtDict
         self.FullManageProjectName = FullManageProjectName
@@ -1253,7 +1257,7 @@ class GenerateXml(BaseGenerateXml):
 
     def get_xml_string(self, fpath = None):
 
-        if fpath:
+        if False: #fpath:
             testcaseStringExtraStatus="""
         <testcase name="%s" classname="%s" time="%s" file="%s" line="%s">
             %s
@@ -1271,7 +1275,7 @@ class GenerateXml(BaseGenerateXml):
 
         else:
             testcaseStringExtraStatus="""
-        <testcase name="%s" classname="%s" time="%s" %s %s>
+        <testcase name="%s" classname="%s" time="%s" file="%s" line="%s">
             %s
             <system-out>
 %s
@@ -1292,7 +1296,7 @@ class GenerateXml(BaseGenerateXml):
         fpath = ""
         startLine = ""
         unitName = ""
-
+        
         if unit:
             try:
                 filePath = unit.sourcefile.normalized_path(normcase=False)
@@ -1374,7 +1378,7 @@ class GenerateXml(BaseGenerateXml):
         tc_name_full =  unit_name + "." + func_name + "." + tc_name
 
         classname = compiler + "." + testsuite + "." + envName
-
+        
         if isSystemTest:
             exp_total = tc.total
             exp_pass = tc.passed
@@ -1437,6 +1441,9 @@ class GenerateXml(BaseGenerateXml):
             extraStatus = ""
 
         testcaseString, testcaseStringExtraStatus = self.get_xml_string(fpath)
+
+        if self.use_cte:
+            unitName = classname
 
         if status != "":
             msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)

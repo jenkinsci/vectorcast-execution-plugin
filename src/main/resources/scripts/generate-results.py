@@ -231,7 +231,7 @@ def delete_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
         
-def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, useStartLine, teePrint):
+def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, useStartLine, teePrint, use_cte):
     xml_file = ""
     
     try:
@@ -262,7 +262,8 @@ def genDataApiReports(FullManageProjectName, entry, cbtDict, generate_exec_rpt_e
                                report_only_failures,
                                print_exc,
                                useStartLine,
-                               teePrint)
+                               teePrint,
+                               use_cte)
                                
         if xml_file.api != None:
             if verbose:
@@ -390,7 +391,7 @@ def generateIndividualReports(entry, envName):
 
 
 
-def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report, useStartLine, teePrint):
+def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report, useStartLine, teePrint, use_cte):
     global verbose
 
     print("Using VCProjectApi")
@@ -408,7 +409,7 @@ def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase
                                report_only_failures,
                                no_full_report,
                                print_exc,
-                               useStartLine, teePrint)
+                               useStartLine, teePrint, use_cte)
                                
         if xml_file.api != None:
             xml_file.generate_testresults()
@@ -434,7 +435,7 @@ def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase
         return 0, 0
 
 
-def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report, useStartLine, teePrint):
+def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report, useStartLine, teePrint, use_cte):
 
     failed_count = 0 
     passed_count = 0
@@ -447,7 +448,7 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
             continue 
 
         if envName == None:
-            pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures, useStartLine, teePrint)
+            pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures, useStartLine, teePrint, use_cte)
             passed_count += pc
             failed_count += fc
             if not no_full_report:
@@ -457,7 +458,7 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
             
             if level == None or env_level.upper() == level.upper():
-                pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures, useStartLine, teePrint)
+                pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv], cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures, useStartLine, teePrint, use_cte)
                 passed_count += pc
                 failed_count += fc
                 
@@ -481,10 +482,21 @@ def cleanupOldBuilds(teePrint):
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
 # def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None,use_archive_extract = False, report_only_failures = False, no_full_report = False):
-def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, 
-        timing = False, cbtDict = None, use_archive_extract = False, 
-        report_only_failures = False, no_full_report = False, use_ci = "", xml_data_dir = "xml_data", useStartLine = False, teePrint = None):
-
+def buildReports(FullManageProjectName = None,
+    level = None,
+    envName = None,
+    generate_individual_reports = True,
+    timing = False,
+    cbtDict = None,
+    use_archive_extract = False,
+    report_only_failures = False,
+    no_full_report = False,
+    use_ci = "",
+    xml_data_dir = "xml_data",
+    useStartLine = False,
+    teePrint = None,
+    use_cte = False):
+        
     if timing:
         print("Start report generation: " + str(time.time()))
         
@@ -543,11 +555,8 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             
         if use_manage_api:
             passed_count, failed_count = useManageAPI(FullManageProjectName, cbtDict, generate_individual_reports, 
-                    use_archive_extract, 
-                    report_only_failures,
-                    no_full_report,
-                    useStartLine,
-                    teePrint)
+                    use_archive_extract,  report_only_failures, no_full_report,
+                    useStartLine, teePrint, use_cte)
 
         else:
                 
@@ -555,7 +564,10 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
             if timing:
                 print("Using DataAPI for reporting")
                 print("Get Info: " + str(time.time()))
-            passed_count, failed_count = useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, generate_individual_reports, use_archive_extract, report_only_failures, no_full_report, useStartLine, teePrint)
+            passed_count, failed_count = useNewAPI(FullManageProjectName, 
+                manageEnvs, level, envName, cbtDict, generate_individual_reports, 
+                use_archive_extract, report_only_failures, no_full_report, useStartLine, 
+                teePrint, use_cte)
             
         with open("unit_test_fail_count.txt", "w") as fd:
             failed_str = str(failed_count)
@@ -777,29 +789,33 @@ def buildReports(FullManageProjectName = None, level = None, envName = None, gen
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('ManageProject', help='Manager Project Name')
-    parser.add_argument('-v', '--verbose',   help='Enable verbose output', action="store_true")
-    parser.add_argument('-l', '--level',   help='Environment Name if only doing single environment.  Should be in the form of level/env')
-    parser.add_argument('-e', '--environment',   help='Environment Name if only doing single environment.  Should be in the form of level/env')
-    parser.add_argument('-g', '--dont-generate-individual-reports',   help='Don\'t Generated Individual Reports (below 2019 - this just controls execution report generate, 2019 and later - execution reports for each testcase won\'t be generated',  action="store_true", default=False)
-    parser.add_argument('--wait_time',   help='Time (in seconds) to wait between execution attempts', type=int, default=30)
-    parser.add_argument('--wait_loops',   help='Number of times to retry execution', type=int, default=1)
-    parser.add_argument('--timing',   help='Display timing information for report generation', action="store_true", default = False)
-    parser.add_argument('--junit',   help='Output test results in JUnit format', action="store_true")
-    parser.add_argument('--print_exc',   help='Output test results in JUnit format', action="store_true")
-    parser.add_argument('--api',   help='Unused', type=int)
-    parser.add_argument('--use_archive_extract',   help='Uses Archive/Extract for reports to save time on report generation', action="store_true", default = False)
-    parser.add_argument('--report_only_failures',   help='Report only failed test cases', action="store_true", default = False)
-    parser.add_argument('--no_full_report',   help='Generate just metrics for jenkins consumption', action="store_true", default = False)
-
-    parser.add_argument('--legacy',   help='Force legacy reports for testing only', action="store_true", default = False)
-    parser.add_argument('--buildlog',   help='Build Log for CBT Statitics', default = None)
+    parser.add_argument('ManageProject',                    help='Manager Project Name')
+    parser.add_argument('-v', '--verbose',                  help='Enable verbose output', action="store_true")
+    parser.add_argument('-l', '--level',                    help='Environment Name if only doing single environment.  Should be in the form of level/env')
+    parser.add_argument('-e', '--environment',              help='Environment Name if only doing single environment.  Should be in the form of level/env')
+    parser.add_argument('-g', '--dont-generate-individual-reports',   
+                                                            help='Don\'t Generated Individual Reports. Below VC2019 - this just controls execution report generate. VC2019 and later - execution reports for each testcase won\'t be generated',  action="store_true", default=False)
+    parser.add_argument('--wait_time',                      help='Time (in seconds) to wait between execution attempts', type=int, default=30)
+    parser.add_argument('--wait_loops',                     help='Number of times to retry execution', type=int, default=1)
+    parser.add_argument('--timing',                         help='Display timing information for report generation', action="store_true", default = False)
+    parser.add_argument('--buildlog',                       help='Build Log for CBT Statitics', default = None)
+    
+    ## Hidden because they are specific to customer need or testing
+    parser.add_argument('--junit',                          help=argparse.SUPPRESS, action="store_true")
+    parser.add_argument('--junit_use_cte_for_classname',    help=argparse.SUPPRESS, action="store_true", dest="use_cte")
+    parser.add_argument('--print_exc',                      help=argparse.SUPPRESS, action="store_true")
+    parser.add_argument('--api',                            help=argparse.SUPPRESS, type=int)
+    parser.add_argument('--use_archive_extract',            help=argparse.SUPPRESS, action="store_true", default = False)
+    parser.add_argument('--report_only_failures',           help=argparse.SUPPRESS, action="store_true", default = False)
+    parser.add_argument('--no_full_report',                 help=argparse.SUPPRESS, action="store_true", default = False)
+    parser.add_argument('--legacy',                         help=argparse.SUPPRESS, action="store_true", default = False)
 
     args = parser.parse_args()
     
     if args.use_archive_extract and (not args.buildlog or not os.path.exists(args.buildlog)):
         print("Must have a valid --buildlog file to use --use_archive_extract")
         print("The option use_archive_extract is disabled")
+        args.use_archive_extract = False
     
     legacy = args.legacy
     timing = args.timing
@@ -836,16 +852,14 @@ if __name__ == '__main__':
 
     if args.verbose:
         verbose = True
-    if args.print_exc:
+        
+    if args.print_exc or verbose:
         print_exc = True
+        
     wait_time = args.wait_time
     wait_loops = args.wait_loops
 
-    if args.junit:
-        junit = True
-    else:
-        print ("Test results reporting has been migrated to JUnit.  If you are using older xUnit plugin with Single Jobs, please switch to using JUnit.  If you need assistance with that, contact support@us.vector.com")
-        junit = True
+    junit = True
         
 
     if args.buildlog and os.path.exists(args.buildlog):
@@ -871,7 +885,20 @@ if __name__ == '__main__':
     os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(args.ManageProject).rsplit(".",1)[0]
  
     with tee_print.TeePrint() as teePrint:
-        buildReports(args.ManageProject,args.level,args.environment,generate_individual_reports, timing, cbtDict, args.use_archive_extract, args.report_only_failures, args.no_full_report, teePrint)
+        buildReports(args.ManageProject,
+            args.level,
+            args.environment,
+            generate_individual_reports,
+            timing,
+            cbtDict,
+            args.use_archive_extract,
+            args.report_only_failures,
+            args.no_full_report,
+            use_ci = "",
+            xml_data_dir = "xml_data",
+            useStartLine = False,
+            teePrint = teePrint,
+            use_cte = args.use_cte)
     
     import archive_extract_reports
         
