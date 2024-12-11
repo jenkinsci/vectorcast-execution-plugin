@@ -107,7 +107,27 @@ def has_branches_covered(line):
             line.metrics.max_covered_mcdc_pairs)
         
     return count
-        
+       
+def get_function_name_line_number(file_path, function, initial_guess):
+
+    with open(file_path,"r") as fd:
+        lines = fd.readlines()
+
+    line_number_closest_so_far = initial_guess;
+    delta = 9999999999;
+
+    # print(function, line_number_closest_so_far, delta, initial_guess)
+    for count, line in enumerate(reversed(lines[:initial_guess+1])):
+        if function in line.replace(" ",""):
+            line_num = initial_guess - count
+            if abs(line_num - initial_guess) < delta:
+                line_number_closest_so_far = line_num
+                delta = abs(line_num - initial_guess)
+                # print(function, line_number_closest_so_far, delta, initial_guess)
+    
+    # print(line_number_closest_so_far + 1,function)
+    return line_number_closest_so_far + 1 ## add one since python starts from 0
+
 def runCoverageResultsMP(mpFile, verbose = False, testName = "", source_root = ""):
 
     vcproj = VCProjectApi(mpFile)
@@ -136,9 +156,9 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
         fname = file.display_name
         fpath = file.display_path.rsplit('.',1)[0]
         fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
-        
+
         fileDict[fpath] = file
-    
+
     output = ""
     
     for path in sorted(fileDict.keys()):
@@ -160,10 +180,11 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
         output += "TN:" + testName + "\n"
         new_path = new_path.replace("\\","/")
         output += "SF:" + new_path + "/" + file.name + "\n"
-        
+
         for func in file.functions:
+            func_name_line_number = get_function_name_line_number(file.display_path, func.name, func.start_line)
             fName = func.name + func.instrumented_functions[0].parameterized_name.replace(func.name,"",1)
-            FN.append("FN:" + str(func.start_line) + "," + fName)
+            FN.append("FN:" + str(func_name_line_number) + "," + fName)
             if has_anything_covered(func) > 0:
                 FNDA.append("FNDA:1" + "," + fName)
             else:
@@ -174,6 +195,9 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
             line_branch = []
 
             last_line = ""
+            any_line_covered = 0
+            any_return_found = False
+            found_func_start = False
             
             for line in func.iterate_coverage():
                 if has_any_coverage(line):
@@ -181,9 +205,17 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
                     if has_anything_covered(line): 
                         lineCovered = "1"
                         LH += 1
+                        any_line_covered += 1
                     else:
                         lineCovered = "0"
-                    DA.append("DA:" + str(line.line_number) + "," + lineCovered)
+
+                    if " return" in line.text:
+                       any_return_found = True
+                    if not found_func_start:
+                        DA.append("DA:" + str(func_name_line_number) + "," + lineCovered)
+                        found_func_start = True
+                    else:
+                        DA.append("DA:" + str(line.line_number) + "," + lineCovered)
                     
                     last_line = line.text
  
@@ -207,9 +239,12 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
                             branch_number += 1
             
 
-            if "return" not in last_line:
+            if True: #not any_return_found:
                 if verbose: print("counting last line: ", func.name, line.line_number,last_line)
-                DA.append("DA:" + str(line.line_number) + ",1")
+                if any_line_covered > 0:
+                    DA.append("DA:" + str(line.line_number) + ",1")
+                else:
+                    DA.append("DA:" + str(line.line_number) + ",0")
             else:
                 if verbose: print("not counting last line: ", func.name, line.line_number,last_line)
         

@@ -70,6 +70,7 @@ class VectorCASTExecute(object):
         self.pclp_input = args.pclp_input
         
         self.html_base_dir = args.html_base_dir
+        self.use_cte = args.use_cte
         
         if args.exit_with_failed_count == 'not present':
             self.useJunitFailCountPct = False
@@ -214,7 +215,7 @@ class VectorCASTExecute(object):
             self.useStartLine = False
         
         self.failed_count, self.passed_count = generate_results.buildReports(self.FullMP,self.level,self.environment, 
-                True, self.timing, xml_data_dir = self.xml_data_dir, useStartLine=self.useStartLine)
+                True, self.timing, xml_data_dir = self.xml_data_dir, useStartLine=self.useStartLine, teePrint = None, use_cte = self.use_cte)
         
         # calculate the failed percentage
         if (self.failed_count + self.passed_count > 0):
@@ -340,6 +341,7 @@ if __name__ == '__main__':
     metricsGroup.add_argument('--cobertura_extended', help='Generate coverage results in extended Cobertura xml format', action="store_true", default = False)
     metricsGroup.add_argument('--lcov', help='Generate coverage results in an LCOV format', action="store_true", default = False)
     metricsGroup.add_argument('--junit', help='Generate test results in Junit xml format', action="store_true", default = False)
+    metricsGroup.add_argument('--junit_use_cte_for_classname', help=argparse.SUPPRESS, action="store_true", dest="use_cte")
     metricsGroup.add_argument('--sonarqube', help='Generate test results in SonarQube Generic test execution report format (CppUnit)', action="store_true", default = False)
     metricsGroup.add_argument('--pclp_input', help='Generate static analysis results from PC-lint Plus XML file to generic static analysis format (codequality)', action="store", default = None)
     metricsGroup.add_argument('--pclp_output_html', help='Generate static analysis results from PC-lint Plus XML file to an HTML output', action="store", default = "pclp_findings.html")

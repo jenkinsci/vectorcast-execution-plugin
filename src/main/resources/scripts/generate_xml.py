@@ -99,7 +99,6 @@ class BaseGenerateXml(object):
 
         if self.teePrint is None:
             self.teePrint = tee_print.TeePrint()
-            self.teePrint.teePrint("BaseGenerateXml called incorrectly, no teePrint")
 #
 # BaseGenerateXml - calculate coverage value
 #
@@ -802,7 +801,8 @@ class GenerateManageXml (BaseGenerateXml):
                                self.report_failed_only,
                                self.print_exc,
                                self.useStartLine,
-                               self.teePrint)
+                               self.teePrint,
+                               self.use_cte)
 
         localXML.topLevelAPI = self.api
         localXML.noResults = self.noResults
