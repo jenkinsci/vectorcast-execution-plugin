@@ -1,3 +1,51 @@
+ // ===========================================================
+// 
+// Auto-generated script by VectorCAST Execution Plug-in 
+// based on the information provided when creating the 
+//
+//     VectorCAST > Pipeline job
+//
+// ===========================================================
+
+VC_Manage_Project  = 'CurrentRelease/vcast-workarea/vc_manage/PointOfSales_Manage.vcm'
+VC_EnvSetup        = '''call %WORKSPACE%/setenv.bat
+'''
+VC_Build_Preamble  = ""
+VC_EnvTeardown     = ''''''
+def scmStep () { git 'https://github.com/TimSVector/PointOfSales_v2.git' }
+VC_usingSCM = true
+VC_postScmStepsCmds = ''''''
+VC_sharedArtifactDirectory = ''''''
+VC_Agent_Label = 'Host_Test_Node'
+VC_waitTime = '30'
+VC_waitLoops = '1'
+VC_maxParallel = 0
+VC_useOneCheckoutDir = false
+VC_UseCILicense = ""
+VC_useCBT = "--incremental"
+VC_useCoveragePlugin = true
+VC_createdWithVersion = '0.78-SNAPSHOT (private-22152ed7-vaprti)'
+VC_usePCLintPlus = false
+VC_pclpCommand = ''
+VC_pclpResultsPattern = '**/*lint_results.txt'
+VC_useSquore = false
+VC_squoreCommand = ''''''
+VC_useTESTinsights = false
+VC_TESTinsights_URL = ''
+VC_TESTinsights_Project = "${JOB_BASE_NAME}"
+VC_TESTinsights_Proxy = ''
+VC_TESTinsights_Credential_ID = ''
+VC_TESTinsightsScmUrl = ''
+VC_TESTinsights_SCM_Tech = 'git'
+VC_TESTinsights_Revision = ""
+VC_useCoverageHistory = false
+VC_useStrictImport = true
+VC_useRGW3 = false
+VC_useImportedResults = false
+VC_useLocalImportedResults = false
+VC_useExternalImportedResults = false
+VC_externalResultsFilename = ""
+
 // Code Coverage threshold numbers
 // Basis path coverage is no longer support after VectorCAST 2019SP1
 VC_Healthy_Target = [ maxStatement: 100, maxBranch: 100, maxFunctionCall: 100, maxFunction: 100, maxMCDC: 100,
@@ -757,9 +805,11 @@ pipeline {
                         }
                     }
                     
-                    // archive existing reports                    
-                    catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    // archive existing reports   
+                    try {
                        tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/**/*.xml", overwrite: true
+                    } catch {
+                        println "tar unavailable"
                     }
 
                     println "Created with VectorCAST Execution Version: " + VC_createdWithVersion

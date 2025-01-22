@@ -96,8 +96,6 @@ class BaseGenerateXml(object):
         self.testsuite = ""
         self.env = ""
         self.build_dir = ""
-        
-        self.fh_data = ""
 
         if self.teePrint is None:
             self.teePrint = tee_print.TeePrint()
@@ -1057,8 +1055,6 @@ class GenerateXml(BaseGenerateXml):
         self.api.commit = dummy
         self.failed_count = 0
         self.passed_count = 0
-        
-
 
 #
 # GenerateXml - add any compound tests to the unit report
@@ -1232,7 +1228,6 @@ class GenerateXml(BaseGenerateXml):
                 else:
                     success += 1
                     self.passed_count += 1
-
         self.fh_data = ""
         self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
         self.fh_data += ("<testsuites>\n")
@@ -1380,11 +1375,10 @@ class GenerateXml(BaseGenerateXml):
         testsuite = escape(self.testsuite, quote=False).replace(".","")
         envName = escape(self.env, quote=False).replace(".","")
 
-        tc_name_full =  unit_name + "." + func_name + "." + tc_name
-
         classname = compiler + "." + testsuite + "." + envName
         
         if isSystemTest:
+            tc_name_full =  classname + "." + tc_name
             exp_total = tc.total
             exp_pass = tc.passed
             result = "  System Test Build Status: " + tc.build_status + ". \n   System Test: " + tc.name + " \n   Execution Status: "
@@ -1401,6 +1395,7 @@ class GenerateXml(BaseGenerateXml):
                 tc.passed = 0
 
         else:
+            tc_name_full =  unit_name + "." + func_name + "." + tc_name
             summary = tc.history.summary
             exp_total = summary.expected_total
             exp_pass = exp_total - summary.expected_fail
@@ -1447,7 +1442,7 @@ class GenerateXml(BaseGenerateXml):
 
         testcaseString, testcaseStringExtraStatus = self.get_xml_string(fpath)
 
-        if self.use_cte:
+        if self.use_cte or unitName == "":
             unitName = classname
 
         if status != "":
