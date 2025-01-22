@@ -96,6 +96,8 @@ class BaseGenerateXml(object):
         self.testsuite = ""
         self.env = ""
         self.build_dir = ""
+        
+        self.fh_data = ""
 
         if self.teePrint is None:
             self.teePrint = tee_print.TeePrint()
@@ -1055,6 +1057,8 @@ class GenerateXml(BaseGenerateXml):
         self.api.commit = dummy
         self.failed_count = 0
         self.passed_count = 0
+        
+
 
 #
 # GenerateXml - add any compound tests to the unit report
@@ -1228,6 +1232,7 @@ class GenerateXml(BaseGenerateXml):
                 else:
                     success += 1
                     self.passed_count += 1
+
         self.fh_data = ""
         self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
         self.fh_data += ("<testsuites>\n")

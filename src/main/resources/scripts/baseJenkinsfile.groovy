@@ -757,8 +757,10 @@ pipeline {
                         }
                     }
                     
-                    // archive existing reports 
-                    tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/**/*.xml", overwrite: true
+                    // archive existing reports                    
+                    catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                       tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/**/*.xml", overwrite: true
+                    }
 
                     println "Created with VectorCAST Execution Version: " + VC_createdWithVersion
 
