@@ -49,7 +49,6 @@ import io.jenkins.plugins.analysis.core.steps.IssuesRecorder;
 import org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper;
 import org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding;
 import org.jenkinsci.plugins.credentialsbinding.MultiBinding;
-import java.util.List;
 import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.logging.Level;

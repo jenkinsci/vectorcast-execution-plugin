@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.54</version>
+        <version>4.51</version>
         <relativePath />
     </parent>
 
@@ -30,10 +30,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
         <findbugs.failOnError>false</findbugs.failOnError>
+        <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
+        <jenkins.baseline>2.346</jenkins.baseline>
         <!-- Minimum of 2.138.4 required for pipelines -->
-        <jenkins.version>2.289.3</jenkins.version>
-        <java.level>8</java.level>
-        <jenkins-test-harness.version>2.56</jenkins-test-harness.version>
+        <jenkins.version>${jenkins.baseline}.3</jenkins.version>
         <powermock.version>1.6.2</powermock.version>
     </properties>
 
@@ -73,10 +73,15 @@
 
     <dependencyManagement>
         <dependencies>
+      <dependency>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-module-junit4</artifactId>
+        <version>2.0.4</version>
+      </dependency>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.289.x</artifactId>
-                <version>1246.va_b_50630c1d19</version>
+                <artifactId>bom-${jenkins.baseline}.x</artifactId>
+                <version>1763.v092b_8980a_f5e</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -92,12 +97,10 @@
         <dependency>
             <groupId>org.jenkinsci.plugins</groupId>
             <artifactId>pipeline-model-api</artifactId>
-            <version>1.9.3</version>
         </dependency>
 <dependency>
     <groupId>org.jenkins-ci.plugins.workflow</groupId>
     <artifactId>workflow-job</artifactId>
-    <version>1145.v7f2433caa07f</version>
     <scope>test</scope>
 </dependency>
         <dependency>
@@ -115,7 +118,6 @@
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -169,7 +171,6 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>ws-cleanup</artifactId>
-            <version>0.28</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -246,7 +247,6 @@
 <dependency>
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>forensics-api</artifactId>
-    <version>1.12.0</version>
 </dependency>
 <dependency>
     <groupId>io.jenkins.plugins</groupId>
@@ -293,7 +293,6 @@
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-release-plugin</artifactId>
-              <version>3.0.0-M1</version>
             </plugin>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
@@ -306,7 +305,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
