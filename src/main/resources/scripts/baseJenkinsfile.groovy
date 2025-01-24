@@ -503,7 +503,7 @@ def setupManageProject() {
                     _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --status"
                     _IF_EXIST ${mpName}_results.vcr _IF_THEN _COPY ${mpName}_results.vcr ${mpName}_results_orig.vcr _ENDIF
                 """
-            } catch (exe) {
+            } catch(Exception e) {
                 print "No result artifact to use"
             }
         } else if (VC_useExternalImportedResults)  {
@@ -556,7 +556,7 @@ def transformIntoStep(inputString) {
                 else {
                     nodeID = compiler
                 }
-            } catch (exe) {
+            } catch(Exception e) {
                nodeID = compiler
             }
 
@@ -719,7 +719,7 @@ pipeline {
                         else {
                             usingExternalRepo = false
                         }
-                    } catch (exe) {
+                    } catch(Exception e) {
                        usingExternalRepo = false
                     }
 
@@ -808,7 +808,7 @@ pipeline {
                     // archive existing reports   
                     try {
                        tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/**/*.xml", overwrite: true
-                    } catch {
+                    } catch(Exception e) {
                         println "tar unavailable"
                     }
 
