@@ -23,27 +23,15 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
-import com.vectorcast.plugins.vectorcastcoverage.VectorCASTPublisher;
-import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
-import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
-import hudson.model.Descriptor;
 import hudson.model.Item;
-import hudson.plugins.ws_cleanup.PreBuildCleanup;
 import hudson.security.Permission;
-import hudson.tasks.ArtifactArchiver;
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.Builder;
-import hudson.tasks.Publisher;
-import hudson.util.DescribableList;
 import jenkins.model.Jenkins;
 import junit.framework.TestCase;
 import net.sf.json.JSONObject;
-import hudson.tasks.junit.JUnitResultArchiver;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.kohsuke.stapler.StaplerRequest;

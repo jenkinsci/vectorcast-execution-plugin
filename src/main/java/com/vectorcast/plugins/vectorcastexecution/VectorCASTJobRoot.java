@@ -28,8 +28,6 @@ import hudson.model.RootAction;
 
 import java.util.List;
 import jenkins.model.Jenkins;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
