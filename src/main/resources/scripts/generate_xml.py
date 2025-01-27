@@ -794,7 +794,7 @@ class GenerateManageXml (BaseGenerateXml):
         localXML = None
 
         localXML = GenerateXml(self.FullManageProjectName, build_dir, env_name, comp, ts,
-                               None, key, xmlUnitReportName, None, None, False,
+                               None, key, xmlUnitReportName, None, None, self.verbose,
                                self.cbtDict,
                                self.generate_exec_rpt_each_testcase,
                                self.use_archive_extract,
@@ -1016,7 +1016,10 @@ class GenerateXml(BaseGenerateXml):
 
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         build_dir = build_dir.replace("\\","/")
-        build_dir = build_dir.replace("/.","")
+        
+        # not sure why this was added, but causing issues with a path with /.blah as a path
+        # commenting out for now
+        # build_dir = build_dir.replace("/.","")
         build_dir_4hash = build_dir.upper()
         build_dir_4hash = "/".join(build_dir_4hash.split("/")[-2:])
 
@@ -1078,6 +1081,17 @@ class GenerateXml(BaseGenerateXml):
 # GenerateXml - Find the test case file
 #
     def generate_unit(self):
+        
+        if self.verbose:
+            print("self.api: ")
+            pprint(dump(self.api))
+
+            print("self.api.TestCase.all(): ")
+            try:
+                pprint(self.api.TestCase.all())
+            except:
+                print("error with self.api.TestCase.all() call")
+                
 
         if isinstance(self.api, CoverApi):
             try:
@@ -1213,6 +1227,12 @@ class GenerateXml(BaseGenerateXml):
         if self.verbose:
             print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
+            pprint(dump(self.api))
+            try:
+                pprint(self.api.TestCase.all())
+            except:
+                print("error with self.api.TestCase.all() call")
+                
         errors = 0
         failed = 0
         success = 0
