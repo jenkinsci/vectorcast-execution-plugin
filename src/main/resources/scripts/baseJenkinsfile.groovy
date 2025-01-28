@@ -749,17 +749,12 @@ pipeline {
                         }
                     }
                     
-                    // archive existing reports   
-                    try {
-                       tar file: "reports_archive.tar" , glob: "management/*.html,xml_data/**/*.xml", overwrite: true
-                    } catch(Exception e) {
-                        println "tar unavailable"
-                    }
-
                     println "Created with VectorCAST Execution Version: " + VC_createdWithVersion
 
                     // Run the setup step to copy over the scripts
                     step([$class: 'VectorCASTSetup'])
+
+                    runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive""")
 
                     // -------------------------------------------------------------------------------------------
                     // this part could be done with Manage_Project.getJobs() but it doesn't seem to be working VVV

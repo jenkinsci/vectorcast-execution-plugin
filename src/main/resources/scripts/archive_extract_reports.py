@@ -31,9 +31,9 @@ def archive(verbose = False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--archive',   help='Archive reports', action="store_true")
-    parser.add_argument('-e', '--extract',   help='Extract reports', action="store_true")
-    parser.add_argument('-v', '--verbose',   help='Verbose output', action="store_true", default = False)
+    parser.add_argument('-a', '--archive',   help='Archive reports', action="store_true", default = False)
+    parser.add_argument('-e', '--extract',   help='Extract reports', action="store_true", default = False)
+    parser.add_argument('-v', '--verbose',   help='Verbose output' , action="store_true", default = False)
     
     args = parser.parse_args()
 
