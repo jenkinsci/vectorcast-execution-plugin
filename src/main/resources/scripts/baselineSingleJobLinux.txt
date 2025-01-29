@@ -10,13 +10,14 @@ VCAST_RPTS_SELF_CONTAINED=FALSE
 
 # Use strict testcase import
 if [[ $VCAST_USE_STRICT_IMPORT -eq 1 ]]; then
-   $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --config=VCAST_STRICT_TEST_CASE_IMPORT=$VCAST_USE_STRICT_IMPORT"
+   $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --config=VCAST_STRICT_TEST_CASE_IMPORT=TRUE"
 fi
 
 # Default Setup
 $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --full-status "
 $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --force --release-locks "
 $VECTORCAST_DIR/vpython "$WORKSPACE/vc_scripts/managewait.py" --wait_time $VCAST_WAIT_TIME --wait_loops $VCAST_WAIT_LOOPS --command_line "--project "$VCAST_PROJECT_NAME" --config VCAST_CUSTOM_REPORT_FORMAT=$VCAST_REPORT_FORMAT"
+
 
 # Use Imported Results
 if [[ $VCAST_USE_IMPORTED_RESULTS -eq 1 ]]; then

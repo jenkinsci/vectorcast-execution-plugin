@@ -297,6 +297,9 @@ class VectorCASTExecute(object):
             
         if self.jobs != "1" and checkVectorCASTVersion(20, True):
 
+            # setup project for parallel execution
+            self.manageWait.exec_manage_command ("--config VCAST_DEPENDENCY_CACHE_DIR=./vcqik")
+
             # should work for pre-vcast parallel_build_execute or vcast parallel_build_execute
             pstr = "--project " + self.FullMP
             jstr = "--jobs="+str(self.jobs)
