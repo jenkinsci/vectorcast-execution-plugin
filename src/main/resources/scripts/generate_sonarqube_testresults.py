@@ -317,14 +317,19 @@ class GenerateManageXml (BaseGenerateXml):
             comp, ts, env_name = key.split("/")
             
         env_key = comp + "/" + ts + "/" + env_name
-        
+
         env = self.api.project.environments[env_key]
         env_def = self.api.project.environments[env_key].definition
-    
-        build_dir = os.path.join(self.api.project.workspace,env.relative_working_directory)
+
+        build_dir = env.build_directory
         vceFile =  os.path.join(build_dir, env.name+".vce")
-        
-        xmlUnitReportName = os.path.join(self.xml_data_dir, "sonarqube", "test_results_" + key.replace("/","_") + ".xml")
+        vcpFile =  os.path.join(build_dir, env.name+".vcp")
+        if not os.path.exists(vceFile) and not os.path.exists(vcpFile):
+            print("Error: Could not determine environment location for {}/{}".format(build_dir, env.name))
+            print("       {}/{}/{}".format(comp, ts, env_name))
+            return
+
+        xmlUnitReportName = os.getcwd() + os.sep + "xml_data" + os.sep + "test_results_" + "_".join([comp, ts, env_name]) + ".xml"
 
         localXML = GenerateXml(self.FullManageProjectName, build_dir, env_name, comp, ts, 
                                key, xmlUnitReportName, None, None, False, 

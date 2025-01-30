@@ -179,7 +179,20 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
 
         output += "TN:" + testName + "\n"
         new_path = new_path.replace("\\","/")
-        output += "SF:" + new_path + "/" + file.name + "\n"
+        
+        if len(source_root) > 0:
+            sourceFile = "SF:" + new_path + "/" + file.name + "\n"
+        else:
+            sourceFile = "SF:" + file.name + "\n"
+
+        output += sourceFile;
+        
+        if verbose:
+            print("source_root: ", source_root)
+            print("path       : ", path)
+            print("new_path   : ", new_path)
+            print("file.name  : ", file.name)
+            print("sourceFile : ", sourceFile + "\n")
 
         for func in file.functions:
             func_name_line_number = get_function_name_line_number(file.display_path, func.name, func.start_line)
