@@ -77,8 +77,8 @@ class ParseConsoleForCBT(object):
 
         for line in console_log:
             try:
-                lineTime, line = line.split(" ",1)
                 line_dto = datetime.strptime(lineTime,"%H:%M:%S.%f")
+                lineTime, line = line.split(" ",1)
             except:
                 pass 
 

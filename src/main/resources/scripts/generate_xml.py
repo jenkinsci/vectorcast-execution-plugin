@@ -863,6 +863,7 @@ class GenerateManageXml (BaseGenerateXml):
             shutil.copyfile(fname, report_name)
         except:
             traceback.print_exc()
+            
     def skipReporting(self, env):
 
         build_dir = ""
@@ -1016,10 +1017,8 @@ class GenerateXml(BaseGenerateXml):
 
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         build_dir = build_dir.replace("\\","/")
-        
-        # not sure why this was added, but causing issues with a path with /.blah as a path
-        # commenting out for now
-        # build_dir = build_dir.replace("/.","")
+        if build_dir.endswith("/."):
+            build_dir = build_dir.replace("/.","")
         build_dir_4hash = build_dir.upper()
         build_dir_4hash = "/".join(build_dir_4hash.split("/")[-2:])
 
@@ -1086,12 +1085,6 @@ class GenerateXml(BaseGenerateXml):
             print("self.api: ")
             pprint(dump(self.api))
 
-            print("self.api.TestCase.all(): ")
-            try:
-                pprint(self.api.TestCase.all())
-            except:
-                print("error with self.api.TestCase.all() call")
-                
 
         if isinstance(self.api, CoverApi):
             try:
@@ -1133,6 +1126,13 @@ class GenerateXml(BaseGenerateXml):
                 return
 
         else:
+            if self.verbose:
+
+                print("self.api.TestCase.all(): ")
+                try:
+                    pprint(self.api.TestCase.all())
+                except:
+                    print("error with self.api.TestCase.all() call")
             try:
                 self.start_unit_test_file()
                 self.add_compound_tests()
