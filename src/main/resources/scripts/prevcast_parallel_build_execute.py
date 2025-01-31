@@ -189,6 +189,7 @@ class ParallelExecute(object):
             self.system_test_lock.release()
 
     def run_compiler(self, compiler, max, queue, compiler_queue):
+        ##pdb.set_trace()        
         compiler_queue.get()
         
         parallel_exec_queue = Queue(maxsize=max)
@@ -387,6 +388,11 @@ class ParallelExecute(object):
             self.parse_html_files()
         
     def doit(self):
+        ## create the directory structure in the manage project before building
+        exec_cmd = VCD + "/manage --project " + self.manageProject + self.use_ci +" --status"
+        process = subprocess.Popen(exec_cmd, shell=True)
+        process.wait()
+
         api = VCProjectApi(self.manageProject)
               
         self.parallel_exec_info = {}
@@ -448,11 +454,6 @@ class ParallelExecute(object):
                 
         ## start threads that start threads
         self.compiler_exec_queue = Queue()
-
-        ## create the directory structure in the manage project before building
-        exec_cmd = VCD + "/manage --project " + self.manageProject + self.use_ci +" --status"
-        process = subprocess.Popen(exec_cmd, shell=True)
-        process.wait()
 
         for compiler in self.waiting_execution_queue:
             max = self.parallel_exec_info[compiler][0]
