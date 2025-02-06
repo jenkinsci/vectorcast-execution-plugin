@@ -861,7 +861,6 @@ if __name__ == '__main__':
 
     junit = True
         
-
     if args.buildlog and os.path.exists(args.buildlog):
         with open(args.buildlog,"r") as fd:
             buildLogData = fd.readlines()

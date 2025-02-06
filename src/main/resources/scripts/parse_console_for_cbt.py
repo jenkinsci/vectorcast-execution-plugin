@@ -102,7 +102,6 @@ class ParseConsoleForCBT(object):
                 if hashCode not in  self.environmentDict.keys():
                     self.environmentDict[hashCode] = [{},{},{}]
                 continue
-                
 
             if started: 
                 # system test

@@ -189,7 +189,6 @@ class ParallelExecute(object):
             self.system_test_lock.release()
 
     def run_compiler(self, compiler, max, queue, compiler_queue):
-        ##pdb.set_trace()        
         compiler_queue.get()
         
         parallel_exec_queue = Queue(maxsize=max)

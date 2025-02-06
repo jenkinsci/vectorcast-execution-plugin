@@ -521,8 +521,8 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
                         package.attrib['functioncall-coverage'] = funcCallPercentStr
                         
                     funcCovTotal, funcTotal = getCoveredFunctionCount(file)
-                    if funcTotal > 0:  
-                        func_rate = funcCovTotal / funcTotal
+                    if pkg_total_func > 0:
+                        func_rate = float(pkg_cov_func) / float(pkg_total_func)
                         funcPercentStr = "{:.2f}".format(func_rate * 100.0) + "% (" + str(pkg_cov_func) + "/" + str(pkg_total_func) + ")"             
                         package.attrib['function-coverage'] = funcPercentStr
                     
