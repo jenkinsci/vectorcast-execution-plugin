@@ -196,7 +196,7 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
 
         for func in file.functions:
             func_name_line_number = get_function_name_line_number(file.display_path, func.name, func.start_line)
-            fName = func.name + func.instrumented_functions[0].parameterized_name.replace(func.name,"",1)
+            fName = func.mangled_name #func.name + func.instrumented_functions[0].parameterized_name.replace(func.name,"",1)
             FN.append("FN:" + str(func_name_line_number) + "," + fName)
             if has_anything_covered(func) > 0:
                 FNDA.append("FNDA:1" + "," + fName)
@@ -212,8 +212,11 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
             any_return_found = False
             found_func_start = False
             
+            lastLine = None
+            
             for line in func.iterate_coverage():
                 if has_any_coverage(line):
+                    lastLine = line
                     LF += 1
                     if has_anything_covered(line): 
                         lineCovered = "1"
@@ -252,14 +255,14 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
                             branch_number += 1
             
 
-            if True: #not any_return_found:
-                if verbose: print("counting last line: ", func.name, line.line_number,last_line)
+            if lastLine is not None: #not any_return_found:
+                if verbose: print("counting last line: ", func.name, lastLine.line_number,last_line)
                 if any_line_covered > 0:
-                    DA.append("DA:" + str(line.line_number) + ",1")
+                    DA.append("DA:" + str(lastLine.line_number) + ",1")
                 else:
-                    DA.append("DA:" + str(line.line_number) + ",0")
+                    DA.append("DA:" + str(lastLine.line_number) + ",0")
             else:
-                if verbose: print("not counting last line: ", func.name, line.line_number,last_line)
+                if verbose: print("not counting last line: ", func.name, lastLine.line_number,last_line)
         
         for idx in range(0,len(FN)):
             output += FN[idx] + "\n"

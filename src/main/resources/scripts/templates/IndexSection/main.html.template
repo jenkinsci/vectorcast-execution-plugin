@@ -4,7 +4,7 @@
   <table id="overall" class='table table-hover table-bordered'>
   <ul>
   {%- for entry in topLevel %}
-    <li><a href="{{entry[1]}}">{{entry[0]}}</a></li>
+    <li><a href="{{entry[1]}}" style="text-decoration: underline;">{{entry[0]}}</a></li>
   {%- endfor %}
   </ul>
   </table>
@@ -13,7 +13,7 @@
   <table id = "fullreports" class='table table-hover table-bordered'>
   <ul>
   {%- for entry in indFull %}
-    <li><a href="{{entry[1]}}">{{entry[0]}}</a></li>
+    <li><a href="{{entry[1]}}" style="text-decoration: underline;">{{entry[0]}}</a></li>
   {%- endfor %}
   </ul>
   </table>
@@ -22,7 +22,7 @@
   <table id = "misc" class='table table-hover table-bordered'>
   <ul>
   {%- for entry in misc %}
-    <li><a href="{{entry[1]}}">{{entry[0]}}</a></li>
+    <li><a href="{{entry[1]}}" style="text-decoration: underline;">{{entry[0]}}</a></li>
   {%- endfor %}
   </ul>
   </table>

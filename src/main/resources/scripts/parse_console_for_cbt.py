@@ -75,12 +75,14 @@ class ParseConsoleForCBT(object):
         tc_name = ""
         currTestNdx = 0
 
+        tempLine = ""
         for line in console_log:
             try:
-                line_dto = datetime.strptime(lineTime,"%H:%M:%S.%f")
+                tempLine = line
                 lineTime, line = line.split(" ",1)
+                line_dto = datetime.strptime(lineTime,"%H:%M:%S.%f")
             except:
-                pass 
+                line = tempLine
 
             line = line.strip()
                         
@@ -96,7 +98,7 @@ class ParseConsoleForCBT(object):
                 hashCode = hashlib.md5(build_dir).hexdigest()
                 
                 if self.verbose:
-                    print ("Parse Dir: " + str(build_dir) + " Hash: " + hashCode)
+                    print (f"HashCode: {hashCode} for build dir: {build_dir}")
                 
                 started = True
                 if hashCode not in  self.environmentDict.keys():

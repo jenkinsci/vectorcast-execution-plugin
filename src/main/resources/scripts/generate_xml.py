@@ -211,10 +211,6 @@ class BaseGenerateXml(object):
         if self.has_call_coverage:
             entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
 
-        if self.verbose:
-            print("Coverage Type:", cov_type_str)
-
-
         if 'NONE' in cov_type_str:
             return entry
 
@@ -456,7 +452,7 @@ class BaseGenerateXml(object):
 
             if not self.hasAnyCov(srcFile):
                 continue
-                
+
             hasFuncCov, hasFuncCallCov = self.hasEitherFunctionCoverages(srcFile)
             self.has_function_coverage = hasFuncCov
             self.has_call_coverage = hasFuncCallCov
@@ -670,7 +666,7 @@ class GenerateManageXml (BaseGenerateXml):
         self.print_exc = print_exc
 
         self.units = []
-        
+
         self.useStartLine = useStartLine
 
         self.cleanupXmlDataDir()
@@ -863,11 +859,11 @@ class GenerateManageXml (BaseGenerateXml):
             shutil.copyfile(fname, report_name)
         except:
             traceback.print_exc()
-            
+
     def skipReporting(self, env):
 
         build_dir = ""
-        
+
         if self.use_archive_extract and self.cbtDict:
             try:
                 prj_dir = os.environ['WORKSPACE'].replace("\\","/") + "/"
@@ -881,25 +877,25 @@ class GenerateManageXml (BaseGenerateXml):
 
             try:
                 build_dir = "build/" + build_dir.rsplit("build/",1)[-1]
-                                
+
             except:
                 traceback.print_exc()
-                print("exception converting directory into relative path:", env.build_directory, build_dir)        
+                print("exception converting directory into relative path:", env.build_directory, build_dir)
 
             ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
-            
+
             build_dir_4hash = build_dir.upper()
             build_dir_4hash = "/".join(build_dir_4hash.split("/")[-2:])
-            
+
             # Unicode-objects must be encoded before hashing in Python 3
             if sys.version_info[0] >= 3:
                 build_dir_4hash = build_dir_4hash.encode('utf-8')
 
             hashCode = hashlib.md5(build_dir_4hash).hexdigest()
-            
+
             if hashCode not in self.cbtDict.keys():
                 if self.verbose:
-                    print("skipping report because hash not found in cbtdict", build_dir)
+                    print(f"Skipping report because hashCode ({hashCode}) for build dir ({build_dir}) not found in cbtdict")
 
                 return True
             else:
@@ -908,10 +904,7 @@ class GenerateManageXml (BaseGenerateXml):
                     if self.verbose:
                         print("skipping report because c,i,s are all 0 size")
                     return True
-                    
-        if self.verbose:
-            print("not skipping: ", build_dir)
-            
+
         return False
 
 # GenerateManageXml
@@ -924,10 +917,10 @@ class GenerateManageXml (BaseGenerateXml):
         results = self.api.project.repository.get_full_status([])
         all_envs = []
         for env in self.api.Environment.all():
-            
+
             if self.skipReporting(env):
-                continue            
-                 
+                continue
+
             if env.is_active:
                 all_envs.append(env.level._full_path)
 
@@ -1000,9 +993,9 @@ class GenerateManageXml (BaseGenerateXml):
 #
 class GenerateXml(BaseGenerateXml):
 
-    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True, 
+    def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True,
             use_archive_extract = False, report_failed_only = False, print_exc = False, useStartLine = False, teePrint = None, use_cte = False):
-                
+
         super(GenerateXml, self).__init__(FullManageProjectName, verbose, teePrint, use_cte)
 
         self.cbtDict = cbtDict
@@ -1029,9 +1022,8 @@ class GenerateXml(BaseGenerateXml):
         self.hashCode = hashlib.md5(build_dir_4hash).hexdigest()
 
         if verbose:
-            print ("gen Dir: " + str(build_dir_4hash)+ " Hash: " +self.hashCode)
+            print (f"HashCode: {self.hashCode} for build dir: {build_dir_4hash}")
 
-        #self.hashCode = build_dir.split("/")[-1].upper()
         self.build_dir = build_dir
         self.env = env
         self.compiler = compiler
@@ -1080,11 +1072,6 @@ class GenerateXml(BaseGenerateXml):
 # GenerateXml - Find the test case file
 #
     def generate_unit(self):
-        
-        if self.verbose:
-            print("self.api: ")
-            pprint(dump(self.api))
-
 
         if isinstance(self.api, CoverApi):
             try:
@@ -1109,8 +1096,6 @@ class GenerateXml(BaseGenerateXml):
                                 pass_fail_rerun =  ": Failed"
 
                             level = env.compiler.name + "/" + env.testsuite.name + "/" + env.name
-                            if self.verbose:
-                                print (level, st.name, pass_fail_rerun)
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
                 from generate_qa_results_xml import saveQATestStatus
                 saveQATestStatus(self.FullManageProjectName)
@@ -1126,13 +1111,7 @@ class GenerateXml(BaseGenerateXml):
                 return
 
         else:
-            if self.verbose:
 
-                print("self.api.TestCase.all(): ")
-                try:
-                    pprint(self.api.TestCase.all())
-                except:
-                    print("error with self.api.TestCase.all() call")
             try:
                 self.start_unit_test_file()
                 self.add_compound_tests()
@@ -1164,12 +1143,12 @@ class GenerateXml(BaseGenerateXml):
             vcCodedTestMap = tc.is_coded_tests_map
         except:
             vcCodedTestMap = False
-            
+
         # Placeholder "testcases" that need to be ignored
-        if tc.is_csv_map or vctMap or vcCodedTestMap:   
+        if tc.is_csv_map or vctMap or vcCodedTestMap:
             placeHolder = True
-            
-        return placeHolder 
+
+        return placeHolder
 
 #
 # GenerateXml - write the end of the jUnit XML file and close it
@@ -1189,8 +1168,6 @@ class GenerateXml(BaseGenerateXml):
 #
 
     def start_system_test_file(self):
-        if self.verbose:
-            print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
         errors = 0
         failed = 0
@@ -1224,15 +1201,7 @@ class GenerateXml(BaseGenerateXml):
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
 
     def start_unit_test_file(self):
-        if self.verbose:
-            print("  Writing testcase xml file:        {}".format(self.unit_report_name))
 
-            pprint(dump(self.api))
-            try:
-                pprint(self.api.TestCase.all())
-            except:
-                print("error with self.api.TestCase.all() call")
-                
         errors = 0
         failed = 0
         success = 0
@@ -1316,7 +1285,7 @@ class GenerateXml(BaseGenerateXml):
         fpath = ""
         startLine = ""
         unitName = ""
-        
+
         if unit:
             try:
                 filePath = unit.sourcefile.normalized_path(normcase=False)
@@ -1332,7 +1301,7 @@ class GenerateXml(BaseGenerateXml):
                 fpath = os.path.relpath(filePath,prj_dir).replace("\\","/")
             except:
                 fpath = filePath
-                
+
             if self.useStartLine:
                 try:
                     startLine = str(tc.function.start_line)
@@ -1387,7 +1356,7 @@ class GenerateXml(BaseGenerateXml):
             deltaTimeStr = str((end_tdo - start_tdo).total_seconds())
         else:
             deltaTimeStr = "0.0"
-        
+
         unit_name = escape(unit_name, quote=False)
         func_name = escape(func_name, quote=True)
         tc_name = escape(tc.name, quote=False)
@@ -1396,7 +1365,7 @@ class GenerateXml(BaseGenerateXml):
         envName = escape(self.env, quote=False).replace(".","")
 
         classname = compiler + "." + testsuite + "." + envName
-        
+
         if isSystemTest:
             tc_name_full =  classname + "." + tc_name
             exp_total = tc.total
@@ -1513,7 +1482,8 @@ class GenerateXml(BaseGenerateXml):
         except Exception as e:
             parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
             if self.print_exc:
-                pprint.pprint ("CBT Dictionary: \n" + self.cbtDict, width = 132)
+                print ("CBT Dictionary:" + self.cbtDict, width = 132)
+                pprint(self.cbtDict, width = 132)
 
 ## GenerateXml
 
