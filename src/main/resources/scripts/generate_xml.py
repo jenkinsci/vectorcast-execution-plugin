@@ -895,7 +895,7 @@ class GenerateManageXml (BaseGenerateXml):
 
             if hashCode not in self.cbtDict.keys():
                 if self.verbose:
-                    print(f"Skipping report because hashCode ({hashCode}) for build dir ({build_dir}) not found in cbtdict")
+                    print("Skipping report because hashCode (" + hashCode + ") for build dir (" + build_dir + ") not found in cbtdict")
 
                 return True
             else:
@@ -1022,7 +1022,7 @@ class GenerateXml(BaseGenerateXml):
         self.hashCode = hashlib.md5(build_dir_4hash).hexdigest()
 
         if verbose:
-            print (f"HashCode: {self.hashCode} for build dir: {build_dir_4hash}")
+            print ("HashCode: " + self.hashCode + "for build dir: " + build_dir)
 
         self.build_dir = build_dir
         self.env = env
