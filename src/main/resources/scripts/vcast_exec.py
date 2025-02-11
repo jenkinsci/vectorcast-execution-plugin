@@ -28,6 +28,7 @@ from managewait import ManageWait
 
 import cobertura
 import generate_lcov
+import patch_rgw_directory as rgw
 
 try:
     import generate_results 
@@ -294,6 +295,10 @@ class VectorCASTExecute(object):
         if self.fullstatus:
             self.manageWait.exec_manage_command ("--full-status=" + self.mpName + "_full_status_report.html")
             self.needIndexHtml = True
+            
+    def exportRgw(self):
+        rgw.updateReqRepo(VC_Manage_Project=self.FullMP, VC_Workspace=os.getcwd() , top_level=False)
+        self.manageWait.exec_manage_command ("--clicast-args rgw export")
 
     def runExec(self):
 
@@ -355,6 +360,7 @@ if __name__ == '__main__':
     metricsGroup.add_argument('--cobertura_extended', help='Generate coverage results in extended Cobertura xml format', action="store_true", default = False)
     metricsGroup.add_argument('--lcov', help='Generate coverage results in an LCOV format', action="store_true", default = False)
     metricsGroup.add_argument('--junit', help='Generate test results in Junit xml format', action="store_true", default = False)
+    metricsGroup.add_argument('--export_rgw', help='Export RGW data', action="store_true", default = False)
     metricsGroup.add_argument('--junit_use_cte_for_classname', help=argparse.SUPPRESS, action="store_true", dest="use_cte")
     metricsGroup.add_argument('--sonarqube', help='Generate test results in SonarQube Generic test execution report format (CppUnit)', action="store_true", default = False)
     metricsGroup.add_argument('--pclp_input', help='Generate static analysis results from PC-lint Plus XML file to generic static analysis format (codequality)', action="store", default = None)
@@ -426,4 +432,7 @@ if __name__ == '__main__':
         
     if vcExec.needIndexHtml:
         vcExec.generateIndexHtml()
+        
+    if args.export_rgw:
+        vcExec.exportRgw()
         
