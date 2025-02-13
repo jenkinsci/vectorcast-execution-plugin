@@ -554,7 +554,6 @@ def transformIntoStep(inputString) {
                     """
                 }
 
-
                 // setup build lot test variable to hold all VC commands results for this job
                 def buildLogText = ""
 
@@ -866,6 +865,7 @@ pipeline {
 
                     // run script to unstash files and generate results/reports
                     script {
+                        def buildLogText = ""
                         def buildFileNames = ""
 
                         // Loop over all environnment and unstash each of the files
@@ -882,6 +882,29 @@ pipeline {
                             catch (Exception ex) {
                                 println ex
                             }
+                            if (VC_sharedArtifactDirectory.length() > 0) {
+                                def fixedJobName = fixUpName("${env.JOB_NAME}")                                
+                                buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${compiler}/${test_suite} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar""")
+                            }
+                        }
+
+                        if (VC_sharedArtifactDirectory.length() > 0) {
+                            def artifact_dir = ""
+                            try {
+                                artifact_dir = VC_sharedArtifactDirectory.split(" ")[1]  
+                            }
+                            catch (Exception ex) {
+                                artifact_dir = VC_sharedArtifactDirectory.split("=")[1]  
+                            }
+                            def coverDBpath = formatPath(artifact_dir + "/vcast_data/cover.db")
+                            def coverSfpDBpath = formatPath(artifact_dir + "/vcast_data/vcprj.db")
+                            
+                            cmds = """
+                                _RM ${coverDBpath}
+                                _RM ${coverSfpDBpath}
+                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --refresh"
+                            """
+                            buildLogText += runCommands(cmds)
                         }
 
                         concatenateBuildLogs(buildFileNames, "unstashed_build.log")
@@ -889,16 +912,16 @@ pipeline {
                         // get the manage project's base name for use in rebuild naming
                         def mpName = getMPname()
 
-                        def buildLogText = ""
 
                         // if we are using SCM and not using a shared artifact directory...
                         if (VC_usingSCM && !VC_useOneCheckoutDir && VC_sharedArtifactDirectory.length() == 0) {
                             // run a script to extract stashed files and process data into xml reports
                             def mpPath = getMPpath()
                             def coverDBpath = formatPath(mpPath + "/build/vcast_data/cover.db")
-
+                            def coverSfpDBpath = formatPath(mpPath + "/build/vcast_data/vcprj.db")
                             cmds = """
                                 _RM ${coverDBpath}
+                                _RM ${coverSfpDBpath}
                                 _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py  --leave_files
                                 _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --refresh"
                             """
