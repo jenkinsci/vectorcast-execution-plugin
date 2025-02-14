@@ -573,7 +573,7 @@ def transformIntoStep(inputString) {
                     // if we are using an SCM checkout and we aren't using a single checkout directory, we need to copy back build artifacts
                     if (VC_usingSCM && !VC_useOneCheckoutDir) {
                         def fixedJobName = fixUpName("${env.JOB_NAME}")
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} ${compiler}/${test_suite} ${fixedJobName}_${compiler}_${test_suite}_${environment} ${environment}""" )
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${compiler}/${test_suite} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment}""" )
                     }
                 }
 
