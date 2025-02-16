@@ -237,9 +237,9 @@ def run(ManageProjectName, Level, BaseName, Env, workspace, vCastProjectWorkspac
 
 def getVcastProjectWorkspace(args):
 
-    with VCProjectApi(args.ManageProject) as vc_api:
-#    vc_api = VCProjectApi(args.ManageProject)
-        vCastProjectWorkspace = vc_api.project.workspace
+    vc_api = VCProjectApi(args.ManageProject)
+    vCastProjectWorkspace = vc_api.project.workspace
+    vc_api.close()
     
     return vCastProjectWorkspace
 
