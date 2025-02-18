@@ -49,7 +49,7 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
-    * [Version 0.78 (10 Sep 2024)](#version-078-10-sep-2024)
+    * [Version 0.78 (16 Nov 2024)](#version-078-16-nov-2024)
     * [Version 0.77 (21 Aug 2024)](#version-077-21-aug-2024)
     * [Version 0.76 (19 Jan 2023)](#version-076-19-jan-2023)
     * [Version 0.75 (23 Dec 2022)](#version-075-23-dec-2022)
