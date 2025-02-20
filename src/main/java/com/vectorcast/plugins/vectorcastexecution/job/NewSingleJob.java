@@ -324,8 +324,8 @@ public class NewSingleJob extends BaseJob {
             + "--src-scm-revision %SCM_REV% "
             + "--versioned\n";
           tiScmConnectUnix = " "
-            + "--vc-project-local-path=$WORKSPACE/%VCAST_PROJECT_NAME% "
-            + "--vc-project-scm-path=$SCM_URL/%VCAST_PROJECT_NAME% "
+            + "--vc-project-local-path=$WORKSPACE/$VCAST_PROJECT_NAME "
+            + "--vc-project-scm-path=$SCM_URL/$VCAST_PROJECT_NAME "
             + "--src-local-path=$WORKSPACE "
             + "--src-scm-path=$SCM_URL/ "
             + "--vc-project-scm-technology="
@@ -376,7 +376,7 @@ public class NewSingleJob extends BaseJob {
         + "--project "
         + tiProjectUnix + " "
         + "--test-object $BUILD_NUMBER "
-        + "--vc-project %VCAST_PROJECT_NAME% "
+        + "--vc-project $VCAST_PROJECT_NAME "
         + tiProxy + " "
         + "--log TESTinsights_Push.log "
         + tiScmConnectUnix;
