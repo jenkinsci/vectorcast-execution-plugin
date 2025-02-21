@@ -2,7 +2,7 @@
 // Basis path coverage is no longer support after VectorCAST 2019SP1
 VC_Healthy_Target = [ maxStatement: 100, maxBranch: 100, maxFunctionCall: 100, maxFunction: 100, maxMCDC: 100,
                       minStatement: 20,  minBranch: 20,  minFunctionCall: 20,  minFunction: 20,  minMCDC: 20]
-                      
+
 
 VC_Use_Threshold = true
 
@@ -42,13 +42,13 @@ VC_FailurePhrases = ["No valid edition(s) available",
                   ]
 
 // Unstable phrases for checkLogsForErrors
-
 VC_UnstablePhrases = ["Dropping probe point",
                     "Value Line Error - Command Ignored",
                     "INFO: Problem parsing test results file",
                     "INFO: File System Error ",
                     "ERROR: Error accessing DataAPI",
-                    "ERROR: Undefined Error"
+                    "ERROR: Undefined Error".,
+                    "Unapplied Test Data"
                     ]
 
 // ===============================================================
@@ -105,13 +105,13 @@ def checkLogsForErrors(log) {
 
 def pluginCreateSummary(inIcon, inText) {
 
-    try { 
-       //Protected code 
+    try {
+       //Protected code
        createSummary icon: inIcon, text: inText
 
     } catch(Exception e) {
 
-       //Catch block 
+       //Catch block
        addSummary icon: inIcon, text: inText
     }
 }
@@ -134,7 +134,7 @@ def checkBuildLogForErrors(logFile) {
     def output = ""
     def status = 0
 
-    writeFile file: "phrases.txt", text: VC_UnstablePhrases.join("\n") + VC_FailurePhrases.join("\n")
+    writeFile file: "phrases.txt", text: VC_UnstablePhrases.join("\n") + "\n" + VC_FailurePhrases.join("\n")
 
     if (isUnix()) {
         cmd =  "grep -f phrases.txt " + logFile + " > search_results.txt"
@@ -441,7 +441,7 @@ def setupManageProject() {
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --release-locks"
         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
         """
-        
+
     if (VC_useOneCheckoutDir) {
         cmds += """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config VCAST_DEPENDENCY_CACHE_DIR=./vcqik" """
     }
@@ -548,9 +548,9 @@ def transformIntoStep(inputString) {
                 } else {
 
                     cmds =  """
-                    ${VC_EnvSetup}
-                    ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
-                    ${VC_EnvTeardown}
+                        ${VC_EnvSetup}
+                        ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+                        ${VC_EnvTeardown}
                     """
                 }
 
@@ -574,6 +574,7 @@ def transformIntoStep(inputString) {
                     if (VC_usingSCM && !VC_useOneCheckoutDir) {
                         def fixedJobName = fixUpName("${env.JOB_NAME}")
                         buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${compiler}/${test_suite} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment}""" )
+
                     }
                 }
 
@@ -755,7 +756,7 @@ pipeline {
                             runCommands(VC_postScmStepsCmds)
                         }
                     }
-                    
+
                     println "Created with VectorCAST Execution Version: " + VC_createdWithVersion
 
                     // Run the setup step to copy over the scripts
@@ -883,7 +884,7 @@ pipeline {
                                 println ex
                             }
                             if (VC_sharedArtifactDirectory.length() > 0) {
-                                def fixedJobName = fixUpName("${env.JOB_NAME}")                                
+                                def fixedJobName = fixUpName("${env.JOB_NAME}")
                                 buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${compiler}/${test_suite} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar""")
                             }
                         }
@@ -891,14 +892,14 @@ pipeline {
                         if (VC_sharedArtifactDirectory.length() > 0) {
                             def artifact_dir = ""
                             try {
-                                artifact_dir = VC_sharedArtifactDirectory.split(" ")[1]  
+                                artifact_dir = VC_sharedArtifactDirectory.split(" ")[1]
                             }
                             catch (Exception ex) {
-                                artifact_dir = VC_sharedArtifactDirectory.split("=")[1]  
+                                artifact_dir = VC_sharedArtifactDirectory.split("=")[1]
                             }
                             def coverDBpath = formatPath(artifact_dir + "/vcast_data/cover.db")
                             def coverSfpDBpath = formatPath(artifact_dir + "/vcast_data/vcprj.db")
-                            
+
                             cmds = """
                                 _RM ${coverDBpath}
                                 _RM ${coverSfpDBpath}
@@ -930,7 +931,8 @@ pipeline {
                         }
 
                         // run the metrics at the end
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log --no_full_report""")
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/parallel_full_reports.py  ${VC_Manage_Project} --jobs 8""")
 
                         if (VC_useRGW3) {
                             buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/patch_rgw_directory.py  ${VC_Manage_Project}""")
@@ -975,7 +977,7 @@ pipeline {
                             // Send reports to the Jenkins Coverage Plugin
                             discoverReferenceBuild()
                             if (VC_useCoverageHistory) {
-                                recordCoverage qualityGates: [[baseline: 'PROJECT_DELTA', criticality: 'NOTE', metric: 'LINE', threshold: -0.001], [baseline: 'PROJECT_DELTA', criticality: 'FAILURE', metric: 'BRANCH', threshold: -0.001]], tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]                            
+                                recordCoverage qualityGates: [[baseline: 'PROJECT_DELTA', criticality: 'NOTE', metric: 'LINE', threshold: -0.001], [baseline: 'PROJECT_DELTA', criticality: 'FAILURE', metric: 'BRANCH', threshold: -0.001]], tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
                             } else {
                                 recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
                             }
@@ -1043,8 +1045,8 @@ pipeline {
                         def summaryText = ""
 
                         if (fileExists('coverage_diffs.html_tmp')) {
-                            summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " 
-                            summaryText += readFile('coverage_diffs.html_tmp') 
+                            summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
+                            summaryText += readFile('coverage_diffs.html_tmp')
 
                         } else {
                             print "coverage_diffs.html_tmp missing"
@@ -1055,12 +1057,12 @@ pipeline {
                                 // If we have both of these, add them to the summary in the "normal" job view
                                 // Blue ocean view doesn't have a summary
                                 summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
-                                summaryText += readFile('combined_incr_rebuild.tmp') 
-                                summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " 
-                                summaryText += readFile("${mpName}_full_report.html_tmp") 
-                                summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> " 
+                                summaryText += readFile('combined_incr_rebuild.tmp')
+                                summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
+                                summaryText += readFile("${mpName}_full_report.html_tmp")
+                                summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
                                 summaryText += readFile("${mpName}_metrics_report.html_tmp")
-                                    
+
                                 pluginCreateSummary ("icon-document icon-xlg", summaryText)
 
                             } else {
