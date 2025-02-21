@@ -47,7 +47,7 @@ VC_UnstablePhrases = ["Dropping probe point",
                     "INFO: Problem parsing test results file",
                     "INFO: File System Error ",
                     "ERROR: Error accessing DataAPI",
-                    "ERROR: Undefined Error".,
+                    "ERROR: Undefined Error",
                     "Unapplied Test Data"
                     ]
 
