@@ -23,7 +23,7 @@ jobs:
         which python
         python --version
 
-    - name: Import app .py files
+    - name: Built Python Script
       run: |
         cd src/main/resources/scripts
         echo "try:" > test.py
@@ -61,4 +61,5 @@ jobs:
         echo "    import sys  " >> test.py
         echo "    sys.exit(-1)  " >> test.py
         
-        python test.py
+    - name: Run Python Script
+      run: python src/main/resources/scripts/test.py
