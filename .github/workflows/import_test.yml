@@ -13,7 +13,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Find and grep for pdb.set_trace()
+    - name: Import app .py files
       run: |
         echo cd src/main/resources/scripts
         echo try: > test.py

@@ -13,7 +13,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Find and grep for pdb.set_trace()
+    - name: Find formatted print(f"
       run: |
-        echo "Searching for 'pdb.set_trace()' in Python files..."
-        grep -rn "print\(f\"" src/main/resources/scripts/*.py && exit 1 || echo "No occurrences found."
+        echo "Searching for 'print\(f' in Python files..."
+        grep -rn print\(f src/main/resources/scripts/*.py && exit 1 || echo "No occurrences found."
