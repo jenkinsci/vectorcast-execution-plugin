@@ -57,9 +57,10 @@ jobs:
         echo "    import vcastcsv2jenkins " >> test.py
         echo "    import vcast_exec " >> test.py
         echo "    import vcast_utils " >> test.py
-        echo except: >> test.py
+        echo except Exceptin as e: >> test.py
         echo "    import sys  " >> test.py
-        echo "    sys.exit(-1)  " >> test.py
+        echo "    print(e) " >> test.py        
+        echo "    sys.exit(-2)  " >> test.py
         
     - name: Run Python Script
       run: |
