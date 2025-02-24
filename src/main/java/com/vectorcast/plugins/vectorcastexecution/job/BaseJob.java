@@ -771,7 +771,7 @@ public abstract class BaseJob {
      * @throws hudson.model.Descriptor.FormException exception
      * @throws InvalidProjectFileException exception
      */
-    @RequestMapping(value="/create", method=RequestMethod.POST)
+    @POST
     protected abstract void doCreate()
         throws IOException,
         ServletException,
