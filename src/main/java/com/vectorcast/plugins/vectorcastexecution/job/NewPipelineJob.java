@@ -72,6 +72,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.StandardCopyOption;
 
 import java.util.EnumSet;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * Create a new single job.
@@ -325,6 +326,7 @@ public class NewPipelineJob extends BaseJob {
      * @throws JobAlreadyExistsException exception
      * @throws InvalidProjectFileException exception
      */
+     @POST
      @Override
      public void create()
             throws IOException, ServletException, Descriptor.FormException,
