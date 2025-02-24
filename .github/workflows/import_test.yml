@@ -62,4 +62,6 @@ jobs:
         echo "    sys.exit(-1)  " >> test.py
         
     - name: Run Python Script
-      run: python src/main/resources/scripts/test.py
+      run: |
+        ls -ls src/main/resources/scripts
+        python src/main/resources/scripts/test.py
