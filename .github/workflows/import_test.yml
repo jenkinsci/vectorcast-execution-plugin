@@ -1,4 +1,4 @@
-name: Import app .py files
+name: Check for debug traces
 
 on:
   pull_request:
@@ -7,16 +7,23 @@ on:
 
 jobs:
   import-all:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Set up Python 3
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.9.2"
+        
+    - name: Verify Python installation
+      run: python3 --version
+
     - name: Import app .py files
       run: |
         cd src/main/resources/scripts
-        pwd
         echo "try:" > test.py
         echo "    import archive_extract_reports" >> test.py
         echo "    import cobertura" >> test.py
@@ -51,7 +58,5 @@ jobs:
         echo except: >> test.py
         echo "    import sys  " >> test.py
         echo "    sys.exit(-1)  " >> test.py
-
-        ls -la
         
         python3 test.py
