@@ -6,7 +6,7 @@ on:
       - "src/main/resources/scripts/*.py"
 
 jobs:
-  grep-pdb:
+  import-all:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,6 +15,7 @@ jobs:
 
     - name: Find and grep for pdb.set_trace()
       run: |
+        echo cd src/main/resources/scripts
         echo try: > test.py
         echo     import archive_extract_reports >> test.py
         echo     import cobertura >> test.py
@@ -23,13 +24,8 @@ jobs:
         echo     import extract_build_dir  >> test.py
         echo     import fixup_reports  >> test.py
         echo     import full_report_no_toc  >> test.py
-        echo     try:  >> test.py
-        echo         import importlib  >> test.py
-        echo         generate_results = importlib.import_module("generate-results")  >> test.py
-        echo     except:  >> test.py
-        echo         vc_script = os.path.join(os.environ['WORKSPACE'], "vc_scripts", "generate-results.py")  >> test.py
-        echo         import imp  >> test.py
-        echo         generate_results = imp.load_source("generate_results", vc_script)  >> test.py
+        echo     import importlib  >> test.py
+        echo     generate_results = importlib.import_module\("generate-results"\)  >> test.py
         echo     import generate_lcov  >> test.py
         echo     import generate_pclp_reports  >> test.py
         echo     import generate_qa_results_xml >> test.py
@@ -52,6 +48,6 @@ jobs:
         echo     import vcast_exec  >> test.py
         echo     import vcast_utils  >> test.py
         echo except: >> test.py
-        echo     sys.exit(-1)   >> test.py
+        echo     sys.exit\(-1\)   >> test.py
         
         python3 test.py
