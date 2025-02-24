@@ -21,9 +21,7 @@ jobs:
     - name: Check Python Versions
       run: |
         which python
-        which python3
         python --version
-        python3 --version
 
     - name: Import app .py files
       run: |
@@ -63,4 +61,4 @@ jobs:
         echo "    import sys  " >> test.py
         echo "    sys.exit(-1)  " >> test.py
         
-        python3 test.py
+        python test.py
