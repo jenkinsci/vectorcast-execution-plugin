@@ -15,7 +15,7 @@ jobs:
 
     - name: Import app .py files
       run: |
-        echo cd src/main/resources/scripts
+        cd src/main/resources/scripts
         echo "try:" > test.py
         echo "    import archive_extract_reports" >> test.py
         echo "    import cobertura" >> test.py
@@ -48,6 +48,7 @@ jobs:
         echo "    import vcast_exec " >> test.py
         echo "    import vcast_utils " >> test.py
         echo except: >> test.py
+        echo "    import sys  " >> test.py
         echo "    sys.exit(-1)  " >> test.py
         
         python3 test.py

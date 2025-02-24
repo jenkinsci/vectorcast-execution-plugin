@@ -16,4 +16,4 @@ jobs:
     - name: Find formatted print(f"
       run: |
         echo "Searching for 'print\(f' in Python files..."
-        grep -rn print\(f src/main/resources/scripts/*.py && exit 1 || echo "No occurrences found."
+        grep -rn print\(f\" src/main/resources/scripts/*.py && exit 1 || echo "No occurrences found."
