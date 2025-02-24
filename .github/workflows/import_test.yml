@@ -1,4 +1,4 @@
-name: Check for debug traces
+name: Import app .py files
 
 on:
   pull_request:
@@ -16,7 +16,7 @@ jobs:
     - name: Set up Python 3
       uses: actions/setup-python@v5
       with:
-        python-version: "3.9.2"
+        python-version: "3.x"
         
     - name: Verify Python installation
       run: python3 --version
