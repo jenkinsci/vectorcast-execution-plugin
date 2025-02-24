@@ -6,7 +6,7 @@ def getReqRepo(VC_Manage_Project):
     VC_waitLoops = 1
     VC_waitTime = 30
 
-    command_line= f"--project \"{VC_Manage_Project}\" --list-configuration\""
+    command_line= "--project \"" + VC_Manage_Project + "\" --list-configuration\""
     manageWait = ManageWait(False, command_line, VC_waitTime, VC_waitLoops)
     output = manageWait.exec_manage(True)
 
@@ -43,18 +43,18 @@ def updateReqRepo(VC_Manage_Project, VC_Workspace, top_level):
         if not os.path.exists(newPath): 
             raise Exception(f'Patch ReqRepo Path {newPath} not found')
 
-        command_line = f"--project \"{VC_Manage_Project}\" --config VCAST_REPOSITORY={newPath}\""
+        command_line= "--project \"" + VC_Manage_Project + "\" --config VCAST_REPOSITORY=\"" + newPath + "\""
         manageWait = ManageWait(False, command_line, 30, 1)
         manageWait.exec_manage(True)
 
         if top_level:
-            command_line = f"--project \"{VC_Manage_Project}\" --clicast-args option VCAST_REPOSITORY {newPath}\""
+            command_line= "--project \"" + VC_Manage_Project + "\" --clicast-args option VCAST_REPOSITORY\"" + newPath + "\""
             manageWait = ManageWait(False, command_line, 30, 1)
             manageWait.exec_manage(True)
 
-        print(f"RGW directory patched from:\n   {reqRepoDir}\n   {newPath}")
+        print("RGW directory patched from:\n   " + reqRepoDir + "\n   " + projDir)
     else:
-        print(f"RGW directory not patched:\n   {reqRepoDir}\n   {projDir}")
+        print("RGW directory not patched:\n   " + reqRepoDir + "\n   " + projDir)
 
 
 ## main
