@@ -25,7 +25,7 @@ def dump(obj):
             result = subprocess.run(atgCmd, shell=True, capture_output=True, text=True)
             return result.stdout.strip()
         except Exception as e:
-            return f'Error: {e}'
+            return "Error: " + e
 
 
 class RunFullReportsParallel(object):
@@ -50,11 +50,11 @@ class RunFullReportsParallel(object):
             max_licenses = self.getLicenseCount()
             max_envs = self.getEnvCount()
 
-            print([max_cpus, max_licenses, max_envs])
+            #print([max_cpus, max_licenses, max_envs])
 
             self.max_concurrent = min([max_cpus,max_licenses, max_envs])
 
-            print("Using licensing max = ", self.max_concurrent)
+            #print("Using licensing max = ", self.max_concurrent)
         else:
             self.max_concurrent = int(args.jobs)
 
@@ -82,7 +82,6 @@ class RunFullReportsParallel(object):
             cmd =  r'%VECTORCAST_DIR%\flexlm\lmutil lmstat -a -c %VECTOR_LICENSE_FILE% | findstr VECTORCAST_MANAGE:'
 
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-
             largest_available = 0
 
             for line in result.stdout.split("\n"):
@@ -93,7 +92,7 @@ class RunFullReportsParallel(object):
                     if available > largest_available:
                         largest_available = available
 
-            print("Largest Available: ", largest_available)
+            #print("Largest Available: ", largest_available)
 
             return largest_available
 
@@ -111,7 +110,7 @@ class RunFullReportsParallel(object):
             # Find DeviceSerialNumber
             FreeLicenses = root.find(".//FreeLicenses").text
 
-            print("FreeLicenses:", FreeLicenses)
+            #print("FreeLicenses:", FreeLicenses)
 
             return FreeLicenses
 
@@ -123,7 +122,10 @@ class RunFullReportsParallel(object):
 
         report_name = ""
 
-        build_dir = self.api.project.workspace + '/' + env.relative_working_directory
+        if env.definition.is_monitored:
+            build_dir = os.path.abspath(env.definition.original_environment_directory)
+        else:
+            build_dir = self.api.project.workspace + '/' + env.relative_working_directory
 
         if len(key.split("/")) != 3:
             comp, ts, group, env_name = key.split("/")
@@ -148,9 +150,9 @@ class RunFullReportsParallel(object):
 
             return result.stdout.strip()
         except Exception as e:
-            return f'Error: {e}'
+            return "Error: " + e
 
-        return f"Success: {report_name}: {result}"
+        return "Success: " + report_name + ": " + result
 
 
     def run(self):
@@ -163,7 +165,6 @@ class RunFullReportsParallel(object):
         for future in concurrent.futures.as_completed(futures):
             try:
                 result = future.result()  # This raises the exception if one occurred
-                print(result)
             except Exception as e:
                 report_name = futures[future]
                 print("Exception in " + report_name + ": " + e)
