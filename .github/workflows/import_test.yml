@@ -1,4 +1,4 @@
-name: Check for debug traces
+name: Import app .py files
 
 on:
   pull_request:
@@ -16,6 +16,7 @@ jobs:
     - name: Import app .py files
       run: |
         cd src/main/resources/scripts
+        pwd
         echo "try:" > test.py
         echo "    import archive_extract_reports" >> test.py
         echo "    import cobertura" >> test.py
@@ -50,5 +51,7 @@ jobs:
         echo except: >> test.py
         echo "    import sys  " >> test.py
         echo "    sys.exit(-1)  " >> test.py
+
+        ls -la
         
         python3 test.py
