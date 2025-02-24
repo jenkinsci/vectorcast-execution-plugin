@@ -1,4 +1,4 @@
-name: Check for debug traces
+name: Find formatted print(f"
 
 on:
   pull_request:
