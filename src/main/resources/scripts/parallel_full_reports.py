@@ -124,8 +124,10 @@ class RunFullReportsParallel(object):
 
         if env.definition.is_monitored:
             build_dir = os.path.abspath(env.definition.original_environment_directory)
+            print("Monitored: ", build_dir, env.name)
         else:
             build_dir = self.api.project.workspace + '/' + env.relative_working_directory
+            print("Migrated : ", build_dir, env.name)
 
         if len(key.split("/")) != 3:
             comp, ts, group, env_name = key.split("/")
@@ -139,10 +141,12 @@ class RunFullReportsParallel(object):
 
             if isinstance(env.api,CoverApi):
                 cmd = self.VCD + "/clicast -e " + env.name + " COVER REPORT AGGREGATE " + os.getcwd() + "/" + report_name
+                print("Report command: "+ cmd + " in " + build_dir)
                 result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=build_dir)
 
             elif isinstance(env.api,UnitTestApi):
                 cmd = self.VCD + "/clicast -e " + env.name + " REPORT CUSTOM FULL " + os.getcwd() + "/" + report_name
+                print("Report command: "+ cmd + " in " + build_dir)
                 result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=build_dir)
 
             else:
@@ -165,6 +169,7 @@ class RunFullReportsParallel(object):
         for future in concurrent.futures.as_completed(futures):
             try:
                 result = future.result()  # This raises the exception if one occurred
+                print(result)
             except Exception as e:
                 report_name = futures[future]
                 print("Exception in " + report_name + ": " + e)
