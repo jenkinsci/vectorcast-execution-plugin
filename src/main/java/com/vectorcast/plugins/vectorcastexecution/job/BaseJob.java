@@ -63,8 +63,6 @@ import java.util.ArrayList;
 
 import java.net.URL;
 import org.kohsuke.stapler.verb.POST;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Base job management - create/delete/update.
