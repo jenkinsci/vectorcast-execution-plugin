@@ -132,17 +132,17 @@ class RunFullReportsParallel(object):
         else:
             comp, ts, env_name = key.split("/")
 
-        report_name = "management/" + env_name + "_" + comp + "_" + ts
+        report_name = "management/" + comp + "_" + ts + "_" + env_name + ".html"
 
         try:
             cmd = ""
 
             if isinstance(env.api,CoverApi):
-                cmd = self.VCD + "/clicast -e " + env.name + " COVER REPORT AGGREGATE " + os.getcwd() + "/" + report_name + "_AGGREGATE_REPORT.html"
+                cmd = self.VCD + "/clicast -e " + env.name + " COVER REPORT AGGREGATE " + os.getcwd() + "/" + report_name
                 result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=build_dir)
 
             elif isinstance(env.api,UnitTestApi):
-                cmd = self.VCD + "/clicast -e " + env.name + " REPORT CUSTOM FULL " + os.getcwd() + "/" + report_name + "_FULL_REPORT.html"
+                cmd = self.VCD + "/clicast -e " + env.name + " REPORT CUSTOM FULL " + os.getcwd() + "/" + report_name
                 result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=build_dir)
 
             else:
