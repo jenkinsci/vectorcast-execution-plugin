@@ -1,12 +1,18 @@
-import concurrent.futures
-from vector.apps.DataAPI.unit_test_api import UnitTestApi
-from vector.apps.DataAPI.vcproject_api import VCProjectApi
-from vector.apps.DataAPI.cover_api import CoverApi
-
 import sys, os
 from pprint import pprint
 import argparse
 import subprocess
+
+from vcast_utils import checkVectorCASTVersion, dump
+
+if not checkVectorCASTVersion(21):
+    print("Full reports genreated by previous call to generate-results.py")
+    sys.exit()
+else:
+    import concurrent.futures
+    from vector.apps.DataAPI.unit_test_api import UnitTestApi
+    from vector.apps.DataAPI.vcproject_api import VCProjectApi
+    from vector.apps.DataAPI.cover_api import CoverApi
 
 
 def dump(obj):
@@ -42,7 +48,11 @@ class RunFullReportsParallel(object):
 
         self.api = VCProjectApi(self.mpName)
         self.results = self.api.project.repository.get_full_status([])
-        self.workspace = self.api.project.workspace
+        
+        try:
+            self.jenkins_workspace = os.environ['WORKSPACE'].replace("\\","/") + "/"
+        except:
+            self.jenkins_workspace = os.getcwd().replace("\\","/") + "/"
 
         if args.jobs == "max":
 
@@ -121,13 +131,13 @@ class RunFullReportsParallel(object):
         env = self.envDict[key]
 
         report_name = ""
-
+        
         if env.definition.is_monitored:
-            build_dir = os.path.abspath(env.definition.original_environment_directory)
-            print("Monitored: ", build_dir, env.name)
+            build_dir = os.path.join(os.path.dirname(self.api.vcm_file), env.definition.original_environment_directory)
+            # print("Monitored: ", build_dir, env.name)
         else:
             build_dir = self.api.project.workspace + '/' + env.relative_working_directory
-            print("Migrated : ", build_dir, env.name)
+            # print("Migrated : ", build_dir, env.name)
 
         if len(key.split("/")) != 3:
             comp, ts, group, env_name = key.split("/")
@@ -141,13 +151,13 @@ class RunFullReportsParallel(object):
 
             if isinstance(env.api,CoverApi):
                 cmd = self.VCD + "/clicast -e " + env.name + " COVER REPORT AGGREGATE " + os.getcwd() + "/" + report_name
-                print("Report command: "+ cmd + " in " + build_dir)
-                result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=build_dir)
+                # print("Report command: "+ cmd + " in " + build_dir)
+                result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=self.jenkins_workspace)
 
             elif isinstance(env.api,UnitTestApi):
                 cmd = self.VCD + "/clicast -e " + env.name + " REPORT CUSTOM FULL " + os.getcwd() + "/" + report_name
-                print("Report command: "+ cmd + " in " + build_dir)
-                result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=build_dir)
+                # print("Report command: "+ cmd + " in " + build_dir)
+                result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=self.jenkins_workspace)
 
             else:
                 return "Error: Cannot find the environment " + build_dir + "/" + env.name + ".vcp/.vce): " + cmd
@@ -169,7 +179,7 @@ class RunFullReportsParallel(object):
         for future in concurrent.futures.as_completed(futures):
             try:
                 result = future.result()  # This raises the exception if one occurred
-                print(result)
+                #print(result)
             except Exception as e:
                 report_name = futures[future]
                 print("Exception in " + report_name + ": " + e)

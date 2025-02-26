@@ -48,7 +48,15 @@ except:
     pass
 
 from vector.apps.DataAPI.cover_api import CoverApi
-from vector.apps.ReportBuilder.custom_report import fmt_percent
+try:
+    from vector.apps.ReportBuilder.custom_report import fmt_percent
+except:
+    def fmt_percent(x,y):
+        if y == 0.0:
+            return "0"
+        else:
+            return str(int(round(100.0 * float(x) / float(y))))
+                   
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
 from vcast_utils import dump

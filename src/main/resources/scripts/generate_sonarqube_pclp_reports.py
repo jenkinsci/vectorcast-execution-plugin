@@ -8,7 +8,11 @@
 #####################################################################
 
 import argparse
-import html
+try:
+    from html import escape
+except ImportError:
+    # html not standard module in Python 2.
+    from cgi import escape
 import json
 import xml.etree.ElementTree
 import os
@@ -150,7 +154,7 @@ def emit_html(msgs):
         ['File', 'Messages','Error','Warning','Info','Note','MISRA'],
         file_summaries.values(),
         lambda file: [ 
-            ("<span class=\"filename\">" + html.escape(file.filename) + "</span>") if file.filename != 'Total' else file.filename,
+            ("<span class=\"filename\">" + escape(file.filename) + "</span>") if file.filename != 'Total' else file.filename,
             format_benign_zero(file.msg_count),
             format_benign_zero(file.error_count),
             format_benign_zero(file.warning_count),
@@ -165,11 +169,11 @@ def emit_html(msgs):
         ['File', 'Line', 'Category', '#', 'Description'],
         msgs,
         lambda msg: [
-            "<span class=\"filename\">" + html.escape(msg.file) + "</span>",
+            "<span class=\"filename\">" + escape(msg.file) + "</span>",
             msg.line if msg.line != "0" else "",
             msg.category,
             msg.number,
-            html.escape(msg.text)
+            escape(msg.text)
         ]
     )
     out += "</div>"
