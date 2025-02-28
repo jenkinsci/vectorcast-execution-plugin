@@ -134,30 +134,30 @@ class RunFullReportsParallel(object):
         
         if env.definition.is_monitored:
             build_dir = os.path.join(os.path.dirname(self.api.vcm_file), env.definition.original_environment_directory)
-            # print("Monitored: ", build_dir, env.name)
+            print("Monitored: ", build_dir, env.name)
         else:
             build_dir = self.api.project.workspace + '/' + env.relative_working_directory
-            # print("Migrated : ", build_dir, env.name)
+            print("Migrated : ", build_dir, env.name)
 
         if len(key.split("/")) != 3:
             comp, ts, group, env_name = key.split("/")
         else:
             comp, ts, env_name = key.split("/")
 
-        report_name = "management/" + comp + "_" + ts + "_" + env_name + ".html"
+        report_name = self.jenkins_workspace + "/management/" + comp + "_" + ts + "_" + env_name + ".html"
 
         try:
             cmd = ""
 
             if isinstance(env.api,CoverApi):
-                cmd = self.VCD + "/clicast -e " + env.name + " COVER REPORT AGGREGATE " + os.getcwd() + "/" + report_name
-                # print("Report command: "+ cmd + " in " + build_dir)
-                result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=self.jenkins_workspace)
+                cmd = self.VCD + "/clicast -e " + env.name + " COVER REPORT AGGREGATE " + report_name
+                print("Report command: "+ cmd + " in " + build_dir)
+                result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=build_dir)
 
             elif isinstance(env.api,UnitTestApi):
-                cmd = self.VCD + "/clicast -e " + env.name + " REPORT CUSTOM FULL " + os.getcwd() + "/" + report_name
-                # print("Report command: "+ cmd + " in " + build_dir)
-                result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=self.jenkins_workspace)
+                cmd = self.VCD + "/clicast -e " + env.name + " REPORT CUSTOM FULL " + report_name
+                print("Report command: "+ cmd + " in " + build_dir)
+                result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=build_dir)
 
             else:
                 return "Error: Cannot find the environment " + build_dir + "/" + env.name + ".vcp/.vce): " + cmd
