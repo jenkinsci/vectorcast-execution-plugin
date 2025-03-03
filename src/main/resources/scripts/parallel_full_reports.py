@@ -55,8 +55,7 @@ class RunFullReportsParallel(object):
             self.jenkins_workspace = os.getcwd().replace("\\","/") + "/"
 
         if args.jobs == "max":
-
-            max_cpus = int(os.environ['NUMBER_OF_PROCESSORS'])
+            max_cpus = os.cpu_count()
             max_licenses = self.getLicenseCount()
             max_envs = self.getEnvCount()
 
