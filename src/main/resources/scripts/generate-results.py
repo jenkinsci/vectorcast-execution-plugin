@@ -48,10 +48,13 @@ jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
 
 python_path_updates = jenkinsScriptHome
 sys.path.append(python_path_updates)
-# needed because vc18 vpython does not have bs4 package
+
 if sys.version_info[0] < 3:
     python_path_updates += os.sep + 'vpython-addons'
     sys.path.append(python_path_updates)
+    using_27_python = True
+else:
+    using_27_python = False
 
 import tcmr2csv
 import vcastcsv2jenkins
@@ -389,8 +392,6 @@ def generateIndividualReports(entry, envName):
         elif os.path.exists(unit_path):
             generateUTReport(unit_path , env, level)                
 
-
-
 def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report, useStartLine, teePrint, use_cte):
     global verbose
 
@@ -451,7 +452,7 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
             pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures, useStartLine, teePrint, use_cte)
             passed_count += pc
             failed_count += fc
-            if not no_full_report:
+            if not no_full_report and using_27_python:
                 generateIndividualReports(manageEnvs[currentEnv], envName)
             
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
@@ -462,7 +463,7 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
                 passed_count += pc
                 failed_count += fc
                 
-                if not no_full_report:
+                if not no_full_report and using_27_python:
                     generateIndividualReports(manageEnvs[currentEnv], envName)
                 
     return passed_count, failed_count
