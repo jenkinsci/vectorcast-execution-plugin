@@ -59,11 +59,11 @@ class RunFullReportsParallel(object):
             max_licenses = self.getLicenseCount()
             max_envs = self.getEnvCount()
 
-            #print([max_cpus, max_licenses, max_envs])
+            print([max_cpus, max_licenses, max_envs])
 
-            self.max_concurrent = min([max_cpus,max_licenses, max_envs])
+            self.max_concurrent = min(x for x in [max_cpus,max_licenses, max_envs] if x > 0)
 
-            #print("Using licensing max = ", self.max_concurrent)
+            print("Using licensing max = ", self.max_concurrent)
         else:
             self.max_concurrent = int(args.jobs)
 
@@ -88,7 +88,10 @@ class RunFullReportsParallel(object):
     def getLicenseCount(self):
 
         if os.environ.get("VECTOR_LICENSE_FILE") is not None:
-            cmd =  r'%VECTORCAST_DIR%\flexlm\lmutil lmstat -a -c %VECTOR_LICENSE_FILE% | findstr VECTORCAST_MANAGE:'
+            if sys.platform.startswith('win32'):
+                cmd =  r'%VECTORCAST_DIR%\flexlm\lmutil lmstat -a -c %VECTOR_LICENSE_FILE% | findstr VECTORCAST_MANAGE:'
+            else:
+                cmd =  r'$VECTORCAST_DIR/flexlm/lmutil lmstat -a -c $VECTOR_LICENSE_FILE  | grep VECTORCAST_MANAGE:'
 
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
             largest_available = 0
@@ -150,12 +153,12 @@ class RunFullReportsParallel(object):
 
             if isinstance(env.api,CoverApi):
                 cmd = self.VCD + "/clicast -e " + env.name + " COVER REPORT AGGREGATE " + report_name
-                print("Report command: "+ cmd + " in " + build_dir)
+                # print("Report command: "+ cmd + " in " + build_dir)
                 result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=build_dir)
 
             elif isinstance(env.api,UnitTestApi):
                 cmd = self.VCD + "/clicast -e " + env.name + " REPORT CUSTOM FULL " + report_name
-                print("Report command: "+ cmd + " in " + build_dir)
+                # print("Report command: "+ cmd + " in " + build_dir)
                 result = subprocess.run(cmd.split(), capture_output=True, text=True, cwd=build_dir)
 
             else:
