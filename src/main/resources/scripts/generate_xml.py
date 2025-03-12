@@ -1385,7 +1385,7 @@ class GenerateXml(BaseGenerateXml):
             elif tc.run_needed:
                 result += "Needs to be executed"
                 tc.passed = 1
-            elif tc.passed == tc.total:
+            elif tc.passed > 0 and tc.passed == tc.total:
                 result += "Passed"
             else:
                 result += "Failed {} / {} ".format(tc.passed, tc.total)
