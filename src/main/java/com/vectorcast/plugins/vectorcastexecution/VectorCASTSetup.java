@@ -188,35 +188,46 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
 
-                    if (entry.getName().startsWith("scripts/")) {
+                    final String entryName = entry.getName();
+                    
+                    if (entryName.startsWith("scripts/")) {
                         
-                        if (entry.getName().contains("..") 
-                                || entry.getName().startsWith("/") 
-                                || entry.getName().startsWith("\\")) {
-                            throw new IOException("? Zip Slip detected: " + entry.getName());
-                        }
+
+                        if (entryName.contains("..") 
+                                || entryName.startsWith("/") 
+                                || entryName.startsWith("\\")) {
+                            throw new IOException("? Zip Slip detected: "
+                                + entryName);
+                        } 
                         
                         // Resolve paths securely
-                        String fileOrDir = entry.getName().substring("scripts/".length());  // Secure substring
-                        File destDir = new File(destScriptDir.getRemote()); // Get absolute path from FilePath
+                        String fileOrDir = entryName
+                            .substring("scripts/".length());
+                        File destDir = new File(destScriptDir
+                            .getRemote());
                         File destFile = new File(destDir, fileOrDir);
                         
                         // ?? Prevent Zip Slip: Use URI for security
-                        if (!destFile.getCanonicalFile().toURI().getPath().startsWith(destDir.getCanonicalFile().toURI().getPath())) {
-                            throw new IOException("? Zip Slip detected: " + entry.getName());
+                        if (!destFile.getCanonicalFile().toURI().getPath()
+                                .startsWith(destDir.getCanonicalFile()
+                                .toURI().getPath())) {
+                            throw new IOException("? Zip Slip detected: " 
+                                + entryName);
                         }
 
                         // Handle directory vs. file
-                        FilePath dest = new FilePath(destScriptDir, fileOrDir);
+                        FilePath dest = new FilePath(destScriptDir
+                            , fileOrDir);
                         if (entry.isDirectory()) {
                             dest.mkdirs();
                         } else {
                             dest.getParent().mkdirs();
-                            try (InputStream is = VectorCASTSetup.class.getResourceAsStream("/" + entry.getName())) {
+                            try (InputStream is = VectorCASTSetup.class.
+                                getResourceAsStream("/" + entryName)) {
                                 dest.copyFrom(is);
                             } catch (IOException ex) {
-                                Logger.getLogger(VectorCASTSetup.class.getName()).
-                                    log(Level.INFO, null, ex);
+                                Logger.getLogger(VectorCASTSetup.class
+                                    .getName()).log(Level.INFO, null, ex);
                             }                            
                         }
                     }
