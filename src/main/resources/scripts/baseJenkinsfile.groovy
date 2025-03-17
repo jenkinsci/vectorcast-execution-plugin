@@ -486,8 +486,21 @@ def setupManageProject() {
 
 def transformIntoStep(inputString) {
 
+    def compiler = ""
+    def test_suite = ""
+    def environment = "" 
+    def source = "" 
+    def machine = "" 
+    def level = ""
+    def wordCount = trimmedString.split(/\s+/).length
+    if (wordCount == 3) {
+        (compiler, test_suite, environment) = inputString.split()
+        level = compiler + "/" test_suite
+    } else if wordCount == 5) {
+        (compiler, test_suite, environment, source, machine) = trimmedString.split()
+        level = source + "/" machine + "/" + compiler + "/" test_suite
+    }
     // grab the compiler test_suite and environment out the single line
-    def (compiler, test_suite, environment) = inputString.split()
 
     // set the stashed file name for later
     String stashName = fixUpName("${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage")
@@ -542,14 +555,14 @@ def transformIntoStep(inputString) {
                     cmds =  """
                         ${VC_EnvSetup}
                          _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/patch_rgw_directory.py "${VC_Manage_Project}"
-                        ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+                        ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${level} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
                         ${VC_EnvTeardown}
                     """
                 } else {
 
                     cmds =  """
                         ${VC_EnvSetup}
-                        ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${compiler}/${test_suite} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+                        ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${level} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
                         ${VC_EnvTeardown}
                     """
                 }
@@ -573,7 +586,7 @@ def transformIntoStep(inputString) {
                     // if we are using an SCM checkout and we aren't using a single checkout directory, we need to copy back build artifacts
                     if (VC_usingSCM && !VC_useOneCheckoutDir) {
                         def fixedJobName = fixUpName("${env.JOB_NAME}")
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${compiler}/${test_suite} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment}""" )
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment}""" )
 
                     }
                 }
@@ -780,19 +793,26 @@ pipeline {
                         def trimmedString = line.trim()
                         boolean containsData = trimmedString?.trim()
                         if (containsData) {
+                            def wordCount = trimmedString.split(/\s+/).length
+                            def source = ""
+                            def machine = ""
+                            if (wordCount == 4) {
                             (type, compiler, test_suite, environment) = trimmedString.split()
+                            } else if wordCount == 6) {
+                                (type, compiler, test_suite, environment, source, machine) = trimmedString.split()
+                            }
                             if (type == "ST:") {
-                                trimmedString = compiler + " " + test_suite + " " + environment
+                                trimmedString = compiler + " " + test_suite + " " + environment + " " + source + " " + machine
                                 // print("ST:" + trimmedString)
                                 StEnvList = StEnvList + [trimmedString]
                             }
                             else if (type == "UT:") {
-                                trimmedString = compiler + " " + test_suite + " " + environment
+                                trimmedString = compiler + " " + test_suite + " " + environment + " " + source + " " + machine
                                 // print("UT:" + trimmedString)
                                 UtEnvList = UtEnvList + [trimmedString]
                             }
                             else {
-                                trimmedString = compiler + " " + test_suite + " " + environment
+                                trimmedString = compiler + " " + test_suite + " " + environment + " " + source + " " + machine
                                 print("??:" + trimmedString)
                                 return
                             }
@@ -868,11 +888,17 @@ pipeline {
                     script {
                         def buildLogText = ""
                         def buildFileNames = ""
-
+                        def level = ""
                         // Loop over all environnment and unstash each of the files
                         // These files will be logs and build artifacts
                         EnvList.each {
+                            if (wordCount == 3) {
                             (compiler, test_suite, environment) = it.split()
+                                level = compiler + "/" + test_suite
+                            } else if wordCount == 5) {
+                                (compiler, test_suite, environment, source, machine) = it.split()
+                                level = source + "/" + machine + "/" + compiler + "/" + test_suite
+                            }
                             String stashName = fixUpName("${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage")
 
                             try {
@@ -885,7 +911,7 @@ pipeline {
                             }
                             if (VC_sharedArtifactDirectory.length() > 0) {
                                 def fixedJobName = fixUpName("${env.JOB_NAME}")
-                                buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${compiler}/${test_suite} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar""")
+                                buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar""")
                             }
                         }
 
@@ -931,7 +957,7 @@ pipeline {
                         }
 
                         // run the metrics at the end
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log --no_full_report""")
                         buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/parallel_full_reports.py  ${VC_Manage_Project} --jobs max""")
 
                         if (VC_useRGW3) {

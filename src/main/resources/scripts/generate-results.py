@@ -135,7 +135,11 @@ def getEnabledEnvironments(MPname):
     for line in output.split("\n"):
         if line.strip():
             # type being system or unit test
-            compiler, testsuite, environment = line.split()
+            try:
+                compiler, testsuite, environment = line.split()
+            except:
+                compiler, testsuite, environment, source, machine = line.split()
+                
             enabledEnvironmentArray.append([compiler, testsuite, environment])
                        
 def environmentEnabled(comp,ts,env):
