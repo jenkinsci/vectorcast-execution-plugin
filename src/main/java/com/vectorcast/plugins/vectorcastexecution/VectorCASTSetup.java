@@ -189,6 +189,13 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                     JarEntry entry = entries.nextElement();
 
                     if (entry.getName().startsWith("scripts/")) {
+                        
+                        if (entry.getName().contains("..") 
+                                || entry.getName().startsWith("/") 
+                                || entry.getName().startsWith("\\")) {
+                            throw new IOException("? Zip Slip detected: " + entry.getName());
+                        }
+                        
                         // Resolve paths securely
                         String fileOrDir = entry.getName().substring("scripts/".length());  // Secure substring
                         File destDir = new File(destScriptDir.getRemote()); // Get absolute path from FilePath
