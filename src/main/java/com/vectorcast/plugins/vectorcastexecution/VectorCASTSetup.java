@@ -156,7 +156,6 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             final EnvVars env, final Launcher launcher,
             final TaskListener listener) throws IOException {
 
-        final int initPathLen = 8;
         FilePath destScriptDir = new FilePath(workspace, "vc_scripts");
         JarFile jFile = null;
         try {
@@ -190,11 +189,12 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                     if (entry.getName().startsWith("scripts")) {
 
                         String fileOrDir =
-                            entry.getName().substring(initPathLen);
+                            entry.getName().replaceFirst("scripts/", "");
 
                         /* check to solve jenkins security scanner */
                         File destDir  = new File(destScriptDir.getName());
                         File destFile = new File(destDir, fileOrDir);
+
                         if (!destFile.toPath().normalize().
                                 startsWith(destDir.toPath())) {
                             throw new IOException("Bad entry in scripts.jar: "
