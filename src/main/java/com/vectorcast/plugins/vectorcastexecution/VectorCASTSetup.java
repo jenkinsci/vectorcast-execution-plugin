@@ -195,7 +195,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                         File destDir  = new File(destScriptDir.getName());
                         File destFile = new File(destDir, fileOrDir);
                         
-                        String ddp = destDir.toPath();
+                        String ddp = destDir.getAbsolutePath();
 
                         if (!destFile.toPath().normalize().startsWith(ddp)) {
                             throw new IOException("Bad entry in scripts.jar: "
