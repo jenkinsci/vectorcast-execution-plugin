@@ -194,9 +194,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                         /* check to solve jenkins security scanner */
                         File destDir  = new File(destScriptDir.getName());
                         File destFile = new File(destDir, fileOrDir);
+                        
+                        String ddp = destDir.toPath()
 
-                        if (!destFile.toPath().normalize().
-                                startsWith(destDir.toPath())) {
+                        if (!destFile.toPath().normalize().startsWith(ddp)) {
                             throw new IOException("Bad entry in scripts.jar: "
                                 + entry.getName());
                         }
