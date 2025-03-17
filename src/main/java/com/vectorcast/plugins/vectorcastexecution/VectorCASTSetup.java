@@ -156,6 +156,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
             final EnvVars env, final Launcher launcher,
             final TaskListener listener) throws IOException {
 
+        final int initPathLen = 8;
         FilePath destScriptDir = new FilePath(workspace, "vc_scripts");
         JarFile jFile = null;
         try {
@@ -186,43 +187,30 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 Enumeration<JarEntry> entries = jFile.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
-                    if (entry.getName().startsWith("scripts")) {
 
-                        String fileOrDir =
-                            entry.getName().replaceFirst("scripts/", "");
-
-                        /* check to solve jenkins security scanner */
-                        File destDir  = new File(destScriptDir.getName());
+                    if (entry.getName().startsWith("scripts/")) {
+                        // Resolve paths securely
+                        String fileOrDir = entry.getName().substring("scripts/".length());  // Secure substring
+                        File destDir = new File(destScriptDir.getRemote()); // Get absolute path from FilePath
                         File destFile = new File(destDir, fileOrDir);
                         
-                        String ddp = destDir.getAbsolutePath();
-
-                        if (!destFile.toPath().normalize().startsWith(ddp)) {
-                            throw new IOException("Bad entry in scripts.jar: "
-                                + entry.getName());
+                        // ?? Prevent Zip Slip: Use URI for security
+                        if (!destFile.getCanonicalFile().toURI().getPath().startsWith(destDir.getCanonicalFile().toURI().getPath())) {
+                            throw new IOException("? Zip Slip detected: " + entry.getName());
                         }
 
+                        // Handle directory vs. file
                         FilePath dest = new FilePath(destScriptDir, fileOrDir);
-                        if (entry.getName().endsWith("/")) {
-                            // Directory, create destination
+                        if (entry.isDirectory()) {
                             dest.mkdirs();
                         } else {
-
-                            String destString = "/" + fileOrDir;
-                            /* check to solve jenkins security scanner */
-                            destDir  = new File(destScriptDir.getName());
-                            destFile = new File(destDir, destString);
-                            if (!destFile.toPath().normalize().
-                                    startsWith(destDir.toPath())) {
-                                throw new IOException(""
-                                    + "Bad entry in scripts.jar: "
-                                    + entry.getName());
-                            }
-
-                            // File, copy it
-                            InputStream is = VectorCASTSetup.class.
-                                getResourceAsStream("/" + entry.getName());
-                            dest.copyFrom(is);
+                            dest.getParent().mkdirs();
+                            try (InputStream is = VectorCASTSetup.class.getResourceAsStream("/" + entry.getName())) {
+                                dest.copyFrom(is);
+                            } catch (IOException ex) {
+                                Logger.getLogger(VectorCASTSetup.class.getName()).
+                                    log(Level.INFO, null, ex);
+                            }                            
                         }
                     }
                 }
