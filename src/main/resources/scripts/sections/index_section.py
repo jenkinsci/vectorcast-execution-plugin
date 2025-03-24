@@ -13,10 +13,11 @@ class IndexSection(ReportSection):
         # Set data to be available when writing the report
         # Create list of tuples, (title, link)
         # Format as HTML with styles etc. in the template
-        topLevelEntries, indEnvFullEntries, miscEntries = create_index_html_body()
+        topLevelEntries, indEnvFullEntries, indEnvTcmrEntries, miscEntries = create_index_html_body()
         self.section_context["topLevel"] = topLevelEntries
         self.section_context["indFull"] = indEnvFullEntries
         self.section_context["misc"] = miscEntries
+        self.section_context["indTcmr"] = indEnvTcmrEntries
         
         contentOverall = {
             "title" : "Overall Reports",
@@ -28,6 +29,11 @@ class IndexSection(ReportSection):
             "link" : "fullreports"
         }
 
+        contentTcmrReports = { 
+            "title": "Individual Environment Test Case Management Reports",
+            "link" : "tcmr"
+        }
+
         contentMiscHtml = { 
             "title": "Miscellaneous HTML docs",
             "link" : "misc"
@@ -35,4 +41,5 @@ class IndexSection(ReportSection):
 
         self.contents_table_entries[self.title].append(contentOverall)
         self.contents_table_entries[self.title].append(contentFullReports)
+        self.contents_table_entries[self.title].append(contentTcmrReports)
         self.contents_table_entries[self.title].append(contentMiscHtml)

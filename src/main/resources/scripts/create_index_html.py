@@ -41,11 +41,17 @@ def getReportName(filename):
         manageProject = filename.split("_metrics",1)[0]
         reportName = "Metrics Report"
     
-    elif  "html_reports" in filename or "management" in filename:
+    elif "html_reports" in filename:
         ## html_reports/VectorCAST_MinGW_C++_UnitTesting_ENV_LINKED_LIST.html
-        comp_ts_env = filename.replace("html_reports/","").replace("management/","").replace(".html","")
+        comp_ts_env = filename.replace("html_reports/","").replace(".html","")
         reportName = comp_ts_env 
         reportType = 1
+
+    elif "management" in filename:
+        comp_ts_env = filename.replace("management/","").replace(".html","")
+        reportName = comp_ts_env 
+        reportType = 3
+
     else:
         reportType = 2
         
@@ -57,7 +63,6 @@ def create_index_html(mpName):
     from vector.apps.ReportBuilder.custom_report import CustomReport
 
     api = VCProjectApi(mpName)
-    
     # Set custom report directory to the where this script was
     # found. Must contain sections/index_section.py
     rep_path = pathlib.Path(__file__).parent.resolve()
@@ -70,9 +75,9 @@ def create_index_html(mpName):
             output_file=output_file,
             sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','INDEX_SECTION', 'CUSTOM_FOOTER'],
             customization_dir=rep_path)
-                
-    api.close()
 
+    api.close()
+    
 def create_index_html_body ():
     
     tempHtmlReportList = glob.glob("*.html")
@@ -93,6 +98,7 @@ def create_index_html_body ():
     entries = []
     topLevelEntries = []
     indEnvFullEntries = []
+    indEnvTcmrEntries = []
     miscEntries = []
 
     for html_file_name in htmlReportList:
@@ -103,10 +109,12 @@ def create_index_html_body ():
             indEnvFullEntries.append((reportName,html_file_name))
         elif reportType == 2:
             miscEntries.append((reportName,html_file_name))
+        elif reportType == 3:
+            indEnvTcmrEntries.append((reportName,html_file_name))
         else:
             topLevelEntries.append((reportName,html_file_name))
         
-    return topLevelEntries, indEnvFullEntries, miscEntries
+    return topLevelEntries, indEnvFullEntries, indEnvTcmrEntries, miscEntries
     
     
 def run(mpName):

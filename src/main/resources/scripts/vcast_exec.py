@@ -23,6 +23,7 @@
 #
 
 import os, subprocess,argparse, glob, sys, shutil
+from vector.apps.DataAPI.vcproject_api import VCProjectApi 
 
 from managewait import ManageWait
 
@@ -296,6 +297,24 @@ class VectorCASTExecute(object):
             self.manageWait.exec_manage_command ("--full-status=" + self.mpName + "_full_status_report.html")
             self.needIndexHtml = True
             
+    def generateTestCaseMgtRpt(self):
+        if not os.path.exists("management"):
+            os.makedirs(directory)
+        else:
+            for file in glob.glob("management/*_management_report.html"):
+                os.remove(file)
+            
+        with VCProjectApi(self.FullMP) as vcprojApi:
+            for env in vcprojApi.Environment.all():
+                if not env.is_active:
+                    continue
+                        
+                self.needIndexHtml = True
+                
+                report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_management_report.html"
+                report_name = os.path.join("management",report_name)
+                env.api.report(report_type="MANAGEMENT_REPORT", formats=["HTML"], output_file=report_name)
+        
     def exportRgw(self):
         rgw.updateReqRepo(VC_Manage_Project=self.FullMP, VC_Workspace=os.getcwd() , top_level=False)
         self.manageWait.exec_manage_command ("--clicast-args rgw export")
@@ -305,14 +324,14 @@ class VectorCASTExecute(object):
         self.manageWait.exec_manage_command ("--status")
         self.manageWait.exec_manage_command ("--force --release-locks")
         self.manageWait.exec_manage_command ("--config VCAST_CUSTOM_REPORT_FORMAT=HTML")
-        
+
         if self.useLevelEnv:
             output = "--output " + self.mpName + self.reportsName + "_rebuild.html"
         else:
             output = ""
             
         if self.jobs != "1" and checkVectorCASTVersion(20, True):
-
+            
             # setup project for parallel execution
             self.manageWait.exec_manage_command ("--config VCAST_DEPENDENCY_CACHE_DIR=./vcqik")
 
@@ -372,6 +391,7 @@ if __name__ == '__main__':
     reportGroup.add_argument('--aggregate', help='Generate aggregate coverage report VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--metrics', help='Generate metrics reports for VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--fullstatus', help='Generate full status reports for VectorCAST Project', action="store_true", default = False)
+    reportGroup.add_argument('--tcmr', help='Generate Test Cases Management Reports for each VectorCAST environment in project', action="store_true", default = False)
 
     beGroup = parser.add_argument_group('Build/Execution Options', 'Options that effect build/execute operation')
     
@@ -430,6 +450,9 @@ if __name__ == '__main__':
         print("--exit_with_failed_count=" + args.exit_with_failed_count + " specified.  Fail Percent = " + str(round(vcExec.failed_pct,0)) + "% Return code: ", str(vcExec.failed_count))
         sys.exit(vcExec.failed_count)
         
+    if args.tcmr:
+        vcExec.generateTestCaseMgtRpt()
+
     if vcExec.needIndexHtml:
         vcExec.generateIndexHtml()
         

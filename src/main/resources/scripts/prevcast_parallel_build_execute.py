@@ -6,6 +6,8 @@ import pdb, time
 from datetime import timedelta
 from io import open
 
+import incremental_build_report_aggregator
+
 # adding path
 workspace = os.getenv("WORKSPACE")
 if workspace is None:
@@ -61,7 +63,7 @@ class ParallelExecute(object):
         parser = argparse.ArgumentParser()        
         # running from manage
         
-        parser.add_argument('--project', '-p',     help='VectorCAST Project Project Name')
+        parser.add_argument('--project', '-p',     help='VectorCAST Project Project Name', default=None)
         parser.add_argument('--compiler','-c',     help='VectorCAST Project Compiler Node', default=None)
         parser.add_argument('--testsuite','-t',     help='VectorCAST Project TestSuite Node', default=None)
         parser.add_argument('--incremental', help='Using build-execute incremental (CBT)', action="store_true", default=False)
@@ -74,11 +76,13 @@ class ParallelExecute(object):
         parser.add_argument('--vcast_action', help = 'Choose the VectorCAST Action (default = build-execute)', choices = ['build', 'execute', 'build-execute'], default = 'build-execute')
         args = parser.parse_args()
         
-        try:
-            self.manageProject = os.environ['VCV_ENVIRONMENT_FILE']
-        except:
+        if args.project:
             self.manageProject = args.project
+        else:
+            self.manageProject = os.environ['VCV_ENVIRONMENT_FILE']
 
+        self.manageProject = self.manageProject.replace("\\","/")
+        
         self.jobs = args.jobs
         if self.jobs == "0":
             self.jobs = "1"
@@ -127,7 +131,7 @@ class ParallelExecute(object):
         self.running_jobs = 0
         self.lock = Lock()
         self.system_test_lock = Lock()
-        self.mpName = self.manageProject.replace(".vcm","")
+        self.mpName = self.manageProject.replace(".vcm","").rsplit("/",1)[1]
         
     def th_Print (self, str):
         self.lock.acquire()
@@ -245,7 +249,7 @@ class ParallelExecute(object):
             
             time.sleep(MONITOR_SLEEP)
 
-        print ("waiting for jobs to finalize"    )
+        print ("\n\n  Waiting for jobs to finalize...\n\n")
         self.compiler_exec_queue.join()
         script_end_time = time.time()
         script_uptime = script_end_time - self.script_start_time
@@ -261,106 +265,6 @@ class ParallelExecute(object):
         for job in self.jobs_run_time:
             print ("  ", self.jobs_run_time[job], job)
 
-    def parse_html_files(self):
-
-        from bs4 import BeautifulSoup
-        report_file_list = []
-        full_file_list = os.listdir(".")
-        for file in glob.glob("*_rebuild.html"):
-            report_file_list.append(file)
-
-        if len(report_file_list) == 0:
-            print("  No incrementatal rebuild reports found in the workspace...skipping")
-            return
-            
-        try:
-            main_soup = BeautifulSoup(open(report_file_list[0]),features="lxml")
-        except:
-            main_soup = BeautifulSoup(open(report_file_list[0]))
-            
-        preserved_count = 0
-        executed_count = 0
-        total_count = 0
-        if main_soup.find(id="report-title"):
-            main_manage_api_report = True
-            # New Manage reports have div with id=report-title
-            # Want second table (skip config data section)
-            main_row_list = main_soup.find_all('table')[1].tr.find_next_siblings()
-            main_count_list = main_row_list[-1].th.find_next_siblings()
-        else:
-            main_manage_api_report = False
-            main_row_list = main_soup.table.table.tr.find_next_siblings()
-            main_count_list = main_row_list[-1].td.find_next_siblings()
-
-        preserved_count = preserved_count + int(main_count_list[1].get_text())
-        executed_count = executed_count + int(main_count_list[2].get_text())
-        total_count = total_count + int(main_count_list[3].get_text())
-        if main_manage_api_report:
-            build_success, build_total = [int(s.strip()) for s in main_count_list[0].get_text().strip().split('(')[0][:-1].split('/')]
-        else:
-            build_success, build_total = [int(s.strip()) for s in main_count_list[0].get_text().strip().split('(')[-1][:-1].split('/')]
-        
-        insert_idx = 2
-        for file in report_file_list[1:]:
-            try:
-                soup = BeautifulSoup(open(file),features="lxml")
-            except:
-                soup = BeautifulSoup(open(file))
-            if soup.find(id="report-title"):
-                manage_api_report = True
-                # New Manage reports have div with id=report-title
-                # Want second table (skip config data section)
-                row_list = soup.find_all('table')[1].tr.find_next_siblings()
-                count_list = row_list[-1].th.find_next_siblings()
-            else:
-                manage_api_report = False
-                row_list = soup.table.table.tr.find_next_siblings()
-                count_list = row_list[-1].td.find_next_siblings()
-            for item in row_list[:-1]:
-                if manage_api_report:
-                    main_soup.find_all('table')[1].insert(insert_idx,item)
-                else:
-                    main_soup.table.table.insert(insert_idx,item)
-                insert_idx = insert_idx + 1
-            preserved_count = preserved_count + int(count_list[1].get_text())
-            executed_count = executed_count + int(count_list[2].get_text())
-            total_count = total_count + int(count_list[3].get_text())
-            if manage_api_report:
-                build_totals = [int(s.strip()) for s in count_list[0].get_text().strip().split('(')[0][:-1].split('/')]
-            else:
-                build_totals = [int(s.strip()) for s in count_list[0].get_text().strip().split('(')[-1][:-1].split('/')]
-            build_success = build_success + build_totals[0]
-            build_total = build_total + build_totals[1]
-
-        try:
-            percentage = build_success * 100 // build_total
-        except:
-            percentage = 0
-        if main_manage_api_report:
-            main_row_list = main_soup.find_all('table')[1].tr.find_next_siblings()
-            main_count_list = main_row_list[-1].th.find_next_siblings()
-            main_count_list[0].string.replace_with(str(build_success) + " / " + str(build_total) + " (" + str(percentage) + "%)" )
-        else:
-            main_row_list = main_soup.table.table.tr.find_next_siblings()
-            main_count_list = main_row_list[-1].td.find_next_siblings()
-            main_count_list[0].string.replace_with(str(percentage) + "% (" + str(build_success) + " / " + str(build_total) + ")")
-
-        main_count_list[1].string.replace_with(str(preserved_count))
-        main_count_list[2].string.replace_with(str(executed_count))
-        main_count_list[3].string.replace_with(str(total_count))
-
-        # moving rebuild reports down in to a sub directory
-        f = open(self.mpName + "_incremental_rebuild_report.html","w", encoding="utf-8")
-        f.write(main_soup.prettify(formatter="html"))
-        f.close()
-        
-        # moving rebuild reports down in to a sub directory
-        if not os.path.exists("rebuild_reports"):
-            os.mkdir("rebuild_reports")
-        for file in report_file_list:
-            if os.path.exists(file):
-              shutil.move(file, "rebuild_reports/"+file)  
-              
     def get_testcase_list(self,env_list):
         new_env_list = []
         temp_env_list = []
@@ -398,7 +302,7 @@ class ParallelExecute(object):
         open(self.mpName + "_build.log","w", encoding="utf-8").write(build_log_data)
         
         if self.incremental:
-            self.parse_html_files()
+            incremental_build_report_aggregator.parse_html_files(self.mpName)
         
     def doit(self):
         ## create the directory structure in the manage project before building

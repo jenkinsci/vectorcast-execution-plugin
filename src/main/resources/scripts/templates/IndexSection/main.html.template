@@ -18,6 +18,18 @@
   </ul>
   </table>
   
+  {%- if indTcmr %}
+      <h4>Individual Environment Test Case Management Reports</h4>
+      <table id = "tcmr" class='table table-hover table-bordered'>
+      <ul>
+      {%- for entry in indTcmr %}
+        <li><a href="{{entry[1]}}" style="text-decoration: underline;">{{entry[0]}}</a></li>
+      {%- endfor %}
+      </ul>
+      </table>
+  {%- endif %}
+      
+  
   <h4>Miscellaneous HTML docs</h4>
   <table id = "misc" class='table table-hover table-bordered'>
   <ul>
