@@ -63,6 +63,10 @@ import java.util.ArrayList;
 
 import java.net.URL;
 import org.kohsuke.stapler.verb.POST;
+import hudson.model.Item;
+import hudson.security.AccessDeniedException3;
+import hudson.security.Permission;
+
 
 /**
  * Base job management - create/delete/update.
@@ -706,21 +710,23 @@ public abstract class BaseJob {
      * @throws hudson.model.Descriptor.FormException exception
      * @throws JobAlreadyExistsException exception
      * @throws InvalidProjectFileException exception
+     * @throws AccessDeniedException3 exception
      */
     @POST
-    public void create() throws 
-            IOException, 
+    public void create() throws
+            IOException,
             ServletException,
             Descriptor.FormException,
             JobAlreadyExistsException,
             InvalidProjectFileException,
-            AccessDeniedException {
+            AccessDeniedException3 {
 
-        if (!instance.hasPermission(Item.CREATE) ||
-            !instance.hasPermission(Item.CONFIGURE)) {
-            throw new AccessDeniedException
-            (
-                "You do not have the required permissions."
+        if (!instance.hasPermission(Item.CREATE)
+            || !instance.hasPermission(Item.CONFIGURE)) {
+            throw new AccessDeniedException3(
+                instance.getAuthentication2(),
+                Permission.CREATE
+
             );
         }
 

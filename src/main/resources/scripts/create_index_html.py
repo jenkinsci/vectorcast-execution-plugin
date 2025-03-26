@@ -57,16 +57,26 @@ def getReportName(filename):
         
     return reportName, reportType
 
-def create_index_html(mpName):
+usingGitLabCI = False
+
+def create_index_html(mpName, isGitLab = False):
     import pathlib
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
     from vector.apps.ReportBuilder.custom_report import CustomReport
 
+    global usingGitLabCI
+    usingGitLabCI = isGitLab
+    
     api = VCProjectApi(mpName)
     # Set custom report directory to the where this script was
     # found. Must contain sections/index_section.py
     rep_path = pathlib.Path(__file__).parent.resolve()
-    output_file="index.html"
+
+    if usingGitLabCI:
+        output_file="html_reports/index.html"
+    else:
+        output_file="index.html"
+        
     CustomReport.report_from_api(
             api=api,
             title="HTML Reports",
@@ -104,6 +114,9 @@ def create_index_html_body ():
     for html_file_name in htmlReportList:
         
         reportName, reportType = getReportName(html_file_name)
+        
+        if usingGitLabCI:
+            html_file_name = os.path.join("..", html_file_name)
         
         if reportType == 1:
             indEnvFullEntries.append((reportName,html_file_name))

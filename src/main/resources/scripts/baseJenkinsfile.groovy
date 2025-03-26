@@ -797,7 +797,7 @@ pipeline {
                             def source = ""
                             def machine = ""
                             if (wordCount == 4) {
-                            (type, compiler, test_suite, environment) = trimmedString.split()
+                                (type, compiler, test_suite, environment) = trimmedString.split()
                             } else if wordCount == 6) {
                                 (type, compiler, test_suite, environment, source, machine) = trimmedString.split()
                             }

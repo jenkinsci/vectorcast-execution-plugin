@@ -74,6 +74,10 @@ import java.nio.file.StandardCopyOption;
 
 import java.util.EnumSet;
 import org.kohsuke.stapler.verb.POST;
+import hudson.model.Item;
+import hudson.security.AccessDeniedException3;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 
 /**
  * Create a new single job.
@@ -326,22 +330,25 @@ public class NewPipelineJob extends BaseJob {
      * @throws hudson.model.Descriptor.FormException exception
      * @throws JobAlreadyExistsException exception
      * @throws InvalidProjectFileException exception
+     * @throws AccessDeniedException3 exception
      */
      @POST
      @Override
-     public void create() throws 
-            IOException, 
-            ServletException, 
+     public void create() throws
+            IOException,
+            ServletException,
             Descriptor.FormException,
-            JobAlreadyExistsException, 
+            JobAlreadyExistsException,
             InvalidProjectFileException,
-            AccessDeniedException {
+            AccessDeniedException3 {
 
-        if (!instance.hasPermission(Item.CREATE) ||
-            !instance.hasPermission(Item.CONFIGURE)) {
-            throw new AccessDeniedException
-            (
-                "You do not have the required permissions."
+        Jenkins instance = getInstance();
+
+        if (!instance.hasPermission(Item.CREATE)
+            || !instance.hasPermission(Item.CONFIGURE)) {
+            throw new AccessDeniedException3(
+                instance.getAuthentication2(),
+                Permission.CREATE
             );
         }
 
