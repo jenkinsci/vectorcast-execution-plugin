@@ -20,6 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ * THE SOFTWARE.
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
@@ -328,9 +329,21 @@ public class NewPipelineJob extends BaseJob {
      */
      @POST
      @Override
-     public void create()
-            throws IOException, ServletException, Descriptor.FormException,
-            JobAlreadyExistsException, InvalidProjectFileException {
+     public void create() throws 
+            IOException, 
+            ServletException, 
+            Descriptor.FormException,
+            JobAlreadyExistsException, 
+            InvalidProjectFileException,
+            AccessDeniedException {
+
+        if (!instance.hasPermission(Item.CREATE) ||
+            !instance.hasPermission(Item.CONFIGURE)) {
+            throw new AccessDeniedException
+            (
+                "You do not have the required permissions."
+            );
+        }
 
         // Create the top-level project
         createProject();

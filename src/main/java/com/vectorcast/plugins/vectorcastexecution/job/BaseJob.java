@@ -708,11 +708,22 @@ public abstract class BaseJob {
      * @throws InvalidProjectFileException exception
      */
     @POST
-    public void create()
-            throws IOException, ServletException,
+    public void create() throws 
+            IOException, 
+            ServletException,
             Descriptor.FormException,
             JobAlreadyExistsException,
-            InvalidProjectFileException {
+            InvalidProjectFileException,
+            AccessDeniedException {
+
+        if (!instance.hasPermission(Item.CREATE) ||
+            !instance.hasPermission(Item.CONFIGURE)) {
+            throw new AccessDeniedException
+            (
+                "You do not have the required permissions."
+            );
+        }
+
         // Create the top-level project
         topProject = createProject();
         if (topProject == null) {
