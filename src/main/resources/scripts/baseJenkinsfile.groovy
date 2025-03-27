@@ -492,16 +492,16 @@ def transformIntoStep(inputString) {
     def source = "" 
     def machine = "" 
     def level = ""
-    def wordCount = trimmedString.split(/\s+/).length
+    def trimmedLine = inputString.trim()
+    def wordCount = trimmedLine.split(/\s+/).length
     if (wordCount == 3) {
         (compiler, test_suite, environment) = inputString.split()
         level = compiler + "/" + test_suite
-    } else if wordCount == 5) {
-        (compiler, test_suite, environment, source, machine) = trimmedString.split()
-        level = source + "/" machine + "/" + compiler + "/" test_suite
+    } else if (wordCount == 5) {
+        (compiler, test_suite, environment, source, machine) = inputString.split()
+        level = source + "/" + machine + "/" + compiler + "/" + test_suite
     }
     // grab the compiler test_suite and environment out the single line
-
     // set the stashed file name for later
     String stashName = fixUpName("${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage")
 
@@ -798,7 +798,7 @@ pipeline {
                             def machine = ""
                             if (wordCount == 4) {
                                 (type, compiler, test_suite, environment) = trimmedString.split()
-                            } else if wordCount == 6) {
+                            } else if (wordCount == 6) {
                                 (type, compiler, test_suite, environment, source, machine) = trimmedString.split()
                             }
                             if (type == "ST:") {
@@ -892,10 +892,12 @@ pipeline {
                         // Loop over all environnment and unstash each of the files
                         // These files will be logs and build artifacts
                         EnvList.each {
+                            def trimmedLine = it.trim()
+                            def wordCount = trimmedLine.split(/\s+/).length
                             if (wordCount == 3) {
                             (compiler, test_suite, environment) = it.split()
                                 level = compiler + "/" + test_suite
-                            } else if wordCount == 5) {
+                            } else if (wordCount == 5) {
                                 (compiler, test_suite, environment, source, machine) = it.split()
                                 level = source + "/" + machine + "/" + compiler + "/" + test_suite
                             }
