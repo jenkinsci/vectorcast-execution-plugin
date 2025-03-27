@@ -495,7 +495,7 @@ def transformIntoStep(inputString) {
     def wordCount = trimmedString.split(/\s+/).length
     if (wordCount == 3) {
         (compiler, test_suite, environment) = inputString.split()
-        level = compiler + "/" test_suite
+        level = compiler + "/" + test_suite
     } else if wordCount == 5) {
         (compiler, test_suite, environment, source, machine) = trimmedString.split()
         level = source + "/" machine + "/" + compiler + "/" test_suite
