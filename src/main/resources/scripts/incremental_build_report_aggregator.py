@@ -136,10 +136,6 @@ def parse_html_files(mpName):
         
     report_file_list = []
     full_file_list = os.listdir(".")
-    
-    import pdb
-    pdb.set_trace()
-    
     for file in full_file_list:
         if "_rebuild.html" in file:
             report_file_list.append(file)
@@ -151,11 +147,10 @@ def parse_html_files(mpName):
     
     while keepLooping:
         try:
-            with open(report_file_list[0], "r") as fd:
+            with open(report_file_list[0],"r", encoding='utf-8') as fd:
                 try:
                     main_soup = BeautifulSoup((fd),features="lxml")
-                except Exception as e:
-                    print(e)
+                except:
                     main_soup = BeautifulSoup(fd)
 
             preserved_count = 0
@@ -173,8 +168,7 @@ def parse_html_files(mpName):
                 main_row_list = main_soup.table.table.tr.find_next_siblings()
                 main_count_list = main_row_list[-1].td.find_next_siblings()
             keepLooping = False
-        except Exception as e:
-            print(e)
+        except:
             if len(report_file_list) > 0:
                 report_file_list.pop(0)
                 keepLooping = True
@@ -191,7 +185,7 @@ def parse_html_files(mpName):
     
     insert_idx = 2
     for file in report_file_list[1:]:
-        with open(file,"r") as fd:
+        with open(file,"r", encoding='utf-8') as fd:
             try:
                 soup = BeautifulSoup((fd),features="lxml")
             except:
@@ -252,7 +246,7 @@ def parse_html_files(mpName):
     if div:
         div['class']="report-body no-toc"
     
-    with open(mpName + "_rebuild.html","w") as fd:
+    with open(mpName + "_rebuild.html","w", encoding='utf-8') as fd:
         fd.write(main_soup.prettify(formatter="html"))
 
     try:
@@ -262,7 +256,7 @@ def parse_html_files(mpName):
         pass
     
     # moving rebuild reports down in to a sub directory
-    with open("combined_incr_rebuild.tmp","w") as fd:
+    with open("combined_incr_rebuild.tmp","w",encoding='utf-8') as fd:
         data = main_soup.prettify(formatter="html")
         fd.write(data)
     

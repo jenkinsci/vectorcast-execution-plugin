@@ -40,18 +40,20 @@ def new_get_file_encoding():
             cur_encoding = "GBK"
     except:
         pass
-              
+        
+    return cur_encoding
+
 @contextlib.contextmanager
-def open(file, mode="r"):
+def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None):
 
     if 'b' in mode:
-        fd = _open(file,mode)
+        fd = _open(file, mode, buffering, encoding, errors, newline, closefd, opener)
     else:
         if os.path.exists(file):
             encoding = new_get_file_encoding()
         else:
             encoding = "utf-8"
-        fd = _open(file, mode, encoding=encoding)
+        fd = _open(file, mode, buffering, encoding, errors, newline, closefd, opener
     
     try:
         yield fd
