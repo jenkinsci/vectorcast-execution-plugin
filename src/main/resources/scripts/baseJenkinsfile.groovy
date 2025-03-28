@@ -793,14 +793,22 @@ pipeline {
                         def trimmedString = line.trim()
                         boolean containsData = trimmedString?.trim()
                         if (containsData) {
+                            def type = ""
                             def wordCount = trimmedString.split(/\s+/).length
                             def source = ""
                             def machine = ""
+                            def compiler = ""
+                            def test_suite = ""
+                            def environment = ""
+                            
                             if (wordCount == 4) {
                                 (type, compiler, test_suite, environment) = trimmedString.split()
                             } else if (wordCount == 6) {
                                 (type, compiler, test_suite, environment, source, machine) = trimmedString.split()
+                            } else {
+                                print(trimmedString + " isn't splitting into 4/6 elements ", wordCount)
                             }
+                            
                             if (type == "ST:") {
                                 trimmedString = compiler + " " + test_suite + " " + environment + " " + source + " " + machine
                                 // print("ST:" + trimmedString)
