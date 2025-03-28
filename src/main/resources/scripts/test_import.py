@@ -7,13 +7,23 @@ os.environ['PASSWORD'] = 'schneider'
 
 try:
     import archive_extract_reports
+    import crumbDiag
+    import fixup_reports
+    import full_report_no_toc
+    import parallel_full_reports
+    import parse_console_for_cbt
+    import parse_traceback
+    import tcmr2csv
+    import vcastcsv2jenkins
+except ModuleNotFoundError as e:
+    pass
+    
+    
+try:
     import cobertura
     import copy_build_dir
     import create_index_html
-    import crumbDiag
     import extract_build_dir
-    import fixup_reports
-    import full_report_no_toc
     try:
         import generate_results 
     except:    
@@ -34,15 +44,10 @@ try:
     import incremental_build_report_aggregator
     import managewait
     import merge_vcr
-    import parallel_full_reports
-    import parse_console_for_cbt
-    import parse_traceback
     import patch_rgw_directory
     import prevcast_parallel_build_execute
     import safe_open
-    import tcmr2csv
     import tee_print
-    import vcastcsv2jenkins
     import vcast_exec
     import vcast_utils
 except Exception as e:
