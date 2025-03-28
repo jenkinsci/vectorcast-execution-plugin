@@ -53,7 +53,7 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
             encoding = new_get_file_encoding()
         else:
             encoding = "utf-8"
-        fd = _open(file, mode, buffering, encoding, errors, newline, closefd, opener
+        fd = _open(file, mode, buffering, encoding, errors, newline, closefd, opener)
     
     try:
         yield fd
