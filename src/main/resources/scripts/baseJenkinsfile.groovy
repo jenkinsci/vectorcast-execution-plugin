@@ -793,7 +793,7 @@ pipeline {
                         def trimmedString = line.trim()
                         boolean containsData = trimmedString?.trim()
                         if (containsData) {
-                            def type = ""
+                            def testType = ""
                             def wordCount = trimmedString.split(/\s+/).length
                             def source = ""
                             def machine = ""
@@ -802,19 +802,19 @@ pipeline {
                             def environment = ""
                             
                             if (wordCount == 4) {
-                                (type, compiler, test_suite, environment) = trimmedString.split()
+                                (testType, compiler, test_suite, environment) = trimmedString.split()
                             } else if (wordCount == 6) {
-                                (type, compiler, test_suite, environment, source, machine) = trimmedString.split()
+                                (testType, compiler, test_suite, environment, source, machine) = trimmedString.split()
                             } else {
                                 print(trimmedString + " isn't splitting into 4/6 elements ", wordCount)
                             }
                             
-                            if (type == "ST:") {
+                            if (testType == "ST:") {
                                 trimmedString = compiler + " " + test_suite + " " + environment + " " + source + " " + machine
                                 // print("ST:" + trimmedString)
                                 StEnvList = StEnvList + [trimmedString]
                             }
-                            else if (type == "UT:") {
+                            else if (testType == "UT:") {
                                 trimmedString = compiler + " " + test_suite + " " + environment + " " + source + " " + machine
                                 // print("UT:" + trimmedString)
                                 UtEnvList = UtEnvList + [trimmedString]
