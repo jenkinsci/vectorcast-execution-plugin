@@ -22,8 +22,7 @@
 # THE SOFTWARE.
 #
 
-import os, subprocess,argparse, glob, sys, shutil
-from vector.apps.DataAPI.vcproject_api import VCProjectApi 
+import os, subprocess,argparse, glob, sys, shutil 
 
 from managewait import ManageWait
 
@@ -341,17 +340,23 @@ class VectorCASTExecute(object):
         else:
             for file in glob.glob("management/*_management_report.html"):
                 os.remove(file)
-            
-        with VCProjectApi(self.FullMP) as vcprojApi:
-            for env in vcprojApi.Environment.all():
-                if not env.is_active:
-                    continue
-                        
-                self.needIndexHtml = True
                 
-                report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_management_report.html"
-                report_name = os.path.join("management",report_name)
-                env.api.report(report_type="MANAGEMENT_REPORT", formats=["HTML"], output_file=report_name)
+        if checkVectorCASTVersion(21):
+            from vector.apps.DataAPI.vcproject_api import VCProjectApi
+                                   
+            with VCProjectApi(self.FullMP) as vcprojApi:
+                for env in vcprojApi.Environment.all():
+                    if not env.is_active:
+                        continue
+                            
+                    self.needIndexHtml = True
+                    
+                    report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_management_report.html"
+                    report_name = os.path.join("management",report_name)
+                    env.api.report(report_type="MANAGEMENT_REPORT", formats=["HTML"], output_file=report_name)
+        else:
+            print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
+
         
     def exportRgw(self):
         rgw.updateReqRepo(VC_Manage_Project=self.FullMP, VC_Workspace=os.getcwd() , top_level=False)

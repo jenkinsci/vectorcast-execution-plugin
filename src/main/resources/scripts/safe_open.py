@@ -47,7 +47,10 @@ def new_get_file_encoding():
 def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None):
 
     if 'b' in mode:
-        fd = _open(file, mode, buffering, encoding, errors, newline, closefd, opener)
+        try:
+            fd = _open(file, mode, buffering, encoding, errors, newline, closefd, opener)
+        except:
+            fd = _open(file, mode, buffering, encoding, errors, newline, closefd)
     else:
         if os.path.exists(file):
             encoding = new_get_file_encoding()
