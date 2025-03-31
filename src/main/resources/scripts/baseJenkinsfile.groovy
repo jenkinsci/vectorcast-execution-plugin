@@ -806,7 +806,7 @@ pipeline {
                             } else if (wordCount == 6) {
                                 (testType, compiler, test_suite, environment, source, machine) = trimmedString.split()
                             } else {
-                                print(trimmedString + " isn't splitting into 4/6 elements ", wordCount)
+                                print(trimmedString + " isn't splitting into 4/6 elements " + wordCount)
                             }
                             
                             if (testType == "ST:") {
