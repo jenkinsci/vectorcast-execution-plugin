@@ -355,6 +355,8 @@ def generateCoverReport(path, env, level ):
             CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
 
         fixup_css(report_name)
+        print("creating cover full report: ", report_name)
+        
     except Exception as e:
         build_dir = path.replace("\\","/")
         build_dir = build_dir.rsplit("/",1)[0]
@@ -373,6 +375,7 @@ def generateUTReport(path, env, level):
         api.commit = _dummy
         api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
         fixup_css(report_name)
+        print("creating full report: ", report_name)
     except Exception as e:
         build_dir = path.replace("\\","/")
         build_dir = build_dir.rsplit("/",1)[0]
