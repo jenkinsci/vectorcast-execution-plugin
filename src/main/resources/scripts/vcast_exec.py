@@ -26,8 +26,6 @@ import os, subprocess,argparse, glob, sys, shutil
 
 from managewait import ManageWait
 
-import cobertura
-import generate_lcov
 import patch_rgw_directory as rgw
 
 try:
@@ -47,7 +45,6 @@ except:
     import prevcast_parallel_build_execute as parallel_build_execute
 
 from vcast_utils import checkVectorCASTVersion, dump
-import generate_sonarqube_testresults 
 
 from enum import Enum
 
@@ -286,12 +283,15 @@ class VectorCASTExecute(object):
             print("XXX Cannot create LCOV metrics. Please upgrade VectorCAST\n")
         else:
             print("Creating LCOV Metrics")
+            import generate_lcov
             generate_lcov.generateCoverageResults(self.FullMP, self.xml_data_dir, verbose = self.verbose, source_root = self.source_root)
 
     def runCoberturaMetrics(self):
         if not checkVectorCASTVersion(21):
             print("Cannot create Cobertura metrics. Please upgrade VectorCAST")
         else:
+            import cobertura
+
             if self.cobertura_extended:
                 print("Creating Extended Cobertura Metrics")
             else:
@@ -305,22 +305,22 @@ class VectorCASTExecute(object):
             print("Cannot create SonarQube metrics. Please upgrade VectorCAST")
         else:
             print("Creating SonarQube Metrics")
+            import generate_sonarqube_testresults 
             generate_sonarqube_testresults.run(self.FullMP, self.xml_data_dir)
         
     def runPcLintPlusMetrics(self):
         print("Creating PC-lint Plus Metrics")
-        import generate_pclp_reports 
-        os.makedirs(os.path.join(self.xml_data_dir,"pclp"))
-        report_name = os.path.join(self.xml_data_dir,"pclp","gl-code-quality-report.json")
-        print("PC-lint Plus Metrics file: " + report_name)
-        generate_pclp_reports.generate_reports(self.pclp_input, output_gitlab = report_name)
-        
-        if args.pclp_output_html:
-            if not checkVectorCASTVersion(21):
-                print("Cannot create PC-Lint Plus HTML report. Please upgrade VectorCAST")
-            else:
+        if not checkVectorCASTVersion(21):
+            print("Cannot create PC-Lint Plus HTML report. Please upgrade VectorCAST")
+        else:
+            import generate_pclp_reports 
+            os.makedirs(os.path.join(self.xml_data_dir,"pclp"))
+            report_name = os.path.join(self.xml_data_dir,"pclp","gl-code-quality-report.json")
+            print("PC-lint Plus Metrics file: " + report_name)
+            generate_pclp_reports.generate_reports(self.pclp_input, output_gitlab = report_name)
+            
+            if args.pclp_output_html:
                 print("Creating PC-lint Plus Findings")
-                import generate_pclp_reports 
                 generate_pclp_reports.generate_html_report(self.FullMP, self.pclp_input, self.pclp_output_html)
             
     def runReports(self):

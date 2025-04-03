@@ -169,7 +169,7 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
         
         if indent > max_indent and indent <= veryMax:
             max_indent = indent
-                
+
     if max_indent == 8:
         source_match_string    = "^   [^\s]"
         machine_match_string   = "^    [^\s]"
@@ -189,6 +189,8 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
         testsuite_match_string = "^    [^\s]"
         group_match_string     = None
         env_match_string       = "^     [^\s]"
+    else:
+        raise ValueError("error deciphering max_index" +  str(max_indent))
         
     source = None
     machine = None

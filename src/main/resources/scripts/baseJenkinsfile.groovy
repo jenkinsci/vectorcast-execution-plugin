@@ -967,7 +967,7 @@ pipeline {
                         }
 
                         // run the metrics at the end
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log --no_full_report""")
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
                         buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/parallel_full_reports.py  ${VC_Manage_Project} --jobs max""")
 
                         if (VC_useRGW3) {

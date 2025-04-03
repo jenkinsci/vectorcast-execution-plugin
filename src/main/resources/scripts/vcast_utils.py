@@ -38,6 +38,7 @@ def __get_script_filename():
 
 
 def checkVectorCASTVersion(minimumVersion, quiet = False):
+    
     tool_version = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "tool_version.txt")
     with open(tool_version,"r") as fd:
         ver = fd.read()

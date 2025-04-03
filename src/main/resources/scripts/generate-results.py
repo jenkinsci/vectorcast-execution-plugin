@@ -346,7 +346,6 @@ def generateCoverReport(path, env, level ):
 
     report_name = "management/" + level + "_" + env + ".html"
     
-
     try:
         try:
             api.commit = _dummy
@@ -355,7 +354,6 @@ def generateCoverReport(path, env, level ):
             CustomReport.report_from_api(api, report_type="Demo", formats=["HTML"], output_file=report_name, sections=["CUSTOM_HEADER", "REPORT_TITLE", "TABLE_OF_CONTENTS", "CONFIG_DATA", "METRICS", "MCDC_TABLES",  "AGGREGATE_COVERAGE", "CUSTOM_FOOTER"])
 
         fixup_css(report_name)
-        print("creating cover full report: ", report_name)
         
     except Exception as e:
         build_dir = path.replace("\\","/")
@@ -375,7 +373,6 @@ def generateUTReport(path, env, level):
         api.commit = _dummy
         api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
         fixup_css(report_name)
-        print("creating full report: ", report_name)
     except Exception as e:
         build_dir = path.replace("\\","/")
         build_dir = build_dir.rsplit("/",1)[0]
@@ -459,8 +456,11 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
             pc, fc = genDataApiReports(FullManageProjectName, manageEnvs[currentEnv],  cbtDict, generate_exec_rpt_each_testcase,use_archive_extract, report_only_failures, useStartLine, teePrint, use_cte)
             passed_count += pc
             failed_count += fc
-            if not no_full_report and using_27_python:
-                generateIndividualReports(manageEnvs[currentEnv], envName)
+            
+            if no_full_report:
+                continue                
+                
+            generateIndividualReports(manageEnvs[currentEnv], envName)
             
         elif manageEnvs[currentEnv]["env"].upper() == envName.upper(): 
             env_level = manageEnvs[currentEnv]["compiler"] + "/" + manageEnvs[currentEnv]["testsuite"]
@@ -470,8 +470,10 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
                 passed_count += pc
                 failed_count += fc
                 
-                if not no_full_report and using_27_python:
-                    generateIndividualReports(manageEnvs[currentEnv], envName)
+                if no_full_report:
+                    continue                
+
+                generateIndividualReports(manageEnvs[currentEnv], envName)
                 
     return passed_count, failed_count
 
@@ -489,7 +491,6 @@ def cleanupOldBuilds(teePrint):
 # build the Test Case Management Report for Manage Project
 # envName and level only supplied when doing reports for a sub-project
 # of a multi-job
-# def buildReports(FullManageProjectName = None, level = None, envName = None, generate_individual_reports = True, timing = False, cbtDict = None,use_archive_extract = False, report_only_failures = False, no_full_report = False):
 def buildReports(FullManageProjectName = None,
     level = None,
     envName = None,
@@ -532,7 +533,6 @@ def buildReports(FullManageProjectName = None,
             
     cleanupOldBuilds(teePrint)
 
-
     for file in glob.glob("*.csv"):
         try:
             os.remove(file);
@@ -563,7 +563,7 @@ def buildReports(FullManageProjectName = None,
             
         if use_manage_api:
             passed_count, failed_count = useManageAPI(FullManageProjectName, cbtDict, generate_individual_reports, 
-                    use_archive_extract,  report_only_failures, no_full_report,
+                    use_archive_extract, report_only_failures, no_full_report,
                     useStartLine, teePrint, use_cte)
 
         else:
@@ -574,8 +574,8 @@ def buildReports(FullManageProjectName = None,
                 print("Get Info: " + str(time.time()))
             passed_count, failed_count = useNewAPI(FullManageProjectName, 
                 manageEnvs, level, envName, cbtDict, generate_individual_reports, 
-                use_archive_extract, report_only_failures, no_full_report, useStartLine, 
-                teePrint, use_cte)
+                use_archive_extract, report_only_failures, no_full_report,
+                useStartLine, teePrint, use_cte)
             
         with open("unit_test_fail_count.txt", "w") as fd:
             failed_str = str(failed_count)
