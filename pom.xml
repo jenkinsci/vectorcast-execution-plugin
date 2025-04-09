@@ -126,11 +126,11 @@
         </dependency>
 
         <!-- Satisfying junit minimum version of junit from groovy-postbuild -->
-        <dependency>
+         <!-- dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>junit</artifactId>
             <version>1300.v03d9d8a_cf1fb_</version>
-        </dependency>
+        </dependency -->
         
 
         <!-- Satisfying display-url-api minimum version from junit -->
@@ -171,11 +171,11 @@
             <version>3.17.0-84.vb_b_938040b_078</version>
         </dependency>        
 
-        <dependency>
+        <!-- dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-support</artifactId>
             <version>930.vf51d22b_ce488</version>
-        </dependency>
+        </dependency -->
         
          <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
