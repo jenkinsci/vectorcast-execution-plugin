@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.88</version>
+        <version>5.9</version>
         <relativePath/>
     </parent>
     <name>VectorCAST Execution</name>
     <description>Run VectorCAST manage jobs from Jenkins</description>
     <artifactId>vectorcast-execution</artifactId>
-    <version>0.78-SNAPSHOT</version>
+    <version>0.79-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
     <licenses>
@@ -25,7 +25,7 @@
         <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <findbugs.failOnError>false</findbugs.failOnError>
-        <jenkins.version>2.462.3</jenkins.version>
+        <jenkins.version>2.492.3</jenkins.version>
     </properties>
     <organization>
         <name>Vector Informatik, GmbH</name>
