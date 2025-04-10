@@ -74,113 +74,23 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>warnings-ng</artifactId>
-            <version>11.10.0</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>coverage</artifactId>
-            <version>1.16.1</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>vectorcast-coverage</artifactId>
-            <version>0.22</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.jvnet.hudson.plugins</groupId>
-            <artifactId>groovy-postbuild</artifactId>
-            <version>264.vf6e02a_77d5b_c</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>copyartifact</artifactId>
-            <version>749.vfb_dca_a_9b_6549</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>ws-cleanup</artifactId>
-            <version>0.46</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.8.6</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.14.1</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>credentials-binding</artifactId>
-            <version>681.vf91669a_32e45</version>
-        </dependency>
-
-        <!-- Satisfying junit minimum version of junit from groovy-postbuild -->
-         <!-- dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>junit</artifactId>
-            <version>1300.v03d9d8a_cf1fb_</version>
-        </dependency -->
-        
-
-        <!-- Satisfying display-url-api minimum version from junit -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>display-url-api</artifactId>
-            <version>2.204.vf6fddd8a_8b_e9</version>
         </dependency>
        
         <dependency>
             <groupId>org.jenkins-ci.main</groupId>
             <artifactId>maven-plugin</artifactId>
-            <version>3.23</version>
         </dependency>
-        
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>commons-text-api</artifactId>
-            <version>1.12.0-129.v99a_50df237f7</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>trilead-api</artifactId>
-            <version>2.147.vb_73cc728a_32e</version>
-        </dependency>
-
-        <!-- Satisfying caffeine-api minimum version from warnings-ng -->
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>caffeine-api</artifactId>
-            <version>3.1.8-133.v17b_1ff2e0599</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>commons-lang3-api</artifactId>
-            <version>3.17.0-84.vb_b_938040b_078</version>
-        </dependency>        
-
-        <!-- dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-support</artifactId>
-            <version>930.vf51d22b_ce488</version>
-        </dependency -->
-        
+                
          <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-cps</artifactId>
-            <version>3969.vdc9d3a_efcc6a_</version>
         </dependency>
     </dependencies>
     
