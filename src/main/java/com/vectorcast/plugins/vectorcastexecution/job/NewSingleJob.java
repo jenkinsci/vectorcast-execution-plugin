@@ -36,6 +36,7 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
+import hudson.model.Descriptor.FormException;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -455,12 +456,19 @@ public class NewSingleJob extends BaseJob {
 
     script = script.replace("@PROJECT_BASE@", getBaseName());
 
-    SecureGroovyScript secureScript =
-        new SecureGroovyScript(
-            script,
-            false, /*sandbox*/
-            null /*classpath*/
-        );
+    SecureGroovyScript secureScript = null;
+
+    try {
+      secureScript =
+          new SecureGroovyScript(
+              script,
+              false, /*sandbox*/
+              null /*classpath*/
+          );
+    } catch (FormException ex) {
+      Logger.getLogger(NewSingleJob.class.getName()).
+        log(Level.INFO, null, ex);
+    }
     GroovyPostbuildRecorder groovy =
         new GroovyPostbuildRecorder(
             secureScript,
