@@ -78,6 +78,7 @@
             <dependency>
                 <groupId>org.jenkins-ci.main</groupId>
                 <artifactId>maven-plugin</artifactId>
+                <version>3.25</version>
             </dependency>
             <dependency>
                 <groupId>org.jenkins-ci.plugins</groupId>
