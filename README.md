@@ -49,7 +49,8 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
-    * [Version 0.78 (15 Mar 2025)](#version-078-3-mar-2025)
+    * [Version 0.79 (4 May 2025)](#version-079-4-may-2025)
+    * [Version 0.78 (1 Apr 2025)](#version-078-1-apr-2025)
     * [Version 0.77 (21 Aug 2024)](#version-077-21-aug-2024)
     * [Version 0.76 (19 Jan 2023)](#version-076-19-jan-2023)
     * [Version 0.75 (23 Dec 2022)](#version-075-23-dec-2022)
@@ -388,7 +389,16 @@ environment before disabling.  This takes into account enviornments that are dir
 
 ## Change Log
 
-### Version 0.78 (3 Mar 2025)
+### Version 0.79 (4 May 2025)
+- Moved to minimum Jenkins Version 2.492.3 and Java 21
+- Fix pom.xml to get a build of the plugin and to Java21
+- Fix Update NewSingleJob to catch new execption thrown from SecureGroovyScript
+- Fix jenkinsfile pipeline script to match up with the latest groovy intepreter
+    - Missing def before globals 
+        - Pipeline can access VC_ global vars, but not functions
+        - Need to pass all required VC_ global vars to functions
+
+### Version 0.78 (1 Apr 2025)
 - Moved to minimum Jenkins version: 2.452.1 and Java 11
 - Adding in following capabilities
     - Extended Cobertura format output for use with [Jenkins Coverage Plugin](https://github.com/jenkinsci/coverage-plugin)

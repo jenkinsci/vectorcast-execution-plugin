@@ -116,7 +116,9 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
+            <version>4.9.3</version>
         </dependency>
+        
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -235,7 +237,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.8.5.0</version>
+                <version>4.9.3.0</version>
                 <configuration>
                     <xmlOutput>true</xmlOutput>
                     <failOnError>false</failOnError>

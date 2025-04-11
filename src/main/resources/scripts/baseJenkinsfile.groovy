@@ -1,10 +1,9 @@
 // Code Coverage threshold numbers
 // Basis path coverage is no longer support after VectorCAST 2019SP1
-VC_Healthy_Target = [ maxStatement: 100, maxBranch: 100, maxFunctionCall: 100, maxFunction: 100, maxMCDC: 100,
-                      minStatement: 20,  minBranch: 20,  minFunctionCall: 20,  minFunction: 20,  minMCDC: 20]
+def VC_Healthy_Target = [ maxStatement: 100, maxBranch: 100, maxFunctionCall: 100, maxFunction: 100, maxMCDC: 100,
+                          minStatement: 20,  minBranch: 20,  minFunctionCall: 20,  minFunction: 20,  minMCDC: 20]
 
-
-VC_Use_Threshold = true
+def VC_Use_Threshold = true
 
 // ===============================================================
 //
@@ -12,44 +11,56 @@ VC_Use_Threshold = true
 //
 // ===============================================================
 
+// ===============================================================
+//
+// Function : getFailureUnstablePhrases
+// Inputs   : N/A
+// Action   : Builds two lists and returns them
+// Returns  : Returns a list of failure/unstable phrases
+// Notes    :
+//
+// ===============================================================
 
-// Failure phrases for checkLogsForErrors
+def getFailureUnstablePhrases() {
 
-VC_FailurePhrases = ["No valid edition(s) available",
-                  "py did not execute correctly",
-                  "Traceback (most recent call last)",
-                  "Failed to acquire lock on environment",
-                  "Environment Creation Failed",
-                  "Error with Test Case Management Report",
-                  "FLEXlm Error",
-                  "Unable to obtain license",
-                  "INCR_BUILD_FAILED",
-                  "Environment was not successfully built",
-                  "NOT_LINKED",
-                  "Preprocess Failed",
-                  "Abnormal Termination on Environment",
-                  "not recognized as an internal or external command",
-                  "Another Workspace with this path already exists",
-                  "Destination directory or database is not writable",
-                  "Could not acquire a read lock on the project's vcm file",
-                  "No environments found in ",
-                  ".vcm is invalid",
-                  "Invalid Workspace. Please ensure the directory and database contain write permission",
-                  "The environment is invalid because",
-                  "Please ensure that the project has the proper permissions and that the environment is not being accessed by another process.",
-                  "Error: That command is not permitted in continuous integration mode",
-                  "has been opened by a newer version of VectorCAST.  Please upgrade this version of VectorCAST to open the project"
-                  ]
+    def FailurePhrases = ["No valid edition(s) available",
+                      "py did not execute correctly",
+                      "Traceback (most recent call last)",
+                      "Failed to acquire lock on environment",
+                      "Environment Creation Failed",
+                      "Error with Test Case Management Report",
+                      "FLEXlm Error",
+                      "Unable to obtain license",
+                      "INCR_BUILD_FAILED",
+                      "Environment was not successfully built",
+                      "NOT_LINKED",
+                      "Preprocess Failed",
+                      "Abnormal Termination on Environment",
+                      "not recognized as an internal or external command",
+                      "Another Workspace with this path already exists",
+                      "Destination directory or database is not writable",
+                      "Could not acquire a read lock on the project's vcm file",
+                      "No environments found in ",
+                      ".vcm is invalid",
+                      "Invalid Workspace. Please ensure the directory and database contain write permission",
+                      "The environment is invalid because",
+                      "Please ensure that the project has the proper permissions and that the environment is not being accessed by another process.",
+                      "Error: That command is not permitted in continuous integration mode",
+                      "has been opened by a newer version of VectorCAST.  Please upgrade this version of VectorCAST to open the project"
+                      ]
 
-// Unstable phrases for checkLogsForErrors
-VC_UnstablePhrases = ["Dropping probe point",
-                    "Value Line Error - Command Ignored",
-                    "INFO: Problem parsing test results file",
-                    "INFO: File System Error ",
-                    "ERROR: Error accessing DataAPI",
-                    "ERROR: Undefined Error",
-                    "Unapplied Test Data"
-                    ]
+    def UnstablePhrases = ["Dropping probe point",
+                        "Value Line Error - Command Ignored",
+                        "INFO: Problem parsing test results file",
+                        "INFO: File System Error ",
+                        "ERROR: Error accessing DataAPI",
+                        "ERROR: Undefined Error",
+                        "Unapplied Test Data"
+                        ]
+
+    return [FailurePhrases, UnstablePhrases]
+}
+
 
 // ===============================================================
 //
@@ -67,9 +78,14 @@ def checkLogsForErrors(log) {
     def boolean unstable_flag = false;
     def foundKeywords = ""
 
+    def FailurePhrases = ""
+    def UnstablePhrases = ""
+
+    (FailurePhrases, UnstablePhrases) = getFailureUnstablePhrases()
+
     // Check for unstable first
     // Loop over all the unstable keywords above
-    VC_UnstablePhrases.each {
+    UnstablePhrases.each {
         if (log.contains(it)) {
             // found a phrase considered unstable, mark the build accordingly
             foundKeywords =  foundKeywords + it + ", "
@@ -79,7 +95,7 @@ def checkLogsForErrors(log) {
 
     // The check for failure keywords first
     // Loop over all the failure keywords above
-    VC_FailurePhrases.each {
+    FailurePhrases.each {
         if (log.contains(it)) {
             // found a phrase considered failure, mark the build accordingly
             foundKeywords =  foundKeywords + it + ", "
@@ -116,6 +132,7 @@ def pluginCreateSummary(inIcon, inText) {
     }
 }
 
+
 // ===============================================================
 //
 // Function : checkBuildLogForErrors
@@ -133,8 +150,13 @@ def checkBuildLogForErrors(logFile) {
     def foundKeywords = ""
     def output = ""
     def status = 0
+    def FailurePhrases = ""
+    def UnstablePhrases = ""
+    def cmd = ""
 
-    writeFile file: "phrases.txt", text: VC_UnstablePhrases.join("\n") + "\n" + VC_FailurePhrases.join("\n")
+    (FailurePhrases, UnstablePhrases) = getFailureUnstablePhrases()
+
+    writeFile file: "phrases.txt", text: UnstablePhrases.join("\n") + "\n" + FailurePhrases.join("\n")
 
     if (isUnix()) {
         cmd =  "grep -f phrases.txt " + logFile + " > search_results.txt"
@@ -171,11 +193,11 @@ def checkBuildLogForErrors(logFile) {
 //
 // ===============================================================
 
-def get_SCM_rev() {
+def get_SCM_rev(TESTinsights_SCM_Tech) {
     def scm_rev = ""
     def cmd = ""
 
-    if (VC_TESTinsights_SCM_Tech=='git') {
+    if (TESTinsights_SCM_Tech=='git') {
         cmd = "git rev-parse HEAD"
     } else {
         cmd = "svn info --show-item revision"
@@ -207,9 +229,9 @@ def get_SCM_rev() {
 //
 // ===============================================================
 
-def getMPname() {
+def getMPname(manageProject) {
     // get the manage projects full name and base name
-    def mpFullName = VC_Manage_Project.split("/")[-1]
+    def mpFullName = manageProject.split("/")[-1]
     def mpName = ""
     if (mpFullName.toLowerCase().endsWith(".vcm")) {
         mpName = mpFullName.take(mpFullName.lastIndexOf('.'))
@@ -246,9 +268,9 @@ def stripLeadingWhitespace(str) {
 // Notes    : Used for accessing the build directory
 //
 // ===============================================================
-def getMPpath() {
+def getMPpath(manageProject) {
     // get the manage projects full name and base name
-    def mpFullName = VC_Manage_Project
+    def mpFullName = manageProject
     def mpPath = ""
     if (mpFullName.toLowerCase().endsWith(".vcm")) {
         mpPath = mpFullName.take(mpFullName.lastIndexOf('.'))
@@ -300,7 +322,7 @@ def fixUpName(name) {
 //
 // ===============================================================
 
-def concatenateBuildLogs(logFileNames, outputFileName) {
+def concatenateBuildLogs(logFileNames, outputFileName, envSetup, useCILicense) {
 
     def cmd = ""
     if (isUnix()) {
@@ -311,7 +333,7 @@ def concatenateBuildLogs(logFileNames, outputFileName) {
 
     cmd += logFileNames + " > " + outputFileName
 
-    runCommands(cmd)
+    runCommands(cmd, envSetup, useCILicense)
 }
 
 
@@ -335,7 +357,7 @@ def concatenateBuildLogs(logFileNames, outputFileName) {
 // Notes    : Used widely
 //
 // ===============================================================
-def runCommands(cmds) {
+def runCommands(cmds, envSetup, useCILicense) {
     def boolean failure = false;
     def boolean unstable_flag = false;
     def foundKeywords = ""
@@ -350,15 +372,14 @@ def runCommands(cmds) {
         // add extra env vars to make debugging of commands useful
         // add extra env for reports
         localCmds = """
-            ${VC_EnvSetup}
+            ${envSetup}
             export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             export VCAST_NO_FILE_TRUNCATION=1
             export VCAST_RPTS_SELF_CONTAINED=FALSE
-
             """
 
         // if using CI licenses add in both CI license env vars
-        if (VC_UseCILicense.length() != 0) {
+        if (useCILicense.length() != 0) {
             localCmds += """
                 export VCAST_USING_HEADLESS_MODE=1
                 export VCAST_USE_CI_LICENSES=1
@@ -377,7 +398,7 @@ def runCommands(cmds) {
         // add extra env for reports
         localCmds = """
             @echo off
-            ${VC_EnvSetup}
+            ${envSetup}
             set VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
             set VCAST_NO_FILE_TRUNCATION=1
             set VCAST_RPTS_SELF_CONTAINED=FALSE
@@ -385,7 +406,7 @@ def runCommands(cmds) {
             """
 
         // if using CI licenses add in both CI license env vars
-         if (VC_UseCILicense.length() != 0) {
+         if (useCILicense.length() != 0) {
             localCmds += """
                 set VCAST_USING_HEADLESS_MODE=1
                 set VCAST_USE_CI_LICENSES=1
@@ -400,7 +421,7 @@ def runCommands(cmds) {
     }
 
     // read back the command.log - this is specific to
-    log = readFile "command.log"
+    def log = readFile "command.log"
 
     println "Commands Output: " + log
 
@@ -418,51 +439,55 @@ def runCommands(cmds) {
 //
 // ===============================================================
 
-def setupManageProject() {
-    def mpName = getMPname()
+def setupManageProject(waitTime, waitLoops, manageProject, useCILicense, 
+        sharedArtifactDirectory, envSetup, useExternalImportedResults, 
+        useImportedResults, useLocalImportedResults, externalResultsFilename,
+        useStrictImport, useOneCheckoutDir) {
+            
+    def mpName = getMPname(manageProject)
 
     def cmds = """"""
 
-    if (VC_sharedArtifactDirectory.length() > 0) {
+    if (sharedArtifactDirectory.length() > 0) {
         cmds += """
-            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} ${VC_sharedArtifactDirectory} --status"
+            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} ${sharedArtifactDirectory} --status"
         """
     }
 
-    if (VC_useStrictImport) {
+    if (useStrictImport) {
         cmds += """
-            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config=VCAST_STRICT_TEST_CASE_IMPORT=TRUE"
+            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --config=VCAST_STRICT_TEST_CASE_IMPORT=TRUE"
         """
     }
 
     cmds += """
         _RM *_rebuild.html
-        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --status"
-        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --release-locks"
-        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --status"
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --force --release-locks"
+        _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
         """
 
-    if (VC_useOneCheckoutDir) {
-        cmds += """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --config VCAST_DEPENDENCY_CACHE_DIR=./vcqik" """
+    if (useOneCheckoutDir) {
+        cmds += """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --config VCAST_DEPENDENCY_CACHE_DIR=./vcqik" """
     }
 
-    if (VC_useImportedResults) {
-        if (VC_useLocalImportedResults) {
+    if (useImportedResults) {
+        if (useLocalImportedResults) {
             try {
                 copyArtifacts filter: "${mpName}_results.vcr", fingerprintArtifacts: true, optional: true, projectName: "${env.JOB_NAME}", selector: lastSuccessful()
                 cmds += """
-                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --import-result=${mpName}_results.vcr"
-                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --status"
+                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --force --import-result=${mpName}_results.vcr"
+                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --status"
                     _IF_EXIST ${mpName}_results.vcr _IF_THEN _COPY ${mpName}_results.vcr ${mpName}_results_orig.vcr _ENDIF
                 """
             } catch(Exception e) {
                 print "No result artifact to use"
             }
-        } else if (VC_useExternalImportedResults)  {
-            if (VC_externalResultsFilename.length() != 0) {
+        } else if (useExternalImportedResults)  {
+            if (externalResultsFilename.length() != 0) {
                 cmds += """
-                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --force --import-result=${VC_externalResultsFilename}"
-                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --status"
+                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --force --import-result=${externalResultsFilename}"
+                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --status"
                 """
             } else {
                 error ("External result specified, but external result file is blank")
@@ -471,7 +496,7 @@ def setupManageProject() {
     }
 
 
-    runCommands(cmds)
+    runCommands(cmds, envSetup, useCILicense)
 }
 
 // ===============================================================
@@ -484,14 +509,18 @@ def setupManageProject() {
 //
 // ===============================================================
 
-def transformIntoStep(inputString) {
+def transformIntoStep(inputString, useOneCheckoutDir, usingSCM, envSetup,
+        useRGW3, waitTime, waitLoops, manageProject, useCILicense,
+        envTeardown, useCBT, sharedArtifactDirectory, 
+        useExternalImportedResults, buildPreamble) {
 
     def compiler = ""
     def test_suite = ""
-    def environment = "" 
-    def source = "" 
-    def machine = "" 
+    def environment = ""
+    def source = ""
+    def machine = ""
     def level = ""
+    
     def trimmedLine = inputString.trim()
     def wordCount = trimmedLine.split(/\s+/).length
     if (wordCount == 3) {
@@ -510,6 +539,8 @@ def transformIntoStep(inputString) {
     // this will route the job to a specific node matching that label
     return {
         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+
+            def cmds = ""
 
             // Try to use VCAST_FORCE_NODE_EXEC_NAME parameter.
             // If 0 length or not present, use the compiler name as a node label
@@ -534,7 +565,7 @@ def transformIntoStep(inputString) {
                 println "Starting Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
 
                 // if we are not using a single checkout directory
-                if (!VC_useOneCheckoutDir) {
+                if (!useOneCheckoutDir) {
 
                     // call the scmStep for each job
                     scmStep()
@@ -544,26 +575,29 @@ def transformIntoStep(inputString) {
                 step([$class: 'VectorCASTSetup'])
 
                 // if we are not using a single checkout directory and using SCM step
-                if (VC_usingSCM && !VC_useOneCheckoutDir) {
+                if (usingSCM && !useOneCheckoutDir) {
 
                     // set options for each manage project pulled out out of SCM
-                    setupManageProject()
+                    setupManageProject(waitTime, waitLoops, manageProject, useCILicense, 
+                        sharedArtifactDirectory, envSetup, useExternalImportedResults, 
+                        useImportedResults, useLocalImportedResults, externalResultsFilename,
+                        useStrictImport, useOneCheckoutDir)
                 }
 
                 // setup the commands for building, executing, and transferring information
-                if (VC_useRGW3) {
+                if (useRGW3) {
                     cmds =  """
-                        ${VC_EnvSetup}
-                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/patch_rgw_directory.py "${VC_Manage_Project}"
-                        ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${level} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
-                        ${VC_EnvTeardown}
+                        ${envSetup}
+                         _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/patch_rgw_directory.py "${manageProject}"
+                        ${buildPreamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --level ${level} -e ${environment} --build-execute ${useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+                        ${envTeardown}
                     """
                 } else {
 
                     cmds =  """
-                        ${VC_EnvSetup}
-                        ${VC_Build_Preamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}" ${VC_UseCILicense} --level ${level} -e ${environment} --build-execute ${VC_useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
-                        ${VC_EnvTeardown}
+                        ${envSetup}
+                        ${buildPreamble} _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${waitTime} --wait_loops ${waitLoops} --command_line "--project "${manageProject}" ${useCILicense} --level ${level} -e ${environment} --build-execute ${useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+                        ${envTeardown}
                     """
                 }
 
@@ -571,7 +605,7 @@ def transformIntoStep(inputString) {
                 def buildLogText = ""
 
                 // run the build-execute step and save the results
-                buildLogText = runCommands(cmds)
+                buildLogText = runCommands(cmds, envSetup, useCILicense)
 
                 def foundKeywords = ""
                 def boolean failure = false
@@ -581,12 +615,12 @@ def transformIntoStep(inputString) {
                 (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText)
 
                 // if we didn't fail and don't have a shared artifact directory - we may have to copy back build directory artifacts...
-                if (!failure && VC_sharedArtifactDirectory.length() == 0) {
+                if (!failure && sharedArtifactDirectory.length() == 0) {
 
                     // if we are using an SCM checkout and we aren't using a single checkout directory, we need to copy back build artifacts
-                    if (VC_usingSCM && !VC_useOneCheckoutDir) {
+                    if (usingSCM && !useOneCheckoutDir) {
                         def fixedJobName = fixUpName("${env.JOB_NAME}")
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment}""" )
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${manageProject} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment}""", envSetup, useCILicense)
 
                     }
                 }
@@ -609,7 +643,6 @@ def transformIntoStep(inputString) {
                 // if something failed, raise an error
                 if (failure) {
                     error ("Error in Commands: " + foundKeywords)
-
                 // else if something made the job unstable, mark as unsable
                 } else if (unstable_flag) {
                     unstable("Triggering stage unstable because keywords found: " + foundKeywords)
@@ -628,20 +661,27 @@ def transformIntoStep(inputString) {
 // Notes    : Use to get a list of system and unit tests jobs
 //
 // ===============================================================
-def stepsForJobList(localEnvList) {
-    jobList = [:]
+def stepsForJobList(localEnvList, useOneCheckoutDir, usingSCM, envSetup,
+        useRGW3, waitTime, waitLoops, manageProject, useCILicense,
+        envTeardown, useCBT, sharedArtifactDirectory, 
+        useExternalImportedResults, buildPreamble) {
+
+    def jobList = [:]
     localEnvList.each {
-        jobList[it] =  transformIntoStep(it)
+        jobList[it] =  transformIntoStep(it, useOneCheckoutDir, usingSCM, envSetup,
+            useRGW3, waitTime, waitLoops, manageProject, useCILicense,
+            envTeardown, useCBT, sharedArtifactDirectory, 
+            useExternalImportedResults, buildPreamble)
     }
 
     return jobList
 }
 
 // global environment list used to create pipeline jobs
-EnvList = []
-UtEnvList = []
-StEnvList = []
-origManageProject = VC_Manage_Project
+def EnvList = []
+def UtEnvList = []
+def StEnvList = []
+def origManageProject = VC_Manage_Project
 
 
 // ***************************************************************
@@ -693,11 +733,11 @@ pipeline {
                     if (VC_useOneCheckoutDir && !usingExternalRepo) {
 
                         // we need to convert all the future job's workspaces to point to the original checkout
-                        VC_OriginalWorkspace = "${env.WORKSPACE}"
-                        println "scmStep executed here: " + VC_OriginalWorkspace
+                        def originalWorkspace = "${env.WORKSPACE}"
+                        println "scmStep executed here: " + originalWorkspace
                         scmStep()
-                        print "Updating " + VC_Manage_Project + " to: " + VC_OriginalWorkspace + "/" + VC_Manage_Project
-                        VC_Manage_Project = VC_OriginalWorkspace + "/" + VC_Manage_Project
+                        print "Updating " + VC_Manage_Project + " to: " + originalWorkspace + "/" + VC_Manage_Project
+                        VC_Manage_Project = originalWorkspace + "/" + VC_Manage_Project
 
                         def origSetup = VC_EnvSetup
                         def origTeardown = VC_EnvTeardown
@@ -705,30 +745,30 @@ pipeline {
                         def orig_VC_postScmStepsCmds = VC_postScmStepsCmds
 
                         if (isUnix()) {
-                            VC_EnvSetup = VC_EnvSetup.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
-                            VC_EnvTeardown = VC_EnvTeardown.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
-                            VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
-                            VC_postScmStepsCmds = VC_postScmStepsCmds.replace("\$WORKSPACE" ,VC_OriginalWorkspace)
+                            VC_EnvSetup = VC_EnvSetup.replace("\$WORKSPACE" ,originalWorkspace)
+                            VC_EnvTeardown = VC_EnvTeardown.replace("\$WORKSPACE" ,originalWorkspace)
+                            VC_sharedArtifactDirectory = VC_sharedArtifactDirectory.replace("\$WORKSPACE" ,originalWorkspace)
+                            VC_postScmStepsCmds = VC_postScmStepsCmds.replace("\$WORKSPACE" ,originalWorkspace)
                         } else {
-                            VC_OriginalWorkspace = VC_OriginalWorkspace.replace('\\','/')
+                            originalWorkspace = originalWorkspace.replace('\\','/')
 
                             def tmpInfo = ""
 
                             // replace case insensitive workspace with WORKSPACE
                             tmpInfo = VC_EnvSetup.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
-                            VC_EnvSetup = tmpInfo.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                            VC_EnvSetup = tmpInfo.replace("%WORKSPACE%",originalWorkspace)
 
                             // replace case insensitive workspace with WORKSPACE
                             tmpInfo = VC_EnvTeardown.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
-                            VC_EnvTeardown = tmpInfo.replace("%WORKSPACE%",VC_OriginalWorkspace)
+                            VC_EnvTeardown = tmpInfo.replace("%WORKSPACE%",originalWorkspace)
 
                             // replace case insensitive workspace with WORKSPACE
                             tmpInfo = VC_sharedArtifactDirectory.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
-                            VC_sharedArtifactDirectory = tmpInfo.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
+                            VC_sharedArtifactDirectory = tmpInfo.replace("%WORKSPACE%" ,originalWorkspace)
 
                             // replace case insensitive workspace with WORKSPACE
                             tmpInfo = VC_postScmStepsCmds.replaceAll("(?i)%WORKSPACE%","%WORKSPACE%")
-                            VC_postScmStepsCmds = tmpInfo.replace("%WORKSPACE%" ,VC_OriginalWorkspace)
+                            VC_postScmStepsCmds = tmpInfo.replace("%WORKSPACE%" ,originalWorkspace)
                         }
                         print "Updating setup script " + origSetup + " \nto: " + VC_EnvSetup
                         print "Updating teardown script " + origTeardown + " \nto: " + origTeardown
@@ -737,7 +777,7 @@ pipeline {
 
                         // If there are post SCM checkout steps, do them now
                         if (VC_postScmStepsCmds.length() > 0) {
-                            runCommands(VC_postScmStepsCmds)
+                            runCommands(VC_postScmStepsCmds, VC_EnvSetup, VC_useCILicense)
                         }
                     } else {
                         if (usingExternalRepo) {
@@ -766,7 +806,7 @@ pipeline {
 
                         // If there are post SCM checkout steps, do them now
                         if (VC_postScmStepsCmds.length() > 0) {
-                            runCommands(VC_postScmStepsCmds)
+                            runCommands(VC_postScmStepsCmds, VC_EnvSetup, VC_useCILicense)
                         }
                     }
 
@@ -775,14 +815,14 @@ pipeline {
                     // Run the setup step to copy over the scripts
                     step([$class: 'VectorCASTSetup'])
 
-                    runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive""")
+                    runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive""", VC_EnvSetup, VC_useCILicense)
 
                     // -------------------------------------------------------------------------------------------
-                    // this part could be done with Manage_Project.getJobs() but it doesn't seem to be working VVV
+                    // this part could be done with manageProject.getJobs() but it doesn't seem to be working VVV
                     def EnvData = ""
 
                     // Run a script to determine the compiler test_suite and environment
-                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project} --type""")
+                    EnvData = runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC_Manage_Project} --type""", VC_EnvSetup, VC_useCILicense)
 
                     // for a groovy list that is stored in a global variable EnvList to be use later in multiple places
                     def lines = EnvData.split('\n')
@@ -800,7 +840,7 @@ pipeline {
                             def compiler = ""
                             def test_suite = ""
                             def environment = ""
-                            
+
                             if (wordCount == 4) {
                                 (testType, compiler, test_suite, environment) = trimmedString.split()
                             } else if (wordCount == 6) {
@@ -808,7 +848,7 @@ pipeline {
                             } else {
                                 print(trimmedString + " isn't splitting into 4/6 elements " + wordCount)
                             }
-                            
+
                             if (testType == "ST:") {
                                 trimmedString = compiler + " " + test_suite + " " + environment + " " + source + " " + machine
                                 // print("ST:" + trimmedString)
@@ -839,10 +879,16 @@ pipeline {
         stage('System Test Build-Execute Stage') {
             steps {
                 script {
-                    setupManageProject()
+                    setupManageProject(VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense, 
+                        VC_sharedArtifactDirectory, VC_EnvSetup, VC_useExternalImportedResults, 
+                        VC_useImportedResults, VC_useLocalImportedResults, VC_externalResultsFilename,
+                        VC_useStrictImport, VC_useOneCheckoutDir)
 
                     // Get the job list from the system test environment listed
-                    jobs = stepsForJobList(StEnvList)
+                    def jobs = stepsForJobList(StEnvList, VC_useOneCheckoutDir, VC_usingSCM, VC_EnvSetup,
+                        VC_useRGW3, VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense,
+                        VC_EnvTeardown, VC_useCBT, VC_sharedArtifactDirectory, 
+                        VC_useExternalImportedResults, VC_Build_Preamble)
 
                     // run each of those jobs in serial
                     jobs.each { name, job ->
@@ -857,10 +903,16 @@ pipeline {
         stage('Unit Test Build-Execute Stage') {
             steps {
                 script {
-                    setupManageProject()
+                    setupManageProject(VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense, 
+                        VC_sharedArtifactDirectory, VC_EnvSetup, VC_useExternalImportedResults, 
+                        VC_useImportedResults, VC_useLocalImportedResults, VC_externalResultsFilename,
+                        VC_useStrictImport, VC_useOneCheckoutDir)
 
                     // Get the job list from the unit test environment listed
-                    jobs = stepsForJobList(UtEnvList)
+                    def jobs = stepsForJobList(UtEnvList, VC_useOneCheckoutDir, VC_usingSCM, VC_EnvSetup,
+                        VC_useRGW3, VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense,
+                        VC_EnvTeardown, VC_useCBT, VC_sharedArtifactDirectory, 
+                        VC_useExternalImportedResults, VC_Build_Preamble)
 
                     if (VC_maxParallel > 0) {
                         def runningJobs = [:]
@@ -896,7 +948,18 @@ pipeline {
                     script {
                         def buildLogText = ""
                         def buildFileNames = ""
+                        def compiler = ""
+                        def test_suite = ""
+                        def environment = ""
+                        def source = ""
+                        def machine = ""
                         def level = ""
+                        def cmds = ""
+                        def boolean failure = false;
+                        def boolean unstable_flag = false;
+                        def foundKeywords = ""
+                        
+
                         // Loop over all environnment and unstash each of the files
                         // These files will be logs and build artifacts
                         EnvList.each {
@@ -921,7 +984,7 @@ pipeline {
                             }
                             if (VC_sharedArtifactDirectory.length() > 0) {
                                 def fixedJobName = fixUpName("${env.JOB_NAME}")
-                                buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar""")
+                                buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar""", VC_EnvSetup, VC_useCILicense)
                             }
                         }
 
@@ -939,69 +1002,69 @@ pipeline {
                             cmds = """
                                 _RM ${coverDBpath}
                                 _RM ${coverSfpDBpath}
-                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --refresh"
+                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_useCILicense} --refresh"
                             """
-                            buildLogText += runCommands(cmds)
+                            buildLogText += runCommands(cmds, VC_EnvSetup, VC_useCILicense)
                         }
 
-                        concatenateBuildLogs(buildFileNames, "unstashed_build.log")
+                        concatenateBuildLogs(buildFileNames, "unstashed_build.log", VC_EnvSetup, VC_useCILicense)
 
                         // get the manage project's base name for use in rebuild naming
-                        def mpName = getMPname()
+                        def mpName = getMPname(VC_Manage_Project)
 
 
                         // if we are using SCM and not using a shared artifact directory...
                         if (VC_usingSCM && !VC_useOneCheckoutDir && VC_sharedArtifactDirectory.length() == 0) {
                             // run a script to extract stashed files and process data into xml reports
-                            def mpPath = getMPpath()
+                            def mpPath = getMPpath(VC_Manage_Project)
                             def coverDBpath = formatPath(mpPath + "/build/vcast_data/cover.db")
                             def coverSfpDBpath = formatPath(mpPath + "/build/vcast_data/vcprj.db")
                             cmds = """
                                 _RM ${coverDBpath}
                                 _RM ${coverSfpDBpath}
                                 _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py  --leave_files
-                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --refresh"
+                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_useCILicense} --refresh"
                             """
-                            buildLogText += runCommands(cmds)
+                            buildLogText += runCommands(cmds, VC_EnvSetup, VC_useCILicense)
 
                         }
 
                         // run the metrics at the end
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""")
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/parallel_full_reports.py  ${VC_Manage_Project} --jobs max""")
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""", VC_EnvSetup, VC_useCILicense)
+                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/parallel_full_reports.py  ${VC_Manage_Project} --jobs max""", VC_EnvSetup, VC_useCILicense)
 
                         if (VC_useRGW3) {
-                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/patch_rgw_directory.py  ${VC_Manage_Project}""")
-                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --clicast-args rgw export" """)
+                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/patch_rgw_directory.py  ${VC_Manage_Project}""", VC_EnvSetup, VC_useCILicense)
+                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_useCILicense} --clicast-args rgw export" """, VC_EnvSetup, VC_useCILicense)
                         }
 
                         if (VC_useCoveragePlugin) {
-                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/cobertura.py  ${VC_Manage_Project}""")
+                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/cobertura.py  ${VC_Manage_Project}""", VC_EnvSetup, VC_useCILicense)
                         }
 
                         cmds =  """
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py ${mpName} --rptfmt HTML
                             _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/full_report_no_toc.py "${VC_Manage_Project}"
-                            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --create-report=aggregate   --output=${mpName}_aggregate_report.html"
+                            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_useCILicense} --create-report=aggregate   --output=${mpName}_aggregate_report.html"
                         """
 
                         if (VC_useImportedResults) {
                             if (VC_useLocalImportedResults) {
                                 cmds += """
-                                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_UseCILicense} --export-result=${mpName}_results.vcr"
+                                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_useCILicense} --export-result=${mpName}_results.vcr"
                                     _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/merge_vcr.py --new ${mpName}_results.vcr --orig ${mpName}_results_orig.vcr
 
                                 """
                             }
                         }
 
-                        buildLogText += runCommands(cmds)
+                        buildLogText += runCommands(cmds, VC_EnvSetup, VC_useCILicense)
 
                         writeFile file: "metrics_build.log", text: buildLogText
 
                         buildFileNames += "metrics_build.log "
 
-                        concatenateBuildLogs(buildFileNames, "complete_build.log")
+                        concatenateBuildLogs(buildFileNames, "complete_build.log", VC_EnvSetup, VC_useCILicense)
 
                         (foundKeywords, failure, unstable_flag) = checkBuildLogForErrors("complete_build.log")
 
@@ -1059,7 +1122,7 @@ pipeline {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
 
-                        def mpName = getMPname()
+                        def mpName = getMPname(VC_Manage_Project)
 
                         def foundKeywords = ""
                         def boolean failure = false
@@ -1147,7 +1210,7 @@ pipeline {
                             _RM ${mpName}_metrics_report.html_tmp
                         """
 
-                        runCommands(cmds)
+                        runCommands(cmds, VC_EnvSetup, VC_useCILicense)
 
                         // use unit_test_fail_count.txt to see if there were any failed test cases
                         // if any failed test cases, Junit will mark as at least unstable.
@@ -1177,7 +1240,7 @@ pipeline {
                         // If there's a PC Lint Plus command...
                         if (VC_usePCLintPlus) {
                             // run the PC Lint Plus command
-                            runCommands(VC_pclpCommand)
+                            runCommands(VC_pclpCommand, VC_EnvSetup, VC_useCILicense)
                             // record the results with Warnings-NG plugin
                             recordIssues(tools: [pcLint(pattern: VC_pclpResultsPattern, reportEncoding: 'UTF-8')])
                             // Archive the PC Lint Results
@@ -1187,8 +1250,8 @@ pipeline {
                         // If we are using Squore...
                         if (VC_useSquore) {
                             // Generate the results from Squore and run the squore command which should publish the information to Squore Server
-                            cmd = "${VC_squoreCommand}"
-                            runCommands(cmd)
+                            def cmd = "${VC_squoreCommand}"
+                            runCommands(cmd, VC_EnvSetup, VC_useCILicense)
 
                             // Archive the Squore results
                             archiveArtifacts allowEmptyArchive: true, artifacts: 'xml_data/squore_results*.xml'
@@ -1213,7 +1276,7 @@ pipeline {
                                 if (VC_usingSCM) {
 
                                     // Get the TESTinsights Revision
-                                    VC_TESTinsights_Revision = get_SCM_rev()
+                                    VC_TESTinsights_Revision = get_SCM_rev(VC_TESTinsights_SCM_Tech)
 
                                     println "Git Rev: ${VC_TESTinsights_Revision}"
 
@@ -1222,7 +1285,7 @@ pipeline {
 
                                 }
                                 // Run the command to push data to TESTInsights
-                                runCommands(TESTinsight_Command)
+                                runCommands(TESTinsight_Command, VC_EnvSetup, VC_useCILicense)
 
                                 // Archive the push log
                                 archiveArtifacts allowEmptyArchive: true, artifacts: 'TESTinsights_Push.log'

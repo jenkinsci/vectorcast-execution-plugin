@@ -98,7 +98,7 @@ class ParseConsoleForCBT(object):
                 hashCode = hashlib.md5(build_dir).hexdigest()
                 
                 if self.verbose:
-                    print ("HashCode: " + hashCode + " for build dir: " + build_dir)                
+                    print ("HashCode: " + hashCode + " for build dir: " + build_dir.decode('utf-8'))                
                     
                 started = True
                 if hashCode not in  self.environmentDict.keys():

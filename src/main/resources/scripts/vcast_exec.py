@@ -38,9 +38,13 @@ except:
         vc_script = os.path.join(os.environ['WORKSPACE'], "vc_scripts", "generate-results.py")
         import imp
         generate_results = imp.load_source("generate_results", vc_script)
-    
+
+if sys.version_info[0] < 3:
+    python_path_updates = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "python")
+    sys.path.append(python_path_updates)
+
 try:
-    import vector.apps.parallel.parallel_build_execute as parallel_build_execute
+    import parallel_build_execute
 except:
     import prevcast_parallel_build_execute as parallel_build_execute
 
