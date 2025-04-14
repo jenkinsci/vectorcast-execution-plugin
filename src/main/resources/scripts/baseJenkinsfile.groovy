@@ -512,7 +512,7 @@ def setupManageProject(waitTime, waitLoops, manageProject, useCILicense,
 def transformIntoStep(inputString, useOneCheckoutDir, usingSCM, envSetup,
         useRGW3, waitTime, waitLoops, manageProject, useCILicense,
         envTeardown, useCBT, sharedArtifactDirectory, 
-        useExternalImportedResults, buildPreamble) {
+        useExternalImportedResults, buildPreamble, useImportedResults) {
 
     def compiler = ""
     def test_suite = ""
@@ -664,14 +664,14 @@ def transformIntoStep(inputString, useOneCheckoutDir, usingSCM, envSetup,
 def stepsForJobList(localEnvList, useOneCheckoutDir, usingSCM, envSetup,
         useRGW3, waitTime, waitLoops, manageProject, useCILicense,
         envTeardown, useCBT, sharedArtifactDirectory, 
-        useExternalImportedResults, buildPreamble) {
+        useExternalImportedResults, buildPreamble, useImportedResults) {
 
     def jobList = [:]
     localEnvList.each {
         jobList[it] =  transformIntoStep(it, useOneCheckoutDir, usingSCM, envSetup,
             useRGW3, waitTime, waitLoops, manageProject, useCILicense,
             envTeardown, useCBT, sharedArtifactDirectory, 
-            useExternalImportedResults, buildPreamble)
+            useExternalImportedResults, buildPreamble, useImportedResults)
     }
 
     return jobList
@@ -888,7 +888,7 @@ pipeline {
                     def jobs = stepsForJobList(StEnvList, VC_useOneCheckoutDir, VC_usingSCM, VC_EnvSetup,
                         VC_useRGW3, VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense,
                         VC_EnvTeardown, VC_useCBT, VC_sharedArtifactDirectory, 
-                        VC_useExternalImportedResults, VC_Build_Preamble)
+                        VC_useExternalImportedResults, VC_Build_Preamble, VC_useImportedResults)
 
                     // run each of those jobs in serial
                     jobs.each { name, job ->
@@ -912,7 +912,7 @@ pipeline {
                     def jobs = stepsForJobList(UtEnvList, VC_useOneCheckoutDir, VC_usingSCM, VC_EnvSetup,
                         VC_useRGW3, VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense,
                         VC_EnvTeardown, VC_useCBT, VC_sharedArtifactDirectory, 
-                        VC_useExternalImportedResults, VC_Build_Preamble)
+                        VC_useExternalImportedResults, VC_Build_Preamble, VC_useImportedResults)
 
                     if (VC_maxParallel > 0) {
                         def runningJobs = [:]
