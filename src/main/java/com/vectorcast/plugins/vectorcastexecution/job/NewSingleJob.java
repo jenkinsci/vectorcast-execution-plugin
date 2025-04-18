@@ -70,7 +70,6 @@ public class NewSingleJob extends BaseJob {
    * @param pluginVersion plugin version of the running plugin while create
    * @param rptFmt Report Format (HTML/TXT]
    * @param htmlOrText html or text version of the reports
-   * @param tiCommandStringWin TESTinsights command string
    * @param noGenExecReport don't generate execution report
    * @return String of configuration for Windows
    */
@@ -78,7 +77,6 @@ public class NewSingleJob extends BaseJob {
         final String pluginVersion,
         final String rptFmt,
         final String htmlOrText,
-        final String tiCommandStringWin,
         final String noGenExecReport)
         throws IOException {
 
@@ -117,8 +115,7 @@ public class NewSingleJob extends BaseJob {
 
     win += getEnvironmentTeardownWin() + "\n"
       + getPclpCommand() + "\n"
-      + getSquoreCommand() + "\n"
-      + tiCommandStringWin;
+      + getSquoreCommand() + "\n";
 
     return win;
   }
@@ -128,7 +125,6 @@ public class NewSingleJob extends BaseJob {
    * @param pluginVersion plugin version of the running plugin while create
    * @param rptFmt Report Format (HTML/TXT]
    * @param htmlOrText html or text version of the reports
-   * @param tiCommandStringUnix TESTinsights command string
    * @param noGenExecReport don't generate execution report
    * @return String of configuration for unix
    */
@@ -136,7 +132,6 @@ public class NewSingleJob extends BaseJob {
         final String pluginVersion,
         final String rptFmt,
         final String htmlOrText,
-        final String tiCommandStringUnix,
         final String noGenExecReport)
         throws IOException {
 
@@ -175,8 +170,7 @@ public class NewSingleJob extends BaseJob {
 
     unix += getEnvironmentTeardownUnix()
       + getPclpCommand() + "\n"
-      + getSquoreCommand() + "\n"
-      + tiCommandStringUnix + "\n";
+      + getSquoreCommand() + "\n";
 
     return unix;
   }
@@ -277,120 +271,6 @@ public class NewSingleJob extends BaseJob {
   }
 
   /**
-   *  get the test insights settings.
-   *  @return Stringp[] [windows,linux] settings
-   */
-  private String[] getTestInsightsSettings() {
-    String tiScmConnectWin = "";
-    String tiScmConnectUnix = "";
-    String tiCommandStringWin = "";
-    String tiCommandStringUnix = "";
-    String scmInfoCommandWin = "";
-    String scmInfoCmdUnix = "";
-    String tiProxy = "";
-
-    if (getTestInsightsUrl().length() != 0) {
-      boolean setupConnect = false;
-      if (isUsingScm()) {
-        if (getTestInsightsScmTech().equals("git")) {
-          scmInfoCommandWin = "git config remote.origin.url > scm_url.tmp\n"
-            + "set /p SCM_URL= < scm_url.tmp\n"
-            + "git rev-parse HEAD > scm_rev.tmp\n"
-            + "set /p SCM_REV= < scm_rev.tmp\n";
-          scmInfoCmdUnix = "SCM_URL=`git config remote.origin.url`\n"
-            + "SCM_REV=`git rev-parse HEAD`\n";
-          setupConnect = true;
-        }
-        if (getTestInsightsScmTech().equals("svn")) {
-          scmInfoCommandWin = " "
-            + "svn info --show-item=url --no-newline > scm_url.tmp\n"
-            + "set /p SCM_URL= < scm_url.tmp\n"
-            + "git svn info --show-item revision > scm_rev.tmp\n"
-            + "set /p SCM_REV= < scm_rev.tmp\n";
-          scmInfoCmdUnix = "SCM_URL=`svn info --show-item=url --no-newline`\n"
-            + "SCM_REV=`svn info --show-item revision`\n";
-          setupConnect = true;
-        }
-        if (setupConnect) {
-          tiScmConnectWin = " "
-            + "--vc-project-local-path=%WORKSPACE%/%VCAST_PROJECT_NAME% "
-            + "--vc-project-scm-path=%SCM_URL%/%VCAST_PROJECT_NAME% "
-            + "--src-local-path=%WORKSPACE% "
-            + " --src-scm-path=%SCM_URL%/ "
-            + "--vc-project-scm-technology="
-            + getTestInsightsScmTech() + " "
-            + "--src-scm-technology="
-            + getTestInsightsScmTech() + " "
-            + "--vc-project-scm-revision=%SCM_REV% "
-            + "--src-scm-revision %SCM_REV% "
-            + "--versioned\n";
-          tiScmConnectUnix = " "
-            + "--vc-project-local-path=$WORKSPACE/$VCAST_PROJECT_NAME "
-            + "--vc-project-scm-path=$SCM_URL/$VCAST_PROJECT_NAME "
-            + "--src-local-path=$WORKSPACE "
-            + "--src-scm-path=$SCM_URL/ "
-            + "--vc-project-scm-technology="
-            + getTestInsightsScmTech() + " "
-            + " --src-scm-technology="
-            + getTestInsightsScmTech() + " "
-            + "--vc-project-scm-revision=$SCM_REV "
-            + "--src-scm-revision $SCM_REV "
-            + "--versioned\n";
-        }
-      }
-      if (setupConnect) {
-        tiCommandStringWin  = scmInfoCommandWin;
-        tiCommandStringUnix = scmInfoCmdUnix;
-      }
-      if (getTestInsightsProxy().length() > 0) {
-        tiProxy = "--proxy " + getTestInsightsProxy();
-      }
-      String tiProjectWin = "";
-      String tiProjectUnix = "";
-
-      if (getTestInsightsProject().equals("env.JOB_BASE_NAME")) {
-        tiProjectWin = "%JOB_BASE_NAME%";
-        tiProjectUnix = "$JOB_BASE_NAME";
-      } else {
-        tiProjectWin = getTestInsightsProject();
-        tiProjectUnix = getTestInsightsProject();
-      }
-
-      tiCommandStringWin += "testinsights_connector --api "
-        + getTestInsightsUrl()
-        + " --user %VC_TI_USR% "
-        + "--pass %VC_TI_PWS% "
-        + "--action PUSH "
-        + "--project "
-        + tiProjectWin + " "
-        + " --test-object %BUILD_NUMBER% "
-        + "--vc-project %VCAST_PROJECT_NAME% "
-        + tiProxy + " "
-        + "--log TESTinsights_Push.log "
-        + tiScmConnectWin;
-      tiCommandStringUnix += "testinsights_connector "
-        + "--api "
-        + getTestInsightsUrl() + " "
-        + "--user $VC_TI_USR "
-        + "--pass $VC_TI_PWS "
-        + "--action PUSH "
-        + "--project "
-        + tiProjectUnix + " "
-        + "--test-object $BUILD_NUMBER "
-        + "--vc-project $VCAST_PROJECT_NAME "
-        + tiProxy + " "
-        + "--log TESTinsights_Push.log "
-        + tiScmConnectUnix;
-    }
-
-    String[] settings = new String[2];
-    settings[0] = tiCommandStringWin;
-    settings[1] = tiCommandStringUnix;
-
-    return settings;
-  }
-
-  /**
    * Add build commands step to job.
    */
   private void addCommandSingleJob() throws IOException {
@@ -408,22 +288,19 @@ public class NewSingleJob extends BaseJob {
       rptFmt = "TEXT";
     }
 
-    String[] settings = getTestInsightsSettings();
-    String tiCommandStringWin  = settings[0];
-    String tiCommandStringUnix = settings[1];
     String pluginVersion = VcastUtils.getVersion().orElse("Unknown");
 
     /*
      *  Windows config portion
      */
     String win = getWindowsConfig(pluginVersion, rptFmt,
-        htmlOrText, tiCommandStringWin, noGenExecReport);
+        htmlOrText, noGenExecReport);
 
     /*
      *  Unix config portion
      */
     String unix = getUnixConfig(pluginVersion, rptFmt,
-        htmlOrText, tiCommandStringUnix, noGenExecReport);
+        htmlOrText, noGenExecReport);
 
     VectorCASTCommand command = new VectorCASTCommand(win, unix);
     if (!getTopProject().getBuildersList().add(command)) {
@@ -544,9 +421,6 @@ public class NewSingleJob extends BaseJob {
         addJenkinsCoverage(getTopProject());
       } else {
         addVCCoverage(getTopProject());
-      }
-      if (getTestInsightsUrl().length() != 0) {
-        addCredentialID(getTopProject());
       }
     }
     addGroovyScriptSingleJob();

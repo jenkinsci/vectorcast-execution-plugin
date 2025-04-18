@@ -393,6 +393,7 @@ environment before disabling.  This takes into account environments that are dir
 - Moved to minimum Jenkins Version 2.492.3 and Java 21
 - Update pom.xml to get a build of the plugin and to Java21
 - Update NewSingleJob to catch new exception thrown from SecureGroovyScript
+- Removing support for TESTinsights 
 - Update jenkinsfile pipeline script to match up with the latest groovy interpreter
     - Missing def before globals 
         - Pipeline can access VC_ global vars, but not functions

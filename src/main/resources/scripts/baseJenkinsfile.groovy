@@ -184,36 +184,6 @@ def checkBuildLogForErrors(logFile) {
 //
 // ***************************************************************
 
-// ===============================================================
-//
-// Function : get_SCM_rev
-// Inputs   : None
-// Action   : Returns SCM revision from git or svn
-// Notes    : Used for TESTinsight Command
-//
-// ===============================================================
-
-def get_SCM_rev(TESTinsights_SCM_Tech) {
-    def scm_rev = ""
-    def cmd = ""
-
-    if (TESTinsights_SCM_Tech=='git') {
-        cmd = "git rev-parse HEAD"
-    } else {
-        cmd = "svn info --show-item revision"
-    }
-
-    if (isUnix()) {
-        scm_rev = sh returnStdout: true, script: cmd
-    } else {
-        cmd = "@echo off \n " + cmd
-        scm_rev = bat returnStdout: true, script: cmd
-    }
-
-    println "Git Rev Reply " + scm_rev.trim() + "***"
-    return scm_rev.trim()
-}
-
 // ***************************************************************
 //
 //                       File/Pathing Utilities
@@ -512,8 +482,9 @@ def setupManageProject(waitTime, waitLoops, manageProject, useCILicense,
 def transformIntoStep(inputString, useOneCheckoutDir, usingSCM, envSetup,
         useRGW3, waitTime, waitLoops, manageProject, useCILicense,
         envTeardown, useCBT, sharedArtifactDirectory, 
-        useExternalImportedResults, buildPreamble, useImportedResults) {
-
+        useExternalImportedResults, buildPreamble, useImportedResults,
+        useStrictImport, useLocalImportedResults, externalResultsFilename) {
+        
     def compiler = ""
     def test_suite = ""
     def environment = ""
@@ -664,14 +635,16 @@ def transformIntoStep(inputString, useOneCheckoutDir, usingSCM, envSetup,
 def stepsForJobList(localEnvList, useOneCheckoutDir, usingSCM, envSetup,
         useRGW3, waitTime, waitLoops, manageProject, useCILicense,
         envTeardown, useCBT, sharedArtifactDirectory, 
-        useExternalImportedResults, buildPreamble, useImportedResults) {
+        useExternalImportedResults, buildPreamble, useImportedResults,
+        useStrictImport, useLocalImportedResults, externalResultsFilename) {
 
     def jobList = [:]
     localEnvList.each {
         jobList[it] =  transformIntoStep(it, useOneCheckoutDir, usingSCM, envSetup,
             useRGW3, waitTime, waitLoops, manageProject, useCILicense,
             envTeardown, useCBT, sharedArtifactDirectory, 
-            useExternalImportedResults, buildPreamble, useImportedResults)
+            useExternalImportedResults, buildPreamble, useImportedResults,
+            useStrictImport, useLocalImportedResults, externalResultsFilename)
     }
 
     return jobList
@@ -888,7 +861,8 @@ pipeline {
                     def jobs = stepsForJobList(StEnvList, VC_useOneCheckoutDir, VC_usingSCM, VC_EnvSetup,
                         VC_useRGW3, VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense,
                         VC_EnvTeardown, VC_useCBT, VC_sharedArtifactDirectory, 
-                        VC_useExternalImportedResults, VC_Build_Preamble, VC_useImportedResults)
+                        VC_useExternalImportedResults, VC_Build_Preamble, VC_useImportedResults,
+                        VC_useStrictImport, VC_useLocalImportedResults, VC_externalResultsFilename)
 
                     // run each of those jobs in serial
                     jobs.each { name, job ->
@@ -912,7 +886,8 @@ pipeline {
                     def jobs = stepsForJobList(UtEnvList, VC_useOneCheckoutDir, VC_usingSCM, VC_EnvSetup,
                         VC_useRGW3, VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense,
                         VC_EnvTeardown, VC_useCBT, VC_sharedArtifactDirectory, 
-                        VC_useExternalImportedResults, VC_Build_Preamble, VC_useImportedResults)
+                        VC_useExternalImportedResults, VC_Build_Preamble, VC_useImportedResults,
+                        VC_useStrictImport, VC_useLocalImportedResults, VC_externalResultsFilename)
 
                     if (VC_maxParallel > 0) {
                         def runningJobs = [:]
@@ -1087,7 +1062,7 @@ pipeline {
                                 currResult = currentBuild.result
                             }
 
-                            // Send reports to the VectorCAST Soverage Plugin
+                            // Send reports to the VectorCAST Coverage Plugin
                             step([$class: 'VectorCASTPublisher',
                                 includes: 'xml_data/coverage_results*.xml',
                                 useThreshold: VC_Use_Threshold,
@@ -1231,7 +1206,7 @@ pipeline {
         }
 
         // Stage for additional tools from Vector
-        // Currently supporting PC Lint Plus, Squore, and TESTInsights
+        // Currently supporting PC Lint Plus and Squore
         stage('Additional Tools') {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
@@ -1255,41 +1230,6 @@ pipeline {
 
                             // Archive the Squore results
                             archiveArtifacts allowEmptyArchive: true, artifacts: 'xml_data/squore_results*.xml'
-                        }
-
-                        // If we using TESTInsights...
-                        if (VC_useTESTinsights){
-
-                            // using the credentials passed in when creating the job...
-                            withCredentials([usernamePassword(credentialsId: VC_TESTinsights_Credential_ID, usernameVariable : "VC_TI_USR", passwordVariable : "VC_TI_PWS")]){
-                                TI_proxy = ""
-
-                                // if we are using a proxy to communicate with TESTInsights, set the proxy from data input during job creation
-                                if (VC_TESTinsights_Proxy.length() != 0) {
-                                    TI_proxy = "--proxy ${VC_TESTinsights_Proxy}"
-                                }
-
-                                // Build the base TESTInsights command
-                                TESTinsight_Command = "testinsights_connector --api ${VC_TESTinsights_URL} --user " + VC_TI_USR + "  --pass " + VC_TI_PWS + "  --action PUSH --project  ${VC_TESTinsights_Project} --test-object  ${BUILD_NUMBER} --vc-project ${VC_Manage_Project} " + TI_proxy + " --log TESTinsights_Push.log"
-
-                                // If we are using an SCM, attempt to link the SCM info into TESTInsights
-                                if (VC_usingSCM) {
-
-                                    // Get the TESTinsights Revision
-                                    VC_TESTinsights_Revision = get_SCM_rev(VC_TESTinsights_SCM_Tech)
-
-                                    println "Git Rev: ${VC_TESTinsights_Revision}"
-
-                                    // Update the TESTInsights command
-                                    TESTinsight_Command += " --vc-project-local-path=${origManageProject} --vc-project-scm-path=${VC_TESTinsights_SCM_URL}/${origManageProject} --src-local-path=${env.WORKSPACE} --src-scm-path=${VC_TESTinsights_SCM_URL}/ --vc-project-scm-technology=${VC_TESTinsights_SCM_Tech} --src-scm-technology=${VC_TESTinsights_SCM_Tech} --vc-project-scm-revision=${VC_TESTinsights_Revision} --src-scm-revision ${VC_TESTinsights_Revision} --versioned"
-
-                                }
-                                // Run the command to push data to TESTInsights
-                                runCommands(TESTinsight_Command, VC_EnvSetup, VC_useCILicense)
-
-                                // Archive the push log
-                                archiveArtifacts allowEmptyArchive: true, artifacts: 'TESTinsights_Push.log'
-                            }
                         }
                     }
                 }

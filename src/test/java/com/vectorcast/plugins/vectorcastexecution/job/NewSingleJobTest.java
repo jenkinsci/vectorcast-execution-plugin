@@ -201,15 +201,11 @@ public class NewSingleJobTest {
     private void checkAdditionalTools (NewSingleJob job,
             final String squoreCommand,
             final String pclpCommand,
-            final String pclpResultsPattern,
-            final String testInsightsUrl,
-            final String tiProxy) {
+            final String pclpResultsPattern) {
 
         Assert.assertEquals(squoreCommand, job.getSquoreCommand());
         Assert.assertEquals(pclpCommand, job.getPclpCommand());
         Assert.assertEquals(pclpResultsPattern, job.getPclpResultsPattern());
-        Assert.assertEquals(testInsightsUrl, job.getTestInsightsUrl());
-        Assert.assertEquals(tiProxy, job.getTestInsightsProxy());
     }
 
     private void checkOptions (NewSingleJob job,
@@ -273,9 +269,7 @@ public class NewSingleJobTest {
         jsonForm.put("useCoverageHistory", true);
         jsonForm.put("pclpCommand","call lint_my_code.bat");
         jsonForm.put("pclpResultsPattern","lint_results.xml");
-        jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
         jsonForm.put("squoreCommand","hello squore test world");
-        jsonForm.put("TESTinsights_proxy","TI Proxy 1234@localhost");
 
         NewSingleJob job = setupTestBasic(jsonForm);
 
@@ -289,9 +283,8 @@ public class NewSingleJobTest {
 
         String addToolArtifacts = DEFAULT_ARTIFACT_LIST;
         addToolArtifacts += ", lint_results.xml";
-        addToolArtifacts += ", TESTinsights_Push.log";
 
-        checkBuildWrappers(job, 2);
+        checkBuildWrappers(job, 1);
         checkBuildAction(job,false);
         checkArchiverList(archiver, addToolArtifacts);
         checkJunitGroovy(publisherList,2,4);
@@ -299,9 +292,7 @@ public class NewSingleJobTest {
         checkAdditionalTools(job,
                 "hello squore test world",
                 "call lint_my_code.bat",
-                "lint_results.xml",
-                "https://teamservices.vector.com/teamareas/pct",
-                "TI Proxy 1234@localhost");
+                "lint_results.xml");
     }
 
     @Test
@@ -318,7 +309,6 @@ public class NewSingleJobTest {
         jsonForm.put("useCoverageHistory", false);  // VectorCAST Coverage Plugin
         jsonForm.put("pclpCommand","call lint_my_code.bat");
         jsonForm.put("pclpResultsPattern","lint_results.xml");
-        jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
 
         NewSingleJob job = setupTestBasic(jsonForm);
 
@@ -332,9 +322,8 @@ public class NewSingleJobTest {
 
         String addToolArtifacts = DEFAULT_ARTIFACT_LIST;
         addToolArtifacts += ", lint_results.xml";
-        addToolArtifacts += ", TESTinsights_Push.log";
 
-        checkBuildWrappers(job, 2);
+        checkBuildWrappers(job, 1);
         checkBuildAction(job,false);
         checkArchiverList(archiver, addToolArtifacts);
         checkJunitGroovy(publisherList, 2, 5);
@@ -464,7 +453,6 @@ public class NewSingleJobTest {
     }
 
     /* TODO: Figure out how to add SCM to be parserd*/
-    /* TODO: TestInsights project name: env.JOB_BASE_NAME */
     /* TODO: Specify Job name */
     /* TODO: Multiple jobs with same name */
     /* TODO: MPname set to none */
@@ -481,51 +469,4 @@ public class NewSingleJobTest {
     /* TODO: use Imported results, extFname set to none*/
     /* TODO: different groovy script behaviors */
 
-/*
-    @Test
-    public void testGitSCM() throws Exception {
-        JSONObject jsonUserRemoteConfig = new JSONObject();
-        jsonUserRemoteConfig.put("url","https://github.com/TimSVector/PointOfSales_v2.git");
-        jsonUserRemoteConfig.put("includeUser","false");
-        jsonUserRemoteConfig.put("credentialsId","credentialsId");
-        jsonUserRemoteConfig.put("name","");
-        jsonUserRemoteConfig.put("refspec","");
-
-        JSONObject jsonBranches = new JSONObject();
-        jsonBranches.put("name","master");
-
-        JSONObject jsonSCM = new JSONObject();
-        jsonSCM.put("value","1");
-        jsonSCM.put("stapler-class","hudson.plugins.git.GitSCM");
-        jsonSCM.put("$class","hudson.plugins.git.GitSCM");
-        jsonSCM.put("userRemoteConfigs",jsonUserRemoteConfig);
-        jsonSCM.put("branches",jsonBranches);
-        jsonSCM.put("","auto");
-
-        JSONObject jsonForm = new JSONObject();
-        jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
-        jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
-        jsonForm.put("scm", jsonSCM);
-
-        NewSingleJob job = setupTestBasic(jsonForm);
-
-        Assert.assertEquals("git", job.getTestInsightsScmTech());
-    }
-
-    @Test
-    public void testSvnSCM() throws Exception {
-
-        JSONObject jsonSCM  = new JSONObject();
-        jsonSCM.put("value",loadSvnRepo());
-
-        JSONObject jsonForm = new JSONObject();
-        jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
-        jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
-        jsonForm.put("scm", jsonSCM);
-
-        NewSingleJob job = setupTestBasic(jsonForm,"Subversion");
-
-        Assert.assertEquals("svn", job.getTestInsightsScmTech());
-    }
-*/
 }

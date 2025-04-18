@@ -54,11 +54,7 @@ import io.jenkins.plugins.coverage.metrics.model.Baseline;
 import io.jenkins.plugins.util.QualityGate.QualityGateCriticality;
 import edu.hm.hafner.coverage.Metric;
 import io.jenkins.plugins.forensics.reference.SimpleReferenceRecorder;
-import org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper;
-import org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding;
-import org.jenkinsci.plugins.credentialsbinding.MultiBinding;
 import java.util.List;
-import java.util.Collections;
 import java.util.ArrayList;
 
 import java.net.URL;
@@ -174,19 +170,6 @@ public abstract class BaseJob {
     private String pclpResultsPattern;
     /** Squore execution command. */
     private String squoreCommand;
-
-    /** TESTinsights URL information. */
-    private String testInsightsUrl;
-    /** TESTinsights Project information. */
-    private String testInsightsProject;
-    /** TESTinsights credentials information. */
-    private String testInsightsCredentialsId;
-    /** TESTinsights Proxy information. */
-    private String testInsightsProxy;
-    /** TESTinsights SCM information. */
-    private String testInsightsScmUrl;
-    /** TESTinsights SCM Tech information. */
-    private String testInsightsScmTech;
 
     /**
      * Constructor.
@@ -316,14 +299,6 @@ public abstract class BaseJob {
         pclpCommand = json.optString("pclpCommand", "").replace('\\', '/');
         pclpResultsPattern = json.optString("pclpResultsPattern", "");
         squoreCommand = json.optString("squoreCommand", "").replace('\\', '/');
-        testInsightsUrl = json.optString("TESTinsights_URL", "");
-        testInsightsProject = json.optString("TESTinsights_project", "");
-        if (testInsightsProject.length() == 0) {
-                testInsightsProject = "env.JOB_BASE_NAME";
-        }
-        testInsightsCredentialsId =
-            json.optString("TESTinsights_credentials_id", "");
-        testInsightsProxy = json.optString("TESTinsights_proxy", "");
 
     }
 
@@ -589,69 +564,7 @@ public abstract class BaseJob {
     protected String getSquoreCommand() {
         return squoreCommand;
     }
-    /**
-     * Get URL for TESTinsights.
-     * @return TESTinsights URL
-     */
-    protected String getTestInsightsUrl() {
-        return testInsightsUrl;
-    }
-    /**
-     * Get Project for TESTinsights.
-     * @return TESTinsights Project
-     */
-    protected String getTestInsightsProject() {
-        return testInsightsProject;
-    }
-    /**
-     * set Project for TESTinsights.
-     * @param project TESTinsights Project
-     */
-    protected void setTestInsightsProject(final String project) {
-        this.testInsightsProject = project;
-    }
-    /**
-     * Get Proxy for TESTinsights.
-     * @return proxy TESTinsights proxy
-     */
-    protected String getTestInsightsProxy() {
-        return testInsightsProxy;
-    }
-    /**
-     * Get Credentials for TESTinsights.
-     * @return TESTinsights Credentials
-     */
-    protected String getTestInsightsCredentialsId() {
-        return testInsightsCredentialsId;
-    }
-    /**
-     * Set SCM URL for TESTinsights.
-     * @param url TESTinsights SCM URL
-     */
-    protected void setTestInsightsScmUrl(final String url) {
-        this.testInsightsScmUrl = url;
-    }
-    /**
-     * Get SCM URL for TESTinsights.
-     * @return TESTinsights SCM URL
-     */
-    protected String getTestInsightsScmUrl() {
-        return testInsightsScmUrl;
-    }
-    /**
-     * Get SCM Technology TESTinsights.
-     * @return TESTinsights SCM Technology
-     */
-    protected String getTestInsightsScmTech() {
-        return testInsightsScmTech;
-    }
-    /**
-     * Set SCM Technology TESTinsights.
-     * @param tech TESTinsights SCM Technology
-     */
-    protected void setTestInsightsScmTech(final String tech) {
-        this.testInsightsScmTech = tech;
-    }
+
     /**
      * Get request.
      * @return request
@@ -745,16 +658,6 @@ public abstract class BaseJob {
             usingScm = false;
         } else {
             usingScm = true;
-
-            // for TESTinsights SCM connector
-            String scmName = scm.getDescriptor().getDisplayName();
-            if (scmName.equals("Git")) {
-                testInsightsScmTech = "git";
-            } else if (scmName.equals("Subversion")) {
-                testInsightsScmTech = "svn";
-            } else {
-                testInsightsScmTech = "";
-            }
         }
         topProject.setScm(scm);
 
@@ -817,9 +720,6 @@ public abstract class BaseJob {
 
         if (pclpCommand.length() != 0) {
             pclpArchive = ", " + pclpResultsPattern;
-        }
-        if (testInsightsUrl.length() != 0) {
-            tiArchive = ", TESTinsights_Push.log";
         }
         String addToolsArchive = pclpArchive + tiArchive;
         String defaultArchive = "**/*.html, xml_data/**/*.xml,"
@@ -950,16 +850,6 @@ public abstract class BaseJob {
         }
 
         project.getPublishersList().add(publisher);
-    }
-    /**
-     * Add credentials for coverage reporting step.
-     * @param project project to add step to
-     */
-    protected void addCredentialID(final Project<?, ?> project) {
-        project.getBuildWrappersList().add(
-            new SecretBuildWrapper(Collections.<MultiBinding<?>>singletonList(
-            new UsernamePasswordMultiBinding("VC_TI_USR", "VC_TI_PWS",
-                testInsightsCredentialsId))));
     }
 
     /**

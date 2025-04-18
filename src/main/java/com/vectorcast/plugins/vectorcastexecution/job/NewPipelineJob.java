@@ -61,9 +61,6 @@ import java.util.logging.Level;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -122,46 +119,10 @@ public class NewPipelineJob extends BaseJob {
             BadOptionComboException {
         super(request, response);
 
-        final int indexNotFound = -1;
-
         JSONObject json = request.getSubmittedForm();
 
         sharedArtifactDirectory = json.optString("sharedArtifactDir", "");
         pipelineSCM = json.optString("scmSnippet", "").trim();
-
-        String[] lines = pipelineSCM.split("\n");
-
-        List<String> scmList = new ArrayList<String>();
-        scmList.add("git");
-        scmList.add("svn");
-
-        String url = "";
-        String scmTechnology = "";
-
-        for (String line : lines) {
-
-            for (String scm : scmList) {
-                if (line.startsWith(scm)) {
-                    scmTechnology = scm;
-
-                    if (line.indexOf("url:") == indexNotFound) {
-                        String[] elements = line.split(",");
-                        for (String ele : elements) {
-
-                            if (ele.startsWith("url:")) {
-                                String[] eleList = ele.split(" ");
-                                url = eleList[eleList.length - 1];
-                            }
-                        }
-                    } else {
-                        String[] urlEle = line.split(" ");
-                        url = urlEle[urlEle.length - 1];
-                    }
-                }
-            }
-        }
-        setTestInsightsScmUrl(url.replace("'", ""));
-        setTestInsightsScmTech(scmTechnology);
 
         singleCheckout = json.optBoolean("singleCheckout", false);
 
@@ -200,10 +161,6 @@ public class NewPipelineJob extends BaseJob {
 
         if (pipelineSCM.length() != 0 && absPath) {
             throw new ScmConflictException(pipelineSCM, mpName);
-        }
-
-        if (getTestInsightsProject().equals("env.JOB_BASE_NAME")) {
-            setTestInsightsProject("${JOB_BASE_NAME}");
         }
     }
 
@@ -393,6 +350,9 @@ public class NewPipelineJob extends BaseJob {
 
             return tempDirChild.toAbsolutePath();
         } catch (IOException exception) {
+            
+            exception.printStackTrace();
+            
             throw new UncheckedIOException("Failed to create temp file",
                 exception);
         }
@@ -595,19 +555,6 @@ public class NewPipelineJob extends BaseJob {
             + "def VC_useSquore = "
             +   String.valueOf(getSquoreCommand().length() != 0) + "\n"
             + "def VC_squoreCommand = '''" + getSquoreCommand() + "'''\n"
-            + "def VC_useTESTinsights = "
-            + String.valueOf(getTestInsightsUrl().length() != 0) + "\n"
-            + "def VC_TESTinsights_URL = '" + getTestInsightsUrl() + "'\n"
-            + "def VC_TESTinsights_Project = \""
-            +   getTestInsightsProject() + "\"\n"
-            + "def VC_TESTinsights_Proxy = '" + getTestInsightsProxy() + "'\n"
-            + "def VC_TESTinsights_Credential_ID = '"
-            + getTestInsightsCredentialsId() + "'\n"
-            + "def VC_TESTinsightsScmUrl = '"
-            +   getTestInsightsScmUrl() + "'\n"
-            + "def VC_TESTinsights_SCM_Tech = '"
-            +   getTestInsightsScmTech() + "'\n"
-            + "def VC_TESTinsights_Revision = \"\"\n"
             + "def VC_useCoverageHistory = " + getUseCoverageHistory() + "\n"
             + "def VC_useStrictImport = " + getUseStrictTestcaseImport() + "\n"
             + "def VC_useRGW3 = " + getUseRGW3() + "\n"

@@ -46,23 +46,6 @@
                 <f:textarea name="squoreCommand" class="fixed-width" value="${instance.squoreCommand}" />
             </f:entry>
         </f:optionalBlock>
-
-
-        <f:optionalBlock title="TESTinsights" checked="${instance.addToolsTESTinsights}" inline="true" help="/plugin/vectorcast-execution/help-TESTinsights.html">         
-            <f:entry title="${%VCJob.AdditionalTools.TESTinsights.URL.title}" description="${%VCJob.AdditionalTools.TESTinsights.URL.description}" help="/plugin/vectorcast-execution/help-TESTinsights_URL.html">
-                <f:textbox name="TESTinsights_URL" value="${instance.TESTinsights_URL}" />
-            </f:entry>
-            <f:entry title="${%VCJob.AdditionalTools.TESTinsights.project.title}" description="${%VCJob.AdditionalTools.TESTinsights.project.description}" help="/plugin/vectorcast-execution/help-TESTinsights_Project.html">
-                <f:textbox name="TESTinsights_project" value="${instance.TESTinsights_project}" />
-            </f:entry>
-            <f:entry title="${%VCJob.AdditionalTools.TESTinsights.credentials_id.title}" description="${%VCJob.AdditionalTools.TESTinsights.credentials_id.description}" help="/plugin/vectorcast-execution/help-TESTinsights_credentials.html">
-                <f:textbox name="TESTinsights_credentials_id" value="${instance.TESTinsights_credentials_id}" />
-            </f:entry>
-            <f:entry title="${%VCJob.AdditionalTools.TESTinsights.proxy.title}" description="${%VCJob.AdditionalTools.TESTinsights.proxy.description}" help="/plugin/vectorcast-execution/help-TESTinsights_proxy.html">
-                <f:textbox name="TESTinsights_proxy" value="${instance.TESTinsights_proxy}" />
-            </f:entry>
-        </f:optionalBlock>
-
     </f:section>
 </j:jelly>
 
