@@ -350,9 +350,9 @@ public class NewPipelineJob extends BaseJob {
 
             return tempDirChild.toAbsolutePath();
         } catch (IOException exception) {
-            
+
             exception.printStackTrace();
-            
+
             throw new UncheckedIOException("Failed to create temp file",
                 exception);
         }
@@ -533,7 +533,7 @@ public class NewPipelineJob extends BaseJob {
             + "def VC_Build_Preamble  = \"" + preamble + "\"\n"
             + "def VC_EnvTeardown     = '''" + teardown + "'''\n"
             + "def scmStep () { " + pipelineSCM + " }\n"
-            + "VC_usingSCM = "
+            + "def VC_usingSCM = "
             + String.valueOf(pipelineSCM.length() != 0) + "\n"
             + "def VC_postScmStepsCmds = '''" + postCheckoutCmds + "'''\n"
             + "def VC_sharedArtifactDirectory = '''"
