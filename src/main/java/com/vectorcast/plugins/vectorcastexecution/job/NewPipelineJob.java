@@ -62,14 +62,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.Files;
+
 import java.nio.file.StandardCopyOption;
 
-import java.util.EnumSet;
 import org.kohsuke.stapler.verb.POST;
 import hudson.model.Item;
 import hudson.security.AccessDeniedException3;
@@ -314,49 +312,27 @@ public class NewPipelineJob extends BaseJob {
         doCreate();
     }
 
-    private static Path createTempFile(final Path tempDirChild)
-            throws UncheckedIOException {
+    /**
+     * Creates a named temp file.
+     *
+     * @return File - temporary file
+     * @throws UncheckedIOException
+     */
+    private static Path createNamedTempFile() throws UncheckedIOException {
         try {
-            if (tempDirChild.getFileSystem().supportedFileAttributeViews().
-                contains("posix")) {
-                // Explicit permissions setting is only required
-                // on unix-like systems because
-                // the temporary directory is shared between all users.
-                // This is not necessary on Windows,
-                // each user has their own temp directory
-                final EnumSet<PosixFilePermission> posixFilePermissions =
-                        EnumSet.of(
-                            PosixFilePermission.OWNER_READ,
-                            PosixFilePermission.OWNER_WRITE
-                        );
-                if (!Files.exists(tempDirChild)) {
-                    Files.createFile(
-                        tempDirChild,
-                        PosixFilePermissions
-                            .asFileAttribute(posixFilePermissions)
-                        );
-                } else {
-                    Files.setPosixFilePermissions(
-                    tempDirChild,
-                    posixFilePermissions
-                    ); // GOOD: Good has permissions `-rw-------`,
-                       //or will throw an exception if this fails
-                }
-            } else if (!Files.exists(tempDirChild)) {
-                // On Windows, we still need to create the directory,
-                // when it doesn't already exist.
-                Files.createDirectory(tempDirChild);
+            Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
+            Path tempFile = tempDir.resolve("config_temp.xml");
+
+            if (!Files.exists(tempFile)) {
+                Files.createFile(tempFile);
             }
 
-            return tempDirChild.toAbsolutePath();
-        } catch (IOException exception) {
-
-            exception.printStackTrace();
-
-            throw new UncheckedIOException("Failed to create temp file",
-                exception);
+            return tempFile.toAbsolutePath();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Named temp file create failed", e);
         }
     }
+
 
     /**
      * Retrieves config.xml from the jar and writes it to the systems temp.
@@ -376,7 +352,7 @@ public class NewPipelineJob extends BaseJob {
             in = getPipelineConfigXML().openStream();
         }
 
-        configFile = createTempFile(Paths.get("config_temp.xml"));
+        configFile = createNamedTempFile();
 
         try {
             Files.copy(in, configFile, StandardCopyOption.REPLACE_EXISTING);
