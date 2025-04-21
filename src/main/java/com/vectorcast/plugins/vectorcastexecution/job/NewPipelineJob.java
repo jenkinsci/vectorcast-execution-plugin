@@ -543,7 +543,7 @@ public class NewPipelineJob extends BaseJob {
             + "def VC_waitLoops = '" + getWaitLoops() + "'\n"
             + "def VC_maxParallel = " + getMaxParallel().toString() + "\n"
             + "def VC_useOneCheckoutDir = " + singleCheckout + "\n"
-            + "def VC_UseCILicense = " + vcUseCi + "\n"
+            + "def VC_useCILicense = " + vcUseCi + "\n"
             + "def VC_useCBT = " + incremental + "\n"
             + "def VC_useCoveragePlugin = " + getUseCoveragePlugin() + "\n"
             + "def VC_createdWithVersion = '"
