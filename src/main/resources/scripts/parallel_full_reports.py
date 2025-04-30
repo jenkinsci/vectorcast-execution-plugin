@@ -97,11 +97,14 @@ class RunFullReportsParallel(object):
             max_licenses = self.getLicenseCount()
             max_envs = self.getEnvCount()
 
-            # print([max_cpus, max_licenses, max_envs])
+            print([max_cpus, max_licenses, max_envs])
+            print(type(max_cpus))
+            print(type(max_licenses))
+            print(type(max_envs))
 
             self.max_concurrent = min(x for x in [max_cpus,max_licenses, max_envs] if x > 0)
 
-            # print("Using licensing max = ", self.max_concurrent)
+            print("Using licensing max = ", self.max_concurrent)
         else:
             self.max_concurrent = int(args.jobs)
 
@@ -131,8 +134,6 @@ class RunFullReportsParallel(object):
             else:
                 cmd =  r'$VECTORCAST_DIR/flexlm/lmutil lmstat -a -c $VECTOR_LICENSE_FILE  | grep VECTORCAST_MANAGE:'
 
-            #result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            
             process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = process.communicate()
             
@@ -155,9 +156,10 @@ class RunFullReportsParallel(object):
 
         else:
             import xml.etree.ElementTree as ET
-
-            cmd =  r'"C:\Program Files (x86)\Vector License Client\Vector.LicenseClient.exe" -list -network'
-            # result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            from datetime import datetime
+            import re
+            
+            cmd =  r'"C:\Program Files (x86)\Vector License Client\Vector.LicenseClient.exe" -listlicenses -network'
             process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = process.communicate()
 
@@ -165,13 +167,34 @@ class RunFullReportsParallel(object):
 
             # Parse XML
             root = ET.fromstring(xml_data)
+            
+            now = datetime.now()
+            if os.environ.get("VCAST_USE_CI_LICENSES") is not None or os.environ.get("VCAST_USING_HEADLESS_MODE") is not None:
+                searchType = "Server Edition"
+            else:
+                searchType = "Desktop Edition"
 
-            # Find DeviceSerialNumber
-            FreeLicenses = root.find(".//FreeLicenses").text
+            free_list = []
+            # Loop through all VectorLicense nodes
+            for lic in root.findall('.//VectorLicense'):
+                product_text = lic.find('ProductText')
+                expiration_text = lic.find('ExpirationDateString')
+                free_licenses = lic.find('FreeLicenses')
 
-            #print("FreeLicenses:", FreeLicenses)
+                if product_text is not None and expiration_text is not None and free_licenses is not None:
+                    product = product_text.text.strip()
+                    expiration = expiration_text.text.strip()
+                    free = int(free_licenses.text.strip())
 
-            return FreeLicenses
+                    if re.match(r'^VectorCAST.*', product):
+                        exp_date = datetime.strptime(expiration, "%Y-%m-%dT%H:%M:%S")
+                        if exp_date > now:
+                            if searchType in product:
+                                free_list.append(free)
+
+
+            licMin = min(free_list) if free_list else None
+            return int(licMin)
 
         return 1
 
@@ -209,7 +232,6 @@ class RunFullReportsParallel(object):
         print("All reports completed!")
 
 if __name__ == '__main__':
-
     runner = RunFullReportsParallel()
 
     runner.run()

@@ -1151,9 +1151,16 @@ class GenerateXml(BaseGenerateXml):
             vcCodedTestMap = tc.is_coded_tests_map
         except:
             vcCodedTestMap = False
+        try:
+            if tc and len(tc.variant_logic) > 0 and tc.execution_status == 'EXEC_VARIANT_LOGIC_FALSE':
+                vcVariantTestSkipped = True
+            else:
+                vcVariantTestSkipped = False
+        except:
+            vcVariantTestSkipped = False
 
         # Placeholder "testcases" that need to be ignored
-        if tc.is_csv_map or vctMap or vcCodedTestMap:
+        if tc.is_csv_map or vctMap or vcCodedTestMap or vcVariantTestSkipped:
             placeHolder = True
 
         return placeHolder

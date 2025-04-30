@@ -25,10 +25,9 @@ try:
     from safe_open import open
 except:
     pass
-        
-g_msgs = []
-g_fullMpName = ""
 
+from global_state import globalState
+        
 # PC-lint Plus message representation and parsing
 
 class Message:
@@ -95,7 +94,6 @@ def parse_msgs(filename):
     return msgs
 
 # HTML summary output
-
 class FileSummary:
     def __init__(self, filename):
         self.msg_count = 0
@@ -110,8 +108,11 @@ class FileSummary:
 def summarize_files(msgs):
     file_summaries = dict()
     for msg in msgs:
+        msg.file = msg.file.replace("\\","/")
+
         if msg.file not in file_summaries:
             file_summaries[msg.file] = FileSummary(msg.file)
+            
         file_summary = file_summaries[msg.file]
 
         if msg.category == 'error':
@@ -130,6 +131,7 @@ def summarize_files(msgs):
         
         if 'MISRA' in msg.text:
             file_summary.misra_count += 1
+            
     return file_summaries
 
 def build_html_table(column_headers, data_source, row_generator):
@@ -162,8 +164,7 @@ def format_benign_zero(x):
     return str(x) if x != 0 else "<span class=\"zero\">" + str(x) + "</span>"
 
 def generate_details():
-    global g_msgs
-    msgs = g_msgs
+    msgs = globalState.msgs
     
     out = ""
     out += build_html_table(
@@ -181,13 +182,13 @@ def generate_details():
     return out
 
 def generate_summaries():
-    
-    global g_msgs
-    msgs = g_msgs
+    msgs = globalState.msgs
+
     out = ""
 
     file_summaries = summarize_files(msgs)
     summary_total = FileSummary('Total')
+
     for file in file_summaries.values():
         summary_total.msg_count += file.msg_count
         summary_total.error_count += file.error_count
@@ -213,24 +214,25 @@ def generate_summaries():
     return out
 
 def generate_source():
-    
-    global g_msgs
-    msgs = g_msgs
-    
-    global g_fullMpName
-    fullMpName = g_fullMpName
-    
-    output = "<h4>No Source Infomation avialable</h4>"
-    
-    file_summaries = summarize_files(msgs)
+   
     if not checkVectorCASTVersion(21, True):
         print("XXX Cannot generate Source Code section of the PC-Line Report report")
         print("XXX The Summary and File Detail sections are present")
         print("XXX If you'd like to see the Source Code section of the PC-Line Report, please upgrade VectorCAST")
-        
-    filenames = []
-    filenames = list(map(lambda file: file.filename, file_summaries.values()))
 
+    fullMpName = globalState.fullMpName
+    msgs = globalState.msgs
+    
+    output = "<h4>No Source Infomation avialable</h4>"
+    
+    file_summaries = summarize_files(msgs)
+
+    filenames = []
+    filenames = sorted(
+        (file.filename for file in file_summaries.values()),
+        key=lambda f: os.path.basename(f).lower()
+    )
+    
     filename_dict = {file.filename.replace("\\","/").lower(): file.filename for file in file_summaries.values()}
     
     # Use a lambda inside map to create a dictionary keyed by file and then by line
@@ -239,42 +241,17 @@ def generate_source():
     # Group by file
     list(map(lambda msg: messages_by_file_and_line.setdefault(msg.file, {})
              .setdefault(msg.line, msg), msgs))    
-    
-    if fullMpName is None:
-        return output
         
-    from vector.apps.DataAPI.vcproject_api import VCProjectApi
-
-    api = VCProjectApi(fullMpName)
-
-    localUnits = api.project.cover_api.SourceFile.all()
-    localUnits.sort(key=lambda x: (x.name))
-
-    try:
-        basepath = os.environ['WORKSPACE'].replace("\\","/") + "/"
-    except:
-        basepath = os.getcwd().replace("\\","/") + "/"
-        
-    output = "" 
-    
     listOfContent = []
-    for f in localUnits:
-        try:
-            adjustedFname = os.path.relpath(f.display_path,basepath).replace("\\","/").lower()
-        except:
-            adjustedFname = f.display_path.lower()
-
-        if adjustedFname not in filename_dict.keys():
-            continue
+    for filename in filenames: #localUnits:
+        
+        filename = filename.replace("\\","/")
+        base_fname = os.path.basename(filename)
+        adjustedFname = filename.lower()
         
         fname = filename_dict[adjustedFname]
         orig_fname = fname;
-        
-        smap = dict()
-        
-        for line in f.iterate_coverage():
-            smap[line.line_number] = line
-                           
+                
         basename = os.path.basename(fname)
         
         filename_anchor = orig_fname.replace("\\","_").replace("/","_").replace(".","_")
@@ -301,10 +278,6 @@ def generate_source():
             contents = fh.read()
             contents = contents.replace("\r\n", "\n").replace("\r","\n")
             for lineno, line in enumerate(contents.splitlines(), start=1):
-            
-                # get all the statements
-                srcLine = smap[lineno]
-
                 lineno_str = str(lineno)
                 lineno_str_justified = str(lineno).ljust(6)
                 esc_line = escape(line)
@@ -333,15 +306,14 @@ def generate_html_report(mpName, input_xml, output_html):
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
     from vector.apps.ReportBuilder.custom_report import CustomReport
         
-    global g_fullMpName
-    global g_msgs
-    g_fullMpName = mpName
-    g_msgs = parse_msgs(input_xml)
-    
+    globalState.fullMpName = mpName
+    globalState.msgs = parse_msgs(input_xml)
+         
     if output_html is None:
         output_html = "pclp_findings.html"
-        
+    
     api = VCProjectApi(mpName)
+    
     # Set custom report directory to the where this script was
     # found. Must contain sections/index_section.py
     rep_path = pathlib.Path(__file__).parent.resolve()
@@ -353,6 +325,7 @@ def generate_html_report(mpName, input_xml, output_html):
             output_file=output_html,
             sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','PCLP_SUMMARY_SECTION','PCLP_DETAILS_SECTION','PCLP_SOURCE_SECTION', 'CUSTOM_FOOTER'],
             customization_dir=rep_path)
+            
     api.close()
 
 def has_any_coverage(line):
@@ -516,8 +489,7 @@ def generate_reports(input_xml, output_text = None, output_html = None, output_j
     if output_text:
         write_output(emit_text(msgs), output_text)
     if output_html:
-        generate_html_report(msgs, output_html)
-        #write_output(emit_html(msgs), output_html)
+        generate_html_report(full_mp_name, input_xml, output_html)
     if output_json:
         write_output(emit_json(msgs), output_json)
     if output_gitlab:
@@ -525,22 +497,25 @@ def generate_reports(input_xml, output_text = None, output_html = None, output_j
 
 def main():
     parser = argparse.ArgumentParser(description='Generate HTML, JSON, or text output from PC-lint Plus XML reports (XML reports are produced by running PC-lint Plus with env-xml.lnt)')
-    parser.add_argument('--input-xml', action='store', help='XML input filename', required=True)
-    parser.add_argument('--output-text', action='store', help='Text output filename', default = None, required=False)
-    parser.add_argument('--output-html', action='store', help='HTML output filename', default = None, required=False)
-    parser.add_argument('--output-json', action='store', help='JSON output filename', default = None, required=False)
-    parser.add_argument('--output-gitlab', action='store', help='GitLab output filename', default = None, required=False)
-    parser.add_argument('--vc-project', action='store', help='VectorCAST Project Name.  Used for source view', dest="full_mp_name", default = None, required=False)
-    parser.add_argument('-g', '--gen-lint-xml-cmd', action='store', help='Command to genreate lint XML files', dest="gen_lint_xml_cmd", default = None, required=False)
     
+    parser.add_argument('--input-xml', action='store', help='XML input filename', required=True)
+    parser.add_argument('--output-html', action='store', help='HTML output filename', default = None, required=False)                                                                                                                     
+    parser.add_argument('--vc-project', action='store', help='VectorCAST Project Name.  Used for source view', dest="full_mp_name", required=True)
+
+    parser.add_argument('--output-text', action='store', help=argparse.SUPPRESS, default = None, required=False)
+    parser.add_argument('--output-json', action='store', help=argparse.SUPPRESS, default = None, required=False)
+    parser.add_argument('--output-gitlab', action='store', help=argparse.SUPPRESS, default = None, required=False)
+    parser.add_argument('-g', '--gen-lint-xml-cmd', action='store', help=argparse.SUPPRESS, dest="gen_lint_xml_cmd", default = None, required=False)
     args = parser.parse_args()
     if args.gen_lint_xml_cmd is not None:
         subprocess.run(args.gen_lint_xml_cmd)
 
     if not (args.output_text or args.output_html or args.output_json or args.output_gitlab):
         parser.error("please specify one or more outputs using the '--output-<FORMAT>=<FILENAME>' options")
-        
-    generate_reports(args.input_xml, args.output_text, args.output_html, args.output_json, args.output_gitlab)
+
+    args.full_mp_name = os.path.abspath(args.full_mp_name)        
+    
+    generate_reports(input_xml = args.input_xml, output_text = args.output_text, output_html=args.output_html,   output_json=args.output_json,   output_gitlab=args.output_gitlab, full_mp_name = args.full_mp_name)
 
     ## if opened from VectorCAST GUI...
     if (args.full_mp_name is not None) and (args.output_html is not None) and (os.getenv('VCAST_PROG_STARTED_FROM_GUI') == "true"):
