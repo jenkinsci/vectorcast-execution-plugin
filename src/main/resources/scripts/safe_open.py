@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+# Copyright 2024 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -40,44 +40,23 @@ def new_get_file_encoding():
             cur_encoding = "GBK"
     except:
         pass
-              
-
-
-def get_file_encoding(file, default_encoding="utf-8"):
-    try:
-        import chardet
-    except:
-        return default_encoding
         
-    try:
-        with _open(file, "rb") as fd:
-            cur_encoding = chardet.detect(fd.read())["encoding"]
-            if cur_encoding == "GB2312":
-                cur_encoding = "GBK"
-    except:
-        print(
-            "Problem detecting encoding of "
-            + file
-            + ".  Defaulting to "
-            + default_encoding
-        )
-        cur_encoding = default_encoding
-
     return cur_encoding
 
-
 @contextlib.contextmanager
-def open(file, mode="r"):
+def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None):
 
     if 'b' in mode:
-        fd = _open(file,mode)
+        try:
+            fd = _open(file, mode, buffering, encoding, errors, newline, closefd, opener)
+        except:
+            fd = _open(file, mode, buffering, encoding, errors, newline, closefd)
     else:
         if os.path.exists(file):
-            #encoding = get_file_encoding(file)
             encoding = new_get_file_encoding()
         else:
             encoding = "utf-8"
-        fd = _open(file, mode, encoding=encoding)
+        fd = _open(file, mode, buffering, encoding, errors, newline)
     
     try:
         yield fd

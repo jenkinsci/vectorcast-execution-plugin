@@ -44,81 +44,101 @@ import java.util.logging.Logger;
 
 /**
  * This class allows a command script to be specified for both Linux and Windows
- * and the build step will test and run the correct command
+ * and the build step will test and run the correct command.
  */
 public class VectorCASTCommand extends Builder implements SimpleBuildStep {
 
+    /** windows environment setup command. */
     private final String winCommand;
+
+    /** unix environment setup command. */
     private final String unixCommand;
 
     /**
-     * Get the windows variant of the command
-     * @return windows command
+     * Get the windows variant of the command.
+     * @return windows command.
      */
     public final String getWinCommand() {
         return winCommand;
     }
 
     /**
-     * Get the Unix variant of the command
-     * @return unix command
+     * Get the Unix variant of the command.
+     * @return unix command.
      */
     public final String getUnixCommand() {
         return unixCommand;
     }
-    
+
     /**
-     * Create a VectorCAST command
+     * Create a VectorCAST command.
      * @param winCommand the windows variant of the command
      * @param unixCommand the unix variant of the command
      */
     @DataBoundConstructor
-    public VectorCASTCommand(String winCommand, String unixCommand) {
+    @SuppressWarnings("checkstyle:HiddenField")
+    public VectorCASTCommand(final String winCommand,
+            final String unixCommand) {
         this.winCommand = winCommand;
         this.unixCommand = unixCommand;
     }
-    
+
+    /**
+     * Perform the script to run the job.
+     * @param build info
+     * @param workspace info
+     * @param launcher info
+     * @param listener info
+     */
     @Override
-    public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
+    public void perform(final Run<?, ?> build, final FilePath workspace,
+            final Launcher launcher, final TaskListener listener) {
         // Windows check and run batch command
-        //
-        // Get the windows batch command and run it if this node is Windows
-        //
         if (!launcher.isUnix()) {
+            // Get the windows batch command and run it if this node is Windows
+            //
             String windowsCmd = getWinCommand();
             BatchFile batchFile = new BatchFile(windowsCmd);
             try {
-                if (!batchFile.perform((AbstractBuild<?,?>)build, launcher, (BuildListener)listener)) {
+                if (!batchFile.perform((AbstractBuild<?, ?>) build,
+                        launcher, (BuildListener) listener)) {
                     build.setResult(Result.FAILURE);
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(VectorCASTCommand.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(VectorCASTCommand.class.getName())
+                    .log(Level.SEVERE, null, ex);
                 build.setResult(Result.FAILURE);
             }
         }
 
-        //
+
         // Linux check and batch command
-        //        
-        // Get the Linux/Unix batch command and run it if this node is not Windows
-        //
         if (launcher.isUnix()) {
+            // Get the Linux/Unix batch command and
+            // run it if this node is not Windows
             String unixCmd = getUnixCommand();
             Shell shell = new Shell(unixCmd);
             try {
-                if (!shell.perform((AbstractBuild<?,?>)build, launcher, (BuildListener)listener)) {
+                if (!shell.perform((AbstractBuild<?, ?>) build,
+                        launcher, (BuildListener) listener)) {
                     build.setResult(Result.FAILURE);
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(VectorCASTCommand.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(VectorCASTCommand.class.getName()).
+                    log(Level.SEVERE, null, ex);
                 build.setResult(Result.FAILURE);
             }
         }
     }
 
+    /**
+     * Get the descriptor.
+     * @return descriptor
+     */
+
     @Override
     public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl)super.getDescriptor();
+        return (DescriptorImpl) super.getDescriptor();
     }
 
     /**
@@ -126,18 +146,26 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * The class is marked as public so that it can be accessed from views.
      */
     @Extension
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public static final class DescriptorImpl extends
+            BuildStepDescriptor<Builder> {
         /**
-         * In order to load the persisted global configuration, you have to 
+         * In order to load the persisted global configuration, you have to
          * call load() in the constructor.
          */
         public DescriptorImpl() {
             load();
         }
 
+        /**
+         * Override to fill out the class.
+         * @param aClass - generic class
+         * @return boolean - always true
+         */
         @Override
-        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            // Indicates that this builder can be used with all kinds of project types 
+        public boolean isApplicable(
+                final Class<? extends AbstractProject> aClass) {
+            // Indicates that this builder can be used
+            // with all kinds of project types
             return true;
         }
 
@@ -152,4 +180,3 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
     }
 
 }
-

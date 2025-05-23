@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!--
+The MIT License
+
+Copyright 2024 Vector Software.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<div>
+   <h3>Information about Jenkins Coverage Plugin</a></h3>
+   <table>
+      <tr>
+         The <a href="https://plugins.jenkins.io/coverage/">Jenkins Coverage Plugin</a> publishes a report of the code and mutation coverage in your build, so you can navigate to a summary report from the main build page. Additionally, the plugin gathers several metrics (lines of code, cyclomatic complexity, number of tests per class) and visualizes these results along with the coverage information. 
+      </tr>
+      <tr>
+         <p>
+      </tr>
+      <tr>
+         From there you can also dive into the details:
+         <ul>
+            <li>Tree charts that show the distribution of the metrics by type (line, branch, complexity, tests, etc.)
+            <li>Tabular listing of all files with their coverage, complexity and number of tests
+            <li>Source code of the files with the coverage highlighted
+            <li>Trend charts of the coverage over time
+         </ul>
+      </tr>
+   </table>
+   <hr>
+   <h3>Advanced Settings for Jenkins Coverage Plugin</h3>
+   Two classes of settings can be accessed in the Jenkins Coverage Plugin
+   <table>
+      <tr>
+         <ul>
+            <li> Quality Gates
+            <li> Advanced Options
+         </ul>
+      </tr>
+      <tr>
+      To access the advanced settings:
+         <ul>
+            <li> Pipeline Jobs - You can access the <a href="/pipeline-syntax" target="_blank">Snippet Generator</a> 
+            and use the configure a new pipeline snippet.  Once you have the step configured, you can use the <b><i>Generate Pipeline Script</b></i> button, 
+            copy that snippet and replace the existing Coverage snippet in the job configuration. 
+            For more information regarding the advanced settings of the Jenkins Coverage Plugin, please refer to the <a href="https://plugins.jenkins.io/coverage/">documentation</a>
+            <p>Settings to process VectorCAST Coverage Results:
+            <ul>
+              <li>Sample Step: <b><i>recordCoverage: Record code coverage results</b></i></li>
+              <li>Code Coverage Tool > Coverage Parser: <b><i>VectorCAST Coverage Results</b></i></li>
+              <li>Code Coverage Tool > Report File Pattern: <b><i>xml_data/cobertura/coverage_results*.html</b></i></li>
+            </ul>
+            <p>
+            <li> Single Job - The setup for the Single Job will be one of the post-build steps.
+         </ul>
+      </tr>
+   </table>
+</div>

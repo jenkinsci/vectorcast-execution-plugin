@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+# Copyright 2024 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -37,15 +37,20 @@ try:
         from Queue import Queue, Empty
 except ImportError:
         from queue import Queue, Empty  # python 3.x
+
+try:
+    from safe_open import open
+except:
+    pass    
  
 class ManageWait(object):
-    def __init__(self, verbose, command_line, wait_time, wait_loops):
+    def __init__(self, verbose, command_line, wait_time, wait_loops, mpName = "", useCI = ""):
         self.wait_time = wait_time
         self.wait_loops = wait_loops
         self.verbose = verbose
         self.command_line = command_line
-        self.encFmt = 'utf-8'
-        
+        self.mpName = mpName
+        self.useCI = useCI
         # get the VC langaguge and encoding
         self.encFmt = 'utf-8'
         try:
@@ -60,6 +65,8 @@ class ManageWait(object):
         except:
             pass
         
+        os.environ['PYTHONIOENCODING'] = self.encFmt
+                    
     def enqueueOutput(self, io_target, queue, logfile):
         while True:
             line = io_target.readline()
@@ -69,7 +76,11 @@ class ManageWait(object):
             output = ( datetime.now().strftime("%H:%M:%S.%f") + "  " + line + "\n" )
             if not self.silent:
                 print(line)
-                logfile.write(output)
+                try:
+                    logfile.write(output)
+                except:
+                    logfile.write(output.decode(self.encFmt))
+                    
             queue.put(line)
 
     def startOutputThread(self, io_target, logfile):
@@ -78,10 +89,20 @@ class ManageWait(object):
         self.io_t.daemon = True # thread dies with the program
         self.io_t.start()
 
+    def exec_manage_command(self, cmd_line, silent = False):
+        self.command_line = "--project \"" + self.mpName + "\" " + self.useCI + " " + cmd_line
+        if self.verbose:
+            print (self.command_line)
+        return self.exec_manage(silent)
+        
     def exec_manage(self, silent=False):
-        with open("command.log", 'a') as logfile:
-            return self.__exec_manage(silent, logfile)
-
+        try:
+            with open("command.log", 'a', encoding=self.encFmt) as logfile:
+                return self.__exec_manage(silent, logfile)
+        except:        
+            with open("command.log", 'a') as logfile:
+                return self.__exec_manage(silent, logfile)
+                
     def __exec_manage(self, silent, logfile):
         self.silent = silent
         callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
@@ -89,18 +110,18 @@ class ManageWait(object):
         
         if self.verbose:
             logfile.write( "\nVerbose: %s\n" % callStr)
-            
+
         # capture the output of the manage call
         loop_count = 0
         while 1:
             loop_count += 1
-            p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+            try:
+                p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True, encoding=self.encFmt)
+            except:
+                p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
             
             self.startOutputThread(p.stdout, logfile)
             
-            if not self.silent:
-                print("Manage started")
-                
             license_outage = False
             edited_license_outage_msg = ""
             actual_license_outage_msg = ""
@@ -128,9 +149,6 @@ class ManageWait(object):
                 except Empty:
                     pass
 
-            if not self.silent:
-                print("Manage has finished")
-                
             # manage finished. Was there a license outage?
             if license_outage == True :
                 if loop_count < self.wait_loops:
@@ -156,6 +174,7 @@ class ManageWait(object):
  
 ## main
 if __name__ == '__main__':
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose',   help='Enable verbose output', action="store_true")
     parser.add_argument('--command_line',   help='Command line to pass to Manage', required=True)

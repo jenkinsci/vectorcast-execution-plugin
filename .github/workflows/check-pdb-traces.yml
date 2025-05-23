@@ -1,0 +1,19 @@
+name: Check for debug traces
+
+on:
+  pull_request:
+    paths:
+      - "src/main/resources/scripts/*.py"
+
+jobs:
+  grep-pdb:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Find and grep for pdb.set_trace
+      run: |
+        echo "Searching for 'pdb.set_trace' in Python files..."
+        grep -rn "pdb.set_trace" src/main/resources/scripts/*.py && exit 1 || echo "No occurrences found."

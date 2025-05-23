@@ -10,7 +10,6 @@ try:
 except:
     pass
 
-
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
 
 
@@ -94,6 +93,7 @@ def checkForEnvChanges(vcm_fname, build_dir, env_name):
 def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
     somethingPrinted = False
     output = ""
+    
     for env in api.Environment.all():
         
         if not env.is_active:
@@ -106,31 +106,30 @@ def printEnvInfoDataAPI(api, printData = True, printEnvType = False):
                 output += "ST: "
             else:
                 output += "UT: "
-                
         output += "%s %s %s\n" % (env.compiler.name , env.testsuite.name , env.name)
-
+   
     if printData:
         with tee_print.TeePrint() as teePrint:
             printOutput(somethingPrinted, api.vcm_file, output, teePrint)
-
+            
     return output
     
-def checkGroupOrEnv(str):
+def checkGroupOrEnv(line, env_match_string, group_match_string):
 
     ## env or no-group env
     envOrNoGroupEnv = False
     
-    if str.strip().startswith("Disabled Environment"):
+    if line.strip().startswith("Disabled Environment"):
         envOrNoGroupEnv = false
     
-    # environment with group
-    elif re.match("^      [^\s]",str) is not None:
+    # environment with group or no group at all
+    elif re.match(env_match_string,line) is not None or group_match_string is None:
         envOrNoGroupEnv = True
         
     # group or environment with no group
-    elif re.match("^     [^\s]",str) is not None:
+    elif re.match(env_match_string,line) is not None:
         # groups will have a numeric starting of status: 10/100 (50%)
-        status = str.split()[1]
+        status = line.split()[1]
         try:
             # python3
             envOrNoGroupEnv = not status[0].isnumeric()
@@ -160,14 +159,54 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
     out, err = p.communicate()
     buildDirInfo = out.splitlines()
     
-    for str in enabledList:
-        if re.match("^   [^\s]",str) is not None:
-            compiler = str.split()[0]
-        elif re.match("^    [^\s]",str) is not None:
-            testsuite = str.split()[0]
-        elif checkGroupOrEnv(str):
+    # max_indent = min(max(len(line) - len(line.lstrip()) for line in enabledList), 8)
+    
+    max_indent = 0
+    veryMax = 8
+
+    for line in enabledList:
+        indent = len(line) - len(line.lstrip())
+        
+        if indent > max_indent and indent <= veryMax:
+            max_indent = indent
+
+    if max_indent == 8:
+        source_match_string    = "^   [^\s]"
+        machine_match_string   = "^    [^\s]"
+        compiler_match_string  = "^     [^\s]"
+        testsuite_match_string = "^      [^\s]"
+        group_match_string     = "^       [^\s]"
+        env_match_string       = "^        [^\s]"
+        
+    elif max_indent == 6:
+        compiler_match_string  = "^   [^\s]"
+        testsuite_match_string = "^    [^\s]"
+        group_match_string     = "^     [^\s]"
+        env_match_string       = "^      [^\s]"
+        
+    elif max_indent == 5:
+        compiler_match_string  = "^   [^\s]"
+        testsuite_match_string = "^    [^\s]"
+        group_match_string     = None
+        env_match_string       = "^     [^\s]"
+    else:
+        raise ValueError("error deciphering max_index" +  str(max_indent))
+        
+    source = None
+    machine = None
+        
+    for line in enabledList:
+        if max_indent == 8 and re.match(source_match_string,line) is not None:
+            source = line.split()[0]
+        elif max_indent == 8 and re.match(machine_match_string,line) is not None:
+            machine  = line.split()[0]
+        elif re.match(compiler_match_string,line) is not None:
+            compiler = line.split()[0]
+        elif re.match(testsuite_match_string,line) is not None:
+            testsuite = line.split()[0]
+        elif max_indent == 5 or checkGroupOrEnv(line, env_match_string, group_match_string):
                 
-            env_name = str.split()[0]
+            env_name = line.split()[0].upper()
             build_dir = getBuildDirectory(compiler , testsuite , env_name, buildDirInfo)
             
             #force_rebuild = checkForEnvChanges(ManageProjectName, build_dir, env_name)
@@ -175,8 +214,11 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
             if printEnvType:
                 output += checkForSystemTest(build_dir, env_name)
 
-            output += "%s %s %s\n" % (compiler , testsuite , env_name)            
-                            
+            if max_indent == 8 and source and machine:
+                output += "%s %s %s %s %s\n" % (compiler , testsuite , env_name, source , machine )            
+            else:
+                output += "%s %s %s\n" % (compiler , testsuite , env_name)            
+
             somethingPrinted = True;
 
     if printData:
@@ -187,8 +229,9 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
  
 def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, legacy = False):
     try:
-        if (legacy): raise KeyError
             
+        if (legacy): raise KeyError
+        
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         api = VCProjectApi(ManageProjectName)
         ret_info = printEnvInfoDataAPI(api, printData, printEnvType)

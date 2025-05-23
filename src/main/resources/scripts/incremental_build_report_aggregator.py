@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+# Copyright 2024 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,11 @@
 # THE SOFTWARE.
 #
 
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import os
 import sys
 import shutil
-from safe_open import open
 
-# This script takes Manage Incremental Rebuild Reports and combines them
-#     into one comprehensive report.
-# 
 # adding path
 workspace = os.getenv("WORKSPACE")
 if workspace is None:
@@ -49,6 +42,11 @@ if sys.version_info[0] < 3:
     sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
+
+try:    
+    from safe_open import open
+except:
+    pass
 
 import re
 def parse_text_files(mpName):
@@ -72,7 +70,6 @@ Environments Affected
     full_file_list = os.listdir(".")
     for file in full_file_list:
         if "_rebuild.txt" in file:
-            print(file)
             report_file_list.append(file)
 
     rebuild_count = 0
@@ -121,7 +118,19 @@ Environments Affected
           shutil.move(file, "rebuild_reports/"+file)
         
 def parse_html_files(mpName):
-
+    
+    encFmt = 'utf-8'
+    try:
+        from vector.apps.DataAPI.configuration import vcastqt_global_options
+        lang = vcastqt_global_options.get('Translator','english')
+        if lang == "english":
+            encFmt = "utf-8"
+        if lang == "japanese":
+            encFmt = "shift-jis"
+        if lang == "chinese":
+            encFmt = "GBK"
+    except:
+        pass
     if os.path.exists(mpName + "_rebuild.html"):
         os.remove(mpName + "_rebuild.html")
         
@@ -135,10 +144,10 @@ def parse_html_files(mpName):
         print("No incrementatal rebuild reports found in the workspace...skipping")
         return
     keepLooping = True
-        
+    
     while keepLooping:
         try:
-            with open(report_file_list[0],"r") as fd:
+            with open(report_file_list[0],"r", encoding='utf-8') as fd:
                 try:
                     main_soup = BeautifulSoup((fd),features="lxml")
                 except:
@@ -176,7 +185,7 @@ def parse_html_files(mpName):
     
     insert_idx = 2
     for file in report_file_list[1:]:
-        with open(file,"r") as fd:
+        with open(file,"r", encoding='utf-8') as fd:
             try:
                 soup = BeautifulSoup((fd),features="lxml")
             except:
@@ -237,15 +246,19 @@ def parse_html_files(mpName):
     if div:
         div['class']="report-body no-toc"
     
-    with open(mpName + "_rebuild.html","w") as fd:
+    with open(mpName + "_rebuild.html","w", encoding='utf-8') as fd:
         fd.write(main_soup.prettify(formatter="html"))
 
-    import fixup_reports
-    main_soup = fixup_reports.fixup_2020_soup(main_soup)
+    try:
+        import fixup_reports
+        main_soup = fixup_reports.fixup_2020_soup(main_soup)
+    except:
+        pass
     
     # moving rebuild reports down in to a sub directory
-    with open("combined_incr_rebuild.tmp","w") as fd:
-        fd.write(main_soup.prettify(formatter="html"))
+    with open("combined_incr_rebuild.tmp","w",encoding='utf-8') as fd:
+        data = main_soup.prettify(formatter="html")
+        fd.write(data)
     
     # moving rebuild reports down in to a sub directory
     if not os.path.exists("rebuild_reports"):

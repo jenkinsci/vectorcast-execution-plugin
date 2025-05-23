@@ -1,7 +1,7 @@
 <!--
   The MIT License
 
-  Copyright 2016 Vector Software, East Greenwich, Rhode Island USA
+  Copyright 2024 Vector Informatik, GmbH.
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -32,18 +32,6 @@
          xmlns:p="/lib/hudson/project"
          xmlns:vc="/lib/VectorCAST">
 
-    <f:optionalBlock title="${%VCSetup.information}" checked="${instance.showDetails}" inline="true" 
-                     help="/plugin/vectorcast-execution/help-setupCommand.html">
-      <f:section title="${%VCSetup.Control.Project}">
-        <f:entry title="${%VCSetup.Control.Project.path.title}" description="${%VCSetup.Control.Project.path.description}"
-                 help="/plugin/vectorcast-execution/help-projectPath.html">
-          <f:textbox name="manageProjectName" size="50" required="true" value="${instance.manageProjectName}"/>
-        </f:entry>
-      </f:section>
-      <vc:retry></vc:retry>
-      <vc:jobOptionsNoDefault></vc:jobOptionsNoDefault>
-      <vc:scripts></vc:scripts>
-      <vc:options></vc:options>
-    </f:optionalBlock>
+        <p>${%VCSetup.information}</p>
 </j:jelly>
 

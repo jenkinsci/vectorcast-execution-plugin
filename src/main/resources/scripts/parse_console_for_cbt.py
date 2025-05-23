@@ -75,12 +75,14 @@ class ParseConsoleForCBT(object):
         tc_name = ""
         currTestNdx = 0
 
+        tempLine = ""
         for line in console_log:
             try:
+                tempLine = line
                 lineTime, line = line.split(" ",1)
                 line_dto = datetime.strptime(lineTime,"%H:%M:%S.%f")
             except:
-                pass 
+                line = tempLine
 
             line = line.strip()
                         
@@ -96,13 +98,12 @@ class ParseConsoleForCBT(object):
                 hashCode = hashlib.md5(build_dir).hexdigest()
                 
                 if self.verbose:
-                    print ("Parse Dir: " + str(build_dir) + " Hash: " + hashCode)
-                
+                    print ("HashCode: " + hashCode + " for build dir: " + build_dir)                
+                    
                 started = True
                 if hashCode not in  self.environmentDict.keys():
                     self.environmentDict[hashCode] = [{},{},{}]
                 continue
-                
 
             if started: 
                 # system test
@@ -165,7 +166,7 @@ class ParseConsoleForCBT(object):
                     try:
                         self.environmentDict[hashCode][currTestNdx][tc_name][1] = end_tdo
                     except KeyError:
-						# key error would be for the "Error: " when the test case hadn't started
+                        # key error would be for the "Error: " when the test case hadn't started
                         pass                        
 
                 if "Running: " in line:
@@ -207,5 +208,5 @@ if __name__ == '__main__':
         
     parser = ParseConsoleForCBT(True)
     parser.parse(buildLogData)
-    #pprint(parser.parse(buildLogData), width=132)
+    pprint(parser.parse(buildLogData), width=132)
     

@@ -1,0 +1,36 @@
+- name: bug
+  description: Bugs or performance problems
+  color: CC0000
+- name: enhancement
+  description: Enhancement of existing functionality
+  color: 0366d6
+- name: feature
+  color: 1d76db
+  description: New features
+- name: breaking
+  description: Breaking Changes
+  color: e4b21d
+- name: tests
+  description: Enhancement of tests
+  color: 0e8a16
+- name: documentation
+  description: Enhancement of documentation
+  color: bfafea
+- name: internal
+  description: Internal changes without user or API impact
+  color: e6e6e6
+- name: dependencies
+  description: Update of dependencies
+  color: e6e6e6
+- name: java
+  description: Pull requests that update Maven Java dependencies
+  color: b6b6b6
+- name: javascript
+  description: Pull requests that update Node Javascript dependencies
+  color: b6b6b6
+- name: github_actions
+  description: Pull requests that update Github Actions workflows
+  color: 909090
+- name: hacktoberfest
+  description: Pull requests that participate in Hacktoberfest
+  color: 7057ff

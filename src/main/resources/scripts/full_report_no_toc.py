@@ -37,35 +37,40 @@ def generate_full_status(manageProject):
     full_report_name = mpName + "_full_report.html"
     metrics_report_name = mpName + "_metrics_report.html"
 
-    try:
-        from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        api = VCProjectApi(manageProject)
+    # try:
+        # from vector.apps.DataAPI.vcproject_api import VCProjectApi
+        # api = VCProjectApi(manageProject)
         
-        api.report(report_type="MANAGE_STATUS_FULL_REPORT", formats=["HTML"], output_file=full_report_name   , environments=api.Environment.all(), levels = [])
-        api.report(report_type="MANAGE_METRICS_REPORT"    , formats=["HTML"], output_file=metrics_report_name, environments=api.Environment.all(), levels = [])
+        # api.report(report_type="MANAGE_STATUS_FULL_REPORT", formats=["HTML"], output_file=full_report_name   , environments=api.Environment.all(), levels = [])
+        # api.report(report_type="MANAGE_METRICS_REPORT"    , formats=["HTML"], output_file=metrics_report_name, environments=api.Environment.all(), levels = [])
             
-        shutil.copy(full_report_name,full_report_name + "_tmp")
-        fixup_reports.fixup_2020_reports(full_report_name + "_tmp")
+        # shutil.copy(full_report_name,full_report_name + "_tmp")
+        # fixup_reports.fixup_2020_reports(full_report_name + "_tmp")
         
-        shutil.copy(metrics_report_name,metrics_report_name + "_tmp")
-        fixup_reports.fixup_2020_reports(metrics_report_name + "_tmp")
+        # shutil.copy(metrics_report_name,metrics_report_name + "_tmp")
+        # fixup_reports.fixup_2020_reports(metrics_report_name + "_tmp")
 
-        api.close()
+        # api.close()
         
-    except:
-        from managewait import ManageWait
+    # except:
+        
+    from managewait import ManageWait
 
-        cmd = "--project " + manageProject + " --full-status=" + full_report_name
-        manageWait = ManageWait(False, cmd, 30, 1)
-        out_mgt = manageWait.exec_manage(True)
+    cmd = "--project " + manageProject + " --full-status=" + full_report_name
+    manageWait = ManageWait(False, cmd, 30, 1)
+    out_mgt = manageWait.exec_manage(True)
 
-        cmd = "--project " + manageProject + " --create-report metrics"
-        manageWait = ManageWait(False, cmd, 30, 1)
-        out_mgt = manageWait.exec_manage(True)
+    cmd = "--project " + manageProject + " --create-report metrics"
+    manageWait = ManageWait(False, cmd, 30, 1)
+    out_mgt = manageWait.exec_manage(True)
 
-        shutil.copy(full_report_name,full_report_name + "_tmp")
-        shutil.copy(metrics_report_name,metrics_report_name + "_tmp")
-        return out_mgt
+    shutil.copy(full_report_name,full_report_name + "_tmp")
+    fixup_reports.fixup_2020_reports(full_report_name + "_tmp")
+    
+    shutil.copy(metrics_report_name,metrics_report_name + "_tmp")
+    fixup_reports.fixup_2020_reports(metrics_report_name + "_tmp")
+
+    return out_mgt
         
 if __name__ == '__main__':
     manageProject = sys.argv[1]

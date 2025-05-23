@@ -1,0 +1,9 @@
+<div class='report-block'>
+
+  <h3>PC-Lint Plus Source</h3>
+
+  <table id="pclp_source" class='table table-hover table-bordered'>
+    {{sourceHTML}}
+  </table>
+  
+</div>
