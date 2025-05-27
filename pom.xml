@@ -99,7 +99,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>copyartifact</artifactId>
-            <version>749.vfb_dca_a_9b_6549</version>
+            <version>770.va_6c69e063442</version>
         </dependency>
         
         <dependency>
