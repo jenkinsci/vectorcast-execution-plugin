@@ -49,7 +49,7 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
-    * [Version 0.79 (4 May 2025)](#version-079-4-may-2025)
+    * [Version 0.79 (4 Jul 2025)](#version-079-4-jul-2025)
     * [Version 0.78 (1 Apr 2025)](#version-078-1-apr-2025)
     * [Version 0.77 (21 Aug 2024)](#version-077-21-aug-2024)
     * [Version 0.76 (19 Jan 2023)](#version-076-19-jan-2023)
@@ -389,7 +389,7 @@ environment before disabling.  This takes into account environments that are dir
 
 ## Change Log
 
-### Version 0.79 (4 May 2025)
+### Version 0.79 (4 Jul 2025)
 - Moved to minimum Jenkins Version 2.492.3 and Java 21
 - Update pom.xml to get a build of the plugin and to Java21
 - Update NewSingleJob to catch new exception thrown from SecureGroovyScript
