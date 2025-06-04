@@ -124,7 +124,8 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
 # Setup/Configuration
 
 - VectorCAST must be installed and setup on each node.
-- The environment variables **VECTORCAST\_DIR** and **VECTOR\_LICENSE** must be set.
+- The environment variables **VECTORCAST\_DIR** must be set.
+- For licensing, if using **New Vector License Manager (NVLM)** the **VECTOR\_LICENSE\_FILE** should be unset; otherwise, set to the FlexLM server address
 - Jenkins must be installed and setup.
 - **BUILD\_URL** must be defined (in Jenkins-\>Manage Jenkins-\>Configure System and define 'Jenkins URL' and save the settings).
 
