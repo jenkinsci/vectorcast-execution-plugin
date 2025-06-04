@@ -49,7 +49,7 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
-    * [Version 0.78 (15 Mar 2025)](#version-078-3-mar-2025)
+    * [Version 0.78 (14 Jun 2025)](#version-078-14-jun-2025)
     * [Version 0.77 (21 Aug 2024)](#version-077-21-aug-2024)
     * [Version 0.76 (19 Jan 2023)](#version-076-19-jan-2023)
     * [Version 0.75 (23 Dec 2022)](#version-075-23-dec-2022)
@@ -235,7 +235,7 @@ It shows coverage trends and allows drilling down to more detailed coverage info
 - Trend charts of the coverage over time
 
 :warning: Legacy Plugin Info
-This is a legacy plugin and will have no futher development beyond bug fixes and security updates
+This is a legacy plugin and will have no further development beyond bug fixes and security updates
 
 <img src="docs/images/vcc_cov_report.png" width="700" />
 
@@ -265,18 +265,18 @@ Use Coverage History marks build as failed if statement or branch coverage decre
 Use Strict Test Case Importing allows the job to mark individual test cases as failures if errors encountered during test script import.  This option enables strict testcase importing for the VectorCAST Project.  This option give a more reliable metrics for pass/fail test cases as without strict test case import, bad test cases are just ignored.  The default is enabled.
 
 #### Use Requirements Gateway 3 capabilities
-This option allows test environments with existing tests linked to an Requirements Gateway v3 implementation, that uses seperate .json files, to execute in parallel and export data at the end of the run.
+This option allows test environments with existing tests linked to a Requirements Gateway v3 implementation, which uses separate .json files, to execute in parallel and export data at the end of the run.
 
 #### Use Imported Results
-Use Imported Results allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with _Use Change Based Testing_. The user can selected between internal imported results or external result files
+Use Imported Results allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with _Use Change Based Testing_. The user can select between internal imported results or external result files
 
 <img src="docs/images/use_imported_results.png" width="345" height="151" />
 
 #### Using Local Imported Results
-When using imported results and the Use Local Imported Results option, the job will export results from the current build and save that result file as an job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
+When using imported results and the Use Local Imported Results option, the job will export results from the current build and save that result file as a job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change-based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
 
 #### Using External Imported Results
-When using imported results and the Use External Result File option, the job will use an external results from the a specified location to use as a baseline for the the current job. If existing build artifacts exist, the combined results will be used for change based testing.  The user will need to specify an external result filename (.vcr) in the External Result Filename option.  This file would be typically stored in the repository.  This external result file could be updated by a main branch or periodic build to establish a current baseline.
+When using imported results and the Use External Result File option, the job will use an external result from a specified location to use as a baseline for the current job. If existing build artifacts exist, the combined results will be used for change based testing.  The user will need to specify an external result filename (.vcr) in the External Result Filename option.  This file would be typically stored in the repository.  This external result file could be updated by a main branch or periodic build to establish a current baseline.
 
 ### Additional Tools
 
@@ -299,8 +299,8 @@ For [PC-lint Plus](https://pclintplus.com/), the user must provide the command o
 For [Squore](https://www.vector.com/int/en/products/products-a-z/software/squore/) analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
 
 #### TESTinsights
-For [TESTinsights](https://www.vector.com/int/en/products/products-a-z/software/vectorcast/vectorcast-testinsights), if the user is using Git or Subversion for SCM, the plugin will attempt to have the SCM version linked to the TESTinsights project for team access and distributed change based testing. The user must provide the following:
-    - TESTinsights URL - The URL to TESTinsights server and project (Use Copy Team Area Url).
+For [TESTinsights](https://www.vector.com/int/en/products/products-a-z/software/vectorcast/vectorcast-testinsights), if the user is using Git or Subversion for SCM, the plugin will attempt to have the SCM version linked to the TESTinsights project for team access and distributed change-based testing. The user must provide the following:
+    - TESTinsights URL - The URL to TESTinsights server and project (Use Copy Team Area URL).
     - TESTinsights Project - The Project Name in TESTinsights to push the results (leave blank to use the Jenkins Job Name).
     - TESTinsights Credential ID - The Credential ID from Jenkins for TESTinsights.
     - The proxy to push to TESTinsights server in the format **proxy.address:port** (optional)
@@ -371,7 +371,7 @@ For non-pipeline jobs, JUnit publisher will fail any environments published with
 
 ### Potential loss of requirements information
 
-For customers using VectorCAST's requirements gateway, there's a potential for loss of requirements data when running test environments in parallel while using a shared requriments database.
+For customers using VectorCAST's requirements gateway, there's a potential for loss of requirements data when running test environments in parallel while using a shared requirements database.
 
 ### Test and code coverage reporting with Imported Results
 
@@ -384,14 +384,17 @@ VectorCAST/QA projects cannot use imported results for change based testing
 ### Disabled environments may add coverage metrics
 
 In rare cases, VectorCAST projects will have disabled environment with results stored before they were disabled.  In cases where the disabled environments share source file with enabled environments, this may lead addition coverage metrics.  It is recommended to clean the 
-environment before disabling.  This takes into account enviornments that are directly disabled or disabled at the Compiler or TestSuite Nodes.  To avoid this, please clean environments before disabling them
+environment before disabling.  This takes into account environments that are directly disabled or disabled at the Compiler or TestSuite Nodes.  To avoid this, please clean environments before disabling them
 
 ## Change Log
 
-### Version 0.78 (3 Mar 2025)
+### Version 0.78 (14 Jun 2025)
 - Moved to minimum Jenkins version: 2.452.1 and Java 11
+- Changed default coverage plugin on new job creation
+    - Changed from  [Legacy VectorCAST Coverage Plugin](https://plugins.jenkins.io/vectorcast-coverage)
+    - Changed to    [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage)
 - Adding in following capabilities
-    - Extended Cobertura format output for use with [Jenkins Coverage Plugin](https://github.com/jenkinsci/coverage-plugin)
+    - Extended Cobertura format output for use with Jenkins Coverage Plugin
     - Unit Test Data format output in SonarQube format 
     - Adding capability to generate an index.html for all .html reports
 - Refactored New Job code to reduce duplication
