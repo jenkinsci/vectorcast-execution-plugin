@@ -403,6 +403,8 @@ environment before disabling.  This takes into account environments that are dir
 - Removed VectorCAST Project Environment report
 - Removed extra options for Update job as the plugin doesn't support Update job
 - Added a check for bad option combination
+- Added parallel full report generation to reduce time to generate reports
+- Fixed issue with QIK file storage location and parallel build
 
 ### Version 0.77 (21 Aug 2024)
 - Updated for findbugs to spotbugs
