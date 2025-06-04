@@ -6,7 +6,7 @@
 
 This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Test results are display with the [Jenkins JUnit Plugin](https://plugins.jenkins.io/junit/) and code coverage is displayed using either
 - [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage)
-- [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
+- [Legacy VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
 
 # Table of Contents
 
@@ -194,7 +194,7 @@ For Pipeline Jobs, the plugin processes the build log to determine which tests h
 
 ### Coverage Display Selection
 
-The VectorCAST Execution Plugin is transitioning from using the older VectorCAST Coverage Plugin (Legacy Plugin) to the Jenkins Coverage Plugin.  Until that transition is complete, the use is offered a choice to decide which coverage display to use.
+The VectorCAST Execution Plugin is transitioning from using the legacy VectorCAST Coverage Plugin to the Jenkins Coverage Plugin.  Until that transition is complete, the use is offered a choice to decide which coverage display to use.
 
 <img src="docs/images/coverage_display_config.png" width="300" height="137" />
 
@@ -225,7 +225,7 @@ Settings to process VectorCAST Coverage Results:
 - Single Job - The setup for the Single Job will be one of the post-build steps.
 
 #### Information about legacy VectorCAST Coverage Plugin
-The [VectorCAST Coverage Plugin](https://plugins.jenkins.io/vectorcast-coverage/) Processes code coverage metrics from for VectorCAST Projects
+The  [Legacy VectorCAST Coverage Plugin](https://plugins.jenkins.io/vectorcast-coverage/) Processes code coverage metrics from for VectorCAST Projects
 This legacy plugin allows you to capture code coverage reports from VectorCAST Projects. Jenkins will generate the trend report of coverage. This plugin is used automatically with the VectorCAST Execution Plugin
 Coverage information from tests runs that has been converted to XML files is read and displayed by this plugin. 
 
