@@ -6,7 +6,7 @@
 
 This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Test results are display with the [Jenkins JUnit Plugin](https://plugins.jenkins.io/junit/) and code coverage is displayed using either
 - [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage)
-- [VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
+- [Legacy VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
 
 # Table of Contents
 
@@ -35,7 +35,6 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Additional Tools](#additional-tools)
       * [PC-lint Plus](#pc-lint-plus)
       * [Squore](#squore)
-      * [TESTinsights](#testinsights)
     * [Controlling Where Jobs Run](#controlling-where-jobs-run)
   * [Build Summary](#build-summary)
   * [Test Results](#test-results)
@@ -49,8 +48,8 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
-    * [Version 0.79 (4 May 2025)](#version-079-4-may-2025)
-    * [Version 0.78 (1 Apr 2025)](#version-078-1-apr-2025)
+    * [Version 0.79 (4 Jul 2025)](#version-079-4-jul-2025)
+    * [Version 0.78 (14 Jun 2025)](#version-078-14-jun-2025)
     * [Version 0.77 (21 Aug 2024)](#version-077-21-aug-2024)
     * [Version 0.76 (19 Jan 2023)](#version-076-19-jan-2023)
     * [Version 0.75 (23 Dec 2022)](#version-075-23-dec-2022)
@@ -125,7 +124,8 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
 # Setup/Configuration
 
 - VectorCAST must be installed and setup on each node.
-- The environment variables **VECTORCAST\_DIR** and **VECTOR\_LICENSE** must be set.
+- The environment variables **VECTORCAST\_DIR** must be set.
+- For licensing, if using **New Vector License Manager (NVLM)** the **VECTOR\_LICENSE\_FILE** should be unset; otherwise, set to the FlexLM server address
 - Jenkins must be installed and setup.
 - **BUILD\_URL** must be defined (in Jenkins-\>Manage Jenkins-\>Configure System and define 'Jenkins URL' and save the settings).
 
@@ -194,7 +194,7 @@ For Pipeline Jobs, the plugin processes the build log to determine which tests h
 
 ### Coverage Display Selection
 
-The VectorCAST Execution Plugin is transitioning from using the older VectorCAST Coverage Plugin (Legacy Plugin) to the Jenkins Coverage Plugin.  Until that transition is complete, the use is offered a choice to decide which coverage display to use.
+The VectorCAST Execution Plugin is transitioning from using the legacy VectorCAST Coverage Plugin to the Jenkins Coverage Plugin.  Until that transition is complete, the use is offered a choice to decide which coverage display to use.
 
 <img src="docs/images/coverage_display_config.png" width="300" height="137" />
 
@@ -225,7 +225,7 @@ Settings to process VectorCAST Coverage Results:
 - Single Job - The setup for the Single Job will be one of the post-build steps.
 
 #### Information about legacy VectorCAST Coverage Plugin
-The [VectorCAST Coverage Plugin](https://plugins.jenkins.io/vectorcast-coverage/) Processes code coverage metrics from for VectorCAST Projects
+The  [Legacy VectorCAST Coverage Plugin](https://plugins.jenkins.io/vectorcast-coverage/) Processes code coverage metrics from for VectorCAST Projects
 This legacy plugin allows you to capture code coverage reports from VectorCAST Projects. Jenkins will generate the trend report of coverage. This plugin is used automatically with the VectorCAST Execution Plugin
 Coverage information from tests runs that has been converted to XML files is read and displayed by this plugin. 
 
@@ -266,7 +266,7 @@ Use Coverage History marks build as failed if statement or branch coverage decre
 Use Strict Test Case Importing allows the job to mark individual test cases as failures if errors encountered during test script import.  This option enables strict testcase importing for the VectorCAST Project.  This option give a more reliable metrics for pass/fail test cases as without strict test case import, bad test cases are just ignored.  The default is enabled.
 
 #### Use Requirements Gateway 3 capabilities
-This option allows test environments with existing tests linked to a Requirements Gateway v3 implementation, that uses separate .json files, to execute in parallel and export data at the end of the run.
+This option allows test environments with existing tests linked to a Requirements Gateway v3 implementation, which uses separate .json files, to execute in parallel and export data at the end of the run.
 
 #### Use Imported Results
 Use Imported Results allows jobs to previous test results as input for the current job execution phase.  This option allows VectorCAST Change Based Testing to have a known result to work from.  This option works in conjunction with _Use Change Based Testing_. The user can select between internal imported results or external result files
@@ -274,7 +274,7 @@ Use Imported Results allows jobs to previous test results as input for the curre
 <img src="docs/images/use_imported_results.png" width="345" height="151" />
 
 #### Using Local Imported Results
-When using imported results and the Use Local Imported Results option, the job will export results from the current build and save that result file as a job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
+When using imported results and the Use Local Imported Results option, the job will export results from the current build and save that result file as a job artifact. The next build will pull the result archive from the last SUCCESS or UNSTABLE build and use change-based testing against that result baseline. If existing build artifacts exist, the combined results will be used for change based testing.
 
 #### Using External Imported Results
 When using imported results and the Use External Result File option, the job will use an external result from a specified location to use as a baseline for the current job. If existing build artifacts exist, the combined results will be used for change based testing.  The user will need to specify an external result filename (.vcr) in the External Result Filename option.  This file would be typically stored in the repository.  This external result file could be updated by a main branch or periodic build to establish a current baseline.
@@ -284,7 +284,6 @@ When using imported results and the Use External Result File option, the job wil
 Other Vector tool integrations are supported by this plugin.  
 -   PC-lint Plus
 -   Squore
--   TESTinsights
 
 ![](docs/images/additional.png)
 
@@ -299,12 +298,6 @@ For [PC-lint Plus](https://pclintplus.com/), the user must provide the command o
 #### Squore
 For [Squore](https://www.vector.com/int/en/products/products-a-z/software/squore/) analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
 
-#### TESTinsights
-For [TESTinsights](https://www.vector.com/int/en/products/products-a-z/software/vectorcast/vectorcast-testinsights), if the user is using Git or Subversion for SCM, the plugin will attempt to have the SCM version linked to the TESTinsights project for team access and distributed change based testing. The user must provide the following:
-    - TESTinsights URL - The URL to TESTinsights server and project (Use Copy Team Area URL).
-    - TESTinsights Project - The Project Name in TESTinsights to push the results (leave blank to use the Jenkins Job Name).
-    - TESTinsights Credential ID - The Credential ID from Jenkins for TESTinsights.
-    - The proxy to push to TESTinsights server in the format **proxy.address:port** (optional)
 
 ### Controlling Where Jobs Run
 
@@ -389,8 +382,9 @@ environment before disabling.  This takes into account environments that are dir
 
 ## Change Log
 
-### Version 0.79 (4 May 2025)
+### Version 0.79 (4 Jul 2025)
 - Moved to minimum Jenkins Version 2.492.3 and Java 21
+    - Tested against Jenkins LTS 2.504.1 
 - Update pom.xml to get a build of the plugin and to Java21
 - Update NewSingleJob to catch new exception thrown from SecureGroovyScript
 - Removing support for TESTinsights 
@@ -399,10 +393,13 @@ environment before disabling.  This takes into account environments that are dir
         - Pipeline can access VC_ global vars, but not functions
         - Need to pass all required VC_ global vars to functions
 
-### Version 0.78 (1 Apr 2025)
+### Version 0.78 (14 Jun 2025)
 - Moved to minimum Jenkins version: 2.452.1 and Java 11
+- Changed default coverage plugin on new job creation
+    - Changed from  [Legacy VectorCAST Coverage Plugin](https://plugins.jenkins.io/vectorcast-coverage)
+    - Changed to    [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage)
 - Adding in following capabilities
-    - Extended Cobertura format output for use with [Jenkins Coverage Plugin](https://github.com/jenkinsci/coverage-plugin)
+    - Extended Cobertura format output for use with Jenkins Coverage Plugin
     - Unit Test Data format output in SonarQube format 
     - Adding capability to generate an index.html for all .html reports
 - Refactored New Job code to reduce duplication
@@ -410,6 +407,8 @@ environment before disabling.  This takes into account environments that are dir
 - Removed VectorCAST Project Environment report
 - Removed extra options for Update job as the plugin doesn't support Update job
 - Added a check for bad option combination
+- Added parallel full report generation to reduce time to generate reports
+- Fixed issue with QIK file storage location and parallel build
 
 ### Version 0.77 (21 Aug 2024)
 - Updated for findbugs to spotbugs
