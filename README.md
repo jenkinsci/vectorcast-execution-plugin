@@ -8,6 +8,11 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
 - [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage)
 - [Legacy VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
 
+- Jenkins Version Information:
+    - Development completed on Jenkins LTS 2.492.3 and Java 21
+    - Validated against Jenkins LTS 2.504.2
+    - Validated against Jenkins 2.513
+
 # Table of Contents
 
 <!-- TOC -->
