@@ -383,8 +383,9 @@ environment before disabling.  This takes into account environments that are dir
 ## Change Log
 
 ### Version 0.79 (4 Jul 2025)
-- Moved to minimum Jenkins Version 2.492.3 and Java 21
-    - Tested against Jenkins LTS 2.504.1 
+- Moved to minimum Jenkins LTS 2.492.3 and Java 21
+    - Validated against Jenkins LTS 2.504.2
+    - Validated against Jenkins 2.513
 - Update pom.xml to get a build of the plugin and to Java21
 - Update NewSingleJob to catch new exception thrown from SecureGroovyScript
 - Removing support for TESTinsights 
