@@ -61,18 +61,13 @@ import java.util.logging.Level;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.Files;
+
 import java.nio.file.StandardCopyOption;
 
-import java.util.EnumSet;
 import org.kohsuke.stapler.verb.POST;
 import hudson.model.Item;
 import hudson.security.AccessDeniedException3;
@@ -122,46 +117,10 @@ public class NewPipelineJob extends BaseJob {
             BadOptionComboException {
         super(request, response);
 
-        final int indexNotFound = -1;
-
         JSONObject json = request.getSubmittedForm();
 
         sharedArtifactDirectory = json.optString("sharedArtifactDir", "");
         pipelineSCM = json.optString("scmSnippet", "").trim();
-
-        String[] lines = pipelineSCM.split("\n");
-
-        List<String> scmList = new ArrayList<String>();
-        scmList.add("git");
-        scmList.add("svn");
-
-        String url = "";
-        String scmTechnology = "";
-
-        for (String line : lines) {
-
-            for (String scm : scmList) {
-                if (line.startsWith(scm)) {
-                    scmTechnology = scm;
-
-                    if (line.indexOf("url:") == indexNotFound) {
-                        String[] elements = line.split(",");
-                        for (String ele : elements) {
-
-                            if (ele.startsWith("url:")) {
-                                String[] eleList = ele.split(" ");
-                                url = eleList[eleList.length - 1];
-                            }
-                        }
-                    } else {
-                        String[] urlEle = line.split(" ");
-                        url = urlEle[urlEle.length - 1];
-                    }
-                }
-            }
-        }
-        setTestInsightsScmUrl(url.replace("'", ""));
-        setTestInsightsScmTech(scmTechnology);
 
         singleCheckout = json.optBoolean("singleCheckout", false);
 
@@ -200,10 +159,6 @@ public class NewPipelineJob extends BaseJob {
 
         if (pipelineSCM.length() != 0 && absPath) {
             throw new ScmConflictException(pipelineSCM, mpName);
-        }
-
-        if (getTestInsightsProject().equals("env.JOB_BASE_NAME")) {
-            setTestInsightsProject("${JOB_BASE_NAME}");
         }
     }
 
@@ -357,46 +312,27 @@ public class NewPipelineJob extends BaseJob {
         doCreate();
     }
 
-    private static Path createTempFile(final Path tempDirChild)
-            throws UncheckedIOException {
+    /**
+     * Creates a named temp file.
+     *
+     * @return File - temporary file
+     * @throws UncheckedIOException
+     */
+    private static Path createNamedTempFile() throws UncheckedIOException {
         try {
-            if (tempDirChild.getFileSystem().supportedFileAttributeViews().
-                contains("posix")) {
-                // Explicit permissions setting is only required
-                // on unix-like systems because
-                // the temporary directory is shared between all users.
-                // This is not necessary on Windows,
-                // each user has their own temp directory
-                final EnumSet<PosixFilePermission> posixFilePermissions =
-                        EnumSet.of(
-                            PosixFilePermission.OWNER_READ,
-                            PosixFilePermission.OWNER_WRITE
-                        );
-                if (!Files.exists(tempDirChild)) {
-                    Files.createFile(
-                        tempDirChild,
-                        PosixFilePermissions
-                            .asFileAttribute(posixFilePermissions)
-                        );
-                } else {
-                    Files.setPosixFilePermissions(
-                    tempDirChild,
-                    posixFilePermissions
-                    ); // GOOD: Good has permissions `-rw-------`,
-                       //or will throw an exception if this fails
-                }
-            } else if (!Files.exists(tempDirChild)) {
-                // On Windows, we still need to create the directory,
-                // when it doesn't already exist.
-                Files.createDirectory(tempDirChild);
+            Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
+            Path tempFile = tempDir.resolve("config_temp.xml");
+
+            if (!Files.exists(tempFile)) {
+                Files.createFile(tempFile);
             }
 
-            return tempDirChild.toAbsolutePath();
-        } catch (IOException exception) {
-            throw new UncheckedIOException("Failed to create temp file",
-                exception);
+            return tempFile.toAbsolutePath();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Named temp file create failed", e);
         }
     }
+
 
     /**
      * Retrieves config.xml from the jar and writes it to the systems temp.
@@ -416,7 +352,7 @@ public class NewPipelineJob extends BaseJob {
             in = getPipelineConfigXML().openStream();
         }
 
-        configFile = createTempFile(Paths.get("config_temp.xml"));
+        configFile = createNamedTempFile();
 
         try {
             Files.copy(in, configFile, StandardCopyOption.REPLACE_EXISTING);
@@ -568,55 +504,42 @@ public class NewPipelineJob extends BaseJob {
             + "//\n"
             + "// ===========================================================\n"
             + "\n"
-            + "VC_Manage_Project  = \'" + getManageProjectName() + "\'\n"
-            + "VC_EnvSetup        = '''" + setup + "'''\n"
-            + "VC_Build_Preamble  = \"" + preamble + "\"\n"
-            + "VC_EnvTeardown     = '''" + teardown + "'''\n"
+            + "def VC_Manage_Project  = \'" + getManageProjectName() + "\'\n"
+            + "def VC_EnvSetup        = '''" + setup + "'''\n"
+            + "def VC_Build_Preamble  = \"" + preamble + "\"\n"
+            + "def VC_EnvTeardown     = '''" + teardown + "'''\n"
             + "def scmStep () { " + pipelineSCM + " }\n"
-            + "VC_usingSCM = "
+            + "def VC_usingSCM = "
             + String.valueOf(pipelineSCM.length() != 0) + "\n"
-            + "VC_postScmStepsCmds = '''" + postCheckoutCmds + "'''\n"
-            + "VC_sharedArtifactDirectory = '''"
+            + "def VC_postScmStepsCmds = '''" + postCheckoutCmds + "'''\n"
+            + "def VC_sharedArtifactDirectory = '''"
             + sharedArtifactDirectory + "'''\n"
-            + "VC_Agent_Label = '" + getNodeLabel() + "'\n"
-            + "VC_waitTime = '"  + getWaitTime() + "'\n"
-            + "VC_waitLoops = '" + getWaitLoops() + "'\n"
-            + "VC_maxParallel = " + getMaxParallel().toString() + "\n"
-            + "VC_useOneCheckoutDir = " + singleCheckout + "\n"
-            + "VC_UseCILicense = " + vcUseCi + "\n"
-            + "VC_useCBT = " + incremental + "\n"
-            + "VC_useCoveragePlugin = " + getUseCoveragePlugin() + "\n"
-            + "VC_createdWithVersion = '"
+            + "def VC_Agent_Label = '" + getNodeLabel() + "'\n"
+            + "def VC_waitTime = '"  + getWaitTime() + "'\n"
+            + "def VC_waitLoops = '" + getWaitLoops() + "'\n"
+            + "def VC_maxParallel = " + getMaxParallel().toString() + "\n"
+            + "def VC_useOneCheckoutDir = " + singleCheckout + "\n"
+            + "def VC_useCILicense = " + vcUseCi + "\n"
+            + "def VC_useCBT = " + incremental + "\n"
+            + "def VC_useCoveragePlugin = " + getUseCoveragePlugin() + "\n"
+            + "def VC_createdWithVersion = '"
             + VcastUtils.getVersion().orElse("Unknown") + "'\n"
-            + "VC_usePCLintPlus = "
+            + "def VC_usePCLintPlus = "
             + String.valueOf(getPclpCommand().length() != 0) + "\n"
-            + "VC_pclpCommand = '" + getPclpCommand() + "'\n"
-            + "VC_pclpResultsPattern = '" + getPclpResultsPattern() + "'\n"
-            + "VC_useSquore = "
+            + "def VC_pclpCommand = '" + getPclpCommand() + "'\n"
+            + "def VC_pclpResultsPattern = '" + getPclpResultsPattern() + "'\n"
+            + "def VC_useSquore = "
             +   String.valueOf(getSquoreCommand().length() != 0) + "\n"
-            + "VC_squoreCommand = '''" + getSquoreCommand() + "'''\n"
-            + "VC_useTESTinsights = "
-            + String.valueOf(getTestInsightsUrl().length() != 0) + "\n"
-            + "VC_TESTinsights_URL = '" + getTestInsightsUrl() + "'\n"
-            + "VC_TESTinsights_Project = \""
-            +   getTestInsightsProject() + "\"\n"
-            + "VC_TESTinsights_Proxy = '" + getTestInsightsProxy() + "'\n"
-            + "VC_TESTinsights_Credential_ID = '"
-            + getTestInsightsCredentialsId() + "'\n"
-            + "VC_TESTinsightsScmUrl = '"
-            +   getTestInsightsScmUrl() + "'\n"
-            + "VC_TESTinsights_SCM_Tech = '"
-            +   getTestInsightsScmTech() + "'\n"
-            + "VC_TESTinsights_Revision = \"\"\n"
-            + "VC_useCoverageHistory = " + getUseCoverageHistory() + "\n"
-            + "VC_useStrictImport = "    + getUseStrictTestcaseImport() + "\n"
-            + "VC_useRGW3 = " + getUseRGW3() + "\n"
-            + "VC_useImportedResults = " + getUseImportedResults() + "\n"
-            + "VC_useLocalImportedResults = "
+            + "def VC_squoreCommand = '''" + getSquoreCommand() + "'''\n"
+            + "def VC_useCoverageHistory = " + getUseCoverageHistory() + "\n"
+            + "def VC_useStrictImport = " + getUseStrictTestcaseImport() + "\n"
+            + "def VC_useRGW3 = " + getUseRGW3() + "\n"
+            + "def VC_useImportedResults = " + getUseImportedResults() + "\n"
+            + "def VC_useLocalImportedResults = "
             + getUseLocalImportedResults() + "\n"
-            + "VC_useExternalImportedResults = "
+            + "def VC_useExternalImportedResults = "
             + getUseExternalImportedResults() + "\n"
-            + "VC_externalResultsFilename = \""
+            + "def VC_externalResultsFilename = \""
             + getExternalResultsFilename() + "\"\n"
             + "\n";
 

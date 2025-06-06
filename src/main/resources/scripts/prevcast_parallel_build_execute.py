@@ -131,7 +131,8 @@ class ParallelExecute(object):
         self.running_jobs = 0
         self.lock = Lock()
         self.system_test_lock = Lock()
-        self.mpName = self.manageProject.replace(".vcm","").rsplit("/",1)[1]
+        self.mpName = self.manageProject.replace(".vcm","")
+        self.mpName = os.path.basename(self.mpName)
         
     def th_Print (self, str):
         self.lock.acquire()

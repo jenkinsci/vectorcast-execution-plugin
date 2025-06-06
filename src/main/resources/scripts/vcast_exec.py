@@ -38,9 +38,13 @@ except:
         vc_script = os.path.join(os.environ['WORKSPACE'], "vc_scripts", "generate-results.py")
         import imp
         generate_results = imp.load_source("generate_results", vc_script)
-    
+
+if sys.version_info[0] < 3:
+    python_path_updates = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "python")
+    sys.path.append(python_path_updates)
+
 try:
-    import vector.apps.parallel.parallel_build_execute as parallel_build_execute
+    import parallel_build_execute
 except:
     import prevcast_parallel_build_execute as parallel_build_execute
 
@@ -309,10 +313,10 @@ class VectorCASTExecute(object):
             generate_sonarqube_testresults.run(self.FullMP, self.xml_data_dir)
         
     def runPcLintPlusMetrics(self):
-        print("Creating PC-lint Plus Metrics")
         if not checkVectorCASTVersion(21):
             print("Cannot create PC-Lint Plus HTML report. Please upgrade VectorCAST")
         else:
+            print("Creating PC-lint Plus Metrics")
             import generate_pclp_reports 
             os.makedirs(os.path.join(self.xml_data_dir,"pclp"))
             report_name = os.path.join(self.xml_data_dir,"pclp","gl-code-quality-report.json")
@@ -325,12 +329,15 @@ class VectorCASTExecute(object):
             
     def runReports(self):
         if self.aggregate:
+            print("Creating Aggregate Coverage Report")
             self.manageWait.exec_manage_command ("--create-report=aggregate --output=" + self.mpName + "_aggregate_report.html")
             self.needIndexHtml = True
         if self.metrics:
+            print("Creating Metrics Report")
             self.manageWait.exec_manage_command ("--create-report=metrics --output=" + self.mpName + "_metrics_report.html")
             self.needIndexHtml = True
         if self.fullstatus:
+            print("Creating Full Status Report")
             self.manageWait.exec_manage_command ("--full-status=" + self.mpName + "_full_status_report.html")
             self.needIndexHtml = True
             
@@ -342,6 +349,7 @@ class VectorCASTExecute(object):
                 os.remove(file)
                 
         if checkVectorCASTVersion(21):
+            print("Creating Test Case Management HTML report")
             from vector.apps.DataAPI.vcproject_api import VCProjectApi
                                    
             with VCProjectApi(self.FullMP) as vcprojApi:
@@ -353,12 +361,14 @@ class VectorCASTExecute(object):
                     
                     report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_management_report.html"
                     report_name = os.path.join("management",report_name)
+                    print(f"Creating Test Case Management HTML report for {env.name} in {report_name}")
                     env.api.report(report_type="MANAGEMENT_REPORT", formats=["HTML"], output_file=report_name)
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
 
         
     def exportRgw(self):
+        print("Creating RGW Exports")
         rgw.updateReqRepo(VC_Manage_Project=self.FullMP, VC_Workspace=os.getcwd() , top_level=False)
         self.manageWait.exec_manage_command ("--clicast-args rgw export")
 
@@ -373,8 +383,12 @@ class VectorCASTExecute(object):
         else:
             output = ""
             
-        if self.jobs != "1" and checkVectorCASTVersion(20, True):
+        if checkVectorCASTVersion(25, False):
+            useParallelManageCommand = True
+        else:
+            useParallelManageCommand = False
             
+        if self.jobs != "1" and checkVectorCASTVersion(20, True) and not useParallelManageCommand:
             # setup project for parallel execution
             self.manageWait.exec_manage_command ("--config VCAST_DEPENDENCY_CACHE_DIR=./vcqik")
 
@@ -398,7 +412,11 @@ class VectorCASTExecute(object):
             parallel_build_execute.parallel_build_execute(callStr)
 
         else:      
-            cmd = "--" + self.build_execute + " " + self.useCBT + self.level_option + self.env_option + output 
+            if useParallelManageCommand:
+                jstr = "--jobs="+str(self.jobs)
+            else:
+                jstr = ""
+            cmd = "--" + self.build_execute + " " + self.useCBT + self.level_option + self.env_option + " " + jstr + " " + output 
             build_log = self.manageWait.exec_manage_command (cmd)
             open(self.build_log_name,"w").write(build_log)
 
@@ -465,7 +483,6 @@ if __name__ == '__main__':
         print ("exiting...")
         sys.exit(-1)
 
-        
     vcExec = VectorCASTExecute(args)
     
     if args.build_execute or args.build:
@@ -489,10 +506,6 @@ if __name__ == '__main__':
     if args.aggregate or args.metrics or args.fullstatus:
         vcExec.runReports()
 
-    if vcExec.useJunitFailCountPct:
-        print("--exit_with_failed_count=" + args.exit_with_failed_count + " specified.  Fail Percent = " + str(round(vcExec.failed_pct,0)) + "% Return code: ", str(vcExec.failed_count))
-        sys.exit(vcExec.failed_count)
-        
     if args.tcmr:
         vcExec.generateTestCaseMgtRpt()
 
@@ -501,4 +514,7 @@ if __name__ == '__main__':
         
     if args.export_rgw:
         vcExec.exportRgw()
+    if vcExec.useJunitFailCountPct:
+        print("--exit_with_failed_count=" + args.exit_with_failed_count + " specified.  Fail Percent = " + str(round(vcExec.failed_pct,0)) + "% Return code: ", str(vcExec.failed_count))
+        sys.exit(vcExec.failed_count)
         

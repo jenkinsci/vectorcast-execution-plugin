@@ -36,6 +36,7 @@ except:
 import sys, os
 from collections import defaultdict
 from pprint import pprint
+import argparse
 
 fileList = []
 
@@ -751,19 +752,17 @@ if __name__ == '__main__':
         print("Cannot create Cobertura metrics. Please upgrade VectorCAST")
         sys.exit()
             
-    extended = False
-    azure = False
+    parser = argparse.ArgumentParser()
+    parser.add_argument('ManageProject',     help='Manager Project Name')
+    parser.add_argument('-e', '--extended',  help='Enabled extended Cobertura format', action="store_true", default=False)
+    parser.add_argument('-a', '--azure',     help='Generate results to target Azure', action="store_true", default=False)
+    parser.add_argument('--xml_data_dir',    help='Set the base directory of the xml_data directory. Default is the workspace directory', default = 'xml_data')
+    args = parser.parse_args()
+    extended = args.extended
+    azure = args.azure
     
-    inFile = sys.argv[1]
-    try:
-        if "--azure" == sys.argv[2]:
-            azure = True
-            print ("using azure mode")
-        elif "--extended" == sys.argv[2]:
-            extended = True
-    except Exception as e:
-        azure = False        
-        extended = False        
+    inFile = args.ManageProject
+    xml_data_dir = args.xml_data_dir
         
     generateCoverageResults(inFile, azure, xml_data_dir = "xml_data", verbose = False, extended = extended)
 

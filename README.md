@@ -8,6 +8,11 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
 - [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage)
 - [Legacy VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
 
+### Jenkins Version Information:
+- Development completed on Jenkins LTS 2.492.3 and Java 21
+- Validated against Jenkins LTS 2.504.2
+- Validated against Jenkins 2.513
+
 # Table of Contents
 
 <!-- TOC -->
@@ -35,7 +40,6 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Additional Tools](#additional-tools)
       * [PC-lint Plus](#pc-lint-plus)
       * [Squore](#squore)
-      * [TESTinsights](#testinsights)
     * [Controlling Where Jobs Run](#controlling-where-jobs-run)
   * [Build Summary](#build-summary)
   * [Test Results](#test-results)
@@ -49,6 +53,7 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
+    * [Version 0.79 (4 Jul 2025)](#version-079-4-jul-2025)
     * [Version 0.78 (14 Jun 2025)](#version-078-14-jun-2025)
     * [Version 0.77 (21 Aug 2024)](#version-077-21-aug-2024)
     * [Version 0.76 (19 Jan 2023)](#version-076-19-jan-2023)
@@ -284,7 +289,6 @@ When using imported results and the Use External Result File option, the job wil
 Other Vector tool integrations are supported by this plugin.  
 -   PC-lint Plus
 -   Squore
--   TESTinsights
 
 ![](docs/images/additional.png)
 
@@ -298,13 +302,6 @@ For [PC-lint Plus](https://pclintplus.com/), the user must provide the command o
 ```
 #### Squore
 For [Squore](https://www.vector.com/int/en/products/products-a-z/software/squore/) analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
-
-#### TESTinsights
-For [TESTinsights](https://www.vector.com/int/en/products/products-a-z/software/vectorcast/vectorcast-testinsights), if the user is using Git or Subversion for SCM, the plugin will attempt to have the SCM version linked to the TESTinsights project for team access and distributed change-based testing. The user must provide the following:
-    - TESTinsights URL - The URL to TESTinsights server and project (Use Copy Team Area URL).
-    - TESTinsights Project - The Project Name in TESTinsights to push the results (leave blank to use the Jenkins Job Name).
-    - TESTinsights Credential ID - The Credential ID from Jenkins for TESTinsights.
-    - The proxy to push to TESTinsights server in the format **proxy.address:port** (optional)
 
 ### Controlling Where Jobs Run
 
@@ -388,6 +385,18 @@ In rare cases, VectorCAST projects will have disabled environment with results s
 environment before disabling.  This takes into account environments that are directly disabled or disabled at the Compiler or TestSuite Nodes.  To avoid this, please clean environments before disabling them
 
 ## Change Log
+
+### Version 0.79 (4 Jul 2025)
+- Moved to minimum Jenkins LTS 2.492.3 and Java 21
+    - Validated against Jenkins LTS 2.504.2
+    - Validated against Jenkins 2.513
+- Update pom.xml to get a build of the plugin and to Java21
+- Update NewSingleJob to catch new exception thrown from SecureGroovyScript
+- Removing support for TESTinsights 
+- Update jenkinsfile pipeline script to match up with the latest groovy interpreter
+    - Missing def before globals 
+        - Pipeline can access VC_ global vars, but not functions
+        - Need to pass all required VC_ global vars to functions
 
 ### Version 0.78 (14 Jun 2025)
 - Moved to minimum Jenkins version: 2.452.1 and Java 11

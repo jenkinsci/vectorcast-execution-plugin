@@ -73,7 +73,7 @@ def create_index_html(mpName, isGitLab = False):
     rep_path = pathlib.Path(__file__).parent.resolve()
 
     if usingGitLabCI:
-        output_file="html_reports/index.html"
+        output_file="index.html"
     else:
         output_file="index.html"
         
