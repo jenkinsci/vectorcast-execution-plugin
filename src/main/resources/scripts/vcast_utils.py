@@ -90,8 +90,6 @@ def printVectorLogo():
     print( "                                                                                  ########                         ")
     print( "                                                                                  ####                             ")
 
-
-
 if __name__ == '__main__':
 
     checkVectorCASTVersion(21)
