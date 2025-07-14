@@ -140,6 +140,10 @@ This plugin adds a new top-level menu item to the Jenkins sidebar. Select the **
 
 ![](docs/images/vc_menu_in_sidebar.png)
 
+On newer versions of Jenkins, the location of the **VectorCAST** create job windows is now in the upper right:
+
+![](docs/images/new_vc_location.png)
+
 ## Job Types
 
 <img src="docs/images/job_types.png" width="592" height="323" />
