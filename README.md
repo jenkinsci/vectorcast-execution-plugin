@@ -307,7 +307,6 @@ For [PC-lint Plus](https://pclintplus.com/), the user must provide the command o
 #### Squore
 For [Squore](https://www.vector.com/int/en/products/products-a-z/software/squore/) analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
 
-
 ### Controlling Where Jobs Run
 
 When using a Pipeline Job, the sub jobs are created to run on specific node related to the compiler chosen for the environment. For example:
