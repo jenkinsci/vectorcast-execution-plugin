@@ -167,7 +167,7 @@
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>commons-lang3-api</artifactId>
-            <version>3.17.0-84.vb_b_938040b_078</version>
+            <version>3.18.0-98.v3a_674c06072d</version>
         </dependency>        
 
         <dependency>
