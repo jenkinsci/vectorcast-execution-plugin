@@ -1,4 +1,3 @@
-# Trigger Dependabot re-run
 version: 2
 updates:
   # Maven Dependencies for Jenkins Plugin - Target `tms_079`
@@ -23,14 +22,6 @@ updates:
 
   # GitHub Actions - Still on master
   - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: ""
-
-  # npm - Still on master
-  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"
