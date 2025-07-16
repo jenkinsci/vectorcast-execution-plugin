@@ -305,7 +305,7 @@ For [PC-lint Plus](https://pclintplus.com/), the user must provide the command o
     -hs1 // The height of a message should be 1
 ```
 #### Squore
-For [Squore](https://www.vector.com/int/en/products/products-a-z/software/squore/) analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
+For [Squore](https://www.vector.com/squore/) analysis, the user must provide the Squore command found on the last page of the Squore project's configuration/build page. 
 
 ### Controlling Where Jobs Run
 
