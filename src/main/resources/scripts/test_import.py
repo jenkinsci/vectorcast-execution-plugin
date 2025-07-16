@@ -1,8 +1,13 @@
-import os
+import os, sys
 
 os.environ['JENKINS_URL'] = 'http://localhost:8080/'
 os.environ['USERNAME'] = 'tms'
 os.environ['PASSWORD'] = 'schneider'
+
+if sys.version_info[0] < 3:
+    python_path_updates = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "python")
+    sys.path.append(python_path_updates)
+
 
 
 try:
@@ -34,6 +39,11 @@ try:
             vc_script = os.path.join(os.environ['WORKSPACE'], "vc_scripts", "generate-results.py")
             import imp
             generate_results = imp.load_source("generate_results", vc_script)
+    try:
+        import parallel_build_execute
+    except:
+        import prevcast_parallel_build_execute as parallel_build_execute
+            
     import generate_lcov
     import generate_pclp_reports
     import generate_qa_results_xml
@@ -45,7 +55,6 @@ try:
     import managewait
     import merge_vcr
     import patch_rgw_directory
-    import prevcast_parallel_build_execute
     import safe_open
     import tee_print
     import vcast_exec

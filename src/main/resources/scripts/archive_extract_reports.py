@@ -18,7 +18,16 @@ def extract(verbose = False):
                     if verbose:
                         print("extracting old report " + f.name)
                     tf.extract(f)
-                        
+
+                    # Set timestamp explicitly (Windows fix)
+                    if f.mtime is not None:
+                        full_path = os.path.join(os.getcwd(), f.name)
+                        try:
+                            os.utime(full_path, (f.mtime, f.mtime))
+                        except Exception as e:
+                            if verbose:
+                                print(f"Could not set time for {f.name}: {e}")
+                    
 def archive(verbose = False):
     if os.path.exists(archive_name):
         os.remove(archive_name)

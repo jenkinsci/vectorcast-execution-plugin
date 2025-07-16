@@ -109,15 +109,11 @@ public class NewPipelineTest {
     private void checkAdditionalTools (NewPipelineJob job,
             final String squoreCommand,
             final String pclpCommand,
-            final String pclpResultsPattern,
-            final String testInsightsUrl,
-            final String tiProxy) {
+            final String pclpResultsPattern) {
 
         Assert.assertEquals(squoreCommand, job.getSquoreCommand());
         Assert.assertEquals(pclpCommand, job.getPclpCommand());
         Assert.assertEquals(pclpResultsPattern, job.getPclpResultsPattern());
-        Assert.assertEquals(testInsightsUrl, job.getTestInsightsUrl());
-        Assert.assertEquals(tiProxy, job.getTestInsightsProxy());
     }
 
     @Test
@@ -137,7 +133,6 @@ public class NewPipelineTest {
         Assert.assertEquals(false, job.getUseRGW3());
         Assert.assertEquals(false, job.getUseCoverageHistory());
         Assert.assertEquals("", job.getSharedArtifactDir());
-        Assert.assertEquals("", job.getTestInsightsScmTech());
         Assert.assertNull(job.getEnvironmentSetup());
         Assert.assertNull(job.getExecutePreamble());
         Assert.assertNull(job.getEnvironmentTeardown());
@@ -160,17 +155,13 @@ public class NewPipelineTest {
         jsonForm.put("useCoverageHistory", true);
         jsonForm.put("pclpCommand","call lint_my_code.bat");
         jsonForm.put("pclpResultsPattern","lint_results.xml");
-        jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
         jsonForm.put("squoreCommand","hello squore test world");
-        jsonForm.put("TESTinsights_proxy","TI Proxy 1234@localhost");
         
         NewPipelineJob job = setupTestBasic(jsonForm);
         checkAdditionalTools(job,
                 "hello squore test world",
                 "call lint_my_code.bat",
-                "lint_results.xml",
-                "https://teamservices.vector.com/teamareas/pct",
-                "TI Proxy 1234@localhost");
+                "lint_results.xml");
     }
 
     @Test
@@ -219,7 +210,6 @@ public class NewPipelineTest {
         Assert.assertEquals(false, job.getUseCoveragePlugin());
         Assert.assertEquals(false, job.getUseCoverageHistory());
         Assert.assertNotEquals(-1, job.getSharedArtifactDir().indexOf("/home/jenkins/sharedArtifactDir"));
-        Assert.assertEquals("git", job.getTestInsightsScmTech());
         Assert.assertEquals("call setup.bat", job.getEnvironmentSetup());
         Assert.assertEquals("wr_env.bat", job.getExecutePreamble());
         Assert.assertEquals("close ports", job.getEnvironmentTeardown());
@@ -263,31 +253,6 @@ public class NewPipelineTest {
         checkImportedResults(job, USE_EXTERNAL_IMPORTED_RESULTS, true, EXTERNAL_RESULT_FILENAME);
     }
 
-    @Test
-    public void testGitSCM() throws Exception {
-
-        JSONObject jsonForm = new JSONObject();
-        jsonForm.put("manageProjectName", "project.vcm");
-        jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
-        jsonForm.put("scmSnippet","git 'http://git.com'");
-
-        NewPipelineJob job = setupTestBasic(jsonForm);
-
-        Assert.assertEquals("git", job.getTestInsightsScmTech());
-    }
-
-    @Test
-    public void testSvnSCM() throws Exception {
-
-        JSONObject jsonForm = new JSONObject();
-        jsonForm.put("manageProjectName", "project.vcm");
-        jsonForm.put("TESTinsights_URL","https://teamservices.vector.com/teamareas/pct");
-        jsonForm.put("scmSnippet","svn 'http://svn.com'");
-
-        NewPipelineJob job = setupTestBasic(jsonForm);
-
-        Assert.assertEquals("svn", job.getTestInsightsScmTech());
-    }
     
     /* TODO: Use Parameters */
     /* TODO: Specify Job name */

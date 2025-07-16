@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest]
-        jdk: [11, 17, 21]
+        jdk: [21]
 
     runs-on: ${{ matrix.platform }}
     name: on ${{ matrix.platform }} with JDK ${{ matrix.jdk }}
