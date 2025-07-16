@@ -121,7 +121,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials-binding</artifactId>
-            <version>681.vf91669a_32e45</version>
+            <version>687.689.v1a_f775332fc9</version>
         </dependency>
 
         <!-- Satisfying junit minimum version of junit from groovy-postbuild -->
