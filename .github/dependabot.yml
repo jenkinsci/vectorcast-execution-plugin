@@ -1,33 +1,37 @@
 version: 2
 updates:
-  - package-ecosystem: maven
+  # Maven Dependencies for Jenkins Plugin - Target `tms_079`
+  - package-ecosystem: "maven"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "daily"
+    target-branch: "tms_079"
     open-pull-requests-limit: 10
     commit-message:
       prefix: ""
     ignore:
-      - dependency-name: org.eclipse.collections:eclipse-collections
+      - dependency-name: "org.eclipse.collections:eclipse-collections"
         versions:
           - ">= 10.a"
-      - dependency-name: org.eclipse.collections:eclipse-collections-api
+      - dependency-name: "org.eclipse.collections:eclipse-collections-api"
         versions:
           - ">= 10.a"
-      - dependency-name: net.javacrumbs.json-unit:json-unit-assertj
+      - dependency-name: "net.javacrumbs.json-unit:json-unit-assertj"
         versions:
           - ">= 3.0.0"
 
+  # GitHub Actions - Still on master
   - package-ecosystem: "github-actions"
     directory: "/"
-    commit-message:
-      prefix: ""
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: ""
 
+  # npm - Still on master
   - package-ecosystem: "npm"
     directory: "/"
-    commit-message:
-      prefix: ""
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: ""
