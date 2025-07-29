@@ -27,11 +27,3 @@ updates:
       interval: "daily"
     commit-message:
       prefix: ""
-
-  # npm - Still on master
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: ""
