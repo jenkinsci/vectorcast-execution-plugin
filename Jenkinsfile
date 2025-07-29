@@ -1,0 +1,2 @@
+// file: Jenkinsfile
+buildPlugin()
