@@ -303,6 +303,11 @@ def generate_source():
     return output, listOfContent
 
 def generate_html_report(mpName, input_xml, output_html):
+
+    if not os.path.exists(input_xml):
+        print(f"{input_xml} was not found. Skipping PCLP HTML reporting")
+        return
+
     import pathlib
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
     from vector.apps.ReportBuilder.custom_report import CustomReport
@@ -485,6 +490,11 @@ def write_output(output, filename):
             file.write(output.decode('utf-8'))
 
 def generate_reports(input_xml, output_text = None, output_html = None, output_json = None, output_gitlab = None, full_mp_name = None):
+    
+    if not os.path.exists(input_xml):
+        print(f"{input_xml} was not found. Skipping PCLP reporting")
+        return
+
     msgs = parse_msgs(input_xml)
     msgs.sort(key=lambda msg: (msg.file == "", msg.file, int(msg.line) if msg.line != "" else 0))
     if output_text:

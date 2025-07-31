@@ -64,6 +64,20 @@ class CITool(Enum):
     BAMBOO = "Bamboo"
     UNKNOWN = "Unknown CI/CD"
 
+def displayVersion():
+    versionInfo = "Version Unknown"
+
+    # Get absolute path to directory containing the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Build path to VERSION.txt
+    version_path = os.path.join(script_dir, 'VERSION.txt')    
+    
+    if os.path.exists(version_path):
+        with open(version_path,"r") as fd:
+            versionInfo = fd.read()
+    print("vc_scripts_submodule Version: ", versionInfo)
+
 class VectorCASTExecute(object):
     
     def detect_ci_tool(self):
@@ -124,10 +138,12 @@ class VectorCASTExecute(object):
         self.failed_count = 0
         
         if args.output_dir:
+            self.output_dir = args.output_dir
             self.xml_data_dir = os.path.join(args.output_dir, 'xml_data')
             if not os.path.exists(self.xml_data_dir):
                 os.makedirs(self.xml_data_dir)
         else:
+            self.output_dir = ""
             self.xml_data_dir = "xml_data"
         
         if args.build and not args.build_execute:
@@ -230,7 +246,8 @@ class VectorCASTExecute(object):
                 prj_dir = os.getcwd().replace("\\","/") + "/"
 
             tempHtmlReportList = glob.glob("*.html")
-            tempHtmlReportList += glob.glob(os.path.join(args.html_base_dir, "*.html"))
+            tempHtmlReportList += glob.glob(os.path.join(self.xml_data_dir, "*.html"))
+            tempHtmlReportList += glob.glob(os.path.join(self.html_base_dir, "*.html"))
             htmlReportList = []
 
             for report in tempHtmlReportList:
@@ -240,7 +257,7 @@ class VectorCASTExecute(object):
                     htmlReportList.append(report)
             
             from create_index_html import create_index_html
-            create_index_html(self.FullMP, self.ciTool == CITool.GITLAB)
+            create_index_html(self.FullMP, self.ciTool == CITool.GITLAB, output_dir=self.output_dir)
     
     def runJunitMetrics(self):
         print("Creating JUnit Metrics")
@@ -323,29 +340,38 @@ class VectorCASTExecute(object):
             print("PC-lint Plus Metrics file: " + report_name)
             generate_pclp_reports.generate_reports(self.pclp_input, output_gitlab = report_name)
             
-            if args.pclp_output_html:
+            if self.pclp_output_html:
                 print("Creating PC-lint Plus Findings")
                 generate_pclp_reports.generate_html_report(self.FullMP, self.pclp_input, self.pclp_output_html)
             
     def runReports(self):
         if self.aggregate:
+            agg_rpt_name = os.path.join(self.output_dir, self.mpName + "_aggregate_report.html")
             print("Creating Aggregate Coverage Report")
-            self.manageWait.exec_manage_command ("--create-report=aggregate --output=" + self.mpName + "_aggregate_report.html")
+            if os.path.exists(agg_rpt_name): 
+                os.remove(agg_rpt_name)
+            self.manageWait.exec_manage_command ("--create-report=aggregate --output=" + agg_rpt_name)
             self.needIndexHtml = True
         if self.metrics:
+            met_rpt_name = os.path.join(self.output_dir, self.mpName + "_metrics_report.html")
             print("Creating Metrics Report")
-            self.manageWait.exec_manage_command ("--create-report=metrics --output=" + self.mpName + "_metrics_report.html")
+            if os.path.exists(met_rpt_name): 
+                os.remove(met_rpt_name)
+            self.manageWait.exec_manage_command ("--create-report=metrics --output=" + met_rpt_name)
             self.needIndexHtml = True
         if self.fullstatus:
+            fs_rpt_name = os.path.join(self.output_dir, self.mpName + "_full_status_report.html")
+            if os.path.exists(fs_rpt_name): 
+                os.remove(fs_rpt_name)
             print("Creating Full Status Report")
-            self.manageWait.exec_manage_command ("--full-status=" + self.mpName + "_full_status_report.html")
+            self.manageWait.exec_manage_command ("--full-status=" + fs_rpt_name)
             self.needIndexHtml = True
             
     def generateTestCaseMgtRpt(self):
-        if not os.path.exists("management"):
-            os.makedirs("management")
+        if not os.path.exists(os.path.join(self.output_dir, "management")):
+            os.makedirs(os.path.join(self.output_dir, "management"))
         else:
-            for file in glob.glob("management/*_management_report.html"):
+            for file in glob.glob(os.path.join(self.output_dir, "management","*_management_report.html")):
                 os.remove(file)
                 
         if checkVectorCASTVersion(21):
@@ -360,7 +386,7 @@ class VectorCASTExecute(object):
                     self.needIndexHtml = True
                     
                     report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_management_report.html"
-                    report_name = os.path.join("management",report_name)
+                    report_name = os.path.join(self.output_dir, "management",report_name)
                     print(f"Creating Test Case Management HTML report for {env.name} in {report_name}")
                     env.api.report(report_type="MANAGEMENT_REPORT", formats=["HTML"], output_file=report_name)
         else:
@@ -424,7 +450,7 @@ class VectorCASTExecute(object):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('ManageProject', help='VectorCAST Project Name')
+    parser.add_argument('ManageProject', nargs='?', help='VectorCAST Project Name')
     
     actionGroup = parser.add_argument_group('Script Actions', 'Options for the main tasks')
     actionGroup.add_argument('--build-execute', help='Builds and exeuctes the VectorCAST Project', action="store_true", default = False)
@@ -469,10 +495,24 @@ if __name__ == '__main__':
     actionGroup.add_argument('--print_exc', help='Prints exceptions', action="store_true", default = False)
     actionGroup.add_argument('--timing', help='Prints timing information for metrics generation', action="store_true", default = False)
     actionGroup.add_argument('-v', '--verbose',   help='Enable verbose output', action="store_true", default = False)
-    
+    actionGroup.add_argument('--version', help='Displays the version information', action="store_true", default = False)
 
     args = parser.parse_args()
     
+    # Conditional requirement check
+    if not args.version and not args.ManageProject:
+        parser.error("ManageProject is required unless --version is specified")
+        sys.exit(0)
+
+    if args.ManageProject and not os.path.isfile(args.ManageProject):
+        print ("Manage project (.vcm file) provided does not exist: " + args.ManageProject)
+        print ("exiting...")
+        sys.exit(-1)
+
+    if args.version:
+        displayVersion()
+        sys.exit(0)
+
     if args.ci:
         os.environ['VCAST_USE_CI_LICENSES'] = "1"
         
