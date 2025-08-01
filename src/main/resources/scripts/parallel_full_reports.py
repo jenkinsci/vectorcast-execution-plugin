@@ -97,11 +97,6 @@ class RunFullReportsParallel(object):
             max_licenses = self.getLicenseCount()
             max_envs = self.getEnvCount()
 
-            print([max_cpus, max_licenses, max_envs])
-            print(type(max_cpus))
-            print(type(max_licenses))
-            print(type(max_envs))
-
             self.max_concurrent = min(x for x in [max_cpus,max_licenses, max_envs] if x > 0)
 
             print("Using licensing max = ", self.max_concurrent)

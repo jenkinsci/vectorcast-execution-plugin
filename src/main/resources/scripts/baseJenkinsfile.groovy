@@ -1122,7 +1122,7 @@ pipeline {
                             summaryText += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
                             summaryText += readFile('coverage_diffs.html_tmp')
 
-                        } else {
+                        } else if (VC_useCoverageHistory && !VC_useCoveragePlugin) {
                             print "coverage_diffs.html_tmp missing"
                         }
 
