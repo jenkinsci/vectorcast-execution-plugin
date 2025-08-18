@@ -397,6 +397,7 @@ environment before disabling.  This takes into account environments that are dir
 - Update pom.xml to get a build of the plugin and to Java21
 - Update NewSingleJob to catch new exception thrown from SecureGroovyScript
 - Removing support for TESTinsights 
+- Updating parallel_full_reports.py NVLM support to support 9.0.22
 - Update jenkinsfile pipeline script to match up with the latest groovy interpreter
     - Missing def before globals 
         - Pipeline can access VC_ global vars, but not functions
