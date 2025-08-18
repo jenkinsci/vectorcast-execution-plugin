@@ -98,6 +98,10 @@ class RunFullReportsParallel(object):
                 max_cpus = multiprocessing.cpu_count()  # Python 2.7 fallback
             max_licenses = self.getLicenseCount()
             max_envs = self.getEnvCount()
+            
+            print(f"Max CPUs    : {max_cpus}")
+            print(f"Max licenses: {max_licenses}")
+            print(f"Max Envs    : {max_envs}\n")
 
             self.max_concurrent = min(x for x in [max_cpus,max_licenses, max_envs] if x > 0)
 
@@ -123,7 +127,7 @@ class RunFullReportsParallel(object):
         max_envs = len(self.api.Environment.all())
         return max_envs
 
-    def getLicenseCount(self):
+    def getLicenseCount(self, network=""):
 
         if os.environ.get("VECTOR_LICENSE_FILE") is not None:
             if sys.platform.startswith('win32'):
@@ -157,9 +161,9 @@ class RunFullReportsParallel(object):
             import re
             
             if os.path.exists(r'C:\Program Files\Vector License Client\Vector.LicenseClient.exe'):
-                cmd =  r'"C:\Program Files\Vector License Client\Vector.LicenseClient.exe" -listlicenses'
+                cmd =  r'"C:\Program Files\Vector License Client\Vector.LicenseClient.exe" -listlicenses ' + network
             elif os.path.exists(r'C:\Program Files (x86)\Vector License Client\Vector.LicenseClient.exe'):
-                cmd =  r'"C:\Program Files (x86)\Vector License Client\Vector.LicenseClient.exe" -listlicenses'
+                cmd =  r'"C:\Program Files (x86)\Vector License Client\Vector.LicenseClient.exe" -listlicenses ' + network
             else:
                 print("Cannot find the Vector License Client - setting license count to 1")
                 return 1
@@ -182,19 +186,21 @@ class RunFullReportsParallel(object):
             try:
                 root = ET.fromstring(xml_data)
             except Eception as e:
-                print(f"Error with {xml_data}")
-                import traceback
                 print("Exception in root = ET.fromstring(xml_data):", traceback.format_exc())
                 return 1
                 
             now = datetime.now()
             if os.environ.get("VCAST_USE_CI_LICENSES") is not None or os.environ.get("VCAST_USING_HEADLESS_MODE") is not None:
-                searchType = ["Server Edition", "SE"]
+                searchType = ["Server Edition", "SE", "Server"]
             else:
-                searchType = ["Desktop Edition", "DE"]
+                searchType = ["Desktop Edition", "DE", "Desktop"]
 
             free_list = []
-
+            
+            if root.findall('.//VectorLicense') == []:
+                print("No Vector Licenses found locally, checking for network licenses")
+                return self.getLicenseCount("-network")
+                    
             # Loop through all VectorLicense nodes
             for lic in root.findall('.//VectorLicense'):
                 product_text = lic.find('ProductText')
@@ -214,7 +220,7 @@ class RunFullReportsParallel(object):
                                 free_list.append(free)
 
 
-            licMin = min(free_list) if free_list else None
+            licMin = min(free_list) if free_list else 1
             return int(licMin)
 
         return 1
