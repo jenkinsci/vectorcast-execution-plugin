@@ -76,10 +76,12 @@ class RunFullReportsParallel(object):
         parser.add_argument('ManageProject', help='VectorCAST Project Name')
         parser.add_argument('-j','--jobs', help='Number of concurrent jobs (default = maximun license count or processor)', default="max")
         parser.add_argument('--ci', help='Use Continuous Integration Licenses', action="store_true", default = False)
+        parser.add_argument('-v', '--verbose', help='Enable verbose output', action="store_true", default = False)
 
         args = parser.parse_args()
 
         self.mpName = args.ManageProject
+        self.verbose = args.verbose
 
         self.api = VCProjectApi(self.mpName)
         self.results = self.api.project.repository.get_full_status([])
@@ -154,37 +156,61 @@ class RunFullReportsParallel(object):
             from datetime import datetime
             import re
             
-            cmd =  r'"C:\Program Files (x86)\Vector License Client\Vector.LicenseClient.exe" -listlicenses -network'
+            if os.path.exists(r'C:\Program Files\Vector License Client\Vector.LicenseClient.exe'):
+                cmd =  r'"C:\Program Files\Vector License Client\Vector.LicenseClient.exe" -listlicenses'
+            elif os.path.exists(r'C:\Program Files (x86)\Vector License Client\Vector.LicenseClient.exe'):
+                cmd =  r'"C:\Program Files (x86)\Vector License Client\Vector.LicenseClient.exe" -listlicenses'
+            else:
+                print("Cannot find the Vector License Client - setting license count to 1")
+                return 1
+                
             process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = process.communicate()
+            
+            if len(stderr) > 0:
+                print(f"Error occurredn\{stdout}\n{stderr}")
+                
+            raw = stdout
+            raw = re.sub(rb'encoding\s*=\s*"(.*?)"', b'encoding="UTF-8"', raw, count=1)
+            xml_data = raw.decode("utf-8", errors="replace")
 
-            xml_data = stdout
+            if self.verbose:
+                print(f"{xml_data}")
 
             # Parse XML
-            root = ET.fromstring(xml_data)
             
+            try:
+                root = ET.fromstring(xml_data)
+            except Eception as e:
+                print(f"Error with {xml_data}")
+                import traceback
+                print("Exception in root = ET.fromstring(xml_data):", traceback.format_exc())
+                return 1
+                
             now = datetime.now()
             if os.environ.get("VCAST_USE_CI_LICENSES") is not None or os.environ.get("VCAST_USING_HEADLESS_MODE") is not None:
-                searchType = "Server Edition"
+                searchType = ["Server Edition", "SE"]
             else:
-                searchType = "Desktop Edition"
+                searchType = ["Desktop Edition", "DE"]
 
             free_list = []
+
             # Loop through all VectorLicense nodes
             for lic in root.findall('.//VectorLicense'):
                 product_text = lic.find('ProductText')
                 expiration_text = lic.find('ExpirationDateString')
-                free_licenses = lic.find('FreeLicenses')
+                free_licenses = lic.find('Quantity')
 
                 if product_text is not None and expiration_text is not None and free_licenses is not None:
                     product = product_text.text.strip()
+                    product_type = product_text.text.strip().split()[1]
                     expiration = expiration_text.text.strip()
                     free = int(free_licenses.text.strip())
 
                     if re.match(r'^VectorCAST.*', product):
                         exp_date = datetime.strptime(expiration, "%Y-%m-%dT%H:%M:%S")
                         if exp_date > now:
-                            if searchType in product:
+                            if product_type in searchType:
                                 free_list.append(free)
 
 
