@@ -16,41 +16,70 @@ class cd:
     def __exit__(self, etype, value, traceback):
         os.chdir(self.savedPath)
 
+def searchKeyword(search_string, filename):
+    with open(filename, "r") as f:
+        for line_number, line in enumerate(f, start=1):
+            if search_string in line:
+                start_idx = line.find(search_string)
+                if start_idx != -1: 
+                    start_idx += len(search_string)
+                    
+                end_idx = line[start_idx:].find("<")
+                
+                if end_idx != -1: 
+                    end_idx += start_idx
+
+                return line_number, start_idx, end_idx, line
+                
+    return -1, -1, -1, line  # not found
+
+def getEnvName(search_string, filename):
+    report_name = None
+    line_number, start_idx, end_idx, line = searchKeyword("<tr><th>Environment Name</th><td>",filename)
+    
+    if line_number == -1:
+        env_name = None
+    else:
+        env_name = line[start_idx:end_idx]
+        
+    return env_name
+
 def getReportName(filename):
     
     reportName = filename
     reportType = 0
     
-    if "aggregate" in filename:
-        manageProject = filename.split("_aggregate",1)[0]
-        reportName = "Aggregate Coverage Report"
+    if searchKeyword(">Aggregate Coverage Report<", filename)[0] != -1:
+        env_name = getEnvName("<tr><th>Environment Name</th><td>",filename)
+        if env_name == None:
+            reportName = "Aggregate Coverage Report"
+        else:
+            reportName = f"Aggregate Coverage Report {env_name}"
+            reportType = 1
         
-    elif "full_status" in filename:
-        manageProject = filename.split("_aggregate",1)[0]
+    elif searchKeyword(">Full Status Section<", filename)[0] != -1:
         reportName = "Full Status Report"
         
-    elif "environment" in filename:
-        manageProject = filename.split("_environment",1)[0]
-        reportName = "Environment Report"
-        
-    elif "manage_incremental_rebuild_report" in filename:
-        manageProject = filename.split("_manage_incremental_rebuild_report",1)[0]
+    elif searchKeyword("Manage Incremental Rebuild Report", filename)[0] != -1:
         reportName = "Incremental Report Report"
     
-    elif "metrics" in filename:
-        manageProject = filename.split("_metrics",1)[0]
+    elif searchKeyword(">Metrics Report<", filename)[0] != -1:
         reportName = "Metrics Report"
     
-    elif "html_reports" in filename:
-        ## html_reports/VectorCAST_MinGW_C++_UnitTesting_ENV_LINKED_LIST.html
-        comp_ts_env = filename.replace("html_reports/","").replace(".html","")
-        reportName = comp_ts_env 
+    elif searchKeyword(">Test Case Summary Report<", filename)[0] != -1:
+        reportName = "System Test Status Report"
+    
+    elif searchKeyword(">PC-Lint Plus Results<", filename)[0] != -1:
+        reportName = "PC-Lint Plus Results"
+    
+    elif searchKeyword(">PC-Lint Plus Results<", filename)[0] != -1:
+        reportName = "PC-Lint Plus Results"
+    
+    elif searchKeyword(">Full Report<", filename)[0] != -1:
+        reportName = "Full Report "
+        reportName += getEnvName("<tr><th>Environment Name</th><td>",filename)
+        
         reportType = 1
-
-    elif "management" in filename:
-        comp_ts_env = filename.replace("management/","").replace(".html","")
-        reportName = comp_ts_env 
-        reportType = 3
 
     else:
         reportType = 2

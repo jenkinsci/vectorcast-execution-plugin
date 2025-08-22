@@ -343,7 +343,8 @@ class VectorCASTExecute(object):
             if self.pclp_output_html:
                 print("Creating PC-lint Plus Findings")
                 generate_pclp_reports.generate_html_report(self.FullMP, self.pclp_input, self.pclp_output_html)
-            
+                self.needIndexHtml = True
+                
     def runReports(self):
         if self.aggregate:
             agg_rpt_name = os.path.join(self.output_dir, self.mpName + "_aggregate_report.html")
@@ -389,6 +390,32 @@ class VectorCASTExecute(object):
                     report_name = os.path.join(self.output_dir, "management",report_name)
                     print(f"Creating Test Case Management HTML report for {env.name} in {report_name}")
                     env.api.report(report_type="MANAGEMENT_REPORT", formats=["HTML"], output_file=report_name)
+        else:
+            print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
+
+
+    def generateUtFullReport(self):
+        if not os.path.exists(os.path.join(self.output_dir, "management")):
+            os.makedirs(os.path.join(self.output_dir, "management"))
+        else:
+            for file in glob.glob(os.path.join(self.output_dir, "management","*_full_report.html")):
+                os.remove(file)
+                
+        if checkVectorCASTVersion(21):
+            print("Creating Unit Test Case Full Report")
+            from vector.apps.DataAPI.vcproject_api import VCProjectApi
+                                   
+            with VCProjectApi(self.FullMP) as vcprojApi:
+                for env in vcprojApi.Environment.all():
+                    if not env.is_active:
+                        continue
+                            
+                    self.needIndexHtml = True
+                    
+                    report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_full_report.html"
+                    report_name = os.path.join(self.output_dir, "management",report_name)
+                    print(f"Creating Full Report HTML report for {env.name} in {report_name}")
+                    env.api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
 
@@ -478,7 +505,9 @@ if __name__ == '__main__':
     reportGroup.add_argument('--aggregate', help='Generate aggregate coverage report VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--metrics', help='Generate metrics reports for VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--fullstatus', help='Generate full status reports for VectorCAST Project', action="store_true", default = False)
+    reportGroup.add_argument('--utfull', help='Generate Full Reports for each VectorCAST environment in project', action="store_true", default = False)
     reportGroup.add_argument('--tcmr', help='Generate Test Cases Management Reports for each VectorCAST environment in project', action="store_true", default = False)
+    reportGroup.add_argument('--index', help='Generate an index.html report that ties all the other HTML reports together', action="store_true", default = False)
 
     beGroup = parser.add_argument_group('Build/Execution Options', 'Options that effect build/execute operation')
     
@@ -549,11 +578,15 @@ if __name__ == '__main__':
     if args.tcmr:
         vcExec.generateTestCaseMgtRpt()
 
-    if vcExec.needIndexHtml:
+    if args.utfull:
+        vcExec.generateUtFullReport()
+
+    if vcExec.needIndexHtml or args.index:
         vcExec.generateIndexHtml()
         
     if args.export_rgw:
         vcExec.exportRgw()
+        
     if vcExec.useJunitFailCountPct:
         print("--exit_with_failed_count=" + args.exit_with_failed_count + " specified.  Fail Percent = " + str(round(vcExec.failed_pct,0)) + "% Return code: ", str(vcExec.failed_count))
         sys.exit(vcExec.failed_count)
