@@ -1,2 +1,2 @@
 // file: Jenkinsfile
-buildPlugin()
+buildPlugin(platforms: ['linux','windows'], jdkVersions: [21])
