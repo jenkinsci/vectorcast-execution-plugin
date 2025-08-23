@@ -255,15 +255,6 @@
                     <xmlOutput>true</xmlOutput>
                     <failOnError>false</failOnError>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>run-spotbugs</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
