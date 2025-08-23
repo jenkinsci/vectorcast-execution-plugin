@@ -1,7 +1,6 @@
 [![CodeCov](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/coverage.yml/badge.svg)](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/coverage.yml)
 [![CodeQL](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/codeql.yml)
 [![GitHub CI](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/ci.yml)
-[![Build](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/maven.yml/badge.svg)](https://github.com/jenkinsci/vectorcast-execution-plugin/actions/workflows/maven.yml)
 
 # Summary
 
