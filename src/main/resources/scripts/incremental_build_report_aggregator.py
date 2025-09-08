@@ -121,7 +121,7 @@ Environments Affected
 def parse_html_files(mpName):
     
     # get the VC langaguge and encoding
-    self.lang, self.encFmt = getVectorCASTEncoding()
+    lang, encFmt = getVectorCASTEncoding()
 
     if os.path.exists(mpName + "_rebuild.html"):
         os.remove(mpName + "_rebuild.html")
