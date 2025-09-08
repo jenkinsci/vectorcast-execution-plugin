@@ -47,6 +47,7 @@ try:
     from safe_open import open
 except:
     pass
+from vcast_utils import getVectorCASTEncoding
 
 import re
 def parse_text_files(mpName):
@@ -119,18 +120,9 @@ Environments Affected
         
 def parse_html_files(mpName):
     
-    encFmt = 'utf-8'
-    try:
-        from vector.apps.DataAPI.configuration import vcastqt_global_options
-        lang = vcastqt_global_options.get('Translator','english')
-        if lang == "english":
-            encFmt = "utf-8"
-        if lang == "japanese":
-            encFmt = "shift-jis"
-        if lang == "chinese":
-            encFmt = "GBK"
-    except:
-        pass
+    # get the VC langaguge and encoding
+    self.lang, self.encFmt = getVectorCASTEncoding()
+
     if os.path.exists(mpName + "_rebuild.html"):
         os.remove(mpName + "_rebuild.html")
         

@@ -77,6 +77,25 @@ def fmt_percent(num, dom):
         str_num = "0%"
     return str_num
     
+def getVectorCASTEncoding():
+
+    # get the VC langaguge and encoding
+    encFmt = 'utf-8'
+    
+    from vector.apps.DataAPI.configuration import vcastqt_global_options
+    lang = vcastqt_global_options.get('Translator','english')
+    if lang == "english":
+        encFmt = "utf-8"
+    if lang == "japanese":
+        encFmt = "shift-jis"
+    if lang == "chinese":
+        encFmt = "GBK"
+    if lang == "korean":
+        encFmt = "cp1252"
+        
+    # all vectorcast reports get done in utf-8
+    return lang, 'utf-8';
+    
 def printVectorLogo():
     print( "                                                                                  ####                             ")
     print( "                                                                                  ########                         ")

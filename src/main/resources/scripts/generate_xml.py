@@ -60,6 +60,7 @@ except:
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
 from vcast_utils import dump
+from vcast_utils import getVectorCASTEncoding
 
 import hashlib
 import traceback
@@ -90,16 +91,8 @@ class BaseGenerateXml(object):
         self.use_cte = use_cte
 
         # get the VC langaguge and encoding
-        self.encFmt = 'utf-8'
-        from vector.apps.DataAPI.configuration import vcastqt_global_options
-        self.lang = vcastqt_global_options.get('Translator','english')
-        if self.lang == "english":
-            self.encFmt = "utf-8"
-        if self.lang == "japanese":
-            self.encFmt = "shift-jis"
-        if self.lang == "chinese":
-            self.encFmt = "GBK"
-
+        self.lang, self.encFmt = getVectorCASTEncoding()
+        
         self.compiler = ""
         self.testsuite = ""
         self.env = ""

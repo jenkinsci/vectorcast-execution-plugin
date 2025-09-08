@@ -30,6 +30,7 @@ import hashlib
 from datetime import datetime
 
 from safe_open import open
+from vcast_utils import getVectorCASTEncoding
 
 compoundTestIndex = 0
 initTestIndex = 1
@@ -42,18 +43,7 @@ class ParseConsoleForCBT(object):
         self.verbose = verbose
         
         # get the VC langaguge and encoding
-        self.encFmt = 'utf-8'
-        try:
-            from vector.apps.DataAPI.configuration import vcastqt_global_options
-            self.lang = vcastqt_global_options.get('Translator','english')
-            if self.lang == "english":
-                self.encFmt = "utf-8"
-            if self.lang == "japanese":
-                self.encFmt = "shift-jis"
-            if self.lang == "chinese":
-                self.encFmt = "GBK"
-        except:
-            pass
+        self.lang, self.encFmt = getVectorCASTEncoding()
               
     def checkForSave(self, compoundTests, initTests, simpleTestcases):
         if len(compoundTests) > 0 or len(initTests) > 0 or  len(simpleTestcases) > 0:

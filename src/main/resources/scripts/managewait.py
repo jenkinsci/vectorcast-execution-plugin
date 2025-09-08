@@ -43,6 +43,8 @@ try:
 except:
     pass    
  
+from vcast_utils import getVectorCASTEncoding
+
 class ManageWait(object):
     def __init__(self, verbose, command_line, wait_time, wait_loops, mpName = "", useCI = ""):
         self.wait_time = wait_time
@@ -51,20 +53,10 @@ class ManageWait(object):
         self.command_line = command_line
         self.mpName = mpName
         self.useCI = useCI
+
         # get the VC langaguge and encoding
-        self.encFmt = 'utf-8'
-        try:
-            from vector.apps.DataAPI.configuration import vcastqt_global_options
-            self.lang = vcastqt_global_options.get('Translator','english')
-            if self.lang == "english":
-                self.encFmt = "utf-8"
-            if self.lang == "japanese":
-                self.encFmt = "shift-jis"
-            if self.lang == "chinese":
-                self.encFmt = "GBK"
-        except:
-            pass
-        
+        self.lang, self.encFmt = getVectorCASTEncoding()
+
         os.environ['PYTHONIOENCODING'] = self.encFmt
                     
     def enqueueOutput(self, io_target, queue, logfile):

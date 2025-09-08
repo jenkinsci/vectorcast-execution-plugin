@@ -76,6 +76,7 @@ def fixup_2020_soup(main_soup):
                    'col_subprogram': 'word-break:break-all;width:30%;',
                    'col_complexity': 'white-space:nowrap;',
                    'col_metric': 'white-space:nowrap;',
+                   'mcdc-all-pairs': 'white-space:nowrap;',
                    'i0' : 'padding-left:0.25em;min-width:11em',
                    'i1' : 'padding-left: 1.25em;min-width: 11em;',
                    'i2' : 'padding-left: 2.25em;',
@@ -107,16 +108,19 @@ def fixup_2020_soup(main_soup):
     return main_soup
 
 def fixup_2020_reports(report_name):
-    with open(report_name,"r") as fd:    
+    with open(report_name, "rb") as fd:
         try:
-            main_soup = BeautifulSoup(fd,features="lxml")
-        except:
+            main_soup = BeautifulSoup(fd,features="lxml", from_encoding="utf-8")
+        except Exception as e:
+            import traceback
+            print( "EXCEPTION FORMAT PRINT:\n{}".format( e ) )
+            print( "EXCEPTION TRACE  PRINT:\n{}".format( "".join(traceback.format_exception(type(e), e, e.__traceback__))))
             main_soup = BeautifulSoup(fd)
         
     main_soup = fixup_2020_soup(main_soup)
     
-    with open(report_name,"w") as fd:    
-        fd.write(main_soup.prettify(formatter="html"))
+    with open(report_name,"wb") as fd:    
+        fd.write(main_soup.prettify(formatter="html",encoding="utf-8"))
         
 if __name__ == '__main__':
     report_name = sys.argv[1]

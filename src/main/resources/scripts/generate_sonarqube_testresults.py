@@ -55,7 +55,9 @@ try:
 except:
     from vcast_utils import fmt_percent
     pass
-        
+    
+from vcast_utils import getVectorCASTEncoding
+
 from operator import attrgetter
 import hashlib 
 import traceback
@@ -96,15 +98,7 @@ class BaseGenerateXml(object):
         self.test_id = 1
         
         # get the VC langaguge and encoding
-        self.encFmt = 'utf-8'
-        from vector.apps.DataAPI.configuration import vcastqt_global_options
-        self.lang = vcastqt_global_options.get('Translator','english')
-        if self.lang == "english":
-            self.encFmt = "utf-8"
-        if self.lang == "japanese":
-            self.encFmt = "shift-jis"
-        if self.lang == "chinese":
-            self.encFmt = "GBK"
+        self.lang, self.encFmt = getVectorCASTEncoding()
             
         self.failDict = {}
         self.passDict = {}
