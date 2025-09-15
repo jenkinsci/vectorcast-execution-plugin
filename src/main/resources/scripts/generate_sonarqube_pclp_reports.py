@@ -19,6 +19,11 @@ import os
 
 from pprint import pprint
 
+try:
+    from safe_open import open
+except:
+    pass
+
 # PC-lint Plus message representation and parsing
 
 class Message:

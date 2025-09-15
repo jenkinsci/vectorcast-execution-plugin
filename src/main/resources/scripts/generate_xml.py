@@ -874,7 +874,7 @@ class GenerateManageXml (BaseGenerateXml):
             try:
                 build_dir = os.path.relpath(env.build_directory,prj_dir).replace("\\","/")
             except:
-                build_dir = env.build_directory
+                build_dir = env.build_directory.replace("\\","/")
 
             try:
                 build_dir = "build/" + build_dir.rsplit("build/",1)[-1]
@@ -1308,7 +1308,7 @@ class GenerateXml(BaseGenerateXml):
             try:
                 fpath = os.path.relpath(filePath,prj_dir).replace("\\","/")
             except:
-                fpath = filePath
+                fpath = filePath.replace("\\","/")
 
             if self.useStartLine:
                 try:

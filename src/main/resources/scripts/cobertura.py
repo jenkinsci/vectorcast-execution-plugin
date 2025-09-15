@@ -37,6 +37,10 @@ import sys, os
 from collections import defaultdict
 from pprint import pprint
 import argparse
+try:
+    from safe_open import open
+except:
+    pass
 
 fileList = []
 
@@ -52,7 +56,7 @@ def write_xml(x, name, verbose = False):
     
     xml_str += etree.tostring(x,pretty_print=True).decode()
 
-    open(name + ".xml", "w").write(xml_str)
+    with open(name + ".xml", "w") as fd: fd.write(xml_str)
    
 def getCoveredFunctionCount(source):
     if len(source.functions) == 0:
@@ -86,7 +90,12 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
     
     
     fname = coverAPI.display_name
-    fpath = os.path.relpath(coverAPI.display_path,prj_dir).replace("\\","/")
+    fpath = coverAPI.display_path
+    try:
+        fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
+    except:
+        fpath = fpath.replace("\\","/")
+        pass
 
     branch_totals = float(coverAPI.metrics.branches + coverAPI.metrics.mcdc_branches)
     branch_covered = float(coverAPI.metrics.max_covered_branches + coverAPI.metrics.max_covered_mcdc_branches)
@@ -447,7 +456,11 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
             
         fname = file.display_name
         fpath = file.display_path.rsplit('.',1)[0]
-        fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
+        try:
+            fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
+        except:
+            fpath = fpath.replace("\\","/")
+            pass
         
         # print("*", file.name, file.display_name, fpath)
 

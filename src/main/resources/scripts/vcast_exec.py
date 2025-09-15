@@ -471,7 +471,7 @@ class VectorCASTExecute(object):
                 jstr = ""
             cmd = "--" + self.build_execute + " " + self.useCBT + self.level_option + self.env_option + " " + jstr + " " + output 
             build_log = self.manageWait.exec_manage_command (cmd)
-            open(self.build_log_name,"w").write(build_log)
+            with open(self.build_log_name,"w") as fd: fd.write(build_log)
 
 
 if __name__ == '__main__':

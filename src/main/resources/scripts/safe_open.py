@@ -25,7 +25,6 @@ import contextlib
 import os
 
 from io import open as _open
-from vcast_utils import getVectorCASTEncoding
 
 @contextlib.contextmanager
 def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None):
@@ -36,10 +35,7 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
         except:
             fd = _open(file, mode, buffering, encoding, errors, newline, closefd)
     else:
-        if os.path.exists(file):
-            lang, encoding = getVectorCASTEncoding()
-        else:
-            encoding = "utf-8"
+        encoding = "utf-8"
         fd = _open(file, mode, buffering, encoding, errors, newline)
     
     try:

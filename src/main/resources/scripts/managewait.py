@@ -57,7 +57,16 @@ class ManageWait(object):
         # get the VC langaguge and encoding
         self.lang, self.encFmt = getVectorCASTEncoding()
 
-        os.environ['PYTHONIOENCODING'] = self.encFmt
+        import sys
+
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        except AttributeError:
+            import io
+            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
                     
     def enqueueOutput(self, io_target, queue, logfile):
         while True:
@@ -67,7 +76,10 @@ class ManageWait(object):
                 continue
             output = ( datetime.now().strftime("%H:%M:%S.%f") + "  " + line + "\n" )
             if not self.silent:
-                print(line)
+                try:
+                    print(line.decode(self.encFmt))
+                except:
+                    pass
                 try:
                     logfile.write(output)
                 except:

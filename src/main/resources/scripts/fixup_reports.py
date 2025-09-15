@@ -41,7 +41,10 @@ if sys.version_info[0] < 3:
     sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
-from safe_open import open
+try:
+    from safe_open import open
+except:
+    pass
 
 import tee_print
     

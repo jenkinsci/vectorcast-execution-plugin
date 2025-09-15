@@ -34,10 +34,14 @@ except:
 
 from threading import Thread, Lock
 try:
-        from Queue import Queue, Empty
+    from Queue import Queue, Empty
 except ImportError:
-        from queue import Queue, Empty  # python 3.x
- 
+    from queue import Queue, Empty  # python 3.x
+try:
+    from safe_open import open
+except:
+    pass
+
 VCD = os.environ['VECTORCAST_DIR']
 MONITOR_SLEEP=6
 
@@ -300,7 +304,7 @@ class ParallelExecute(object):
             if not self.verbose:
                 os.remove(file)
             
-        open(self.mpName + "_build.log","w", encoding="utf-8").write(build_log_data)
+        with open(self.mpName + "_build.log","w", encoding="utf-8") as fd: fd.write(build_log_data)
         
         if self.incremental:
             incremental_build_report_aggregator.parse_html_files(self.mpName)

@@ -41,6 +41,10 @@ import subprocess
 import argparse
 
 from vcast_utils import dump, checkVectorCASTVersion
+try:
+    from safe_open import open
+except:
+    pass
 
 fileList = []
 
@@ -155,7 +159,10 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
             
         fname = file.display_name
         fpath = file.display_path.rsplit('.',1)[0]
-        fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
+        try:
+            fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
+        except:
+            fpath = fpath.replace("\\","/")
 
         fileDict[fpath] = file
 
@@ -316,7 +323,7 @@ def generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False, 
         os.makedirs(lcov_data_dir)
 
     pathToInfo = os.path.join(lcov_data_dir, name + ".info")
-    open(pathToInfo, "w").write(output)
+    with open(pathToInfo, "w") as fd: fd.write(output)
 
     cmdStr = "genhtml " + pathToInfo + " --output-directory out"
     cmdArr = cmdStr.split()

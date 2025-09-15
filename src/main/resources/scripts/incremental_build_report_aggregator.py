@@ -270,6 +270,16 @@ def parse_html_files(mpName):
 
 if __name__ == "__main__":
 
+    encoding = "utf-8"
+    try:
+        if sys.stdout.encoding.lower() != encoding:
+            sys.stdout.reconfigure(encoding=encoding)
+        if sys.stderr.encoding.lower() != encoding:
+            sys.stderr.reconfigure(encoding=encoding)
+    except AttributeError:
+        print("except AttributeError")
+        pass
+
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject')
     parser.add_argument('--rptfmt')

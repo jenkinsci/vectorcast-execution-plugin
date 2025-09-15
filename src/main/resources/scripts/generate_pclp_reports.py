@@ -68,7 +68,7 @@ def parse_msgs(filename):
         try:
             adjustedFname = os.path.relpath(child.find('file').text,basepath).replace("\\","/")
         except:
-            adjustedFname = child.find('file').text
+            adjustedFname = child.find('file').text.replace("\\","/")
 
         if adjustedFname is None:
             adjustedFname = "GLOBAL"

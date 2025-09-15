@@ -1,4 +1,59 @@
 import hudson.FilePath
+import java.nio.charset.*
+import java.nio.ByteBuffer
+import java.nio.CharBuffer
+
+import java.io.StringWriter
+import java.io.PrintWriter
+import hudson.model.Result
+
+out = manager.listener.logger  // same as console log
+out.println "Post Build Groovy: Starting"
+
+
+// Returns only the decoded text; logs the charset used.
+def readWithFallback(FilePath fp) {
+    byte[] bytes
+    fp.read().withStream { is -> bytes = is.readAllBytes() }
+
+    // Quick BOM hint
+    String bomHint = null
+    if (bytes.length >= 3 && bytes[0]==(byte)0xEF && bytes[1]==(byte)0xBB && bytes[2]==(byte)0xBF) bomHint = 'UTF-8'
+    else if (bytes.length >= 2 && bytes[0]==(byte)0xFF && bytes[1]==(byte)0xFE) bomHint = 'UTF-16LE'
+    else if (bytes.length >= 2 && bytes[0]==(byte)0xFE && bytes[1]==(byte)0xFF) bomHint = 'UTF-16BE'
+
+    List<String> charsets = [
+        'UTF-8', 'UTF-16LE', 'UTF-16BE',
+        'GB18030', 'GBK',
+        'windows-31j', 'Shift_JIS', 'EUC-JP', 'ISO-2022-JP',
+        'MS949', 'x-windows-949', 'EUC-KR', 'ISO-2022-KR',
+        'windows-1252', 'ISO-8859-1'
+    ].unique()
+
+    if (bomHint && charsets.contains(bomHint)) {
+        charsets = [bomHint] + (charsets - bomHint)
+    }
+
+    for (String name : charsets) {
+        try {
+            Charset cs = Charset.forName(name)
+            CharsetDecoder dec = cs.newDecoder()
+                                   .onMalformedInput(CodingErrorAction.REPORT)
+                                   .onUnmappableCharacter(CodingErrorAction.REPORT)
+            CharBuffer cb = dec.decode(ByteBuffer.wrap(bytes))
+            out.println "Post Build Groovy: Decoded ${fp.getName()} with charset: ${name}"
+            return cb.toString()
+        } catch (CharacterCodingException ignore) {
+            // try next
+        } catch (Exception ignore) {
+            // try next
+        }
+    }
+
+    // Fallback: ISO-8859-1
+    out.println "Post Build Groovy: Fall Back Decode ${fp.getName()} with charset: ISO-8859-1 (fallback)"
+    return new String(bytes, Charset.forName('ISO-8859-1'))
+}
 
 Boolean buildFailed = false
 Boolean buildUnstable = false
@@ -84,55 +139,71 @@ if(manager.logContains(".*Abnormal Termination on Environment.*")) {
     manager.addBadge("icon-error icon-xlg", "Abnormal Termination of at least one Environment")
 }
 
-def debugInfo = ""
-def summaryStr = ""
+try {
+    def summaryStr = ""
 
-FilePath fp_cd = new FilePath(manager.build.getWorkspace(),'coverage_diffs.html_tmp')
-FilePath fp_i  = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_rebuild.html_tmp')
-FilePath fp_f  = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report.html_tmp')
-FilePath fp_m  = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_metrics_report.html_tmp')
+    FilePath fp_cd = new FilePath(manager.build.getWorkspace(),'coverage_diffs.html_tmp')
+    FilePath fp_i  = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_rebuild.html_tmp')
+    FilePath fp_f  = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_full_report.html_tmp')
+    FilePath fp_m  = new FilePath(manager.build.getWorkspace(),'@PROJECT_BASE@_metrics_report.html_tmp')
 
-if (fp_cd.exists()) {
-    summaryStr  = "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
-    summaryStr += fp_cd.readToString() 
-}
+    if (fp_cd.exists()) {
+        summaryStr  = "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
+        summaryStr += readWithFallback(fp_cd)
 
-if (fp_i.exists()) {
-    summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
-    summaryStr += fp_i.readToString() 
-}
-
-if (fp_f.exists()) {
-    summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
-    summaryStr += fp_f.readToString() 
-} 
-
-if (fp_m.exists())
-{
-    summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
-    summaryStr += fp_m.readToString() 
-
-}
-
-manager.createSummary("icon-orange-square icon-xlg").appendText(summaryStr, false)
-
-if (!fp_f.exists() && !fp_m.exists())
-{
-    manager.createSummary("icon-error icon-xlg").appendText("General Failure", false, false, false, "red")
-    manager.build.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information"
-    manager.addBadge("icon-error icon-xlg", "General Error")
-
-    if (!buildFailed) {
-        buildUnstable = true
     }
-}
 
-if (buildFailed)
-{
-    manager.buildFailure()
-}
-if (buildUnstable)
-{
-    manager.buildUnstable()
-}
+    if (fp_i.exists()) {
+        summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
+        summaryStr += readWithFallback(fp_i)
+    }
 
+    if (fp_f.exists()) {
+        summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
+        summaryStr += readWithFallback(fp_f)
+    } 
+
+    if (fp_m.exists())
+    {
+        summaryStr += "<hr style=\"height:5px;border-width:0;color:gray;background-color:gray\"> "
+        summaryStr += readWithFallback(fp_m)
+    }
+
+    manager.createSummary("icon-orange-square icon-xlg").appendText(summaryStr, false)
+
+    if (!fp_f.exists() && !fp_m.exists())
+    {
+        manager.createSummary("icon-error icon-xlg").appendText("General Failure", false, false, false, "red")
+        manager.build.description = "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information"
+        manager.addBadge("icon-error icon-xlg", "General Error")
+
+        if (!buildFailed) {
+            buildUnstable = true
+        }
+    }
+
+    if (buildFailed)
+    {
+        manager.buildFailure()
+    }
+    if (buildUnstable)
+    {
+        manager.buildUnstable()
+    }
+    
+} catch (Throwable t) {
+    out.println "Post Build Groovy: Failed reading the reports"
+
+    def sw = new StringWriter()
+    t.printStackTrace(new PrintWriter(sw))
+
+    out.println "Post Build Groovy: ERROR: ${t.class.name}: ${t.message}"
+    out.println sw.toString()    // full stack with file/line numbers when available
+
+    // Mark build as failed (or UNSTABLE if you prefer)
+    manager.build.setResult(Result.FAILURE)
+
+    // Re-throw if you want the Post Build Groovy: step itself to error out:
+    throw t
+}
+out.println "Post Build Groovy: Complete - No errors"
