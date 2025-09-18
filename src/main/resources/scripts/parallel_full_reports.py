@@ -25,6 +25,8 @@ def dump(obj):
             return str(obj)
 
 def generate_report(params):
+    
+    print(f"generate report {params}")
 
     key, env_name, env_is_monitored, env_orig_env_dir, env_relative_wd, env_is_coverapi, env_is_ut_api, vcm_file, workspace, jenkins_workspace, VCD = params
     
@@ -51,12 +53,14 @@ def generate_report(params):
             cmd = VCD + "/clicast -e " + env_name + " COVER REPORT AGGREGATE " + report_name
             process = subprocess.Popen(cmd.split(), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=build_dir)
             stdout, stderr = process.communicate()
+            print(cmd, stdout)
             result = process.returncode
 
         elif env_is_ut_api:
             cmd = VCD + "/clicast -e " + env_name + " REPORT CUSTOM FULL " + report_name
             process = subprocess.Popen(cmd.split(), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=build_dir)
             stdout, stderr = process.communicate()
+            print(cmd, stdout)
             result = process.returncode
 
         else:

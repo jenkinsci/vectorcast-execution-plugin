@@ -41,8 +41,8 @@ except ImportError:
 try:
     from safe_open import open
 except:
-    pass    
- 
+    pass
+
 from vcast_utils import getVectorCASTEncoding
 
 class ManageWait(object):
@@ -53,38 +53,50 @@ class ManageWait(object):
         self.command_line = command_line
         self.mpName = mpName
         self.useCI = useCI
+        self.stop_requested = False
 
         # get the VC langaguge and encoding
         self.lang, self.encFmt = getVectorCASTEncoding()
 
-        import sys
+        import sys, locale
 
         try:
-            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+            sys.stdout.reconfigure(encoding=self.encFmt, errors="replace")
+            sys.stderr.reconfigure(encoding=self.encFmt, errors="replace")
         except AttributeError:
             import io
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding=self.encFmt, errors="replace")
+            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding=self.encFmt, errors="replace")
 
-                    
+
     def enqueueOutput(self, io_target, queue, logfile):
-        while True:
+
+        while not self.stop_requested:
             line = io_target.readline()
+            if not line:
+                continue
             line = line.rstrip()
+
             if line == '':
                 continue
             output = ( datetime.now().strftime("%H:%M:%S.%f") + "  " + line + "\n" )
+
             if not self.silent:
                 try:
-                    print(line.decode(self.encFmt))
-                except:
+                    # Python 2: line may be str (bytes) - decode it
+                    if isinstance(line, bytes):
+                        print(line.decode(self.encFmt, "replace"))
+                    else:
+                        print(line)  # already unicode/str
+                except Exception:
                     pass
                 try:
                     logfile.write(output)
-                except:
-                    logfile.write(output.decode(self.encFmt))
-                    
+                except Exception:
+                    if isinstance(output, bytes):
+                        logfile.write(output.decode(self.encFmt, "replace"))
+                    else:
+                        logfile.write(output)
             queue.put(line)
 
     def startOutputThread(self, io_target, logfile):
@@ -98,20 +110,20 @@ class ManageWait(object):
         if self.verbose:
             print (self.command_line)
         return self.exec_manage(silent)
-        
+
     def exec_manage(self, silent=False):
         try:
-            with open("command.log", 'a', encoding=self.encFmt) as logfile:
+            with open("command.log", 'a', encoding=self.encFmt, errors="replace") as logfile:
                 return self.__exec_manage(silent, logfile)
-        except:        
+        except:
             with open("command.log", 'a') as logfile:
                 return self.__exec_manage(silent, logfile)
-                
+
     def __exec_manage(self, silent, logfile):
         self.silent = silent
         callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
         ret_out = ''
-        
+
         if self.verbose:
             logfile.write( "\nVerbose: %s\n" % callStr)
 
@@ -123,22 +135,22 @@ class ManageWait(object):
                 p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True, encoding=self.encFmt)
             except:
                 p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
-            
+
             self.startOutputThread(p.stdout, logfile)
-            
+
             license_outage = False
             edited_license_outage_msg = ""
             actual_license_outage_msg = ""
-            
+
             while p.poll() is None or not self.q.empty():
                 try:
                     while not self.q.empty():
-                        out_mgt = self.q.get(False) 
-                        
+                        out_mgt = self.q.get(False)
+
                         if len(out_mgt) > 0:
-                        
+
                             errors = ["Unable to obtain license",  "Licensed number of users already reached", "License server system does not support this feature"]
-         
+
                             if any(error in out_mgt for error in errors):
                                 license_outage = True
                                 # Change FLEXlm Error to FLEXlm Err.. to avoid Groovy script from
@@ -149,10 +161,13 @@ class ManageWait(object):
 
                             ret_out +=  out_mgt + "\n"
                     time.sleep(0.5)
-                    
+
                 except Empty:
                     pass
 
+            self.stop_requested = True
+            self.io_t.join()
+            
             # manage finished. Was there a license outage?
             if license_outage == True :
                 if loop_count < self.wait_loops:
@@ -168,17 +183,17 @@ class ManageWait(object):
                     break
             else :
                 break #leave outer while loop
-                
+
         try:
             ret_out = unicode(ret_out,self.encFmt)
         except:
             pass
-            
+
         return ret_out # checked in generate-results.py
- 
+
 ## main
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose',   help='Enable verbose output', action="store_true")
     parser.add_argument('--command_line',   help='Command line to pass to Manage', required=True)

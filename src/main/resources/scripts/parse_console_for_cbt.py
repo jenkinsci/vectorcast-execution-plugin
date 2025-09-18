@@ -193,9 +193,14 @@ class ParseConsoleForCBT(object):
 
 if __name__ == '__main__':
     
-    with open(sys.argv[1],"r") as fd:
+    from vcast_utils import getVectorCASTEncoding
+
+    # get the VC langaguge and encoding
+    lang, encFmt = getVectorCASTEncoding()
+
+    with open(sys.argv[1], "r", encoding=encFmt, errors="replace") as fd:
         buildLogData = fd.readlines()
-        
+    
     parser = ParseConsoleForCBT(True)
     parser.parse(buildLogData)
     pprint(parser.parse(buildLogData), width=132)

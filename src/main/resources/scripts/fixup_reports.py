@@ -25,7 +25,7 @@
 from __future__ import division
 from __future__ import print_function
 
-import sys, os
+import sys, os, locale
 # adding path
 workspace = os.getenv("WORKSPACE")
 if workspace is None:
@@ -47,6 +47,7 @@ except:
     pass
 
 import tee_print
+from vcast_utils import getVectorCASTEncoding
     
 def fixup_2020_soup(main_soup):
 
@@ -111,21 +112,28 @@ def fixup_2020_soup(main_soup):
     return main_soup
 
 def fixup_2020_reports(report_name):
+
+    lang, enc = getVectorCASTEncoding()
+
     with open(report_name, "rb") as fd:
+        raw = fd.read()
         try:
-            main_soup = BeautifulSoup(fd,features="lxml", from_encoding="utf-8")
+            main_soup = BeautifulSoup(raw, features="lxml", from_encoding=enc)
         except Exception as e:
-            import traceback
-            print( "EXCEPTION FORMAT PRINT:\n{}".format( e ) )
-            print( "EXCEPTION TRACE  PRINT:\n{}".format( "".join(traceback.format_exception(type(e), e, e.__traceback__))))
-            main_soup = BeautifulSoup(fd)
-        
+            try:
+                # Try UTF-8 first
+                main_soup = BeautifulSoup(raw, "lxml", from_encoding="utf-8")
+            except Exception:
+                # Fall back to system ACP (cp936 in China, cp1252 in US)
+                main_soup = BeautifulSoup(raw.decode(enc, errors="replace"), "lxml")
+    
     main_soup = fixup_2020_soup(main_soup)
     
-    with open(report_name,"wb") as fd:    
-        fd.write(main_soup.prettify(formatter="html",encoding="utf-8"))
-        
+    with open(report_name, "w", encoding=enc, errors="replace") as fd:
+        fd.write(main_soup.prettify(formatter="html"))
+    
 if __name__ == '__main__':
+
     report_name = sys.argv[1]
     fixup_2020_reports(report_name)
     

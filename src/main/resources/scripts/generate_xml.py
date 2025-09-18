@@ -1524,16 +1524,20 @@ class GenerateXml(BaseGenerateXml):
                 sections=[ "TESTCASE_SECTIONS"],
                 testcase_sections=["EXECUTION_RESULTS"])
 
-            with open(report_name,"rb") as fd:
+            with open(report_name, "rb") as fd:
                 out = fd.read()
 
-            out = out.decode(self.encFmt)
+            try:
+                # Prefer UTF-8 if possible
+                out = out.decode("utf-8")
+            except UnicodeDecodeError:
+                # Fallback to system/default encoding (e.g. cp936 in CN) with replace
+                out = out.decode(self.encFmt, errors="replace")
+                
             os.remove(report_name)
         except:
             out = "No execution results found"
             parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
-
-        #out = bytes(out, 'utf-8').decode('utf-8', 'ignore')
 
         return out
 

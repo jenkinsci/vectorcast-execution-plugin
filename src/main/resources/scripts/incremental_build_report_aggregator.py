@@ -26,6 +26,7 @@ import argparse
 import os
 import sys
 import shutil
+import locale
 
 # adding path
 workspace = os.getenv("WORKSPACE")
@@ -120,9 +121,6 @@ Environments Affected
         
 def parse_html_files(mpName):
     
-    # get the VC langaguge and encoding
-    lang, encFmt = getVectorCASTEncoding()
-
     if os.path.exists(mpName + "_rebuild.html"):
         os.remove(mpName + "_rebuild.html")
         
@@ -139,11 +137,20 @@ def parse_html_files(mpName):
     
     while keepLooping:
         try:
-            with open(report_file_list[0],"r", encoding='utf-8') as fd:
+            with open(report_file_list[0],"rb") as fd:
+
+                raw = fd.read()
+                lang, encFmt = getVectorCASTEncoding()
+
                 try:
-                    main_soup = BeautifulSoup((fd),features="lxml")
-                except:
-                    main_soup = BeautifulSoup(fd)
+                    main_soup = BeautifulSoup(fd,features="lxml", from_encoding=encFmt)
+                except Exception as e:
+                    try:
+                        # Try UTF-8 first
+                        main_soup = BeautifulSoup(raw, "lxml", from_encoding="utf-8")
+                    except Exception:
+                        # Fall back to system ACP (cp936 in China, cp1252 in US)
+                        main_soup = BeautifulSoup(raw, "lxml", from_encoding=encFmt)
 
             preserved_count = 0
             executed_count = 0
@@ -151,8 +158,9 @@ def parse_html_files(mpName):
         
             if main_soup.find(id="report-title"):
                 main_manage_api_report = True
-        # New Manage reports have div with id=report-title
-        # Want second table (skip config data section)
+                
+                # New Manage reports have div with id=report-title
+                # Want second table (skip config data section)
                 main_row_list = main_soup.find_all('table')[1].tr.find_next_siblings()
                 main_count_list = main_row_list[-1].th.find_next_siblings()
             else:
@@ -269,16 +277,6 @@ def parse_html_files(mpName):
         shutil.copy(file, "rebuild_reports/"+file)
 
 if __name__ == "__main__":
-
-    encoding = "utf-8"
-    try:
-        if sys.stdout.encoding.lower() != encoding:
-            sys.stdout.reconfigure(encoding=encoding)
-        if sys.stderr.encoding.lower() != encoding:
-            sys.stderr.reconfigure(encoding=encoding)
-    except AttributeError:
-        print("except AttributeError")
-        pass
 
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject')
