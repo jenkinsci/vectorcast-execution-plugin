@@ -143,7 +143,7 @@ def parse_html_files(mpName):
                 lang, encFmt = getVectorCASTEncoding()
 
                 try:
-                    main_soup = BeautifulSoup(fd,features="lxml", from_encoding=encFmt)
+                    main_soup = BeautifulSoup(raw,features="lxml", from_encoding=encFmt)
                 except Exception as e:
                     try:
                         # Try UTF-8 first
@@ -185,12 +185,18 @@ def parse_html_files(mpName):
     
     insert_idx = 2
     for file in report_file_list[1:]:
-        with open(file,"r", encoding='utf-8') as fd:
+        with open(file,"rb") as fd:
+            raw = fd.read()
+            lang, encFmt = getVectorCASTEncoding()
             try:
-                soup = BeautifulSoup((fd),features="lxml")
-            except:
-                soup = BeautifulSoup(fd)
-                
+                soup = BeautifulSoup(raw,features="lxml", from_encoding=encFmt)
+            except Exception as e:
+                try:
+                    # Try UTF-8 first
+                    soup = BeautifulSoup(raw, "lxml", from_encoding="utf-8")
+                except Exception:
+                    # Fall back to system ACP (cp936 in China, cp1252 in US)
+                    soup = BeautifulSoup(raw, "lxml", from_encoding=encFmt)
         try:
             if soup.find(id="report-title"):
                 manage_api_report = True
