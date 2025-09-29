@@ -72,15 +72,15 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
 
     /**
      * Create a VectorCAST command.
-     * @param winCommand the windows variant of the command
-     * @param unixCommand the unix variant of the command
+     * @param inWinCmd the windows variant of the command
+     * @param inLinuxCmd the unix variant of the command
      */
     @DataBoundConstructor
     @SuppressWarnings("checkstyle:HiddenField")
-    public VectorCASTCommand(final String winCommand,
-            final String unixCommand) {
-        this.winCommand = winCommand;
-        this.unixCommand = unixCommand;
+    public VectorCASTCommand(final String inWinCmd,
+            final String inLinuxCmd) {
+        this.winCommand = inWinCmd;
+        this.unixCommand = inLinuxCmd;
     }
 
     /**

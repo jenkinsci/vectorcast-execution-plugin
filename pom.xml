@@ -66,7 +66,8 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-2.492.x</artifactId>
-                <version>4983.v7891e5d14987</version>
+                <!--version>4983.v7891e5d14987</version -->
+                <version>5473.vb_9533d9e5d88</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>            
@@ -87,6 +88,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
@@ -125,11 +127,6 @@
             <scope>test</scope>
         </dependency>
        
-         <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-cps</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials-binding</artifactId>
@@ -138,7 +135,49 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>ws-cleanup</artifactId>
         </dependency>
-
+        
+        <!-- Core Pipeline runtime dependencies -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-job</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-step-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-basic-steps</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-durable-task-step</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-cps</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.jenkins-ci.plugins.workflow</groupId>
+          <artifactId>workflow-aggregator</artifactId>
+          <version>608.v67378e9d3db_1</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.jenkinsci.plugins</groupId>
+          <artifactId>pipeline-model-definition</artifactId>
+          <scope>compile</scope>
+        </dependency>
     </dependencies>
     
     <profiles>

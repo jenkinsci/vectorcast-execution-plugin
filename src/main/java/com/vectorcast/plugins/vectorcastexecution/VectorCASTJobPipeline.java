@@ -130,7 +130,7 @@ public class VectorCASTJobPipeline extends JobBase {
             job.create();
             projectName = job.getProjectName();
             Logger.getLogger(VectorCASTJobPipeline.class.getName())
-                    .log(Level.SEVERE, "Pipeline Project Name: " + projectName,
+                    .log(Level.INFO, "Pipeline Project Name: " + projectName,
                     "Pipeline Project Name: " + projectName);
             return new HttpRedirect("created");
         } catch (ScmConflictException ex) {
