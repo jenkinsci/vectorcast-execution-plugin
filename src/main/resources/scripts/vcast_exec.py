@@ -388,7 +388,7 @@ class VectorCASTExecute(object):
                     
                     report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_management_report.html"
                     report_name = os.path.join(self.output_dir, "management",report_name)
-                    print(f"Creating Test Case Management HTML report for {env.name} in {report_name}")
+                    print("Creating Test Case Management HTML report for {} in {}".format(env.name, report_name))
                     env.api.report(report_type="MANAGEMENT_REPORT", formats=["HTML"], output_file=report_name)
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
@@ -414,7 +414,7 @@ class VectorCASTExecute(object):
                     
                     report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_full_report.html"
                     report_name = os.path.join(self.output_dir, "management",report_name)
-                    print(f"Creating Full Report HTML report for {env.name} in {report_name}")
+                    print("Creating Full Report HTML report for {} in {}".format(env.name,report_name))
                     env.api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")

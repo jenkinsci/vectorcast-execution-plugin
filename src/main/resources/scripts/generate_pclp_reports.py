@@ -305,7 +305,7 @@ def generate_source():
 def generate_html_report(mpName, input_xml, output_html):
 
     if not os.path.exists(input_xml):
-        print(f"{input_xml} was not found. Skipping PCLP HTML reporting")
+        print("{} was not found. Skipping PCLP HTML reporting".format(input_xml))
         return
 
     import pathlib
@@ -492,7 +492,7 @@ def write_output(output, filename):
 def generate_reports(input_xml, output_text = None, output_html = None, output_json = None, output_gitlab = None, full_mp_name = None):
     
     if not os.path.exists(input_xml):
-        print(f"{input_xml} was not found. Skipping PCLP reporting")
+        print("{} was not found. Skipping PCLP reporting".format(input_xml))
         return
 
     msgs = parse_msgs(input_xml)
