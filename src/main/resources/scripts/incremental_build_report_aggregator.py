@@ -67,6 +67,7 @@ Environments Affected
                                                     d Tests   Tests     ts
   -------------------------------------------------------------------------------
 """
+    encFmt = getVectorCASTEncoding()
 
     report_file_list = []
     full_file_list = os.listdir(".")
@@ -85,8 +86,9 @@ Environments Affected
     for file in report_file_list:
         print("processing file: " + file)
         sepCount = 0
-        with open(file,"r") as fd:
-            lines = fd.readlines()
+        with open(file,"rb") as fd:
+            lines = [line.decode(encFmt, "replace") for line in fd.readlines()]
+
         for line in lines:
             if re.search ("^  Totals",line):
                 totals = line.replace("(","").replace(")","").split()
@@ -109,8 +111,9 @@ Environments Affected
     template = "\nTotals                  %3d%% (%4d / %4d)          %9d %9d %9d"
     totalStr += template%(percentage,rebuild_count,rebuild_total,preserved_count,executed_count,total_count)
 
-    with open(mpName + "_rebuild.txt","w") as fd:
-        fd.write(header + outStr + totalStr)
+    with open(mpName + "_rebuild.txt","wb") as fd:
+        data = header + outStr + totalStr
+        fd.write(data.encode(encFmt,"replace"))
 
     # moving rebuild reports down in to a sub directory
     if not os.path.exists("rebuild_reports"):
@@ -127,7 +130,7 @@ def parse_html_files(mpName, verbose = False):
     Parse and merge multiple *_rebuild.html reports into one combined report.
     Works on both Python 2.7 and 3.x.
     """
-
+    
     # ---------------------------------------------------------------------
     # Logging setup: both file + console
     # ---------------------------------------------------------------------
@@ -143,6 +146,9 @@ def parse_html_files(mpName, verbose = False):
         if verbose:
             print(msg)
         getattr(logging, level)(msg)
+
+    encFmt = getVectorCASTEncoding()
+    log("[DEBUG] Detected encoding: {}".format(encFmt))
 
     # ---------------------------------------------------------------------
     # Preparation
@@ -177,7 +183,6 @@ def parse_html_files(mpName, verbose = False):
             with open(current_file, "rb") as fd:
                 raw = fd.read()
 
-            lang, encFmt = getVectorCASTEncoding()
             log("[DEBUG] Detected encoding: {}".format(encFmt))
 
             # Parse with fallback encodings
@@ -247,7 +252,7 @@ def parse_html_files(mpName, verbose = False):
         try:
             with open(file, "rb") as fd:
                 raw = fd.read()
-            lang, encFmt = getVectorCASTEncoding()
+            encFmt = getVectorCASTEncoding()
             log("[DEBUG] Encoding detected: {}".format(encFmt))
         except Exception as e:
             log("[ERROR] Failed to open file '{}': {}".format(file, e))
@@ -352,12 +357,13 @@ def parse_html_files(mpName, verbose = False):
     data = main_soup.prettify(formatter="html")
 
     try:
-        with open(mpName + "_rebuild.html", "w", encoding='utf-8') as fd:
-            fd.write(data)
+        with open(mpName + "_rebuild.html", "wb") as fd:
+            fd.write(data.encode(encFmt, "replace"))
+            
     except TypeError:
         # Python 2.7 fallback (no encoding arg)
-        with open(mpName + "_rebuild.html", "w") as fd:
-            fd.write(data.encode("utf-8"))
+        with open(mpName + "_rebuild.html", "wb") as fd:
+            fd.write(data.encode("utf-8", "replace"))
 
     # Optional VectorCAST-specific fixup
     try:
@@ -367,12 +373,8 @@ def parse_html_files(mpName, verbose = False):
         log("[WARN] fixup_reports failed or not present: {}".format(e))
 
     # Write temporary combined file
-    try:
-        with open("combined_incr_rebuild.tmp", "w", encoding='utf-8') as fd:
-            fd.write(data)
-    except TypeError:
-        with open("combined_incr_rebuild.tmp", "w") as fd:
-            fd.write(data.encode("utf-8"))
+    with open("combined_incr_rebuild.tmp", "wb") as fd:
+        fd.write(data.encode(encFmt,"replace"))
 
     # ---------------------------------------------------------------------
     # Archive old reports and assets

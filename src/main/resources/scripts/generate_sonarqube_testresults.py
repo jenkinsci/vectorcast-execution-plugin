@@ -98,7 +98,7 @@ class BaseGenerateXml(object):
         self.test_id = 1
         
         # get the VC langaguge and encoding
-        self.lang, self.encFmt = getVectorCASTEncoding()
+        self.encFmt = getVectorCASTEncoding()
             
         self.failDict = {}
         self.passDict = {}
@@ -462,8 +462,8 @@ class GenerateManageXml (BaseGenerateXml):
         
         self.fh_data += "</TestRun>\n"
         
-        with open(self.unit_report_name, "w") as fd:
-            fd.write(self.fh_data)
+        with open(self.unit_report_name, "wb") as fd:
+            fd.write(self.fh_data.encode(self.encFmt, "replace"))
 
         
             
@@ -640,8 +640,8 @@ class GenerateXml(BaseGenerateXml):
     def end_test_results_file(self):
         self.fh_data += "</TestRun>\n"
         
-        with open(self.unit_report_name, "w") as fd:
-            fd.write(self.fh_data)
+        with open(self.unit_report_name, "wb") as fd:
+            fd.write(self.fh_data.encode(encFmt, "replace"))
 
 #
 # GenerateXml - start the JUnit XML file

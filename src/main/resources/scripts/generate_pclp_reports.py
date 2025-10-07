@@ -19,7 +19,9 @@ import os, sys
 
 from pprint import pprint
 
-from vcast_utils import checkVectorCASTVersion
+from vcast_utils import checkVectorCASTVersion, getVectorCASTEncoding
+    
+encFmt = getVectorCASTEncoding()
 
 try:
     from safe_open import open
@@ -45,13 +47,17 @@ def parse_msgs(filename):
     directoryName = os.path.dirname(filename)
 
     try:
-        basepath = os.environ['WORKSPACE'].replace("\\","/") + "/"
+        basepath = os.environ['CI_PROJECT_DIR'].replace("\\","/") + "/"
     except:
-        basepath = os.getcwd().replace("\\","/") + "/"
-    os.environ['VCAST_RPTS_CUSTOM_CSS']=r'vc_scripts\css\tooltip.css'
+        try:
+            basepath = os.environ['WORKSPACE'].replace("\\","/") + "/"
+        except:
+            basepath = os.getcwd().replace("\\","/") + "/"
+    
+    os.environ['VCAST_RPTS_CUSTOM_CSS']= basepath + "/vc_scripts/css/tooltip.css"
 
-    with open(filename, "r") as fd:
-        pcplXmlData = fd.read()
+    with open(filename, "rb") as fd:
+        pcplXmlData = fd.read().decode(encFmt, "replace")
 
     index = pcplXmlData.find('<')
 
@@ -274,9 +280,9 @@ def generate_source():
         if os.path.isfile(fname + ".vcast.bak"):
             fname = fname + ".vcast.bak"
 
-        with open(fname , 'r') as fh:
+        with open(fname, 'rb') as fh:
             # read and replace the line ending for consistency
-            contents = fh.read()
+            contents = fh.read().encode(encFmnt, "replace")
             contents = contents.replace("\r\n", "\n").replace("\r","\n")
             for lineno, line in enumerate(contents.splitlines(), start=1):
                 lineno_str = str(lineno)
@@ -483,11 +489,8 @@ def emit_gitlab(msgs):
 # Driver
 
 def write_output(output, filename):
-    with open(filename, 'w') as file:
-        try:
-            file.write(output)
-        except:
-            file.write(output.decode('utf-8'))
+    with open(filename, 'wb') as file:
+        file.write(output.encode(encFmt, "replace"))
 
 def generate_reports(input_xml, output_text = None, output_html = None, output_json = None, output_gitlab = None, full_mp_name = None):
     

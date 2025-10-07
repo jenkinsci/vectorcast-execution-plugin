@@ -8,6 +8,8 @@ from io import open
 
 import incremental_build_report_aggregator
 
+from vcast_utils import getVectorCASTEncoding
+
 # adding path
 workspace = os.getenv("WORKSPACE")
 if workspace is None:
@@ -60,9 +62,9 @@ class ParallelExecute(object):
         self.testsuite = None
         self.incremental = ""
         self.verbose = False
+        # get the VC encoding
+        self.encFmt = getVectorCASTEncoding()
         
-
-
     def parseParallelExecuteArgs(self):
         parser = argparse.ArgumentParser()        
         # running from manage
@@ -168,30 +170,28 @@ class ParallelExecute(object):
             
 
         log_name = ".".join(["build",compiler, testsuite, env,"log"])
-        build_log = open(log_name,"w")
         
-        start_time = time.time()
-        if not self.dryrun:
-            if self.verbose:
-                print("\nStarting an environment job for " + env + " environment.  Exec Command:\n\t" + exec_cmd)
-            process = subprocess.Popen(exec_cmd, shell=True, stdout=build_log, stderr=build_log)    
-            process.wait()
-        else:
-            if self.verbose:
-                self.th_Print ("RUN>> " + exec_cmd)
-            else:
-                self.th_Print ("RUN>> " + full_name )
-            
-        end_time = time.time()
-        uptime = end_time - start_time
-        human_uptime = str(timedelta(seconds=int(uptime)))
-        self.jobs_run_time[full_name] = human_uptime
+        with open(log_name, "wb") as build_log:  # 'wb' is safest across OSes
+            start_time = time.time()
 
-        build_log.close()
+            if not self.dryrun:
+                if self.verbose:
+                    print("\nStarting an environment job for {} environment.\nExec Command:\n\t{}".format(env, exec_cmd))
+                process = subprocess.Popen(exec_cmd, shell=True, stdout=build_log, stderr=build_log)
+                process.wait()
+            else:
+                msg = "RUN>> " + (exec_cmd if self.verbose else full_name)
+                self.th_Print(msg)
+
+            end_time = time.time()
+            human_uptime = str(timedelta(seconds=int(end_time - start_time)))
+            self.jobs_run_time[full_name] = human_uptime
+
 
         if self.verbose:
-            with open(log_name, 'r', encoding='utf-8') as bldlog:
-                if "Environment built Successfully" not in bldlog.read():
+            with open(log_name, 'rb') as bldlog:
+                data = bldlog.read().decode('utf-8','replace')
+                if "Environment built Successfully" not in data:
                     print("\nERROR!!! Environment " + env + " not built successfully!  See " + log_name + " for more details")
                 else:
                     print("\nCompleted execution of " + env + " environment.  Run Time was  " + human_uptime + ".")
@@ -288,10 +288,13 @@ class ParallelExecute(object):
             if '.tst' in efile:
                 test_file = efile
                 break
-        with open(test_file, 'r', encoding='utf-8') as tst:
-            for line in tst:
+                
+        with open(test_file, 'rb') as tst:
+            for raw in tst:  # each iteration reads the next line
+                line = raw.decode(self.encFmt, 'replace')
                 if 'TEST.NAME' in line:
                     count += 1
+                                        
         return count
 
     def cleanup(self):
@@ -299,12 +302,17 @@ class ParallelExecute(object):
         print ("\n\n")
         
         build_log_data = ""
+
         for file in glob.glob("build*.log"):
-            build_log_data += "\n".join(open(file,"r").readlines())
+            with open(file, "rb") as fd:
+                # read as bytes, then decode manually - works in Py2 and Py3
+                build_log_data += fd.read().decode(self.encFmt, "replace")
+                
             if not self.verbose:
                 os.remove(file)
             
-        with open(self.mpName + "_build.log","w", encoding="utf-8") as fd: fd.write(build_log_data)
+        with open(self.mpName + "_build.log","wb") as fd: 
+            fd.write(build_log_data.encode(self.encFmt, "replace"))
         
         if self.incremental:
             incremental_build_report_aggregator.parse_html_files(self.mpName)

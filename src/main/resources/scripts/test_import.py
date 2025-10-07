@@ -1,4 +1,6 @@
 import os, sys
+import importlib
+import traceback
 
 os.environ['JENKINS_URL'] = 'http://localhost:8080/'
 os.environ['USERNAME'] = 'tms'
@@ -7,8 +9,6 @@ os.environ['PASSWORD'] = 'schneider'
 if sys.version_info[0] < 3:
     python_path_updates = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "python")
     sys.path.append(python_path_updates)
-
-
 
 try:
     import archive_extract_reports
@@ -33,12 +33,30 @@ try:
         import generate_results 
     except:    
         try:
-            import importlib
             generate_results = importlib.import_module("generate-results")
         except:
-            vc_script = os.path.join(os.environ['WORKSPACE'], "vc_scripts", "generate-results.py")
-            import imp
-            generate_results = imp.load_source("generate_results", vc_script)
+            try:
+                vc_script = "."
+                
+                try:
+                    wsDir = os.environ['CI_PROJECT_DIR'].replace("\\","/") + "/"
+                except:
+                    try:
+                        wsDir = os.environ['WORKSPACE'].replace("\\","/") + "/"
+                    except:
+                        wsDir = os.getcwd().replace("\\","/") + "/"    
+
+                if os.path.exists("vc_scripts"):
+                    vc_script = os.path.join(wsDir, "vc_scripts", "generate-results.py")
+                elif os.path.exists("scripts"):
+                    vc_script = os.path.join(wsDir, "scripts" + "generate-results.py")
+                    
+                generate_results = importlib.load_source("generate_results", vc_script)
+            except Exception as e:
+                traceback.print_exc()
+                print("Can't find vc_script or scripts directory under CWD", os.getcwd())
+                sys.exit(-1)
+                
     try:
         import parallel_build_execute
     except:

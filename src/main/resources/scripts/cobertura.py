@@ -44,7 +44,9 @@ except:
 
 fileList = []
 
-from vcast_utils import dump, checkVectorCASTVersion
+from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
+
+encFmt = getVectorCASTEncoding()
 
 def write_xml(x, name, verbose = False):
     
@@ -56,7 +58,8 @@ def write_xml(x, name, verbose = False):
     
     xml_str += etree.tostring(x,pretty_print=True).decode()
 
-    with open(name + ".xml", "w") as fd: fd.write(xml_str)
+    with open(name + ".xml", "wb") as fd: 
+        fd.write(xml_str.encode(encFmt,"replace"))
    
 def getCoveredFunctionCount(source):
     if len(source.functions) == 0:
@@ -730,8 +733,8 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", ve
     coverages.attrib['timestamp'] = str(datetime.now())
     
     tool_version = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "tool_version.txt")
-    with open(tool_version,"r") as fd:
-        ver = fd.read()
+    with open(tool_version,"rb") as fd:
+        ver = fd.read().decode(encFmt,"replace")
     
     coverages.attrib['version'] = "VectorCAST " + ver.rstrip()
     

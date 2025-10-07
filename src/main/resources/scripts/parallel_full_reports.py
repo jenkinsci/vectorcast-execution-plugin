@@ -89,9 +89,12 @@ class RunFullReportsParallel(object):
         self.results = self.api.project.repository.get_full_status([])
         
         try:
-            self.jenkins_workspace = os.environ['WORKSPACE'].replace("\\","/") + "/"
+            self.jenkins_workspace = os.environ['CI_PROJECT_DIR'].replace("\\","/") + "/"
         except:
-            self.jenkins_workspace = os.getcwd().replace("\\","/") + "/"
+            try:
+                self.jenkins_workspace = os.environ['WORKSPACE'].replace("\\","/") + "/"
+            except:
+                self.jenkins_workspace = os.getcwd().replace("\\","/") + "/"
 
         if args.jobs == "max":
             try:
@@ -102,8 +105,8 @@ class RunFullReportsParallel(object):
             max_envs = self.getEnvCount()
             
             print("Max CPUs    : {}".format(max_cpus))
-            print("Max licenses: {}".format(max_licenses)))
-            print("Max Envs    : {}\n".format(max_envs)))
+            print("Max licenses: {}".format(max_licenses))
+            print("Max Envs    : {}\n".format(max_envs))
 
             self.max_concurrent = min(x for x in [max_cpus,max_licenses, max_envs] if x > 0)
 

@@ -38,6 +38,7 @@ import parse_traceback
 import tee_print
 
 from safe_open import open
+from vcast_utils import getVectorCASTEncoding
 
 # adding path
 workspace = os.getenv("WORKSPACE")
@@ -81,7 +82,9 @@ try:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
 except:
     pass
-    
+
+encFmt = getVectorCASTEncoding()
+
 #global variables
 global verbose
 global print_exc
@@ -178,11 +181,14 @@ def readManageVersion(ManageFile):
     version = 14
     if os.path.isfile(ManageFile + ".vcm"):
         ManageFile = ManageFile + '.vcm'
-    with open(ManageFile, 'r') as projFile:
-        for line in projFile:
+        
+    with open(ManageFile, 'rb') as projFile:
+        for raw_line in projFile:                      # iterates lazily, line by line
+            line = raw_line.decode(encFmt, "replace")  # decode each line
             if 'version' in line and 'project' in line:
                 version = int(re.findall(r'\d+', line)[0])
                 break
+
     if verbose:
         print("Version of VectorCAST project file = %d" % version)
         print("(Levels change in version 17 (*maybe) and above)")
@@ -308,8 +314,8 @@ def fixup_css(report_name):
     if not need_fixup:
         return
 
-    with open(report_name,"r") as fd:
-        data = fd.read() 
+    with open(report_name,"rb") as fd:
+        data = fd.read().decode(encFmt,"replace")
 
     #fix up inline CSS because of Content Security Policy violation
     newData = data[: data.index("<style>")-1] +  """
@@ -323,8 +329,8 @@ def fixup_css(report_name):
     regex_str = r"<img alt=\"Vector\".*"
     newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
     
-    with open(report_name, "w") as fd:
-        fd.write(newData)
+    with open(report_name, "wb") as fd:
+        fd.write(newData.encode(encFmt,"replace"))
    
     workspace = os.getenv("WORKSPACE")
     if workspace is None:
@@ -577,20 +583,13 @@ def buildReports(FullManageProjectName = None,
                 use_archive_extract, report_only_failures, no_full_report,
                 useStartLine, teePrint, use_cte)
             
-        with open("unit_test_fail_count.txt", "w") as fd:
-            failed_str = str(failed_count)
-            try:
-                fd.write(unicode(failed_str))
-            except:
-                fd.write(failed_str)    
-           
-        with open("unit_test_passfail_count.txt", "w") as fd:
-            passfail_str = str(passed_count) + " " + str(failed_count)
-            try:
-                fd.write(unicode(passfail_str))
-            except:
-                fd.write(passfail_str)    
-           
+            with open("unit_test_fail_count.txt", "wb") as fd:
+                fd.write(str(failed_count).encode(encFmt, "replace"))
+
+            with open("unit_test_passfail_count.txt", "wb") as fd:
+                text = "{} {}".format(passed_count, failed_count)
+                fd.write(text.encode(encFmt, "replace"))
+                   
         if timing:
             print("XML and Individual reports: " + str(time.time()))
 
@@ -671,8 +670,8 @@ def buildReports(FullManageProjectName = None,
             print(out)
 
         # save the output of the manage command for debug purposes
-        with open("build.log","w") as fd:
-            fd.write(out)
+        with open("build.log","wb") as fd:
+            fd.write(out.encode(encFmt, "replace"))
         
         copyList = []
         jobName = ""
@@ -754,9 +753,9 @@ def buildReports(FullManageProjectName = None,
         passed_count = 0
         try:
             for file in glob.glob("xml_data/test_results_*.xml"):
-                with open(file,"r") as fd:
-                    lines = fd.readlines()
-            
+                with open(file,"rb") as fd:
+                    lines = [line.decode(encFmt, "replace") for line in fd.readlines()]
+
                 for line in lines:
                     if "failures" in line:
                         failed_count += int(line.split("\"")[5])
@@ -766,20 +765,12 @@ def buildReports(FullManageProjectName = None,
             teePrint.teePrint ("   *INFO: Problem parsing test results file for unit testcase failure count: " + file)
             if print_exc:  traceback.print_exc()
             
-        with open("unit_test_fail_count.txt", "w") as fd:
-            failed_str = str(failed_count)
-            try:
-                fd.write(unicode(failed_str))
-            except:
-                fd.write(failed_str)    
+            with open("unit_test_fail_count.txt", "wb") as fd:
+                fd.write(str(failed_count).encode(encFmt, "replace"))
 
-        with open("unit_test_passfail_count.txt", "w") as fd:
-            passfail_str = str(passed_count) + " " + str(failed_count)
-            try:
-                fd.write(unicode(passfail_str))
-            except:
-                fd.write(passfail_str)    
-           
+            with open("unit_test_passfail_count.txt", "wb") as fd:
+                text = "{} {}".format(passed_count, failed_count)
+                fd.write(text.encode(encFmt, "replace"))
 
         for file in copyList:
 
@@ -837,8 +828,8 @@ if __name__ == '__main__':
         
     try:
         tool_version = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "tool_version.txt")
-        with open(tool_version,"r") as fd:
-            ver = fd.read()
+        with open(tool_version,"rb") as fd:
+            ver = fd.read().decode(encFmt, "replace")
             
         if ver.startswith("19 "):
             need_fixup = True
@@ -871,8 +862,9 @@ if __name__ == '__main__':
         
 
     if args.buildlog and os.path.exists(args.buildlog):
-        with open(args.buildlog,"r") as fd:
-            buildLogData = fd.readlines()
+        with open(args.buildlog,"rb") as fd:
+            buildLogData = [line.decode(encFmt, "replace") for line in fd.readlines()]
+            
         cbt = ParseConsoleForCBT(verbose)
         cbtDict = cbt.parse(buildLogData)
         

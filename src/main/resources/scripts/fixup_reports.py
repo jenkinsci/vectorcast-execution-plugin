@@ -113,24 +113,28 @@ def fixup_2020_soup(main_soup):
 
 def fixup_2020_reports(report_name):
 
-    lang, enc = getVectorCASTEncoding()
+    encFmt = getVectorCASTEncoding()
 
     with open(report_name, "rb") as fd:
-        raw = fd.read()
+        raw = fd.read().decode(encFmt, "replace")
+
+    try:
+        # First attempt: use whatever encoding was detected
+        main_soup = BeautifulSoup(raw, features="lxml")
+
+    except Exception as e:
         try:
-            main_soup = BeautifulSoup(raw, features="lxml", from_encoding=enc)
-        except Exception as e:
-            try:
-                # Try UTF-8 first
-                main_soup = BeautifulSoup(raw, "lxml", from_encoding="utf-8")
-            except Exception:
-                # Fall back to system ACP (cp936 in China, cp1252 in US)
-                main_soup = BeautifulSoup(raw.decode(enc, errors="replace"), "lxml")
+            # Try UTF-8 first as a fallback (should rarely fail if raw is text)
+            main_soup = BeautifulSoup(raw.encode("utf-8", "replace"), "lxml")
+        except Exception:
+            # Last resort: try system default encoding (ACP on Windows, etc.)
+            main_soup = BeautifulSoup(raw.encode(encFmt, "replace"), "lxml")
     
     main_soup = fixup_2020_soup(main_soup)
     
-    with open(report_name, "w", encoding=enc, errors="replace") as fd:
-        fd.write(main_soup.prettify(formatter="html"))
+    with open(report_name, "wb") as fd:
+        fd.write(main_soup.prettify(formatter="html").encode(encFmt, "replace"))
+
     
 if __name__ == '__main__':
 

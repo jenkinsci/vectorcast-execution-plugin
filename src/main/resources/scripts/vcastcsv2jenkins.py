@@ -50,6 +50,10 @@ if sys.version_info[0] < 3:
 
 from xml.sax.saxutils import escape
 
+from vcast_utils import getVectorCASTEncoding
+
+encFmt = getVectorCASTEncoding()
+
 # column constants
 UNIT_NAME_COL = 0
 SUBPROG_COL   = 1
@@ -111,8 +115,9 @@ def readCsvFile(csvFilename):
     global jobNameDotted
 
     #mode = 'r' if sys.version_info[0] >= 3 else 'rb'
-    with open(csvFilename, "r") as fd:
-        csvList = fd.readlines()
+    with open(csvFilename, "rb") as fd:
+        csvList = [line.decode(encFmt, "replace") for line in fd.readlines()]
+        
     os.remove(csvFilename)
 
     fullManageProject = csvList[0].split(",")[1].rstrip()
@@ -235,8 +240,8 @@ def runCsv2JenkinsTestResults(csvFilename, junit):
 
     junitData += writeJunitFooter()
     
-    with open(csvFilename[:-4]+".xml","w") as fd:
-        fd.write(junitData)
+    with open(csvFilename[:-4]+".xml","wb") as fd:
+        fd.write(junitData.encode(encFmt, "replace"))
 
 def determineCoverage(titles):
     global stIndex,brIndex,pairIndex,pathIndex,baIndex,fncIndex,fncCallIndex,VgIndex
@@ -574,11 +579,11 @@ def runCsv2JenkinsCoverageResults(csvFilename):
     #write out the footer information for emma format
     emmaData += writeEmmaFooter()
 
-    with open(csvFilename[:-4]+".xml","w") as fd:
-        fd.write(emmaData)
+    with open(csvFilename[:-4]+".xml","wb") as fd:
+        fd.write(emmaData.encode(encFmt, "replace"))
 
 def writeBlankCCFile():
-    with open("coverage_results_blank.xml","w") as fd:
+    with open("coverage_results_blank.xml","wb") as fd:
         fd.write("""<report>
   <version value="3"/>
 <data>
@@ -586,7 +591,7 @@ def writeBlankCCFile():
 <coverage type="complexity, %" value="0% (0 / 0)"/>
 </all>
 </data>
-</report>""")
+</report>""".encode(encFmt,"replace"))
     print("Generating a blank coverage report\n")
 
 def run(test = "",coverage="", useExecRpt = True, version=14, junit = True):

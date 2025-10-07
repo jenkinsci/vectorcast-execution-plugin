@@ -56,18 +56,7 @@ class ManageWait(object):
         self.stop_requested = False
 
         # get the VC langaguge and encoding
-        self.lang, self.encFmt = getVectorCASTEncoding()
-
-        import sys, locale
-
-        try:
-            sys.stdout.reconfigure(encoding=self.encFmt, errors="replace")
-            sys.stderr.reconfigure(encoding=self.encFmt, errors="replace")
-        except AttributeError:
-            import io
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding=self.encFmt, errors="replace")
-            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding=self.encFmt, errors="replace")
-
+        self.encFmt = getVectorCASTEncoding()
 
     def enqueueOutput(self, io_target, queue, logfile):
 
@@ -83,20 +72,11 @@ class ManageWait(object):
 
             if not self.silent:
                 try:
-                    # Python 2: line may be str (bytes) - decode it
-                    if isinstance(line, bytes):
-                        print(line.decode(self.encFmt, "replace"))
-                    else:
-                        print(line)  # already unicode/str
+                    # Always write encoded bytes
+                    logfile.write(output.encode(self.encFmt, "replace"))
                 except Exception:
-                    pass
-                try:
-                    logfile.write(output)
-                except Exception:
-                    if isinstance(output, bytes):
-                        logfile.write(output.decode(self.encFmt, "replace"))
-                    else:
-                        logfile.write(output)
+                    logfile.write(output.encode("utf-8", "replace"))
+                
             queue.put(line)
 
     def startOutputThread(self, io_target, logfile):
@@ -112,29 +92,39 @@ class ManageWait(object):
         return self.exec_manage(silent)
 
     def exec_manage(self, silent=False):
-        try:
-            with open("command.log", 'a', encoding=self.encFmt, errors="replace") as logfile:
-                return self.__exec_manage(silent, logfile)
-        except:
-            with open("command.log", 'a') as logfile:
-                return self.__exec_manage(silent, logfile)
+        with open("command.log", "ab") as logfile:   # binary append
+            return self.__exec_manage(silent, logfile)
 
     def __exec_manage(self, silent, logfile):
         self.silent = silent
+        
         callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage " + self.command_line
         ret_out = ''
 
         if self.verbose:
-            logfile.write( "\nVerbose: %s\n" % callStr)
+            logfile.write(("\nVerbose: %s\n" % callStr).encode(self.encFmt, "replace"))
 
         # capture the output of the manage call
         loop_count = 0
-        while 1:
+        while True:
             loop_count += 1
-            try:
-                p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True, encoding=self.encFmt)
-            except:
-                p = subprocess.Popen(callStr,stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+            
+            # Build a base argument set for Popen
+            popen_args = {
+                "stdout": subprocess.PIPE,
+                "stderr": subprocess.STDOUT,
+                "shell": True,
+                "universal_newlines": True,
+            }
+
+            # Add encoding only on Python 3+
+            if sys.version_info[0] >= 3:
+                popen_args["encoding"] = self.encFmt
+                popen_args["text"] = True  # optional, same as universal_newlines=True
+
+            p = subprocess.Popen(callStr, **popen_args)
+            
+            self.stop_requested = False
 
             self.startOutputThread(p.stdout, logfile)
 
@@ -149,9 +139,12 @@ class ManageWait(object):
 
                         if len(out_mgt) > 0:
 
-                            errors = ["Unable to obtain license",  "Licensed number of users already reached", "License server system does not support this feature"]
+                            LICENSE_ERRORS = [
+                                "Unable to obtain license",
+                                "Licensed number of users already reached",
+                                "License server system does not support this feature"]
 
-                            if any(error in out_mgt for error in errors):
+                            if any(error in out_mgt for error in LICENSE_ERRORS):
                                 license_outage = True
                                 # Change FLEXlm Error to FLEXlm Err.. to avoid Groovy script from
                                 # marking retry attempts as overall job failure
@@ -167,9 +160,11 @@ class ManageWait(object):
 
             self.stop_requested = True
             self.io_t.join()
+            p.wait()
+
             
             # manage finished. Was there a license outage?
-            if license_outage == True :
+            if license_outage:
                 if loop_count < self.wait_loops:
                     print(("Edited license outage message : " + edited_license_outage_msg ))
                     msg = "Warning: Failed to obtain a license, sleeping %ds and then re-trying, attempt %d of %d" % (self.wait_time, loop_count+1, self.wait_loops)
@@ -177,17 +172,12 @@ class ManageWait(object):
                     time.sleep(self.wait_time)
                 else:
                     # send the unedited error to stdout for the post build groovy to mark a failure
-                    print(("Original license outage message : " + actual_license_outage_msg ))
+                    print("Original license outage message : " + actual_license_outage_msg )
                     msg = "ERROR: Failed to obtain a license after %d attempts, terminating" % self.wait_loops
                     print (msg)
                     break
             else :
                 break #leave outer while loop
-
-        try:
-            ret_out = unicode(ret_out,self.encFmt)
-        except:
-            pass
 
         return ret_out # checked in generate-results.py
 

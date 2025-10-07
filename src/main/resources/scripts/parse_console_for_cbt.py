@@ -43,7 +43,7 @@ class ParseConsoleForCBT(object):
         self.verbose = verbose
         
         # get the VC langaguge and encoding
-        self.lang, self.encFmt = getVectorCASTEncoding()
+        self.encFmt = getVectorCASTEncoding()
               
     def checkForSave(self, compoundTests, initTests, simpleTestcases):
         if len(compoundTests) > 0 or len(initTests) > 0 or  len(simpleTestcases) > 0:
@@ -196,11 +196,11 @@ if __name__ == '__main__':
     from vcast_utils import getVectorCASTEncoding
 
     # get the VC langaguge and encoding
-    lang, encFmt = getVectorCASTEncoding()
+    encFmt = getVectorCASTEncoding()
 
-    with open(sys.argv[1], "r", encoding=encFmt, errors="replace") as fd:
-        buildLogData = fd.readlines()
-    
+    with open(sys.argv[1], "rb") as fd:
+        buildLogData = [line.decode(encFmt, "replace") for line in fd.readlines()]
+
     parser = ParseConsoleForCBT(True)
     parser.parse(buildLogData)
     pprint(parser.parse(buildLogData), width=132)

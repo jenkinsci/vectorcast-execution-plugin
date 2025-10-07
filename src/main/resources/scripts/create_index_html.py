@@ -3,6 +3,9 @@ import sys
 import argparse
 import glob
 
+from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
+
+encFmt = getVectorCASTEncoding()
 
 class cd:
     """Context manager for changing the current working directory"""
@@ -17,8 +20,9 @@ class cd:
         os.chdir(self.savedPath)
 
 def searchKeyword(search_string, filename):
-    with open(filename, "r") as f:
-        for line_number, line in enumerate(f, start=1):
+    with open(filename, "rb") as fd:
+        for line_number, line in enumerate(fd, start=1):
+            line = line.decode(encFmt, "replace")
             if search_string in line:
                 start_idx = line.find(search_string)
                 if start_idx != -1: 

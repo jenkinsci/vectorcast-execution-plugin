@@ -43,12 +43,14 @@ if sys.version_info[0] < 3:
     python_path_updates = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "python")
     sys.path.append(python_path_updates)
 
+from datetime import datetime
+
 try:
     import parallel_build_execute
 except:
     import prevcast_parallel_build_execute as parallel_build_execute
 
-from vcast_utils import checkVectorCASTVersion, dump
+from vcast_utils import checkVectorCASTVersion, dump, getVectorCASTEncoding
 
 from enum import Enum
 
@@ -74,8 +76,8 @@ def displayVersion():
     version_path = os.path.join(script_dir, 'VERSION.txt')    
     
     if os.path.exists(version_path):
-        with open(version_path,"r") as fd:
-            versionInfo = fd.read()
+        with open(version_path,"rb") as fd:
+            versionInfo = fd.read().decode(self.encFmt, "replace")
     print("vc_scripts_submodule Version: ", versionInfo)
 
 class VectorCASTExecute(object):
@@ -160,6 +162,8 @@ class VectorCASTExecute(object):
         self.verbose = args.verbose
         self.FullMP = args.ManageProject
         self.mpName = os.path.basename(args.ManageProject)[:-4]
+        
+        self.encFmt = getVectorCASTEncoding()
 
         if args.ci:
             self.useCI = " --use_ci "
@@ -434,9 +438,9 @@ class VectorCASTExecute(object):
         if self.useLevelEnv:
             output = "--output " + self.mpName + self.reportsName + "_rebuild.html"
         else:
-            output = ""
+            output = "--output " + self.mpName + "_rebuild.html"
             
-        if checkVectorCASTVersion(25, False):
+        if checkVectorCASTVersion(25, True):
             useParallelManageCommand = True
         else:
             useParallelManageCommand = False
@@ -466,14 +470,16 @@ class VectorCASTExecute(object):
 
         else:      
             if useParallelManageCommand:
-                jstr = "--jobs="+str(self.jobs)
+                jstr = "--jobs=" + str(self.jobs)
             else:
                 jstr = ""
             cmd = "--" + self.build_execute + " " + self.useCBT + self.level_option + self.env_option + " " + jstr + " " + output 
+
             build_log = self.manageWait.exec_manage_command (cmd)
-            with open(self.build_log_name,"w") as fd: fd.write(build_log)
-
-
+            with open(self.build_log_name,"wb") as fd: 
+                fd.write(build_log.encode(self.encFmt, "replace"))
+        print("End   runExec: " + str(datetime.now()))
+              
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -544,6 +550,9 @@ if __name__ == '__main__':
 
     if args.ci:
         os.environ['VCAST_USE_CI_LICENSES'] = "1"
+        
+    if not args.ManageProject.endswith(".vcm"):
+        args.ManageProject += ".vcm"
         
     os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(args.ManageProject).rsplit(".",1)[0]
 
