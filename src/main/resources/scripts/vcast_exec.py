@@ -43,8 +43,6 @@ if sys.version_info[0] < 3:
     python_path_updates = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "python")
     sys.path.append(python_path_updates)
 
-from datetime import datetime
-
 try:
     import parallel_build_execute
 except:
@@ -478,7 +476,7 @@ class VectorCASTExecute(object):
             build_log = self.manageWait.exec_manage_command (cmd)
             with open(self.build_log_name,"wb") as fd: 
                 fd.write(build_log.encode(self.encFmt, "replace"))
-        print("End   runExec: " + str(datetime.now()))
+
               
 if __name__ == '__main__':
 
@@ -539,6 +537,9 @@ if __name__ == '__main__':
         parser.error("ManageProject is required unless --version is specified")
         sys.exit(0)
 
+    if not args.ManageProject.endswith(".vcm"):
+        args.ManageProject += ".vcm"
+        
     if args.ManageProject and not os.path.isfile(args.ManageProject):
         print ("Manage project (.vcm file) provided does not exist: " + args.ManageProject)
         print ("exiting...")
@@ -550,9 +551,6 @@ if __name__ == '__main__':
 
     if args.ci:
         os.environ['VCAST_USE_CI_LICENSES'] = "1"
-        
-    if not args.ManageProject.endswith(".vcm"):
-        args.ManageProject += ".vcm"
         
     os.environ['VCAST_MANAGE_PROJECT_DIRECTORY'] = os.path.abspath(args.ManageProject).rsplit(".",1)[0]
 

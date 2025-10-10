@@ -27,6 +27,7 @@ import os
 import sys
 import shutil
 import locale
+import os, shutil, glob, logging
 
 # adding path
 workspace = os.getenv("WORKSPACE")
@@ -121,9 +122,6 @@ Environments Affected
     for file in report_file_list:
         if os.path.exists(file):
           shutil.move(file, "rebuild_reports/"+file)
-
-import os, shutil, glob, logging
-from bs4 import BeautifulSoup
 
 def parse_html_files(mpName, verbose = False):
     """
