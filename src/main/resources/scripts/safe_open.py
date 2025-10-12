@@ -36,7 +36,7 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
         except:
             fd = _open(file, mode, buffering, encoding, errors, newline, closefd)
     else:
-        lang, encFmt = getVectorCASTEncoding()
+        encFmt = getVectorCASTEncoding()
         
         fd = _open(file, mode, buffering, encFmt, errors, newline)
     

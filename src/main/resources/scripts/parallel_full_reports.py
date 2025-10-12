@@ -26,8 +26,6 @@ def dump(obj):
 
 def generate_report(params):
     
-    print(f"generate report {params}")
-
     key, env_name, env_is_monitored, env_orig_env_dir, env_relative_wd, env_is_coverapi, env_is_ut_api, vcm_file, workspace, jenkins_workspace, VCD = params
     
     report_name = ""
@@ -53,14 +51,14 @@ def generate_report(params):
             cmd = VCD + "/clicast -e " + env_name + " COVER REPORT AGGREGATE " + report_name
             process = subprocess.Popen(cmd.split(), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=build_dir)
             stdout, stderr = process.communicate()
-            print(cmd, stdout)
+            # print(cmd, stdout)
             result = process.returncode
 
         elif env_is_ut_api:
             cmd = VCD + "/clicast -e " + env_name + " REPORT CUSTOM FULL " + report_name
             process = subprocess.Popen(cmd.split(), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=build_dir)
             stdout, stderr = process.communicate()
-            print(cmd, stdout)
+            # print(cmd, stdout)
             result = process.returncode
 
         else:
@@ -91,9 +89,12 @@ class RunFullReportsParallel(object):
         self.results = self.api.project.repository.get_full_status([])
         
         try:
-            self.jenkins_workspace = os.environ['WORKSPACE'].replace("\\","/") + "/"
+            self.jenkins_workspace = os.environ['CI_PROJECT_DIR'].replace("\\","/") + "/"
         except:
-            self.jenkins_workspace = os.getcwd().replace("\\","/") + "/"
+            try:
+                self.jenkins_workspace = os.environ['WORKSPACE'].replace("\\","/") + "/"
+            except:
+                self.jenkins_workspace = os.getcwd().replace("\\","/") + "/"
 
         if args.jobs == "max":
             try:
@@ -103,9 +104,9 @@ class RunFullReportsParallel(object):
             max_licenses = self.getLicenseCount()
             max_envs = self.getEnvCount()
             
-            print(f"Max CPUs    : {max_cpus}")
-            print(f"Max licenses: {max_licenses}")
-            print(f"Max Envs    : {max_envs}\n")
+            print("Max CPUs    : {}".format(max_cpus))
+            print("Max licenses: {}".format(max_licenses))
+            print("Max Envs    : {}\n".format(max_envs))
 
             self.max_concurrent = min(x for x in [max_cpus,max_licenses, max_envs] if x > 0)
 
@@ -176,14 +177,14 @@ class RunFullReportsParallel(object):
             stdout, stderr = process.communicate()
             
             if len(stderr) > 0:
-                print(f"Error occurredn\{stdout}\n{stderr}")
+                print("Error occurredn\{}\n{}".format(stdout,stderr))
                 
             raw = stdout
             raw = re.sub(rb'encoding\s*=\s*"(.*?)"', b'encoding="UTF-8"', raw, count=1)
             xml_data = raw.decode("utf-8", errors="replace")
 
             if self.verbose:
-                print(f"{xml_data}")
+                print(xml_data)
 
             # Parse XML
             

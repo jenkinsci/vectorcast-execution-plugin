@@ -26,7 +26,7 @@ def extract(verbose = False):
                             os.utime(full_path, (f.mtime, f.mtime))
                         except Exception as e:
                             if verbose:
-                                print(f"Could not set time for {f.name}: {e}")
+                                print("Could not set time for {}: {}".format(f.name, e))
                     
 def archive(verbose = False):
     if os.path.exists(archive_name):

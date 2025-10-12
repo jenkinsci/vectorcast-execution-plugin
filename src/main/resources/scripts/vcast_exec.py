@@ -48,7 +48,7 @@ try:
 except:
     import prevcast_parallel_build_execute as parallel_build_execute
 
-from vcast_utils import checkVectorCASTVersion, dump
+from vcast_utils import checkVectorCASTVersion, dump, getVectorCASTEncoding
 
 from enum import Enum
 
@@ -74,8 +74,8 @@ def displayVersion():
     version_path = os.path.join(script_dir, 'VERSION.txt')    
     
     if os.path.exists(version_path):
-        with open(version_path,"r") as fd:
-            versionInfo = fd.read()
+        with open(version_path,"rb") as fd:
+            versionInfo = fd.read().decode(self.encFmt, "replace")
     print("vc_scripts_submodule Version: ", versionInfo)
 
 class VectorCASTExecute(object):
@@ -160,6 +160,8 @@ class VectorCASTExecute(object):
         self.verbose = args.verbose
         self.FullMP = args.ManageProject
         self.mpName = os.path.basename(args.ManageProject)[:-4]
+        
+        self.encFmt = getVectorCASTEncoding()
 
         if args.ci:
             self.useCI = " --use_ci "
@@ -388,7 +390,7 @@ class VectorCASTExecute(object):
                     
                     report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_management_report.html"
                     report_name = os.path.join(self.output_dir, "management",report_name)
-                    print(f"Creating Test Case Management HTML report for {env.name} in {report_name}")
+                    print("Creating Test Case Management HTML report for {} in {}".format(env.name, report_name))
                     env.api.report(report_type="MANAGEMENT_REPORT", formats=["HTML"], output_file=report_name)
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
@@ -414,7 +416,7 @@ class VectorCASTExecute(object):
                     
                     report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_full_report.html"
                     report_name = os.path.join(self.output_dir, "management",report_name)
-                    print(f"Creating Full Report HTML report for {env.name} in {report_name}")
+                    print("Creating Full Report HTML report for {} in {}".format(env.name,report_name))
                     env.api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
@@ -434,9 +436,9 @@ class VectorCASTExecute(object):
         if self.useLevelEnv:
             output = "--output " + self.mpName + self.reportsName + "_rebuild.html"
         else:
-            output = ""
+            output = "--output " + self.mpName + "_rebuild.html"
             
-        if checkVectorCASTVersion(25, False):
+        if checkVectorCASTVersion(25, True):
             useParallelManageCommand = True
         else:
             useParallelManageCommand = False
@@ -466,14 +468,16 @@ class VectorCASTExecute(object):
 
         else:      
             if useParallelManageCommand:
-                jstr = "--jobs="+str(self.jobs)
+                jstr = "--jobs=" + str(self.jobs)
             else:
                 jstr = ""
             cmd = "--" + self.build_execute + " " + self.useCBT + self.level_option + self.env_option + " " + jstr + " " + output 
+
             build_log = self.manageWait.exec_manage_command (cmd)
-            with open(self.build_log_name,"w") as fd: fd.write(build_log)
+            with open(self.build_log_name,"wb") as fd: 
+                fd.write(build_log.encode(self.encFmt, "replace"))
 
-
+              
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -533,6 +537,9 @@ if __name__ == '__main__':
         parser.error("ManageProject is required unless --version is specified")
         sys.exit(0)
 
+    if not args.ManageProject.endswith(".vcm"):
+        args.ManageProject += ".vcm"
+        
     if args.ManageProject and not os.path.isfile(args.ManageProject):
         print ("Manage project (.vcm file) provided does not exist: " + args.ManageProject)
         print ("exiting...")

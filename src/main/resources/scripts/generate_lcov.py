@@ -40,11 +40,13 @@ from pprint import pprint
 import subprocess
 import argparse
 
-from vcast_utils import dump, checkVectorCASTVersion
+from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
 try:
     from safe_open import open
 except:
     pass
+    
+encFmt = getVectorCASTEncoding()
 
 fileList = []
 
@@ -114,9 +116,9 @@ def has_branches_covered(line):
        
 def get_function_name_line_number(file_path, function, initial_guess):
 
-    with open(file_path,"r") as fd:
-        lines = fd.readlines()
-
+    with open(file_path,"rb") as fd:
+        lines = [line.decode(encFmt, "replace") for line in fd.readlines()]
+        
     line_number_closest_so_far = initial_guess;
     delta = 9999999999;
 
@@ -323,7 +325,8 @@ def generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False, 
         os.makedirs(lcov_data_dir)
 
     pathToInfo = os.path.join(lcov_data_dir, name + ".info")
-    with open(pathToInfo, "w") as fd: fd.write(output)
+    with open(pathToInfo, "wb") as fd: 
+        fd.write(output.encode(encFmt, "replace"))
 
     cmdStr = "genhtml " + pathToInfo + " --output-directory out"
     cmdArr = cmdStr.split()

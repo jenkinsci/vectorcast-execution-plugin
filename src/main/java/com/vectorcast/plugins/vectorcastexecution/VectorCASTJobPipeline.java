@@ -30,6 +30,7 @@ import com.vectorcast.plugins.vectorcastexecution.job.ScmConflictException;
 import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewPipelineJob;
 import com.vectorcast.plugins.vectorcastexecution.job.BadOptionComboException;
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -43,8 +44,12 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import hudson.model.AutoCompletionCandidates;
+import org.kohsuke.stapler.QueryParameter;
+
+
 /**
- * Create multiple jobs.
+ * Create pipeline job.
  */
 @Extension
 public class VectorCASTJobPipeline extends JobBase {
@@ -59,6 +64,9 @@ public class VectorCASTJobPipeline extends JobBase {
 
     /** project name. */
     private String projectName;
+
+    /** Node Label. */
+    private String nodeLabel;
 
     /** Pipeline job object. */
     private NewPipelineJob job;
@@ -107,10 +115,45 @@ public class VectorCASTJobPipeline extends JobBase {
     public String getUrlName() {
         return "pipeline-job";
     }
+    
+    /**
+     * Get node label.
+     * @return node label
+     */
+    public String getNodeLabel() {
+        return nodeLabel;
+    }
+
+    /**
+     * set node label.
+     * @param inputNL - input nodel label
+     */
+    @DataBoundSetter
+    public void setNodeLabel(String inputNL) {
+        this.nodeLabel = inputNL;
+    }
 
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
+
+        @Override
+        public String getDisplayName() {
+            return "VectorCAST Pipeline Job";
+        }
+
+        /**
+         * Update the potential labels to be used.
+         * @param value @QueryParameter String
+         * @return AutoCompletionCandidates with the list of the potential
+         *         node matches
+         */
+        public AutoCompletionCandidates doAutoCompleteNodeLabel(
+                @QueryParameter final String value) {
+            return VcastUtils.completeNodeLabel(value);
+        }
     }
+
+
     /**
      * Create pipeline job.
      * @param request request objext

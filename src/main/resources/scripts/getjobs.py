@@ -12,7 +12,6 @@ except:
 
 manageCMD=os.environ['VECTORCAST_DIR'] + "/manage"
 
-
 def printOutput(somethingPrinted, ManageProjectName, output, teePrint):
     if not somethingPrinted:
         teePrint.teePrint ("No environments found in " + ManageProjectName + ". Please check configuration")
@@ -190,7 +189,7 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
         group_match_string     = None
         env_match_string       = "^     [^\s]"
     else:
-        raise ValueError("error deciphering max_index" +  str(max_indent))
+        raise ValueError("Error deciphering max_index: " +  str(max_indent))
         
     source = None
     machine = None

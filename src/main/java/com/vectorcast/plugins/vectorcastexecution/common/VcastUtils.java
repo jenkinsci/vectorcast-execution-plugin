@@ -29,10 +29,50 @@ import java.net.URLDecoder;
 import java.util.Optional;
 import java.util.jar.JarFile;
 import java.io.FileNotFoundException;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
+import hudson.security.PermissionScope;
+import jenkins.model.Jenkins;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import hudson.model.Label;
+import hudson.model.AutoCompletionCandidates;
+
+import com.vectorcast.plugins.vectorcastexecution.Messages;
 
 /** Utility class for VectorCAST. */
-
 public class VcastUtils {
+
+    /** Logger for feedback. */
+    private static final Logger LOGGER
+        = Logger.getLogger(VcastUtils.class.getName());
+
+    /** Permission of current view. */
+    private static volatile Permission viewPermission;
+
+   /**
+     * Get the current view permissions.
+     * @return Permission for current view
+     */
+    public static synchronized Permission getViewPermission() {
+        if (viewPermission == null) {
+            PermissionGroup group = new PermissionGroup(
+                VcastUtils.class,
+                Messages._VectorCASTRootAction_PermissionGroup()
+            );
+
+            viewPermission = new Permission(
+                group,
+                "View",
+                Messages._VectorCASTRootAction_ViewPermissionDescription(),
+                Jenkins.ADMINISTER,
+                true,
+                new PermissionScope[]{PermissionScope.JENKINS}
+            );
+        }
+        return viewPermission;
+    }
+
     /**
      * Gets the version of the plugins.
      * @return Optional returns the version
@@ -55,9 +95,35 @@ public class VcastUtils {
         return version;
     }
 
+    /**
+     * Default constructor for subclasses.
+     * @throws UnsupportedOperationException is called
+     */
     protected VcastUtils() {
         // prevents calls from subclass
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Update the potential labels to be used.
+     * @param value @QueryParameter String
+     * @return AutoCompletionCandidates with the list of the potential
+     *         node matches
+     */
+    public static AutoCompletionCandidates completeNodeLabel(
+            final String value) {
+
+        AutoCompletionCandidates c = new AutoCompletionCandidates();
+        LOGGER.log(Level.INFO, "From VcastUtils:completeNodeLabel");
+        for (Label l : Jenkins.get().getLabels()) {
+            if (l.getName().startsWith(value)) {
+                LOGGER.log(Level.INFO,
+                    "From VcastUtilsLcompleteNodeLabel: Adding candidate: {0}",
+                    l.getName());
+                c.add(l.getName());
+            }
+        }
+        return c;
     }
 
 }

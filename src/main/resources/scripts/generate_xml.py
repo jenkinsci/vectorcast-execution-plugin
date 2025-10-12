@@ -59,8 +59,7 @@ except:
                    
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
-from vcast_utils import dump
-from vcast_utils import getVectorCASTEncoding
+from vcast_utils import dump, getVectorCASTEncoding
 
 import hashlib
 import traceback
@@ -91,7 +90,7 @@ class BaseGenerateXml(object):
         self.use_cte = use_cte
 
         # get the VC langaguge and encoding
-        self.lang, self.encFmt = getVectorCASTEncoding()
+        self.encFmt = getVectorCASTEncoding()
         
         self.compiler = ""
         self.testsuite = ""
@@ -350,12 +349,9 @@ class BaseGenerateXml(object):
 #
     def end_cov_file(self):
         self.fh_data += ('</report>')
-        with open(self.cover_report_name,"w") as fd:
-            try:
-                fd.write(self.fh_data)
-            except TypeError:
-                s = unicode(self.fh_data, self.encFmt)
-                fd.write(s)
+        with open(self.cover_report_name,"wb") as fd:
+            fd.write(self.fh_data.encode(self.encFmt, "replace"))
+            
 #
 # BaseGenerateXml - write the end of the coverage file and close it
 #
@@ -753,8 +749,8 @@ class GenerateManageXml (BaseGenerateXml):
         regex_str = r"<img alt=\"Vector\".*"
         newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
 
-        with open(report_name, "w") as fd:
-            fd.write(newData)
+        with open(report_name, "wb") as fd:
+            fd.write(newData.encode(self.encFmt, "replace"))
 
         workspace = os.getenv("WORKSPACE")
         if workspace is None:
@@ -979,12 +975,8 @@ class GenerateManageXml (BaseGenerateXml):
         self.fh_data += ("   </testsuite>\n")
         self.fh_data += ("</testsuites>\n")
         if not self.localDataOnly:
-            with open(self.unit_report_name, "w") as fd:
-                try:
-                    fd.write(self.fh_data)
-                except:
-                    s = unicode(self.fh_data, self.encFmt)
-                    fd.write(s)
+            with open(self.unit_report_name, "wb") as fd:
+                fd.write(self.fh_data.encode(self.encFmt, "replace"))
 
 ##########################################################################
 # This class generates the XML (Junit based) report for dynamic tests and
@@ -1164,12 +1156,8 @@ class GenerateXml(BaseGenerateXml):
     def end_test_results_file(self):
         self.fh_data += ("   </testsuite>\n")
         self.fh_data += ("</testsuites>\n")
-        with open(self.unit_report_name, "w") as fd:
-            try:
-                fd.write(self.fh_data)
-            except:
-                s = unicode(self.fh_data, self.encFmt)
-                fd.write(s)
+        with open(self.unit_report_name, "wb") as fd:
+            fd.write(self.fh_data.encode(self.encFmt,"replace"))
 
 #
 # GenerateXml - start the JUnit XML file

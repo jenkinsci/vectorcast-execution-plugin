@@ -28,9 +28,7 @@ import hudson.model.RootAction;
 
 import java.util.List;
 import jenkins.model.Jenkins;
-import hudson.security.Permission;
-import hudson.security.PermissionGroup;
-import hudson.security.PermissionScope;
+import com.cloudbees.hudson.plugins.folder.Folder;
 
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
@@ -40,19 +38,35 @@ import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 @Extension
 public class VectorCASTJobRoot implements RootAction {
 
-    /** Permission for Jenkins. */
-    public static final PermissionGroup PERMISSIONS_GROUP =
-        new PermissionGroup(VectorCASTJobRoot.class,
-            Messages._VectorCASTRootAction_PermissionGroup());
+    /** Folder variable for creating jobs in folder. */
+    private final Folder folder; // null if global
 
-    /** Permission Scope for Jenkins. */
-    private static final PermissionScope[] SCOPE = {PermissionScope.JENKINS};
+    /**
+     * Constructor for folder context.
+     * @param inputFolder - input folder
+     */
+    public VectorCASTJobRoot(final Folder inputFolder) {
+        this.folder = inputFolder;
+    }
 
-    /** Permission View for Jenkins. */
-    public static final Permission VIEW = new Permission(PERMISSIONS_GROUP,
-            "View", Messages._VectorCASTRootAction_ViewPermissionDescription(),
-            Jenkins.ADMINISTER, true, SCOPE);
+    /**
+     * Default constructor (global).
+     */
+    public VectorCASTJobRoot() {
+        this.folder = null;
+    }
 
+    /**
+     * Get name of top-level action/url.
+     * @return url
+     */
+    @Override
+    public String getUrlName() {
+        if (folder != null) {
+            return "VectorCAST"; // relative to folder
+        }
+        return "VectorCAST"; // global
+    }
 
    /**
      * Get the icon to use.
@@ -63,15 +77,9 @@ public class VectorCASTJobRoot implements RootAction {
 
         final int colorChangeMinor = 361;
         final int colorChangeMajor = 2;
-        boolean permission = false;
 
-        if (Jenkins.get().hasPermission(VIEW)) {
-            permission =  true;
-        }
+        if (Jenkins.get().hasPermission(VcastUtils.getViewPermission())) {
 
-        // Always display - assume that Jenkins permission checking
-        // will catch and report any permissions issues
-        if (permission) {
             String iconName;
             String jenkinsVersion = Jenkins.VERSION;
             String[] version = jenkinsVersion.split("\\.");
@@ -111,14 +119,7 @@ public class VectorCASTJobRoot implements RootAction {
     public String getDisplayName() {
         return Messages.VectorCASTCommand_AddVCJob();
     }
-    /**
-     * Get name of top-level action/url.
-     * @return url
-     */
-    @Override
-    public String getUrlName() {
-        return "VectorCAST";
-    }
+
     /**
      * Default version.
      * @return version

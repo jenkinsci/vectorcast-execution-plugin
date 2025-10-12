@@ -31,12 +31,14 @@ import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 
 import jenkins.model.Jenkins;
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
 /**
  * Base job.
  */
 public abstract class JobBase implements ExtensionPoint, Action,
         Describable<JobBase> {
+
     /** SCM to use initially. */
     private SCM scm;
     /**
@@ -65,7 +67,40 @@ public abstract class JobBase implements ExtensionPoint, Action,
      */
     @Override
     public String getIconFileName() {
-        return "/plugin/vectorcast-execution/icons/vector_favicon.png";
+        final int colorChangeMinor = 361;
+        final int colorChangeMajor = 2;
+
+        if (Jenkins.get().hasPermission(VcastUtils.getViewPermission())) {
+            String iconName;
+            String jenkinsVersion = Jenkins.VERSION;
+            String[] version = jenkinsVersion.split("\\.");
+            int major;
+            int minor;
+            boolean colorIcon = true;
+
+            try {
+                major = Integer.parseInt(version[0]);
+                minor = Integer.parseInt(version[1]);
+                if  ((major >= colorChangeMajor)
+                    && (minor >= colorChangeMinor)) {
+                    colorIcon = false;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if (colorIcon) {
+                iconName =
+                    "/plugin/vectorcast-execution/icons/vector_favicon.png";
+            } else {
+                iconName =
+                    "/plugin/vectorcast-execution/icons/vector_favicon_bw.png";
+            }
+
+            return iconName;
+        } else {
+            return null;
+        }
     }
     /**
      * Default URL name.

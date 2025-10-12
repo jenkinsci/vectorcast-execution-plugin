@@ -66,7 +66,6 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-2.492.x</artifactId>
-                <!--version>4983.v7891e5d14987</version -->
                 <version>5473.vb_9533d9e5d88</version>
                 <scope>import</scope>
                 <type>pom</type>
@@ -178,9 +177,22 @@
           <artifactId>pipeline-model-definition</artifactId>
           <scope>compile</scope>
         </dependency>
+        <dependency>
+          <groupId>org.jenkins-ci.plugins</groupId>
+          <artifactId>cloudbees-folder</artifactId>
+          <scope>compile</scope>
+        </dependency>
+        
     </dependencies>
     
     <profiles>
+        <profile>
+            <id>deprecated</id>
+            <properties>
+                <lintCompilerArgs>-Xlint:deprecation
+                </lintCompilerArgs>
+            </properties>
+        </profile>
         <profile>
             <id>lint</id>
             <properties>
