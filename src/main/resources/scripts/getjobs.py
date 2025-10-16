@@ -177,7 +177,8 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
         group_match_string     = "^       [^\s]"
         env_match_string       = "^        [^\s]"
         
-    elif max_indent == 6:
+    # 6 or 7 for the imported results
+    elif max_indent == 6 or max_indent == 7:
         compiler_match_string  = "^   [^\s]"
         testsuite_match_string = "^    [^\s]"
         group_match_string     = "^     [^\s]"

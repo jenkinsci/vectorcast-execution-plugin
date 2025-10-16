@@ -39,16 +39,84 @@ from collections import defaultdict
 from pprint import pprint
 import subprocess
 import argparse
+import inspect
 
-from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
+from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding, checkProjectResults
 try:
     from safe_open import open
 except:
     pass
     
+from vector.apps.DataAPI.coverdb import SourceFunction
+
+orig_iter = SourceFunction.iterate_coverage  # snapshot original method
+
+try:
+    import math
+    INF = math.inf
+except Exception:
+    INF = float("inf")  # Py2-compatible
+
 encFmt = getVectorCASTEncoding()
 
 fileList = []
+
+# specifically for 2022sp8 issue with start/end being None
+def _safe_iterate_coverage(self, **kwargs):
+
+    # Drop-in wrapper for SourceFile.iterate_coverage()
+    #  - Accepts any kwargs (future-proof)
+    #  - Provides sane defaults for start/end
+    #  - Adds encoding only if supported
+    #  - Filters kwargs to match the original method's signature (no TypeError)
+    
+
+    # Always present in VC versions
+    kwargs.setdefault("aggregate", True)
+
+    # Pull caller/attributes (don't coerce yet)
+    start = kwargs.get("start", getattr(self, "start_line", None))
+    end   = kwargs.get("end",   getattr(self, "end_line",   None))
+
+    # --- IMPORTANT: handle the "both missing" case FIRST ---
+    if start is None and end is None:
+        start = 0
+        try:
+            if getattr(self, "instrumented_files", None):
+                end = os.path.getsize(self.instrumented_files[0].display_path)
+            else:
+                end = INF
+        except Exception:
+            end = INF
+
+    # Now handle single-None cases (keep legitimate 0)
+    if start is None:
+        start = 0
+    if end is None:
+        end = INF
+
+    kwargs["start"] = start
+    kwargs["end"]   = end
+    
+    # Let caller override; otherwise provide encoding
+    kwargs.setdefault("encoding", encFmt)
+
+    # Filter kwargs to what the current VectorCAST build supports
+    try:
+        sig = inspect.signature(orig_iter)   # Py3
+        valid = set(sig.parameters.keys())
+    except Exception:
+        spec = inspect.getargspec(orig_iter) # Py2
+        valid = set(spec.args)
+
+    safe_kwargs = {k: v for k, v in kwargs.items() if k in valid}
+
+    for line in orig_iter(self, **safe_kwargs):
+        yield line
+
+def lcov_iterate_coverage(sf, **kwargs):
+    # Your safe wrapper logic here
+    return _safe_iterate_coverage(sf, **kwargs)
 
 def getCoveredFunctionCount(source):
     if len(source.functions) == 0:
@@ -116,27 +184,41 @@ def has_branches_covered(line):
        
 def get_function_name_line_number(file_path, function, initial_guess):
 
-    with open(file_path,"rb") as fd:
+    with open(file_path, "rb") as fd:
         lines = [line.decode(encFmt, "replace") for line in fd.readlines()]
-        
-    line_number_closest_so_far = initial_guess;
-    delta = 9999999999;
 
-    # print(function, line_number_closest_so_far, delta, initial_guess)
-    for count, line in enumerate(reversed(lines[:initial_guess+1])):
-        if function in line.replace(" ",""):
+    if initial_guess is None or initial_guess >= len(lines):
+        initial_guess = len(lines) - 1
+
+    line_number_closest_so_far = initial_guess
+    delta = INF
+
+    for count, line in enumerate(reversed(lines[:initial_guess + 1])):
+        if function in line.replace(" ", ""):
             line_num = initial_guess - count
             if abs(line_num - initial_guess) < delta:
                 line_number_closest_so_far = line_num
                 delta = abs(line_num - initial_guess)
-                # print(function, line_number_closest_so_far, delta, initial_guess)
-    
-    # print(line_number_closest_so_far + 1,function)
-    return line_number_closest_so_far + 1 ## add one since python starts from 0
+
+    return line_number_closest_so_far + 1  # convert 0-based to 1-based
+
 
 def runCoverageResultsMP(mpFile, verbose = False, testName = "", source_root = ""):
 
     vcproj = VCProjectApi(mpFile)
+    
+    anyLocalResults, anyImportedResults = checkProjectResults(vcproj)
+
+    if anyImportedResults:
+        importedResultsError = "  ** LCOV results does not processing imported results at this time\n\n"
+        print(importedResultsError)
+        return importedResultsError
+        
+    if not anyLocalResults:
+        localResultsError = "  ** No local results in project to process\n\n"
+        print(localResultsError)
+        return localResultsError
+
     api = vcproj.project.cover_api
     
     return runGcovResults(api, verbose = verbose, testName = vcproj.project.name, source_root=source_root)
@@ -152,7 +234,7 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
         except:
             prj_dir = os.getcwd().replace("\\","/") + "/"    
     
-    # get a sorted listed of all the files with the proj directory stripped off
+    # get a sorted listed of all the files with the proj directory stripped off    
     for file in api.SourceFile.all():  
         if file.display_name == "":
             continue
@@ -223,7 +305,7 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
             
             lastLine = None
             
-            for line in func.iterate_coverage():
+            for line in lcov_iterate_coverage(func):
                 if has_any_coverage(line):
                     lastLine = line
                     LF += 1

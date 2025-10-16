@@ -2,7 +2,7 @@
 
 import sys, os, subprocess, argparse, glob, shutil
 from pprint import pprint
-import pdb, time
+import time
 from datetime import timedelta
 from io import open
 
@@ -191,7 +191,10 @@ class ParallelExecute(object):
         if self.verbose:
             with open(log_name, 'rb') as bldlog:
                 data = bldlog.read().decode('utf-8','replace')
-                if "Environment built Successfully" not in data:
+
+                if "Creating report in" in data.split('\n')[0]:    
+                    print("\nRebuild/Reexecute unnecessary for " + env + " environment.  Run Time was  " + human_uptime + ".")
+                elif "Environment built Successfully" not in data:
                     print("\nERROR!!! Environment " + env + " not built successfully!  See " + log_name + " for more details")
                 else:
                     print("\nCompleted execution of " + env + " environment.  Run Time was  " + human_uptime + ".")

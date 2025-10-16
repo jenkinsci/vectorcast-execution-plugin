@@ -813,13 +813,15 @@ class GenerateManageXml (BaseGenerateXml):
                     try:
                         localXML.api.report(report_type="AGGREGATE_REPORT", formats=["HTML"], output_file=report_name)
                     except:
-                        print("Failed to create " + report_name + " by CustomReport API. Using clicast directly")
+                        if self.verbose:
+                            print("Failed to create " + report_name + " by CustomReport API. Using clicast directly")
                         self.runAggregateReport(comp, ts, env_name, report_name)
                 else:
                     try:
                         localXML.api.report(report_type="FULL_REPORT", formats=["HTML"], output_file=report_name)
                     except:
-                        print("Failed to create " + report_name + " by CustomReport API. Using clicast directly")
+                        if self.verbose:
+                            print("Failed to create " + report_name + " by CustomReport API. Using clicast directly")
                         self.runFullReport(comp, ts, env_name, report_name)
                 self.fixupReport(report_name)
             except:
@@ -829,31 +831,38 @@ class GenerateManageXml (BaseGenerateXml):
     def runFullReport(self,comp,ts,env_name,report_name):
         try:
             from managewait import ManageWait
-            cmd_prefix = os.environ.get('VECTORCAST_DIR') + os.sep
-            callStr = cmd_prefix + "manage --project " + self.FullManageProjectName + " --level " + comp + "/" + ts + " --environment " + env_name + " --clicast-args report custom full"
-            print("   ", callStr)
+            callStr = "--project " + self.FullManageProjectName + " --level " + comp + "/" + ts + " --environment " + env_name + " --clicast-args report custom full"
+
             manageWait = ManageWait(False, callStr, 1, 1)
             out = manageWait.exec_manage(True)
+            fname = None
             for line in out.split("\n"):
                 if "The HTML report was saved to" in line:
                     fname = line.split("\"")[1]
-            import shutil
-            shutil.copyfile(fname, report_name)
+                    
+            if fname:
+                import shutil
+                shutil.copyfile(fname, report_name)
+            else:
+                print("Error creating report", report_name + ". Contact Vector Support")
         except:
             traceback.print_exc()
+            
     def runAggregateReport(self,comp,ts,env_name,report_name):
         try:
             from managewait import ManageWait
-            cmd_prefix = os.environ.get('VECTORCAST_DIR') + os.sep
-            callStr = cmd_prefix + "manage --project " + self.FullManageProjectName + " --level " + comp + "/" + ts + " --environment " + env_name + " --clicast-args cover report aggregate"
-            print("   ", callStr)
+            callStr = "--project " + self.FullManageProjectName + " --level " + comp + "/" + ts + " --environment " + env_name + " --clicast-args cover report aggregate"
+
             manageWait = ManageWait(False, callStr, 1, 1)
             out = manageWait.exec_manage(True)
             for line in out.split("\n"):
                 if "The HTML report was saved to" in line:
                     fname = line.split("\"")[1]
-            import shutil
-            shutil.copyfile(fname, report_name)
+            if fname:
+                import shutil
+                shutil.copyfile(fname, report_name)
+            else:
+                print("Error creating report", report_name + ". Contact Vector Support")
         except:
             traceback.print_exc()
 
