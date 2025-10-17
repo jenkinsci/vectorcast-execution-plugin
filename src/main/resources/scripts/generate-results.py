@@ -556,15 +556,13 @@ def buildReports(FullManageProjectName = None,
         print("Cleanup: " + str(time.time()))
     if useNewReport and not legacy:
         try:
-            api = VCProjectApi(FullManageProjectName)
-            tool_version = api.tool_version
-            if tool_version.startswith("20"):
-                use_manage_api = False
-            else:
-                use_manage_api = True
-            api.close()
+            with VCProjectApi(FullManageProjectName) as vcproj:
+                tool_version = vcproj.tool_version
+                if tool_version.startswith("20"):
+                    use_manage_api = False
+                else:
+                    use_manage_api = True
         except:
-            ##teePrint.teePrint("   *INFO: Issue getting tool version from: " + FullManageProjectName)
             use_manage_api = False
             
         if use_manage_api:

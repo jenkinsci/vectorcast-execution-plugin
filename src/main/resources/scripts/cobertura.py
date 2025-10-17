@@ -389,23 +389,26 @@ def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):
     return processStatementBranchMCDC(coverApi, lines, extended)
     
 def runCoverageResultsMP(packages, mpFile, verbose = False, extended=False, source_root = ""):
-    vcproj = VCProjectApi(mpFile)
-
-    anyLocalResults, anyImportedResults = checkProjectResults(vcproj)
-
-    if anyImportedResults:
-        importedResultsError = "  ** Cobertura results does not processing imported results at this time\n\n"
-        print(importedResultsError)
-        return [-1] * 19
-        
-    if not anyLocalResults:
-        localResultsError = "  ** No local results in project to process\n\n"
-        print(localResultsError)
-        return [-1] * 19
-
-    api = vcproj.project.cover_api
     
-    return runCoberturaResults(packages, api, verbose = False, extended = extended, source_root = source_root)
+    with VCProjectApi(mpFile) as vcproj:
+
+        anyLocalResults, anyImportedResults = checkProjectResults(vcproj)
+
+        if anyImportedResults:
+            importedResultsError = "  ** Cobertura results does not processing imported results at this time\n\n"
+            print(importedResultsError)
+            return [-1] * 19
+            
+        if not anyLocalResults:
+            localResultsError = "  ** No local results in project to process\n\n"
+            print(localResultsError)
+            return [-1] * 19
+
+        api = vcproj.project.cover_api
+        
+        results = runCoberturaResults(packages, api, verbose = False, extended = extended, source_root = source_root)
+    
+    return results
     
 def runCoberturaResults(packages, api, verbose = False, extended = False, source_root = ""):
         

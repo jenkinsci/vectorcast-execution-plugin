@@ -690,7 +690,10 @@ class GenerateManageXml (BaseGenerateXml):
                 if print_exc:  traceback.print_exc()
 
     def __del__(self):
-        self.api.close()
+        try:
+            self.api.close()
+        except:
+            pass
 
 # GenerateManageXml
 

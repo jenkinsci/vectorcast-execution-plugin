@@ -348,6 +348,9 @@ By selecting individual cases, you can view the execution reports, providing ins
 
 ## Known Issues
 
+### Imported Results with Cobertura and LCOV output
+New output formats were added, extended cobertura format output for use with Jenkins Coverage Plugin and LCOV output support.  These reporting scripts do not currently support generating coverage metrics based off of imported results.
+
 ### VectorCAST Reports and Jenkins Content Security 
 
 VectorCAST HTML reports for metrics were updated to use cascading style sheets (CSS) in the 2019 release and 2020 for top level project metrics. This was done to offer users greater flexibility in displaying metrics. To maintain single file HTML format, VectorCAST Reports used inline CSS. Inline CSS was disallowed under Jenkins more restrictive CSP.

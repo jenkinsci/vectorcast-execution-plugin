@@ -36,23 +36,6 @@ def generate_full_status(manageProject):
     mpName = os.path.splitext(os.path.basename(manageProject))[0]
     full_report_name = mpName + "_full_report.html"
     metrics_report_name = mpName + "_metrics_report.html"
-
-    # try:
-        # from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        # api = VCProjectApi(manageProject)
-        
-        # api.report(report_type="MANAGE_STATUS_FULL_REPORT", formats=["HTML"], output_file=full_report_name   , environments=api.Environment.all(), levels = [])
-        # api.report(report_type="MANAGE_METRICS_REPORT"    , formats=["HTML"], output_file=metrics_report_name, environments=api.Environment.all(), levels = [])
-            
-        # shutil.copy(full_report_name,full_report_name + "_tmp")
-        # fixup_reports.fixup_2020_reports(full_report_name + "_tmp")
-        
-        # shutil.copy(metrics_report_name,metrics_report_name + "_tmp")
-        # fixup_reports.fixup_2020_reports(metrics_report_name + "_tmp")
-
-        # api.close()
-        
-    # except:
         
     from managewait import ManageWait
 
