@@ -2,7 +2,7 @@
 
 import sys, os, subprocess, argparse, glob, shutil
 from pprint import pprint
-import pdb, time
+import time
 from datetime import timedelta
 from io import open
 
@@ -191,7 +191,10 @@ class ParallelExecute(object):
         if self.verbose:
             with open(log_name, 'rb') as bldlog:
                 data = bldlog.read().decode('utf-8','replace')
-                if "Environment built Successfully" not in data:
+
+                if "Creating report in" in data.split('\n')[0]:    
+                    print("\nRebuild/Reexecute unnecessary for " + env + " environment.  Run Time was  " + human_uptime + ".")
+                elif "Environment built Successfully" not in data:
                     print("\nERROR!!! Environment " + env + " not built successfully!  See " + log_name + " for more details")
                 else:
                     print("\nCompleted execution of " + env + " environment.  Run Time was  " + human_uptime + ".")
@@ -323,56 +326,52 @@ class ParallelExecute(object):
         process = subprocess.Popen(exec_cmd, shell=True)
         process.wait()
 
-        api = VCProjectApi(self.manageProject)
+        with VCProjectApi(self.manageProject) as vcproj:
               
-        self.parallel_exec_info = {}
-        self.waiting_execution_queue = {}
+            self.parallel_exec_info = {}
+            self.waiting_execution_queue = {}
 
-        if self.tc_order:
-            testcase_list_all = self.get_testcase_list(api.Environment.all())
-        else:
-            testcase_list_all = api.Environment.all()
-
-        testcase_list = []
-        for env in testcase_list_all:
-            if not env.is_active:                
-                continue
-            testcase_list.append(env)
-                
-        for env in testcase_list:
-            count = int(self.jobs)
-            def_list = env.options['enums']['C_DEFINE_LIST'][0]
-            if "VCAST_PARALLEL_PROCESS_COUNT" in def_list:
-                li = def_list.split()
-                for item in li:
-                    if "VCAST_PARALLEL_PROCESS_COUNT" in item:
-                        count = int(item.split("=")[-1])
-                
-            self.parallel_exec_info[env.compiler.name] = (count, [])
-
-        for env in testcase_list:
-            if env.system_tests: 
-                isSystemTest = True
+            if self.tc_order:
+                testcase_list_all = self.get_testcase_list(vcproj.Environment.all())
             else:
-                isSystemTest = False
-                
-            compiler = env.compiler.name
+                testcase_list_all = vcproj.Environment.all()
 
-            if compiler in self.parallel_exec_info:
-                if self.compiler == None or self.compiler==compiler:
-                    if self.testsuite == None or self.testsuite==env.testsuite.name:
-                        env_list = self.parallel_exec_info[compiler][1]
-                        full_name = env.compiler.name + " " + env.testsuite.name + " " + env.name
-                        if env.name in self.priority_list:
-                            env_list.insert(0,[full_name, isSystemTest])
-                        else:
-                            env_list.append([full_name, isSystemTest])
-                        self.waiting_execution_queue[compiler] = Queue()
+            testcase_list = []
+            for env in testcase_list_all:
+                if not env.is_active:                
+                    continue
+                testcase_list.append(env)
                     
-                #waiting_execution_queue[compiler].append(full_name)
-                
-        api.close()
-        
+            for env in testcase_list:
+                count = int(self.jobs)
+                def_list = env.options['enums']['C_DEFINE_LIST'][0]
+                if "VCAST_PARALLEL_PROCESS_COUNT" in def_list:
+                    li = def_list.split()
+                    for item in li:
+                        if "VCAST_PARALLEL_PROCESS_COUNT" in item:
+                            count = int(item.split("=")[-1])
+                    
+                self.parallel_exec_info[env.compiler.name] = (count, [])
+
+            for env in testcase_list:
+                if env.system_tests: 
+                    isSystemTest = True
+                else:
+                    isSystemTest = False
+                    
+                compiler = env.compiler.name
+
+                if compiler in self.parallel_exec_info:
+                    if self.compiler == None or self.compiler==compiler:
+                        if self.testsuite == None or self.testsuite==env.testsuite.name:
+                            env_list = self.parallel_exec_info[compiler][1]
+                            full_name = env.compiler.name + " " + env.testsuite.name + " " + env.name
+                            if env.name in self.priority_list:
+                                env_list.insert(0,[full_name, isSystemTest])
+                            else:
+                                env_list.append([full_name, isSystemTest])
+                            self.waiting_execution_queue[compiler] = Queue()
+                        
         if self.verbose:
             pprint(self.parallel_exec_info)
 

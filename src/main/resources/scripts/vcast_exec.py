@@ -381,8 +381,8 @@ class VectorCASTExecute(object):
             print("Creating Test Case Management HTML report")
             from vector.apps.DataAPI.vcproject_api import VCProjectApi
                                    
-            with VCProjectApi(self.FullMP) as vcprojApi:
-                for env in vcprojApi.Environment.all():
+            with VCProjectApi(self.FullMP) as vcproj:
+                for env in vcproj.Environment.all():
                     if not env.is_active:
                         continue
                             
@@ -407,8 +407,8 @@ class VectorCASTExecute(object):
             print("Creating Unit Test Case Full Report")
             from vector.apps.DataAPI.vcproject_api import VCProjectApi
                                    
-            with VCProjectApi(self.FullMP) as vcprojApi:
-                for env in vcprojApi.Environment.all():
+            with VCProjectApi(self.FullMP) as vcproj:
+                for env in vcproj.Environment.all():
                     if not env.is_active:
                         continue
                             

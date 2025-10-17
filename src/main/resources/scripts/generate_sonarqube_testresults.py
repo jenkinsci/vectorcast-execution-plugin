@@ -275,6 +275,12 @@ class GenerateManageXml (BaseGenerateXml):
 
         self.cleanupXmlDataDir()
 
+    def __del__(self):
+        try:
+            self.api.close()
+        except:
+            pass
+
     def cleanupXmlDataDir(self):
         path=os.path.join(self.xml_data_dir,"sonarqube")
         import glob
@@ -296,11 +302,6 @@ class GenerateManageXml (BaseGenerateXml):
                 print("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
                 if print_exc:  traceback.print_exc()
                 
-    def __del__(self):
-        try:
-            self.api.close()
-        except:
-            pass
         
     def generate_local_results(self, results, key):
         # get the level from the name

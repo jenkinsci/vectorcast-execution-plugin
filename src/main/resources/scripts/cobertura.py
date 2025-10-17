@@ -44,7 +44,7 @@ except:
 
 fileList = []
 
-from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
+from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding, checkProjectResults
 
 encFmt = getVectorCASTEncoding()
 
@@ -347,11 +347,13 @@ def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):
 
     if extended:
         for func in coverApi.functions:
-                      
+    
+            if isinstance(func.instrumented_functions[0].parameterized_name, bool):
+                continue
+                
             method = etree.SubElement(methods, "method")
-            
             method.attrib['name'] = func.name
-            method.attrib['signature'] = func.instrumented_functions[0].parameterized_name.replace(func.name,"",1)
+            method.attrib['signature'] = func.instrumented_functions[0].parameterized_name.replace(func.name,"",1)    
             method.attrib['line-rate'] = str(func.metrics.max_covered_statements_pct/100.0)
             
             statementPercentStr = "{:.2f}".format(func.metrics.max_covered_statements_pct) + "% (" + str(func.metrics.max_covered_statements) + "/" + str(func.metrics.statements) + ")"             
@@ -387,11 +389,26 @@ def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):
     return processStatementBranchMCDC(coverApi, lines, extended)
     
 def runCoverageResultsMP(packages, mpFile, verbose = False, extended=False, source_root = ""):
-
-    vcproj = VCProjectApi(mpFile)
-    api = vcproj.project.cover_api
     
-    return runCoberturaResults(packages, api, verbose = False, extended = extended, source_root = source_root)
+    with VCProjectApi(mpFile) as vcproj:
+
+        anyLocalResults, anyImportedResults = checkProjectResults(vcproj)
+
+        if anyImportedResults:
+            importedResultsError = "  ** Cobertura results does not processing imported results at this time\n\n"
+            print(importedResultsError)
+            return [-1] * 19
+            
+        if not anyLocalResults:
+            localResultsError = "  ** No local results in project to process\n\n"
+            print(localResultsError)
+            return [-1] * 19
+
+        api = vcproj.project.cover_api
+        
+        results = runCoberturaResults(packages, api, verbose = False, extended = extended, source_root = source_root)
+    
+    return results
     
 def runCoberturaResults(packages, api, verbose = False, extended = False, source_root = ""):
         
@@ -449,8 +466,7 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
         except:
             prj_dir = os.getcwd().replace("\\","/") + "/"    
     
-    # get a sorted listed of all the files with the proj directory stripped off
-     
+    # get a sorted listed of all the files with the proj directory stripped off     
     for file in api.SourceFile.all():  
         if file.display_name == "":
             continue
@@ -752,7 +768,7 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", ve
     if MCDC_rate   != -1.0: print ("mcdc pairs: {:.2f}% ({:d} out of {:d})".format(MCDC_rate*100.0, cov_mcdc, total_mcdc))
     
     if statement_rate   != -1.0: print ("coverage: {:.2f}% of statements".format(statement_rate*100.0))
-    print ("complexity: {:d}".format(complexity))
+    if complexity       != -1.0: print ("complexity: {:d}".format(complexity))
     source = etree.SubElement(sources, "source")
     source.text = "./"
 

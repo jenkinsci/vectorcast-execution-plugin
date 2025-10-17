@@ -59,24 +59,32 @@ class ManageWait(object):
         self.encFmt = getVectorCASTEncoding()
 
     def enqueueOutput(self, io_target, queue, logfile):
+        py2 = sys.version_info[0] < 3
 
         while not self.stop_requested:
             line = io_target.readline()
             if not line:
                 continue
             line = line.rstrip()
-
             if line == '':
                 continue
-            output = ( datetime.now().strftime("%H:%M:%S.%f") + "  " + line + "\n" )
+
+            # --- Normalize line to Unicode text ---
+            if isinstance(line, bytes if not py2 else str):
+                try:
+                    line = line.decode(self.encFmt, 'replace')
+                except Exception:
+                    line = line.decode('utf-8', 'replace')
+
+            output = u"{:s}  {:s}\n".format(datetime.now().strftime("%H:%M:%S.%f"), line)
 
             if not self.silent:
+                # logfile opened in binary mode ? always write bytes
                 try:
-                    # Always write encoded bytes
-                    logfile.write(output.encode(self.encFmt, "replace"))
+                    logfile.write(output.encode(self.encFmt, 'replace'))
                 except Exception:
-                    logfile.write(output.encode("utf-8", "replace"))
-                
+                    logfile.write(output.encode('utf-8', 'replace'))
+
             queue.put(line)
 
     def startOutputThread(self, io_target, logfile):

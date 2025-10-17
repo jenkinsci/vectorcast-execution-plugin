@@ -46,7 +46,30 @@ def __get_script_filename():
 
     return "%s::%s#%s" % (os.path.basename(filename), funcname, lineno)
 
+def checkProjectResults(vcproj):
+    
+    anyLocalResults = False
+    anyImportedResults = False
 
+    try:
+        results = vcproj.project.repository.get_full_status([])
+        all_envs = []
+        for env in vcproj.Environment.all():
+            if env.is_active:
+                all_envs.append(env.level._full_path)
+
+        for result in results:
+            if result in all_envs:
+                if results[result]['local'] != {}:
+                    anyLocalResults = True
+
+                if results[result]['imported'] != {}:
+                    anyImportedResults = True
+    except Exception as e:
+        print(e)
+        
+    return anyLocalResults, anyImportedResults
+    
 def checkVectorCASTVersion(minimumVersion, quiet = False):
     
     encFmt = getVectorCASTEncoding()

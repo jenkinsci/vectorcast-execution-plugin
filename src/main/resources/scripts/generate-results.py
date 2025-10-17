@@ -556,15 +556,13 @@ def buildReports(FullManageProjectName = None,
         print("Cleanup: " + str(time.time()))
     if useNewReport and not legacy:
         try:
-            api = VCProjectApi(FullManageProjectName)
-            tool_version = api.tool_version
-            if tool_version.startswith("20"):
-                use_manage_api = False
-            else:
-                use_manage_api = True
-            api.close()
+            with VCProjectApi(FullManageProjectName) as vcproj:
+                tool_version = vcproj.tool_version
+                if tool_version.startswith("20"):
+                    use_manage_api = False
+                else:
+                    use_manage_api = True
         except:
-            ##teePrint.teePrint("   *INFO: Issue getting tool version from: " + FullManageProjectName)
             use_manage_api = False
             
         if use_manage_api:
@@ -582,16 +580,16 @@ def buildReports(FullManageProjectName = None,
                 manageEnvs, level, envName, cbtDict, generate_individual_reports, 
                 use_archive_extract, report_only_failures, no_full_report,
                 useStartLine, teePrint, use_cte)
-            
-            with open("unit_test_fail_count.txt", "wb") as fd:
-                fd.write(str(failed_count).encode(encFmt, "replace"))
-
-            with open("unit_test_passfail_count.txt", "wb") as fd:
-                text = "{} {}".format(passed_count, failed_count)
-                fd.write(text.encode(encFmt, "replace"))
-                   
+                
         if timing:
             print("XML and Individual reports: " + str(time.time()))
+
+        with open("unit_test_fail_count.txt", "wb") as fd:
+            fd.write(str(failed_count).encode(encFmt, "replace"))
+
+        with open("unit_test_passfail_count.txt", "wb") as fd:
+            text = "{} {}".format(passed_count, failed_count)
+            fd.write(text.encode(encFmt, "replace"))
 
     ### NOT Using new data API        
     else:
@@ -761,10 +759,7 @@ def buildReports(FullManageProjectName = None,
                         failed_count += int(line.split("\"")[5])
                         passed_count += int(line.split("\"")[3]) - failed_count
                         break
-        except:
-            teePrint.teePrint ("   *INFO: Problem parsing test results file for unit testcase failure count: " + file)
-            if print_exc:  traceback.print_exc()
-            
+                        
             with open("unit_test_fail_count.txt", "wb") as fd:
                 fd.write(str(failed_count).encode(encFmt, "replace"))
 
@@ -772,6 +767,10 @@ def buildReports(FullManageProjectName = None,
                 text = "{} {}".format(passed_count, failed_count)
                 fd.write(text.encode(encFmt, "replace"))
 
+        except:
+            teePrint.teePrint ("   *INFO: Problem parsing test results file for unit testcase failure count: " + file)
+            if print_exc:  traceback.print_exc()
+            
         for file in copyList:
 
             if verbose:

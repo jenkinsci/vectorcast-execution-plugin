@@ -46,7 +46,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import hudson.model.AutoCompletionCandidates;
 import org.kohsuke.stapler.QueryParameter;
-
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * Create pipeline job.
@@ -115,7 +115,7 @@ public class VectorCASTJobPipeline extends JobBase {
     public String getUrlName() {
         return "pipeline-job";
     }
-    
+
     /**
      * Get node label.
      * @return node label
@@ -129,7 +129,7 @@ public class VectorCASTJobPipeline extends JobBase {
      * @param inputNL - input nodel label
      */
     @DataBoundSetter
-    public void setNodeLabel(String inputNL) {
+    public void setNodeLabel(final String inputNL) {
         this.nodeLabel = inputNL;
     }
 

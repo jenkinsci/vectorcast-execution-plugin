@@ -128,6 +128,12 @@ class RunFullReportsParallel(object):
         if args.ci:
             os.environ['VCAST_USE_CI_LICENSES'] = "1"
 
+    def __del__(self):
+        try:
+            self.api.close()
+        except:
+            pass
+
     def getEnvCount(self):
         max_envs = len(self.api.Environment.all())
         return max_envs

@@ -177,7 +177,8 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
         group_match_string     = "^       [^\s]"
         env_match_string       = "^        [^\s]"
         
-    elif max_indent == 6:
+    # 6 or 7 for the imported results
+    elif max_indent == 6 or max_indent == 7:
         compiler_match_string  = "^   [^\s]"
         testsuite_match_string = "^    [^\s]"
         group_match_string     = "^     [^\s]"
@@ -228,15 +229,13 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
  
 def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, legacy = False):
     try:
-            
         if (legacy): raise KeyError
         
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        api = VCProjectApi(ManageProjectName)
-        ret_info = printEnvInfoDataAPI(api, printData, printEnvType)
-        api.close()
-        return ret_info
+        with VCProjectApi(ManageProjectName) as vcproj:
+            ret_info = printEnvInfoDataAPI(vcproj, printData, printEnvType)
 
+        return ret_info
     
     except:    
         return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType)

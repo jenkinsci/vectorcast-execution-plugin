@@ -104,26 +104,24 @@ def create_index_html(mpName, isGitLab = False, output_dir = ""):
     global baseOutputDir
     baseOutputDir = output_dir
     
-    api = VCProjectApi(mpName)
-    # Set custom report directory to the where this script was
-    # found. Must contain sections/index_section.py
-    rep_path = pathlib.Path(__file__).parent.resolve()
+    with VCProjectApi(mpName) as vcproj: 
+        # Set custom report directory to the where this script was
+        # found. Must contain sections/index_section.py
+        rep_path = pathlib.Path(__file__).parent.resolve()
 
-    if usingGitLabCI:
-        output_file=os.path.join(baseOutputDir,"index.html")
-    else:
-        output_file=os.path.join(baseOutputDir,"index.html")
-        
-    CustomReport.report_from_api(
-            api=api,
-            title="HTML Reports",
-            report_type="INDEX_FILE",
-            formats=["HTML"],
-            output_file=output_file,
-            sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','INDEX_SECTION', 'CUSTOM_FOOTER'],
-            customization_dir=rep_path)
-
-    api.close()
+        if usingGitLabCI:
+            output_file=os.path.join(baseOutputDir,"index.html")
+        else:
+            output_file=os.path.join(baseOutputDir,"index.html")
+            
+        CustomReport.report_from_api(
+                api=vcproj,
+                title="HTML Reports",
+                report_type="INDEX_FILE",
+                formats=["HTML"],
+                output_file=output_file,
+                sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','INDEX_SECTION', 'CUSTOM_FOOTER'],
+                customization_dir=rep_path)
     
 def create_index_html_body ():
     
