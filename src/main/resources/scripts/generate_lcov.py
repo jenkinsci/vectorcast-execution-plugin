@@ -46,6 +46,11 @@ try:
 except:
     pass
     
+try:
+    import math
+    INF = math.inf
+except Exception:
+    INF = float("inf")  # Py2-compatible
 encFmt = getVectorCASTEncoding()
 
 fileList = []
@@ -116,23 +121,24 @@ def has_branches_covered(line):
        
 def get_function_name_line_number(file_path, function, initial_guess):
 
-    with open(file_path,"rb") as fd:
+    with open(file_path, "rb") as fd:
         lines = [line.decode(encFmt, "replace") for line in fd.readlines()]
-        
-    line_number_closest_so_far = initial_guess;
-    delta = 9999999999;
 
-    # print(function, line_number_closest_so_far, delta, initial_guess)
-    for count, line in enumerate(reversed(lines[:initial_guess+1])):
-        if function in line.replace(" ",""):
+    if initial_guess is None or initial_guess >= len(lines):
+        initial_guess = len(lines) - 1
+
+    line_number_closest_so_far = initial_guess
+    delta = INF
+
+    for count, line in enumerate(reversed(lines[:initial_guess + 1])):
+        if function in line.replace(" ", ""):
             line_num = initial_guess - count
             if abs(line_num - initial_guess) < delta:
                 line_number_closest_so_far = line_num
                 delta = abs(line_num - initial_guess)
-                # print(function, line_number_closest_so_far, delta, initial_guess)
-    
-    # print(line_number_closest_so_far + 1,function)
-    return line_number_closest_so_far + 1 ## add one since python starts from 0
+
+    return line_number_closest_so_far + 1  # convert 0-based to 1-based
+
 
 def runCoverageResultsMP(mpFile, verbose = False, testName = "", source_root = ""):
 
