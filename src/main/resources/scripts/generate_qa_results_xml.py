@@ -5,7 +5,9 @@ try:
 except ImportError:
     # html not standard module in Python 2.
     from cgi import escape
-import sys, subprocess, os
+import sys, subprocess, os           
+from vcast_utils import dump, getVectorCASTEncoding
+
 global saved_compiler, saved_testsuite, saved_envname
 
 saved_compiler = ""
@@ -18,32 +20,30 @@ def get_timestamp():
     if hour > 12:
         hour -= 12
     return dt.strftime('%d %b %Y  @HR@:%M:%S %p').upper().replace('@HR@', str(hour))
-
+                                                
 def writeJunitHeader(currentEnv, junitfile, failed, total, unit_report_name, encoding = 'UTF-8'):
-    
-    junitfile.write("<?xml version=\"1.0\" encoding=\"" + encoding.upper() + "\"?>\n")
+                     
+    data = "<?xml version=\"1.0\" encoding=\"{}\"?>\n".format(encoding)
+    data += "<testsuites>\n  <!-- {} -->\n".format(unit_report_name)
+    data += "  <testsuite errors=\"{}\" tests=\"{}\" failures=\"{}\" name=\"{}\" id=\"1\">\n".format(0, total, failed, currentEnv)  
 
-    junitfile.write("<testsuites>\n  <!--" + unit_report_name + "-->\n")
-                    
-    junitfile.write("  <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
-        (0, total, failed, currentEnv))
+    junitfile.write(data.encode(encoding, "replace"))
 
-def writeJunitData(junitfile,all_tc_data):
-    junitfile.write(all_tc_data)
+def writeJunitData(junitfile,all_tc_data, encoding):
+    junitfile.write(all_tc_data.encode(encoding, "replace"))
     
-def writeJunitFooter(junitfile):
-    junitfile.write("  </testsuite>\n")
-    junitfile.write("</testsuites>\n")
+def writeJunitFooter(junitfile, encoding):
+    junitfile.write("  </testsuite>\n".encode(encoding, "replace"))
+    junitfile.write("</testsuites>\n".encode(encoding, "replace"))
 
 def write_tc_data(currentEnv, unit_report_name, jobNameDotted, passed, failed, error, testcase_data, encoding = 'utf-8', xml_data_dir = "xml_data"):
 
-    fh = open(os.path.join(xml_data_dir,unit_report_name), "w")
-
-    writeJunitHeader(currentEnv, fh, failed, failed+passed, unit_report_name, encoding)
-    writeJunitData(fh, testcase_data)
-    writeJunitFooter(fh)
-    fh.close()
-
+    with open(os.path.join(xml_data_dir,unit_report_name), "wb") as fh:
+        encoding = getVectorCASTEncoding()
+        writeJunitHeader(currentEnv, fh, failed, failed+passed, unit_report_name, encoding)
+        writeJunitData(fh, testcase_data, encoding)
+        writeJunitFooter(fh, encoding)         
+        
 def generateJunitTestCase(jobname, tc_name, passFail):
     testCasePassString ="    <testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
     testCaseFailString ="""    <testcase name="%s" classname="%s" time="0">

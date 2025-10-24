@@ -479,12 +479,7 @@ class BaseGenerateXml(object):
             functions_added = False
             funcs_with_cover_data = []
             for func in srcFile.functions:
-                try:
-                    hasAnyCov = func.has_coverage_data
-                except:
-                    hasAnyCov =  func.instrumented_functions[0].has_coverage_data
-
-                if hasAnyCov:
+                if self.hasAnyCov(func):
                     functions_added = True
                     funcs_with_cover_data.append(func)
 
@@ -499,8 +494,6 @@ class BaseGenerateXml(object):
             sorted_funcs.sort(key=lambda x: (x.name))
 
             for func in sorted_funcs:
-
-
                 try:
                     cover_function = func.cover_data.metrics
                 except:
@@ -525,16 +518,12 @@ class BaseGenerateXml(object):
 
             self.grand_total_max_covered_branches += metrics.max_covered_branches + metrics.max_covered_mcdc_branches
             self.grand_total_branches += metrics.branches + metrics.mcdc_branches
-
             self.grand_total_max_covered_statements += metrics.max_covered_statements
             self.grand_total_statements += metrics.statements
-
             self.grand_total_max_mcdc_covered_branches += metrics.max_covered_mcdc_branches
             self.grand_total_mcdc_branches += metrics.mcdc_branches
-
             self.grand_total_max_covered_mcdc_pairs += metrics.max_covered_mcdc_pairs
             self.grand_total_mcdc_pairs += metrics.mcdc_pairs
-
             self.grand_total_max_covered_function_calls += metrics.max_covered_function_calls
             self.grand_total_function_calls += metrics.function_calls
 
