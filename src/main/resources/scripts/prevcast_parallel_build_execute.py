@@ -1,4 +1,26 @@
-#parallel_build_execute.py
+#
+# The MIT License
+#
+# Copyright 2025 Vector Informatik, GmbH.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
 
 import sys, os, subprocess, argparse, glob, shutil
 from pprint import pprint
@@ -9,20 +31,6 @@ from io import open
 import incremental_build_report_aggregator
 
 from vcast_utils import getVectorCASTEncoding
-
-# adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-
-# needed because vc18 vpython does not have bs4 package
-if sys.version_info[0] < 3:
-    python_path_updates += os.sep + 'vpython-addons'
-    sys.path.append(python_path_updates)
 
 try:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi 
@@ -47,8 +55,8 @@ except:
 VCD = os.environ['VECTORCAST_DIR']
 MONITOR_SLEEP=6
 
-VERSION="v0.2"
-VERSION_DATE="2023-10-14"
+VERSION="v0.79"
+VERSION_DATE="2025-10-29"
 
 class ParallelExecute(object):
     def __init__(self):
@@ -102,7 +110,7 @@ class ParallelExecute(object):
             self.priority_list = []
         else:
             self.priority_list = args.prioritize.split(',')
-            print("Adding the following environments to the top of the que: " + ",".join(self.priority_list))
+            print("Adding the following environments to the top of the que: {}".format(",".join(self.priority_list)))
         
         self.compiler = args.compiler 
         self.testsuite = args.testsuite
@@ -193,13 +201,13 @@ class ParallelExecute(object):
                 data = bldlog.read().decode('utf-8','replace')
 
                 if "Creating report in" in data.split('\n')[0]:    
-                    print("\nRebuild/Reexecute unnecessary for " + env + " environment.  Run Time was  " + human_uptime + ".")
+                    print("\nRebuild/Reexecute unnecessary for {} environment. Run Time was  {}.".format(env, human_uptime))
                 elif "Environment built Successfully" not in data:
-                    print("\nERROR!!! Environment " + env + " not built successfully!  See " + log_name + " for more details")
+                    print("\nERROR!!! Environment {} not built successfully!  See {} for more details".format(env,log_name))
                 else:
-                    print("\nCompleted execution of " + env + " environment.  Run Time was  " + human_uptime + ".")
+                    print("\nCompleted execution of {} environment. Run Time was {}.".format(env, human_uptime))
         
-        #print ("Harness Loading/Execution", full_name, "Complete")
+        #print ("Harness Loading/Execution {} Complete".format(full_name))
         exec_queue.get()
         queue.task_done()
         
@@ -244,7 +252,7 @@ class ParallelExecute(object):
     def monitor_jobs(self):
         
         while self.running_jobs != 0:
-            print ("\n\nWaiting on jobs (", self.running_jobs , len(self.currently_executing_jobs), ")")
+            print ("\n\nWaiting on jobs ({} {})".format(self.running_jobs , len(self.currently_executing_jobs)))
             print ("===============\n  ")
             si = self.currently_executing_jobs
             si.sort()
@@ -253,7 +261,7 @@ class ParallelExecute(object):
             for compiler in self.waiting_execution_queue:
                 qsz = self.waiting_execution_queue[compiler].qsize()
                 if qsz > 0:
-                    print ("  >> ", compiler, "has", qsz,  "environment(s) in queue")
+                    print ("  >> {} has {} environment(s) in queue".format(compiler, qsz))
             
             time.sleep(MONITOR_SLEEP)
 
@@ -269,9 +277,9 @@ class ParallelExecute(object):
 
         print ("\n\nSummary of Parallel Execution")
         print (    "=============================")
-        print ("  Total time :", script_human_uptime)
+        print ("  Total time : {}".format(script_human_uptime))
         for job in self.jobs_run_time:
-            print ("  ", self.jobs_run_time[job], job)
+            print ("  {} {}".format(self.jobs_run_time[job], job))
 
     def get_testcase_list(self,env_list):
         new_env_list = []
@@ -411,7 +419,7 @@ def parallel_build_execute(in_args):
         sys.argv = prev_argv
 
 if __name__ == '__main__':
-    print ("VectorCAST parallel_build_execute.py ", VERSION, "  ", VERSION_DATE)
+    print ("VectorCAST parallel_build_execute.py {} {}".format(VERSION, VERSION_DATE))
     pe = ParallelExecute()
     pe.parseParallelExecuteArgs()
     pe.doit()

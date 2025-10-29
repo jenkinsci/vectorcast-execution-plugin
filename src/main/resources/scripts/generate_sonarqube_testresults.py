@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 #
 
 from __future__ import print_function
+
 
 import os
 from datetime import datetime
@@ -299,7 +300,7 @@ class GenerateManageXml (BaseGenerateXml):
                 os.makedirs(path)
             except:
                 print("failed making path: " + path)
-                print("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
+                print("   *INFO: File System Error creating directory: " + path + ". Check console for environment build/execution errors")
                 if print_exc:  traceback.print_exc()
                 
         
@@ -576,7 +577,7 @@ class GenerateXml(BaseGenerateXml):
                                 
                             level = env.compiler.name + "/" + env.testsuite.name + "/" + env.name
                             if self.verbose:
-                                print (level, st.name, pass_fail_rerun)
+                                print ("{} {} {}".format(level, st.name, pass_fail_rerun))
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
 
                 # callStr = os.getenv('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + self.manageProjectName + "_system_tests_status.html"
@@ -835,7 +836,7 @@ if __name__ == '__main__':
             args.project += ".vcm"
             
         if not os.path.exists(args.project):
-            print("Path to VectorCAST Project not found: ", args.project)
+            print("Path to VectorCAST Project not found: " + args.project)
             sys.exit(-1)
             
         run(args.project)

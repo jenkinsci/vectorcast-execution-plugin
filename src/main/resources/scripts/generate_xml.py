@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -666,7 +666,7 @@ class GenerateManageXml (BaseGenerateXml):
                 try:
                     os.remove(file);
                 except:
-                    self.teePrint.teePrint("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
+                    self.teePrint.teePrint("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ". Check console for environment build/execution errors")
                     if print_exc:  traceback.print_exc()
 
         # we should either have an empty directory or no directory
@@ -675,7 +675,7 @@ class GenerateManageXml (BaseGenerateXml):
                 os.mkdir(path)
             except:
                 print("failed making path: " + path)
-                self.teePrint.teePrint("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
+                self.teePrint.teePrint("   *INFO: File System Error creating directory: " + path + ". Check console for environment build/execution errors")
                 if print_exc:  traceback.print_exc()
 
     def __del__(self):
@@ -817,7 +817,7 @@ class GenerateManageXml (BaseGenerateXml):
                         self.runFullReport(comp, ts, env_name, report_name)
                 self.fixupReport(report_name)
             except:
-                print("Error creating report", report_name + ". Contact Vector Support")
+                print("Error creating report " + report_name + ". Contact Vector Support")
                 parse_traceback.parse(traceback.format_exc(), self.verbose, self.compiler,  self.testsuite,  self.env,  self.build_dir)
 
     def runFullReport(self,comp,ts,env_name,report_name):
@@ -836,7 +836,7 @@ class GenerateManageXml (BaseGenerateXml):
                 import shutil
                 shutil.copyfile(fname, report_name)
             else:
-                print("Error creating report", report_name + ". Contact Vector Support")
+                print("Error creating report " + report_name + ". Contact Vector Support")
         except:
             traceback.print_exc()
             
@@ -854,7 +854,7 @@ class GenerateManageXml (BaseGenerateXml):
                 import shutil
                 shutil.copyfile(fname, report_name)
             else:
-                print("Error creating report", report_name + ". Contact Vector Support")
+                print("Error creating report " + report_name + ". Contact Vector Support")
         except:
             traceback.print_exc()
 
@@ -878,7 +878,7 @@ class GenerateManageXml (BaseGenerateXml):
 
             except:
                 traceback.print_exc()
-                print("exception converting directory into relative path:", env.build_directory, build_dir)
+                print("exception converting directory into relative path: {} {}".format(env.build_directory, build_dir))
 
             ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
 
@@ -1307,7 +1307,7 @@ class GenerateXml(BaseGenerateXml):
                         startLine = list(tc.cover_data.covered_statements)[0].start_line
                     except:
                         startLine = "0"
-                        print("failed to access any start_line ", self.env, func_name, tc.name)
+                        print("failed to access any start_line {} {} {}".format(self.env, func_name, tc.name))
             else:
                 startLine = "0"
 
@@ -1407,12 +1407,12 @@ class GenerateXml(BaseGenerateXml):
         status = ""
         if tc.passed == None:
             extraStatus = "\n            <skipped/>\n"
-            status = "Testcase may have been skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nFAIL"
+            status = "Testcase may have been skipped by VectorCAST Change Based Testing. Last execution data shown.\n\nFAIL"
             msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
 
         elif not tc.passed:
             if tcSkipped:
-                status = "Testcase may have been skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nFAIL"
+                status = "Testcase may have been skipped by VectorCAST Change Based Testing. Last execution data shown.\n\nFAIL"
             else:
                 status = "FAIL"
             extraStatus = "\n            <failure type=\"failure\" message=\"" + failure_message + "\"/>\n"
@@ -1420,7 +1420,7 @@ class GenerateXml(BaseGenerateXml):
             msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
         elif tcSkipped:
             extraStatus = "\n            <skipped/>\n"
-            status = "Skipped by VectorCAST Change Based Testing.  Last execution data shown.\n\nPASS"
+            status = "Skipped by VectorCAST Change Based Testing. Last execution data shown.\n\nPASS"
             msg = "{} {} / {}  \n\nExecution Report:\n {}".format(status, exp_pass, exp_total, result)
         else:
             status = "PASS"
@@ -1479,8 +1479,8 @@ class GenerateXml(BaseGenerateXml):
         except Exception as e:
             parse_traceback.parse(traceback.format_exc(), self.print_exc, self.compiler,  self.testsuite,  self.env,  self.build_dir)
             if self.print_exc:
-                print ("CBT Dictionary:" + self.cbtDict, width = 132)
-                pprint(self.cbtDict, width = 132)
+                import json
+                print ("CBT Dictionary:\n{}".format(json.dumps(self.cbtDict, indent=2)))
 
 ## GenerateXml
 
@@ -1534,7 +1534,7 @@ class GenerateXml(BaseGenerateXml):
 
     def __print_test_case_was_skipped(self, searchName, passed):
         if self.verbose:
-            print("skipping ", self.hashCode, searchName, passed)
+            print("skipping {} {} {}".format(self.hashCode, searchName, passed))
 
 def __generate_xml(xml_file, envPath, env, xmlCoverReportName, xmlTestingReportName):
     if xml_file.api == None:

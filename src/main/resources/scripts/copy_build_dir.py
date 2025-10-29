@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -125,7 +125,7 @@ def addConvertCoverFile(tf, file, workspace, build_dir, nocase, vCastProjectWork
     fullpath = build_dir + os.path.sep + file
     bakpath = fullpath + '.bk'
 
-    print("Updating cover.db: ", fullpath)
+    print("Updating cover.db: " + fullpath)
     
     if os.path.isfile(fullpath):
         conn = sqlite3.connect(fullpath)
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject',       help='Manager Project Name')
-    parser.add_argument('-l', '--level',       help='Environment Name if only doing single environment.  Should be in the form of level/env', default="NotProvided/NotProvided")
+    parser.add_argument('-l', '--level',       help='Environment Name if only doing single environment. Should be in the form of level/env', default="NotProvided/NotProvided")
     parser.add_argument('-b', '--basename',    help='Enable verbose output',    default="")
     parser.add_argument('-e', '--environment', help='Enable verbose output', default="")
     parser.add_argument('--notar',             help='Don\'t Product a tar file', default=False, action="store_true")

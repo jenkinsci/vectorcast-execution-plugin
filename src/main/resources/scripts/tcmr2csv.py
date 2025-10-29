@@ -29,15 +29,6 @@ import argparse
 import os
 import sys
 
-# adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-python_path_updates += os.sep + "vpython-addons"
-sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
 from safe_open import open

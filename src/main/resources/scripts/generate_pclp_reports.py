@@ -512,7 +512,7 @@ def main():
 
     parser.add_argument('--input-xml', action='store', help='XML input filename', required=True)
     parser.add_argument('--output-html', action='store', help='HTML output filename', default = None, required=False)
-    parser.add_argument('--vc-project', action='store', help='VectorCAST Project Name.  Used for source view', dest="full_mp_name", required=True)
+    parser.add_argument('--vc-project', action='store', help='VectorCAST Project Name. Used for source view', dest="full_mp_name", required=True)
 
     parser.add_argument('--output-text', action='store', help=argparse.SUPPRESS, default = None, required=False)
     parser.add_argument('--output-json', action='store', help=argparse.SUPPRESS, default = None, required=False)

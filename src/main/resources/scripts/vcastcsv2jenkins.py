@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-#vcastcsv2jenkins.py
 
 from __future__ import division
 from __future__ import print_function
@@ -35,18 +34,6 @@ import shutil
 
 import cgi
 from safe_open import open
-
-# adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-# needed because vc18 vpython does not have bs4 package
-if sys.version_info[0] < 3:
-    python_path_updates += os.sep + 'vpython-addons'
-    sys.path.append(python_path_updates)
 
 from xml.sax.saxutils import escape
 

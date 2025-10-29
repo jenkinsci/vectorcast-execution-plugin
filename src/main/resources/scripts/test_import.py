@@ -25,38 +25,23 @@ except ModuleNotFoundError as e:
     
     
 try:
+    import generate_results 
+except:
+    try:
+        import importlib
+        generate_results = importlib.import_module("generate-results")
+    except:
+        import imp
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        vc_script = os.path.join(script_dir, "generate-results.py")
+        generate_results = imp.load_source("generate_results", vc_script)
+try:
     import cobertura
+    import send_cobertura_to_bitbucket
     import copy_build_dir
     import create_index_html
     import extract_build_dir
-    try:
-        import generate_results 
-    except:    
-        try:
-            generate_results = importlib.import_module("generate-results")
-        except:
-            try:
-                vc_script = "."
-                
-                try:
-                    wsDir = os.environ['CI_PROJECT_DIR'].replace("\\","/") + "/"
-                except:
-                    try:
-                        wsDir = os.environ['WORKSPACE'].replace("\\","/") + "/"
-                    except:
-                        wsDir = os.getcwd().replace("\\","/") + "/"    
-
-                if os.path.exists("vc_scripts"):
-                    vc_script = os.path.join(wsDir, "vc_scripts", "generate-results.py")
-                elif os.path.exists("scripts"):
-                    vc_script = os.path.join(wsDir, "scripts" + "generate-results.py")
-                    
-                generate_results = importlib.load_source("generate_results", vc_script)
-            except Exception as e:
-                traceback.print_exc()
-                print("Can't find vc_script or scripts directory under CWD", os.getcwd())
-                sys.exit(-1)
-                
+                        
     try:
         import parallel_build_execute
     except:

@@ -208,7 +208,7 @@ def genQATestResults(mp, level = None, envName = None, verbose = False, encoding
     out, err = p.communicate()
         
     if err:
-        print(out, err)
+        print("{} {}".format(out, err))
     passed_count, failed_count = processSystemTestResultsData(out.splitlines(), encoding)
     
     saveQATestStatus(mp)

@@ -116,8 +116,8 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
     file = None
 
     if verbose:
-        print ("   fname   = ", fname)
-        print ("   fpath   = ", fpath)
+        print ("   fname   = " + fname)
+        print ("   fpath   = " + fpath)
     
     for element in testXml.iter():
         if element.tag == "class" and element.attrib['filename'] == fpath:

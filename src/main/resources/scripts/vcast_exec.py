@@ -30,15 +30,15 @@ import patch_rgw_directory as rgw
 
 try:
     import generate_results 
-except:    
+except:
     try:
         import importlib
         generate_results = importlib.import_module("generate-results")
     except:
-        vc_script = os.path.join(os.environ['WORKSPACE'], "vc_scripts", "generate-results.py")
         import imp
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        vc_script = os.path.join(script_dir, "generate-results.py")
         generate_results = imp.load_source("generate_results", vc_script)
-
 if sys.version_info[0] < 3:
     python_path_updates = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "python")
     sys.path.append(python_path_updates)
@@ -76,7 +76,9 @@ def displayVersion():
     if os.path.exists(version_path):
         with open(version_path,"rb") as fd:
             versionInfo = fd.read().decode(self.encFmt, "replace")
-    print("vc_scripts_submodule Version: ", versionInfo)
+        print("vc_scripts_submodule Version: " + versionInfo)
+    else:
+        print("Can't Read Version of Jenkins Integration. See console log.")
 
 class VectorCASTExecute(object):
     
@@ -117,6 +119,7 @@ class VectorCASTExecute(object):
         self.junit = args.junit
         self.cobertura = args.cobertura
         self.cobertura_extended = args.cobertura_extended
+        self.send_to_bitbucket = args.send_to_bitbucket
         self.metrics = args.metrics
         self.fullstatus = args.fullstatus
         self.aggregate = args.aggregate
@@ -125,6 +128,9 @@ class VectorCASTExecute(object):
         
         self.html_base_dir = args.html_base_dir
         self.use_cte = args.use_cte
+        self.send_all_coverage = args.send_all_coverage
+        self.minimum_passing_coverage = args.minimum_passing_coverage
+        self.noIndex = args.noindex
         
         if args.exit_with_failed_count == 'not present':
             self.useJunitFailCountPct = False
@@ -147,11 +153,11 @@ class VectorCASTExecute(object):
             self.xml_data_dir = "xml_data"
         
         if args.build and not args.build_execute:
-            self.build_execute = "build"
-            self.vcast_action = "--vcast_action " + self.build_execute
+            self.build_execute = "--build"
+            self.vcast_action = "--vcast_action build"
         elif args.build_execute:
-            self.build_execute = "build-execute"
-            self.vcast_action = "--vcast_action " + self.build_execute
+            self.build_execute = "--build-execute"
+            self.vcast_action = "--vcast_action build-execute"
         else:
             self.build_execute = ""
             self.vcast_action = ""
@@ -164,14 +170,14 @@ class VectorCASTExecute(object):
         self.encFmt = getVectorCASTEncoding()
 
         if args.ci:
-            self.useCI = " --use_ci "
-            self.ci = " --ci "
+            self.useCI = "--use_ci"
+            self.ci = "--ci"
         else:
             self.useCI = ""
             self.ci = ""
             
         if args.incremental:
-            self.useCBT = " --incremental "
+            self.useCBT = "--incremental"
         else:
             self.useCBT = ""
                   
@@ -214,7 +220,14 @@ class VectorCASTExecute(object):
         else:
             self.build_log_name = self.mpName + "_build.log"    
 
-        self.manageWait = ManageWait(self.verbose, "", 30, 1, self.FullMP, self.ci)
+        self.manageWait = ManageWait(
+            verbose = self.verbose, 
+            command_line = "", 
+            wait_time = 30, 
+            wait_loops= 1, 
+            mpName = self.FullMP, 
+            useCI = self.ci
+        )
             
         self.cleanup("junit", "test_results_")
         self.cleanup("cobertura", "coverage_results_")
@@ -323,6 +336,79 @@ class VectorCASTExecute(object):
             cobertura.generateCoverageResults(self.FullMP, self.azure, self.xml_data_dir, verbose = self.verbose, 
                 extended=self.cobertura_extended, source_root = self.source_root)
 
+    def sendToBitBucket(self):
+        if not checkVectorCASTVersion(21):
+            print("Cannot create Cobertura metrics to send to BitBucket. Please upgrade VectorCAST")
+        else:
+            import cobertura
+            import send_cobertura_to_bitbucket
+
+            self.cleanup("coverage")
+            self.cleanup("test-results")
+            self.cleanup("reports")
+            
+            if not os.path.isdir("coverage"):
+                os.makedirs("coverage")
+            if not os.path.isdir("test-results"):
+                os.makedirs("test-results")
+            if not os.path.isdir("reports/html"):
+                os.makedirs("reports/html")
+
+            print("Generating and sending extended cobertura metrics to BitBucket")
+            cobertura.generateCoverageResults(
+                self.FullMP, 
+                azure = False, 
+                xml_data_dir = "coverage", 
+                verbose = self.verbose, 
+                extended=True, 
+                source_root = self.source_root)
+
+            print("Creating JUnit metrics to be read by BitBucket")
+            failed_count, passed_count = generate_results.buildReports(
+                    FullManageProjectName = self.FullMP,
+                    level = None,
+                    envName = None,
+                    generate_individual_reports = False,
+                    timing = False,
+                    cbtDict = None,
+                    use_archive_extract = False,
+                    report_only_failures = False,
+                    no_full_report = False,
+                    use_ci = self.ci,
+                    xml_data_dir = "test-results",
+                    useStartLine = False)
+
+            name  = os.path.splitext(os.path.basename(self.FullMP))[0] + ".xml"
+            fname = os.path.join("coverage","cobertura","coverage_results_" + name)
+
+            if os.path.exists(fname):
+                new_name = os.path.join("coverage","cobertura","cobertura.xml")
+                os.rename(fname, new_name)
+                fname = new_name
+            
+            print("\nProcessing {} and sending to BitBucket: ".format(fname))
+            
+            send_cobertura_to_bitbucket.run(
+                filename = fname,
+                minimum_passing_coverage = self.minimum_passing_coverage, 
+                send_all_coverage = self.send_all_coverage,
+                verbose = self.verbose)
+                
+            for html_dir in [".", self.html_base_dir, "rebuild_reports"]:
+                for html in glob.glob(os.path.join(html_dir, "*.html")) \
+                          + glob.glob(os.path.join(html_dir, "*.ccs"))  \
+                          + glob.glob(os.path.join(html_dir, "*.png")): 
+                    dest = os.path.join("reports/html",html)
+                    dest_dir = os.path.dirname(dest)
+                    if not os.path.isdir(dest_dir):
+                        os.makedirs(os.path.dirname(dest))
+                        
+                    try:
+                        shutil.copyfile(html, dest)
+                        if self.verbose: print("Copying {} --> {}".format(html,dest))
+                    except Exception as e:
+                        print("Error copying {} --> {}".format(html,dest))
+                        print(e)
     def runSonarQubeMetrics(self):
         if not checkVectorCASTVersion(21):
             print("Cannot create SonarQube metrics. Please upgrade VectorCAST")
@@ -429,6 +515,8 @@ class VectorCASTExecute(object):
 
     def runExec(self):
 
+        print("Building {} with {} {}".format(self.FullMP,self.build_execute, self.useCBT))
+
         self.manageWait.exec_manage_command ("--status")
         self.manageWait.exec_manage_command ("--force --release-locks")
         self.manageWait.exec_manage_command ("--config VCAST_CUSTOM_REPORT_FORMAT=HTML")
@@ -446,7 +534,7 @@ class VectorCASTExecute(object):
         if self.jobs != "1" and checkVectorCASTVersion(20, True) and not useParallelManageCommand:
             # setup project for parallel execution
             self.manageWait.exec_manage_command ("--config VCAST_DEPENDENCY_CACHE_DIR=./vcqik")
-
+            
             # should work for pre-vcast parallel_build_execute or vcast parallel_build_execute
             pstr = "--project " + self.FullMP
             jstr = "--jobs="+str(self.jobs)
@@ -464,6 +552,7 @@ class VectorCASTExecute(object):
                     callList.append(s)
 
             callStr = " ".join(callList)
+            print("Build/Execute in parallel using {}".format(" ".join(callList)))
             parallel_build_execute.parallel_build_execute(callStr)
 
         else:      
@@ -471,9 +560,16 @@ class VectorCASTExecute(object):
                 jstr = "--jobs=" + str(self.jobs)
             else:
                 jstr = ""
-            cmd = "--" + self.build_execute + " " + self.useCBT + self.level_option + self.env_option + " " + jstr + " " + output 
-
+                
+            cmd = "{} {} {} {} {} {} {}".format(self.build_execute, self.level_option , self.useCBT, self.env_option, jstr, "--verbose", output)
+            
+            print("Build/Execute in using manage command with options: {}".format(cmd))
+            
             build_log = self.manageWait.exec_manage_command (cmd)
+            
+            if os.path.exists("command.log"):
+                shutil.copyfile('command.log', "complete_build.log")
+
             with open(self.build_log_name,"wb") as fd: 
                 fd.write(build_log.encode(self.encFmt, "replace"))
 
@@ -481,7 +577,7 @@ class VectorCASTExecute(object):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('ManageProject', nargs='?', help='VectorCAST Project Name')
+    parser.add_argument('ManageProject', nargs='?', help='VectorCAST Project Name', default="")
     
     actionGroup = parser.add_argument_group('Script Actions', 'Options for the main tasks')
     actionGroup.add_argument('--build-execute', help='Builds and exeuctes the VectorCAST Project', action="store_true", default = False)
@@ -495,6 +591,9 @@ if __name__ == '__main__':
     metricsGroup.add_argument("--html_base_dir", help='Set the base directory of the html_reports directory. The default is the workspace directory', default = "html_reports")
     metricsGroup.add_argument('--cobertura', help='Generate coverage results in Cobertura xml format', action="store_true", default = False)
     metricsGroup.add_argument('--cobertura_extended', help='Generate coverage results in extended Cobertura xml format', action="store_true", default = False)
+    metricsGroup.add_argument('--send_to_bitbucket', help='Generate Junit and Extended Cobertura data to send to BitBucket', action="store_true", default = False)
+    metricsGroup.add_argument('--send_all_coverage', help='Send all coverage to BitBucket. Default is partial or not coveraged', action="store_true", default = False)
+    metricsGroup.add_argument('--minimum_passing_coverage', type=float, help="Minimum overall coverage required to pass (default 80 percent)",default=80)
     metricsGroup.add_argument('--lcov', help='Generate coverage results in an LCOV format', action="store_true", default = False)
     metricsGroup.add_argument('--junit', help='Generate test results in Junit xml format', action="store_true", default = False)
     metricsGroup.add_argument('--export_rgw', help='Export RGW data', action="store_true", default = False)
@@ -502,7 +601,7 @@ if __name__ == '__main__':
     metricsGroup.add_argument('--sonarqube', help='Generate test results in SonarQube Generic test execution report format (CppUnit)', action="store_true", default = False)
     metricsGroup.add_argument('--pclp_input', help='Generate static analysis results from PC-lint Plus XML file to generic static analysis format (codequality)', action="store", default = None)
     metricsGroup.add_argument('--pclp_output_html', help='Generate static analysis results from PC-lint Plus XML file to an HTML output', action="store", default = "pclp_findings.html")
-    metricsGroup.add_argument('--exit_with_failed_count', help='Returns failed test case count as script exit.  Set a value to indicate a percentage above which the job will be marked as failed', 
+    metricsGroup.add_argument('--exit_with_failed_count', help='Returns failed test case count as script exit. Set a value to indicate a percentage above which the job will be marked as failed', 
                                nargs='?', default='not present', const='(default 0)')
 
     reportGroup = parser.add_argument_group('Report Selection', 'VectorCAST Manage reports that can be generated')
@@ -511,13 +610,13 @@ if __name__ == '__main__':
     reportGroup.add_argument('--fullstatus', help='Generate full status reports for VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--utfull', help='Generate Full Reports for each VectorCAST environment in project', action="store_true", default = False)
     reportGroup.add_argument('--tcmr', help='Generate Test Cases Management Reports for each VectorCAST environment in project', action="store_true", default = False)
-    reportGroup.add_argument('--index', help='Generate an index.html report that ties all the other HTML reports together', action="store_true", default = False)
+    reportGroup.add_argument('--noindex', help='Stops index.html report that ties all the other HTML reports together from being created', action="store_true", default = False)
 
     beGroup = parser.add_argument_group('Build/Execution Options', 'Options that effect build/execute operation')
     
     beGroup.add_argument('--jobs', help='Number of concurrent jobs (default = 1)', default="1")
     beGroup.add_argument('--ci', help='Use Continuous Integration Licenses', action="store_true", default = False)
-    beGroup.add_argument('-l', '--level',   help='Environment Name if only doing single environment.  Should be in the form of compiler/testsuite', default=None)
+    beGroup.add_argument('-l', '--level',   help='Environment Name if only doing single environment. Should be in the form of compiler/testsuite', default=None)
     beGroup.add_argument('-e', '--environment',   help='Environment Name if only doing single environment.', default=None)
 
     parser_specify = beGroup.add_mutually_exclusive_group()
@@ -532,6 +631,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
+    if args.version:
+        displayVersion()
+        sys.exit(0)
+        
     # Conditional requirement check
     if not args.version and not args.ManageProject:
         parser.error("ManageProject is required unless --version is specified")
@@ -544,10 +647,6 @@ if __name__ == '__main__':
         print ("Manage project (.vcm file) provided does not exist: " + args.ManageProject)
         print ("exiting...")
         sys.exit(-1)
-
-    if args.version:
-        displayVersion()
-        sys.exit(0)
 
     if args.ci:
         os.environ['VCAST_USE_CI_LICENSES'] = "1"
@@ -570,6 +669,8 @@ if __name__ == '__main__':
     if args.cobertura or args.cobertura_extended:
         vcExec.runCoberturaMetrics()
         
+    if args.send_to_bitbucket:
+        vcExec.sendToBitBucket()
     if args.lcov:
         vcExec.runLcovMetrics()
 
@@ -588,13 +689,13 @@ if __name__ == '__main__':
     if args.utfull:
         vcExec.generateUtFullReport()
 
-    if vcExec.needIndexHtml or args.index:
+    if vcExec.needIndexHtml and not vcExec.noIndex:
         vcExec.generateIndexHtml()
         
     if args.export_rgw:
         vcExec.exportRgw()
         
     if vcExec.useJunitFailCountPct:
-        print("--exit_with_failed_count=" + args.exit_with_failed_count + " specified.  Fail Percent = " + str(round(vcExec.failed_pct,0)) + "% Return code: ", str(vcExec.failed_count))
+        print("--exit_with_failed_count=" + args.exit_with_failed_count + " specified. Fail Percent = " + str(round(vcExec.failed_pct,0)) + "% Return code: " + str(vcExec.failed_count))
         sys.exit(vcExec.failed_count)
         

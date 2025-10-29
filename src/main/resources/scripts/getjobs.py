@@ -63,8 +63,8 @@ def checkForEnvChanges(vcm_fname, build_dir, env_name):
         env_coverdb_ts = os.path.getmtime(env_coverdb)
         vcm_file_ts = os.path.getmtime(vcm_fname)
         if (vcm_file_ts > env_coverdb_ts):
-            print ("Changes to .vcm file.  Rebuild all")
-            #print(str(env_coverdb_ts), str(vcm_file_ts))
+            print ("Changes to .vcm file. Rebuild all")
+            print("{} {}".format(str(env_coverdb_ts), str(vcm_file_ts)))
             return " FR"
             
         env_files_latest_ts = 0
@@ -80,8 +80,8 @@ def checkForEnvChanges(vcm_fname, build_dir, env_name):
         env_data_path = os.path.join(vcm_path,vcm_basename, "environment", env_name,"*.*")
         for file in glob.glob(env_data_path):
             if os.path.getmtime(file) > env_coverdb_ts:
-                print(file,"time greater than", env_coverdb)
-                print("force rebuild of enviornment")
+                print("{} time greater than {}", file, env_coverdb)
+                print("Forcing rebuild of enviornment")
                 return "FR"
             
         return " NA"

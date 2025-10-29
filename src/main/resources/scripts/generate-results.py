@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ from __future__ import absolute_import
 
 import os
 import sys
+
 import argparse
 import shutil
 import re
@@ -40,22 +41,6 @@ import tee_print
 from safe_open import open
 from vcast_utils import getVectorCASTEncoding
 
-# adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-
-if sys.version_info[0] < 3:
-    python_path_updates += os.sep + 'vpython-addons'
-    sys.path.append(python_path_updates)
-    using_27_python = True
-else:
-    using_27_python = False
 
 import tcmr2csv
 import vcastcsv2jenkins
@@ -455,7 +440,7 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
         
     for currentEnv in manageEnvs:
         if skipReporting(manageEnvs[currentEnv]["build_dir"], use_archive_extract, cbtDict):
-            print("   No Change for " + currentEnv + ".  Skipping reporting.")
+            print("   No Change for " + currentEnv + ". Skipping reporting.")
             continue 
 
         if envName == None:
@@ -545,7 +530,7 @@ def buildReports(FullManageProjectName = None,
             if verbose:
                 print("Removing file: " + file)
         except Exception as e:
-            teePrint.teePrint("   *INFO: File System Error removing " + file + ".  Check console for environment build/execution errors")
+            teePrint.teePrint("   *INFO: File System Error removing " + file + ". Check console for environment build/execution errors")
             if print_exc:  traceback.print_exc()
    
     failed_count = 0
@@ -772,9 +757,8 @@ def buildReports(FullManageProjectName = None,
             if print_exc:  traceback.print_exc()
             
         for file in copyList:
-
             if verbose:
-                print("moving %s -> %s" % (file[0], file[1]))
+                print("moving {} -> {}".format(file[0], file[1]))
 
             shutil.move(file[0], file[1])
             
@@ -789,8 +773,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject',                    help='Manager Project Name')
     parser.add_argument('-v', '--verbose',                  help='Enable verbose output', action="store_true")
-    parser.add_argument('-l', '--level',                    help='Environment Name if only doing single environment.  Should be in the form of level/env')
-    parser.add_argument('-e', '--environment',              help='Environment Name if only doing single environment.  Should be in the form of level/env')
+    parser.add_argument('-l', '--level',                    help='Environment Name if only doing single environment. Should be in the form of level/env')
+    parser.add_argument('-e', '--environment',              help='Environment Name if only doing single environment. Should be in the form of level/env')
     parser.add_argument('-g', '--dont-generate-individual-reports',   
                                                             help='Don\'t Generated Individual Reports. Below VC2019 - this just controls execution report generate. VC2019 and later - execution reports for each testcase won\'t be generated',  action="store_true", default=False)
     parser.add_argument('--wait_time',                      help='Time (in seconds) to wait between execution attempts', type=int, default=30)
