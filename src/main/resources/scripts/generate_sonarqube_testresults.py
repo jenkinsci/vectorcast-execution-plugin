@@ -291,7 +291,7 @@ class GenerateManageXml (BaseGenerateXml):
                 try:
                     os.remove(file);
                 except:
-                    print("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
+                    print("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ". Check console for environment build/execution errors")
                     if print_exc:  traceback.print_exc()
 
         # we should either have an empty directory or no directory
