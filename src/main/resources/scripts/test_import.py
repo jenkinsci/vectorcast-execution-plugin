@@ -1,6 +1,10 @@
 import os, sys
-import importlib
 import traceback
+
+try:
+    ModuleNotFoundError
+except NameError:
+    ModuleNotFoundError = ImportError
 
 os.environ['JENKINS_URL'] = 'http://localhost:8080/'
 os.environ['USERNAME'] = 'tms'

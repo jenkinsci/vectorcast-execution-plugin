@@ -8,9 +8,9 @@ from vcast_utils import getVectorCASTEncoding
 
 from pprint import pprint
 
-PASS = "✅"
-FAIL = "❌"
-PARTIAL = "🟡"
+PASS = u"\u2705"   
+FAIL = u"\u274C"   
+PARTIAL = u"\U0001F7E1"
 
 # Parse Cobertura XML
 def parse_cobertura(xml_path, send_all_coverage):
@@ -200,7 +200,7 @@ def send_code_coverage_annoations(annotations, workspace, repo_slug, commit_hash
         )
         
         if resp.status_code != 200 or verbose:
-            print(f"Batch {i//100+1} response:", resp.status_code, resp.text)
+            print("Batch {i//100+1} response: {} {}".format(resp.status_code, resp.text))
 
     print("Complete")
 

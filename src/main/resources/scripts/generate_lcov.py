@@ -347,7 +347,7 @@ if __name__ == '__main__':
     
     if not checkVectorCASTVersion(21):
         print("Cannot create LCOV metrics. Please upgrade VectorCAST")
-        sys.exit()
+        sys.modules[__name__] = None
         
     parser = argparse.ArgumentParser()
     parser.add_argument('vcProjectName', help='VectorCAST Project Name', action="store")

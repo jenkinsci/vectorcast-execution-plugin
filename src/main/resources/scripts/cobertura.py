@@ -769,7 +769,8 @@ if __name__ == '__main__':
     
     if not checkVectorCASTVersion(21):
         print("Cannot create Cobertura metrics. Please upgrade VectorCAST")
-        sys.exit()
+        sys.modules[__name__] = None
+
             
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject',     help='Manager Project Name')

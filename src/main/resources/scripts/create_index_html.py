@@ -58,7 +58,7 @@ def getReportName(filename):
         if env_name == None:
             reportName = "Aggregate Coverage Report"
         else:
-            reportName = f"Aggregate Coverage Report {env_name}"
+            reportName = "Aggregate Coverage Report {}".format(env_name)
             reportType = 1
         
     elif searchKeyword(">Full Status Section<", filename)[0] != -1:
