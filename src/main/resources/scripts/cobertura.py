@@ -768,9 +768,7 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", ve
 if __name__ == '__main__':
     
     if not checkVectorCASTVersion(21):
-        print("Cannot create Cobertura metrics. Please upgrade VectorCAST")
-        sys.modules[__name__] = None
-
+        raise ImportError ("Cannot create Cobertura metrics. Please upgrade VectorCAST")
             
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject',     help='Manager Project Name')
