@@ -26,6 +26,7 @@ from lxml import etree
 try:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi 
     from vector.apps.DataAPI.vcproject_models import VCProject
+    from vector.apps.DataAPI.cover_api import CoverApi
 except:
     pass
 try:
@@ -33,7 +34,6 @@ try:
 except:
     from vector.apps.DataAPI.api import Api as UnitTestApi
 
-from vector.apps.DataAPI.cover_api import CoverApi
 import sys, os
 from collections import defaultdict
 from pprint import pprint
@@ -346,7 +346,8 @@ def generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False, 
 if __name__ == '__main__':
     
     if not checkVectorCASTVersion(21):
-        raise ImportError("Cannot create LCOV metrics. Please upgrade VectorCAST")
+        print("Cannot create LCOV metrics. Please upgrade VectorCAST")
+        sys.exit(0)
         
     parser = argparse.ArgumentParser()
     parser.add_argument('vcProjectName', help='VectorCAST Project Name', action="store")

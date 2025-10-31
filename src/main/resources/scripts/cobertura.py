@@ -26,9 +26,9 @@ from lxml import etree
 try:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi 
     from vector.apps.DataAPI.vcproject_models import VCProject
+    from vector.apps.DataAPI.cover_api import CoverApi
 except:
     pass
-from vector.apps.DataAPI.cover_api import CoverApi
 try:
     from vector.apps.DataAPI.unit_test_api import UnitTestApi
 except:
@@ -768,7 +768,8 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", ve
 if __name__ == '__main__':
     
     if not checkVectorCASTVersion(21):
-        raise ImportError ("Cannot create Cobertura metrics. Please upgrade VectorCAST")
+        print ("Cannot create Cobertura metrics. Please upgrade VectorCAST")
+        sys.exit(0)
             
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject',     help='Manager Project Name')

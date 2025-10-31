@@ -61,6 +61,6 @@ if __name__ == '__main__':
 
     import traceback
     try:
-        raise TypeError
+        raise UserWarning("This is a test warning")
     except:
         parse(traceback.format_exc(), False, "Compiler" , "testsuite",  "env", "build_dir")

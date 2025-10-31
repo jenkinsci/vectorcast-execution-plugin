@@ -19,7 +19,7 @@ def getReqRepo(VC_Manage_Project):
             break
     
     if reqRepoDir is None:
-        raise("Requirements Repository Directory not set")
+        raise EnvironmentError("Requirements Repository Directory not set")
 
     reqRepoDir = reqRepoDir.replace("\\","/").strip()
     
@@ -41,7 +41,7 @@ def updateReqRepo(VC_Manage_Project, VC_Workspace, top_level):
         newPath = os.path.join(VC_Workspace, reqRepoDir.replace(basePath,"")).replace("\\","/")      
         
         if not os.path.exists(newPath): 
-            raise Exception("Patch ReqRepo Path " + newPath + " not found")
+            raise FileNotFoundError("Patch ReqRepo Path " + newPath + " not found")
 
         command_line= "--project \"" + VC_Manage_Project + "\" --config VCAST_REPOSITORY=\"" + newPath + "\""
         manageWait = ManageWait(False, command_line, 30, 1)

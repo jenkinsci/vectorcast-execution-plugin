@@ -355,7 +355,7 @@ def run(HtmlReportName = "", jobName = "", version= 14):
 
     # verify the html report exists
     if not os.path.isfile(HtmlReportName):
-        raise IOError(HtmlReportName + ' does not exist')
+        raise FileNotFoundError(HtmlReportName + ' does not exist')
         return
         
     # open the file and create BS4 object
@@ -530,7 +530,7 @@ def runCombinedCov(HtmlReportName = ""):
 
     # verify the html report exists
     if not os.path.isfile(HtmlReportName):
-        raise IOError(HtmlReportName + ' does not exist')
+        raise FileNotFoundError(HtmlReportName + ' does not exist')
         return
         
     # open the file and create BS4 object

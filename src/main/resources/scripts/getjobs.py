@@ -227,10 +227,8 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
 
     return output
  
-def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, legacy = False):
+def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False):
     try:
-        if (legacy): raise KeyError
-        
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         with VCProjectApi(ManageProjectName) as vcproj:
             ret_info = printEnvInfoDataAPI(vcproj, printData, printEnvType)
@@ -246,8 +244,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject', help='Manager Project Name')
     parser.add_argument('-t', '--type',   help='Displays the type of environemnt (Unit test or System test)', action="store_true", default = False)    
-    parser.add_argument('-l', '--legacy',   help='Use the legacy report parsing method - testing only)', action="store_true", default = False)    
     
     args = parser.parse_args()
 
-    printEnvironmentInfo(args.ManageProject, True, args.type, args.legacy)
+    printEnvironmentInfo(args.ManageProject, True, args.type)

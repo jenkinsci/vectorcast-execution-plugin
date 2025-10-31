@@ -507,7 +507,7 @@ def buildReports(FullManageProjectName = None,
     
    # make sure the project exists
     if not os.path.isfile(FullManageProjectName) and not os.path.isfile(FullManageProjectName + ".vcm"):
-        raise IOError(FullManageProjectName + ' does not exist')
+        raise FileNotFoundError(FullManageProjectName + ' does not exist')
         return
         
     manageProjectName = os.path.splitext(os.path.basename(FullManageProjectName))[0]

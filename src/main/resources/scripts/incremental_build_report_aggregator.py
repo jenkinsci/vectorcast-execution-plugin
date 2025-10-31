@@ -189,7 +189,7 @@ def parse_html_files(mpName, verbose = False):
                     log("[INFO] Retrying parse with original encoding fallback.")
 
             if len(main_soup.find_all('table')) < 1:
-                raise Exception("No <table> elements found in {}".format(current_file))
+                raise LookupError("No <table> elements found in {}".format(current_file))
 
             if main_soup.find(id="report-title"):
                 main_manage_api_report = True

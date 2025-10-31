@@ -120,7 +120,7 @@ class ParallelExecute(object):
             sys.exit()
         
         if not os.path.isfile(self.manageProject) and not os.path.isfile(self.manageProject + ".vcm"):
-            raise IOError(self.manageProject + ' does not exist')
+            raise FileNotFoundError(self.manageProject + ' does not exist')
             return
             
         if args.incremental:

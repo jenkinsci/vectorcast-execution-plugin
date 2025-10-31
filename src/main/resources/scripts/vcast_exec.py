@@ -39,6 +39,7 @@ except:
         script_dir = os.path.dirname(os.path.abspath(__file__))
         vc_script = os.path.join(script_dir, "generate-results.py")
         generate_results = imp.load_source("generate_results", vc_script)
+        
 if sys.version_info[0] < 3:
     python_path_updates = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "python")
     sys.path.append(python_path_updates)
@@ -235,9 +236,14 @@ class VectorCASTExecute(object):
         self.cleanup("pclp", "gl-code-quality-report.json")
         self.cleanup(".", self.mpName + "_aggregate_report.html")
         self.cleanup(".", self.mpName + "_metrics_report.html")
+        self.cleanup(".", "*.log")
         
-    def cleanup(self, dirName, fname):
-        for file in glob.glob(os.path.join(self.xml_data_dir, dirName, fname + "*.*")):
+    def cleanup(self, dirName, fname = ""): 
+    
+        if fname == "":
+            fname = "*.*"
+            
+        for file in glob.glob(os.path.join(self.xml_data_dir, dirName, fname)):
             try:
                 os.remove(file);
             except:
