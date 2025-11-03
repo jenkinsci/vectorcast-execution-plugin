@@ -45,9 +45,10 @@ except:
 
 try:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
-    from vector.apps.DataAPI.cover_api import CoverApi
 except:
     pass
+
+from vector.apps.DataAPI.cover_api import CoverApi
 
 from vector.enums import ENVIRONMENT_STATUS_TYPE_T
 

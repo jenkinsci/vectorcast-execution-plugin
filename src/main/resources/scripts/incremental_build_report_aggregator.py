@@ -177,16 +177,27 @@ def parse_html_files(mpName, verbose = False):
 
             # Parse with fallback encodings
             try:
-                main_soup = BeautifulSoup(raw, features="lxml", from_encoding=encFmt)
-            except Exception as e1:
-                log("[WARN] Parsing with {} failed: {}".format(encFmt, e1))
+                # First attempt: use lxml if available, else let BS pick
                 try:
-                    main_soup = BeautifulSoup(raw, features="lxml", from_encoding="utf-8")
-                    log("[INFO] Parsed successfully with UTF-8 fallback.")
-                except Exception as e2:
-                    log("[ERROR] UTF-8 parse also failed: {}".format(e2))
-                    main_soup = BeautifulSoup(raw, features="lxml", from_encoding=encFmt)
-                    log("[INFO] Retrying parse with original encoding fallback.")
+                    import lxml  # noqa
+                    parser = "lxml"
+                except ImportError:
+                    parser = "html.parser"
+
+                main_soup = BeautifulSoup(raw, features=parser)
+
+            except Exception:
+                try:
+                    # Fallback to UTF-8
+                    main_soup = BeautifulSoup(
+                        raw.encode("utf-8", "replace"),
+                        features=parser
+                    )
+                except Exception:
+                    # Final fallback: use whatever parser is available, no feature string
+                    main_soup = BeautifulSoup(
+                        raw.encode(encFmt, "replace")
+                    )
 
             if len(main_soup.find_all('table')) < 1:
                 raise LookupError("No <table> elements found in {}".format(current_file))
@@ -250,20 +261,27 @@ def parse_html_files(mpName, verbose = False):
 
         soup = None
         try:
-            soup = BeautifulSoup(raw, features="lxml", from_encoding=encFmt)
-        except Exception as e1:
-            log("[WARN] Parsing with {} failed: {}".format(encFmt, e1))
+            # First attempt: use lxml if available, else let BS pick
             try:
-                soup = BeautifulSoup(raw, features="lxml", from_encoding="utf-8")
-                log("[INFO] Parsed successfully with UTF-8 fallback.")
-            except Exception as e2:
-                log("[ERROR] UTF-8 parse failed: {}".format(e2))
-                try:
-                    soup = BeautifulSoup(raw, features="lxml", from_encoding=encFmt)
-                    log("[INFO] Retried parse with {} encoding.".format(encFmt))
-                except Exception as e3:
-                    log("[FATAL] Could not parse report '{}': {}".format(file, e3))
-                    continue
+                import lxml  # noqa
+                parser = "lxml"
+            except ImportError:
+                parser = "html.parser"
+
+            main_soup = BeautifulSoup(raw, features=parser)
+
+        except Exception:
+            try:
+                # Fallback to UTF-8
+                main_soup = BeautifulSoup(
+                    raw.encode("utf-8", "replace"),
+                    features=parser
+                )
+            except Exception:
+                # Final fallback: use whatever parser is available, no feature string
+                main_soup = BeautifulSoup(
+                    raw.encode(encFmt, "replace")
+                )
 
         try:
             if soup.find(id="report-title"):

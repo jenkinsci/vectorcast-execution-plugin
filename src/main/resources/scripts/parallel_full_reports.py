@@ -42,7 +42,8 @@ else:
     import multiprocessing
     from vector.apps.DataAPI.unit_test_api import UnitTestApi
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
-    from vector.apps.DataAPI.cover_api import CoverApi
+
+from vector.apps.DataAPI.cover_api import CoverApi
 
 
 def dump(obj):
