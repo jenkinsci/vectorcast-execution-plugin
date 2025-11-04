@@ -268,18 +268,18 @@ def parse_html_files(mpName, verbose = False):
             except ImportError:
                 parser = "html.parser"
 
-            main_soup = BeautifulSoup(raw, features=parser)
+            soup = BeautifulSoup(raw, features=parser)
 
         except Exception:
             try:
                 # Fallback to UTF-8
-                main_soup = BeautifulSoup(
+                soup = BeautifulSoup(
                     raw.encode("utf-8", "replace"),
                     features=parser
                 )
             except Exception:
                 # Final fallback: use whatever parser is available, no feature string
-                main_soup = BeautifulSoup(
+                soup = BeautifulSoup(
                     raw.encode(encFmt, "replace")
                 )
 
