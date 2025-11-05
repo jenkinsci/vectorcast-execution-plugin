@@ -23,6 +23,9 @@
 #
 
 from lxml import etree
+
+from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
+
 try:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi 
     from vector.apps.DataAPI.vcproject_models import VCProject
@@ -45,8 +48,6 @@ except:
     pass
 
 fileList = []
-
-from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
 
 encFmt = getVectorCASTEncoding()
 

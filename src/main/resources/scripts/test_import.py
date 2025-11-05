@@ -1,6 +1,6 @@
 import os, sys
 import traceback
-
+from vcast_utils import checkVectorCASTVersion
 try:
     ModuleNotFoundError
 except NameError:
@@ -39,6 +39,12 @@ except:
         script_dir = os.path.dirname(os.path.abspath(__file__))
         vc_script = os.path.join(script_dir, "generate-results.py")
         generate_results = imp.load_source("generate_results", vc_script)
+        
+try:
+    import send_cobertura_to_bitbucket
+except:
+    pass
+
 try:
     import cobertura
     import copy_build_dir

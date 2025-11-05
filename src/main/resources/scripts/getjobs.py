@@ -194,6 +194,9 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
         
     source = None
     machine = None
+    compiler = None
+    testsuite = None
+    env_name = None
         
     for line in enabledList:
         if max_indent == 8 and re.match(source_match_string,line) is not None:
@@ -227,18 +230,21 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
 
     return output
  
-def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False):
+def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, legacy = False):
     try:
+            
+        if (legacy): raise KeyError
+        
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        with VCProjectApi(ManageProjectName) as vcproj:
-            ret_info = printEnvInfoDataAPI(vcproj, printData, printEnvType)
-
+        api = VCProjectApi(ManageProjectName)
+        ret_info = printEnvInfoDataAPI(api, printData, printEnvType)
+        api.close()
         return ret_info
+
     
     except:    
         return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType)
-        
-        
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
