@@ -1167,42 +1167,38 @@ class GenerateXml(BaseGenerateXml):
 
     def start_system_test_file(self):
 
-        try:
-            errors = 0
-            failed = 0
-            success = 0
 
-            from vector.apps.DataAPI.vcproject_api import VCProjectApi
+        errors = 0
+        failed = 0
+        success = 0
 
-            if self.topLevelAPI == None:
-                api = VCProjectApi(self.FullManageProjectName)
-            else:
-                api = self.topLevelAPI
+        from vector.apps.DataAPI.vcproject_api import VCProjectApi
 
-            for env in api.Environment.all():
-                if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
-                    for st in env.system_tests:
-                        if st.passed == st.total:
-                            success += 1
-                            self.passed_count += 1
-                        else:
-                            failed += 1
-                            errors += 1
-                            self.failed_count += 1
+        if self.topLevelAPI == None:
+            api = VCProjectApi(self.FullManageProjectName)
+        else:
+            api = self.topLevelAPI
 
-            if self.topLevelAPI == None:
-                api.close()
-                api = None
+        for env in api.Environment.all():
+            if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
+                for st in env.system_tests:
+                    if st.passed == st.total:
+                        success += 1
+                        self.passed_count += 1
+                    else:
+                        failed += 1
+                        errors += 1
+                        self.failed_count += 1
 
-            self.fh_data = ""
-            self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
-            self.fh_data += ("<testsuites>\n")
-            self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
-                (errors,success+failed+errors, failed, escape(self.env, quote=False)))
-        except Exception as e:
-            print(e)
-            import pdb
-            pdb.set_trace()
+        if self.topLevelAPI == None:
+            api.close()
+            api = None
+
+        self.fh_data = ""
+        self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
+        self.fh_data += ("<testsuites>\n")
+        self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
+            (errors,success+failed+errors, failed, escape(self.env, quote=False)))
             
     def start_unit_test_file(self):
 
