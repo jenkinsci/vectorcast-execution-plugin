@@ -230,11 +230,9 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
 
     return output
  
-def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, legacy = False):
+def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False):
     try:
             
-        if (legacy): raise KeyError
-        
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         api = VCProjectApi(ManageProjectName)
         ret_info = printEnvInfoDataAPI(api, printData, printEnvType)
