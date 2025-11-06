@@ -330,7 +330,6 @@ def generate_html_report(mpName, input_xml, output_html):
         print("{} was not found. Skipping PCLP HTML reporting".format(input_xml))
         return
 
-    import pathlib
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
     from vector.apps.ReportBuilder.custom_report import CustomReport
 
@@ -340,19 +339,21 @@ def generate_html_report(mpName, input_xml, output_html):
     if output_html is None:
         output_html = "pclp_findings.html"
 
-    with VCProjectApi(mpName) as vcproj:
+    vcproj = VCProjectApi(mpName)
 
-        # Set custom report directory to the where this script was
-        # found. Must contain sections/index_section.py
-        rep_path = pathlib.Path(__file__).parent.resolve()
-        CustomReport.report_from_api(
-                api=vcproj,
-                title="PC-Lint Plus Results",
-                report_type="INDEX_FILE",
-                formats=["HTML"],
-                output_file=output_html,
-                sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','PCLP_SUMMARY_SECTION','PCLP_DETAILS_SECTION','PCLP_SOURCE_SECTION', 'CUSTOM_FOOTER'],
-                customization_dir=rep_path)
+    # Set custom report directory to the where this script was
+    # found. Must contain sections/index_section.py
+    rep_path = os.path.abspath(os.path.dirname(__file__))
+    CustomReport.report_from_api(
+            api=vcproj,
+            title="PC-Lint Plus Results",
+            report_type="INDEX_FILE",
+            formats=["HTML"],
+            output_file=output_html,
+            sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','PCLP_SUMMARY_SECTION','PCLP_DETAILS_SECTION','PCLP_SOURCE_SECTION', 'CUSTOM_FOOTER'],
+            customization_dir=rep_path)
+            
+    vcproj.close()
 
 def has_any_coverage(line):
 

@@ -144,9 +144,10 @@ def get_function_name_line_number(file_path, function, initial_guess):
 
 def runCoverageResultsMP(mpFile, verbose = False, testName = "", source_root = ""):
 
-    with VCProjectApi(mpFile) as vcproj:
-        api = vcproj.project.cover_api
-        results = runGcovResults(api, verbose = verbose, testName = vcproj.project.name, source_root=source_root)
+    vcproj = VCProjectApi(mpFile)
+    api = vcproj.project.cover_api
+    results = runGcovResults(api, verbose = verbose, testName = vcproj.project.name, source_root=source_root)
+    vcproj.close()
     
     return results
     
