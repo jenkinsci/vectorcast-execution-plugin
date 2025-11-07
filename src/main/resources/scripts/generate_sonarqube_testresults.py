@@ -259,6 +259,7 @@ class GenerateManageXml (BaseGenerateXml):
                    
         super(GenerateManageXml, self).__init__(FullManageProjectName, verbose, xml_data_dir)
         
+        print("generate_sonarqube_testresults::__init__ : self.api = VCProjectApi(FullManageProjectName)")            
         self.api = VCProjectApi(FullManageProjectName)
 
         self.FullManageProjectName = FullManageProjectName        
@@ -280,6 +281,7 @@ class GenerateManageXml (BaseGenerateXml):
     def __del__(self):
         try:
             self.api.close()
+            print("generate_sonarqube_testresults::__init__ : self.api.close()")            
         except:
             pass
 
@@ -559,6 +561,7 @@ class GenerateXml(BaseGenerateXml):
         if isinstance(self.api, CoverApi):
             try:
                 if self.topLevelAPI == None:
+                    print("generate_sonarqube_testresults.py::generate_unit : api = VCProjectApi(self.FullManageProjectName)")            
                     api = VCProjectApi(self.FullManageProjectName)
                 else:
                     api = self.topLevelAPI
@@ -587,6 +590,7 @@ class GenerateXml(BaseGenerateXml):
 
                 if self.topLevelAPI == None:
                     api.close()
+                    print("generate_sonarqube_testresults.py::generate_unit : api.close()")            
 
             except ImportError as e:
                 from generate_qa_results_xml import genQATestResults

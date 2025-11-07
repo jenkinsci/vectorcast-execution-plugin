@@ -130,6 +130,8 @@ class ManageWait(object):
                 popen_args["encoding"] = self.encFmt
                 popen_args["text"] = True  # optional, same as universal_newlines=True
 
+            print("  *** running manage command: {}".format(callStr))
+            
             p = subprocess.Popen(callStr, **popen_args)
             
             self.stop_requested = False

@@ -80,6 +80,7 @@ def generate_report(params):
 
         if env_is_coverapi:
             cmd = VCD + "/clicast -e " + env_name + " COVER REPORT AGGREGATE " + report_name
+            print("  *** running manage command: {}".format(cmd))
             process = subprocess.Popen(cmd.split(), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=build_dir)
             stdout, stderr = process.communicate()
             # print(cmd, stdout)
@@ -87,6 +88,7 @@ def generate_report(params):
 
         elif env_is_ut_api:
             cmd = VCD + "/clicast -e " + env_name + " REPORT CUSTOM FULL " + report_name
+            print("  *** running manage command: {}".format(cmd))
             process = subprocess.Popen(cmd.split(), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=build_dir)
             stdout, stderr = process.communicate()
             # print(cmd, stdout)
@@ -116,6 +118,7 @@ class RunFullReportsParallel(object):
         self.mpName = args.ManageProject
         self.verbose = args.verbose
 
+        print("parallel_full_reports::__init__: self.api = VCProjectApi(self.mpName)")
         self.api = VCProjectApi(self.mpName)
         self.results = self.api.project.repository.get_full_status([])
         
@@ -162,6 +165,7 @@ class RunFullReportsParallel(object):
     def __del__(self):
         try:
             self.api.close()
+            print("parallel_full_reports::__del__: self.api.close()")
         except:
             pass
 

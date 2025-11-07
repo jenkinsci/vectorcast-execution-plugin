@@ -635,6 +635,7 @@ class GenerateManageXml (BaseGenerateXml):
                        use_cte = False):
 
         super(GenerateManageXml, self).__init__(FullManageProjectName, verbose, teePrint, use_cte)
+        print("GenerateManageXml::__init__ : api = VCProjectApi(self.FullManageProjectName)")            
         self.api = VCProjectApi(FullManageProjectName)
 
         try:
@@ -682,6 +683,7 @@ class GenerateManageXml (BaseGenerateXml):
     def __del__(self):
         try:
             self.api.close()
+            print("GenerateManageXml::__del__ : self.api.close()")            
         except:
             pass
 
@@ -1073,6 +1075,7 @@ class GenerateXml(BaseGenerateXml):
                 self.start_system_test_file()
 
                 if self.topLevelAPI == None:
+                    print("GenerateXml::generate_unit: api = VCProjectApi(self.FullManageProjectName)")
                     api = VCProjectApi(self.FullManageProjectName)
                 else:
                     api = self.topLevelAPI
@@ -1097,6 +1100,7 @@ class GenerateXml(BaseGenerateXml):
 
                 if self.topLevelAPI == None:
                     api.close()
+                    print("GenerateXml::generate_unit: api.close()")
 
             except ImportError as e:
                 from generate_qa_results_xml import genQATestResults
@@ -1175,6 +1179,7 @@ class GenerateXml(BaseGenerateXml):
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
 
         if self.topLevelAPI == None:
+            print("GenerateXml::start_system_test_file: api = VCProjectApi(self.FullManageProjectName)")            
             api = VCProjectApi(self.FullManageProjectName)
         else:
             api = self.topLevelAPI
@@ -1192,7 +1197,7 @@ class GenerateXml(BaseGenerateXml):
 
         if self.topLevelAPI == None:
             api.close()
-            api = None
+            print("GenerateXml::start_system_test_file: api = api.close()")            
 
         self.fh_data = ""
         self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")

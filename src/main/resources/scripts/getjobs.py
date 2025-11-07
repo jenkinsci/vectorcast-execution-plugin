@@ -143,6 +143,7 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
 
     somethingPrinted = False
     output = ""
+    print("  *** running manage command: {}".format(manageCMD + " --project " + ManageProjectName + " --full-status"))
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --full-status",
                          shell=True,
                          stdout=subprocess.PIPE,
@@ -150,6 +151,7 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
     out, err = p.communicate()
     enabledList = out.splitlines()
 
+    print("  *** running manage command: {}".format(manageCMD + " --project " + ManageProjectName + " --build-directory-name"))
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name",
                          shell=True,
                          stdout=subprocess.PIPE,
@@ -234,9 +236,11 @@ def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = Fal
     try:
             
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
+        print("getjobs::printEnvironmentInfo: api = VCProjectApi(ManageProjectName)")
         api = VCProjectApi(ManageProjectName)
         ret_info = printEnvInfoDataAPI(api, printData, printEnvType)
         api.close()
+        print("getjobs::printEnvironmentInfo: api.close()")
         return ret_info
 
     

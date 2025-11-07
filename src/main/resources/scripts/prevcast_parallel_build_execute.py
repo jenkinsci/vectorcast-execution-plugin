@@ -185,6 +185,7 @@ class ParallelExecute(object):
             if not self.dryrun:
                 if self.verbose:
                     print("\nStarting an environment job for {} environment.\nExec Command:\n\t{}".format(env, exec_cmd))
+                print("  *** running manage command: {}".format(exec_cmd))
                 process = subprocess.Popen(exec_cmd, shell=True, stdout=build_log, stderr=build_log)
                 process.wait()
             else:
@@ -272,6 +273,7 @@ class ParallelExecute(object):
         script_human_uptime = str(timedelta(seconds=int(script_uptime)))
 
         exec_cmd = VCD + "/manage --project " + self.manageProject + self.use_ci + " --full-status"
+        print("  *** running manage command: {}".format(exec_cmd))
         process = subprocess.Popen(exec_cmd, shell=True)
         process.wait()
 
@@ -331,12 +333,14 @@ class ParallelExecute(object):
     def doit(self):
         ## create the directory structure in the manage project before building
         exec_cmd = VCD + "/manage --project " + self.manageProject + self.use_ci +" --status"
+        print("  *** running manage command: {}".format(exec_cmd))
         process = subprocess.Popen(exec_cmd, shell=True)
         process.wait()
 
         self.parallel_exec_info = {}
         self.waiting_execution_queue = {}
 
+        print("prevcast_parallel_build_execute.py::doit: vcproj = VCProjectApi(self.manageProject)")
         vcproj = VCProjectApi(self.manageProject)
 
         if self.tc_order:
@@ -407,6 +411,7 @@ class ParallelExecute(object):
         self.cleanup()
         
         vcproj.close()
+        print("prevcast_parallel_build_execute.py::doit: vcproj.close()")
 
 # API for importing the module into another script
 def parallel_build_execute(in_args):
