@@ -162,13 +162,6 @@ class RunFullReportsParallel(object):
         if args.ci:
             os.environ['VCAST_USE_CI_LICENSES'] = "1"
 
-    def __del__(self):
-        try:
-            self.api.close()
-            print("parallel_full_reports::__del__: self.api.close()")
-        except:
-            pass
-
     def getEnvCount(self):
         max_envs = len(self.api.Environment.all())
         return max_envs
@@ -274,10 +267,6 @@ class RunFullReportsParallel(object):
 
     def run(self):
         
-        pool = multiprocessing.Pool(processes=self.max_concurrent)
-        
-        # Run all tasks
-
         variables = [(key, 
             self.envDict[key].name, 
             self.envDict[key].definition.is_monitored, 
@@ -291,10 +280,12 @@ class RunFullReportsParallel(object):
             self.VCD) 
             for key in self.envDict.keys()]
 
-        results = pool.map(generate_report, variables)  
+        # Run all tasks
+        with multiprocessing.Pool(processes=self.max_concurrent) as pool:
+            results = pool.map(generate_report, variables)  
         
-        pool.close()
-        pool.join()
+        # Force multiprocessing cleanup *now*, before interpreter shutdown
+        multiprocessing.util._exit_function()
 
         for key, result in results:
             try:
@@ -305,7 +296,14 @@ class RunFullReportsParallel(object):
 
         print("All reports completed!")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     runner = RunFullReportsParallel()
-
-    runner.run()
+    try:
+        runner.run()
+    finally:
+        # clean up explicitly (safer than __del__)
+        if getattr(runner, "api", None):
+            runner.api.close()
+        del runner
+    
+    
