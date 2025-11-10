@@ -183,14 +183,6 @@ def processSystemTestResultsData(lines, encoding = 'utf-8'):
         
     return passed, failed
         
-def saveQATestStatus(mp):
-    callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status=" + os.path.basename(mp)[:-4] + "_system_tests_status.html"
-     
-    print("  *** running manage command: {}".format(callStr))
-
-    p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    out, err = p.communicate()
-
 def genQATestResults(mp, level = None, envName = None, verbose = False, encoding = 'utf-8'):
 
     if os.path.exists(report_name):

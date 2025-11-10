@@ -635,13 +635,6 @@ class GenerateManageXml (BaseGenerateXml):
                        use_cte = False):
 
         super(GenerateManageXml, self).__init__(FullManageProjectName, verbose, teePrint, use_cte)
-        print("GenerateManageXml::__init__ : api = VCProjectApi(self.FullManageProjectName)")            
-        self.api = VCProjectApi(FullManageProjectName)
-
-        try:
-            self.has_sfp_enabled = self.api.environment.get_option("VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE")
-        except:
-            self.has_sfp_enabled = False
 
         self.FullManageProjectName = FullManageProjectName
         self.generate_exec_rpt_each_testcase = generate_exec_rpt_each_testcase
@@ -658,6 +651,36 @@ class GenerateManageXml (BaseGenerateXml):
         self.useStartLine = useStartLine
 
         self.cleanupXmlDataDir()
+        
+        tmpApi = VCProjectApi(FullManageProjectName)
+        
+        try:
+            self.has_sfp_enabled = tmpApi.environment.get_option("VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE")
+        except:
+            self.has_sfp_enabled = False
+
+        self.system_tests_status_report_generated = False
+            
+        hasCover = any(isinstance(env.api, CoverApi) for env in tmpApi.Environment.all())
+        tmpApi.close()
+
+        if hasCover:
+            report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status.html"
+        
+            print("   Creating System Test Status " + self.FullManageProjectName)
+            callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + report_name
+            print("  *** running manage command: {}".format(callStr))
+            import subprocess
+            p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            out, err = p.communicate()
+                
+            if err:
+                print("Cannot create system test status report{} {}".format(out, err))
+                
+            self.system_tests_status_report_generated = True 
+            
+        print("GenerateManageXml::__init__ : api = VCProjectApi(self.FullManageProjectName)")            
+        self.api = VCProjectApi(FullManageProjectName)
 
     def cleanupXmlDataDir(self):
         path="xml_data"
@@ -790,7 +813,8 @@ class GenerateManageXml (BaseGenerateXml):
                                self.print_exc,
                                self.useStartLine,
                                self.teePrint,
-                               self.use_cte)
+                               self.use_cte,
+                               self.system_tests_status_report_generated)
 
         localXML.topLevelAPI = self.api
         localXML.noResults = self.noResults
@@ -991,7 +1015,7 @@ class GenerateManageXml (BaseGenerateXml):
 class GenerateXml(BaseGenerateXml):
 
     def __init__(self, FullManageProjectName, build_dir, env, compiler, testsuite, cover_report_name, jenkins_name, unit_report_name, jenkins_link, jobNameDotted, verbose = False, cbtDict= None, generate_exec_rpt_each_testcase = True,
-            use_archive_extract = False, report_failed_only = False, print_exc = False, useStartLine = False, teePrint = None, use_cte = False):
+            use_archive_extract = False, report_failed_only = False, print_exc = False, useStartLine = False, teePrint = None, use_cte = False, system_tests_status_report_generated = False):
 
         super(GenerateXml, self).__init__(FullManageProjectName, verbose, teePrint, use_cte)
 
@@ -1004,28 +1028,6 @@ class GenerateXml(BaseGenerateXml):
         self.topLevelAPI = None
         self.noResults = False
         self.useStartLine = useStartLine
-
-
-        if compiler and testsuite and env:
-            level = compiler + "/" + testsuite + "/" + env
-        else:
-            level = ""
-            
-        report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status.html"
-    
-        print("   Creating System Test Status " + self.FullManageProjectName)
-        callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + report_name
-        if level:
-            callStr += " --level " + level
-            if envName:
-                callStr += " -e " + envName
-                
-        print("  *** running manage command: {}".format(callStr))
-        p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        out, err = p.communicate()
-            
-        if err:
-            print("Cannot create system test status report{} {}".format(out, err))
         
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         build_dir = build_dir.replace("\\","/")
@@ -1055,6 +1057,31 @@ class GenerateXml(BaseGenerateXml):
         cov_path = os.path.join(build_dir,env + '.vcp')
         unit_path = os.path.join(build_dir,env + '.vce')
         if os.path.exists(cov_path):
+            if not system_tests_status_report_generated:
+                if compiler and testsuite and env:
+                    level = compiler + "/" + testsuite + "/" + env
+                    report_name = "{}_{}_system_tests_status.html".format(os.path.basename(self.FullManageProjectName)[:-4], level)
+                else:
+                    level = ""
+                    report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status.html"
+                    
+            
+                print("   Creating System Test Status " + self.FullManageProjectName)
+                callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + report_name
+                
+                if level:
+                    callStr += " --level " + level
+                    if env:
+                        callStr += " -e " + env
+
+                print("  *** running manage command: {}{}".format(GenerateXml, callStr))
+                import subprocess
+                p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                out, err = p.communicate()
+                    
+                if err:
+                    print("Cannot create system test status report{} {}".format(out, err))
+
             self.api = CoverApi(cov_path)
         elif os.path.exists(unit_path):
             self.api = UnitTestApi(unit_path)
@@ -1068,7 +1095,7 @@ class GenerateXml(BaseGenerateXml):
         self.api.commit = dummy
         self.failed_count = 0
         self.passed_count = 0
-
+            
 #
 # GenerateXml - add any compound tests to the unit report
 #
@@ -1117,8 +1144,6 @@ class GenerateXml(BaseGenerateXml):
 
                             level = env.compiler.name + "/" + env.testsuite.name + "/" + env.name
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
-                from generate_qa_results_xml import saveQATestStatus
-                saveQATestStatus(self.FullManageProjectName)
 
                 if self.topLevelAPI == None:
                     api.close()
@@ -1566,19 +1591,19 @@ class GenerateXml(BaseGenerateXml):
         if self.verbose:
             print("skipping {} {} {}".format(self.hashCode, searchName, passed))
 
-def __generate_xml(xml_file, envPath, env, xmlCoverReportName, xmlTestingReportName):
+def __generate_xml(xml_file, envPath, env, xmlCoverReportName, xmlTestingReportName, teePrint):
     if xml_file.api == None:
-        self.teePrint.teePrint ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
+        teePrint.teePrint ("\nCannot find project file (.vcp or .vce): " + envPath + os.sep + env)
 
     elif isinstance(xml_file, CoverApi):
         xml_file.generate_cover()
-        self.teePrint.teePrint ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
+        teePrint.teePrint ("\nvectorcast-coverage plugin for Jenkins compatible file generated: " + xmlCoverReportName)
 
     else:
         xml_file.generate_unit()
-        self.teePrint.teePrint ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)
+        teePrint.teePrint ("\nJunit plugin for Jenkins compatible file generated: " + xmlTestingReportName)
         xml_file.generate_cover()
-        self.teePrint.teePrint ("\nVCC plugin for Jenkins compatible file generated: " + xmlTestingReportName)
+        teePrint.teePrint ("\nVCC plugin for Jenkins compatible file generated: " + xmlTestingReportName)
 
 if __name__ == '__main__':
 
@@ -1621,4 +1646,5 @@ if __name__ == '__main__':
             envPath,
             env,
             xmlCoverReportName,
-            xmlTestingReportName)
+            xmlTestingReportName,
+            teePrint)

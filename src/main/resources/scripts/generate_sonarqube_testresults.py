@@ -584,10 +584,6 @@ class GenerateXml(BaseGenerateXml):
                                 print ("{} {} {}".format(level, st.name, pass_fail_rerun))
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
 
-                # callStr = os.getenv('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + self.manageProjectName + "_system_tests_status.html"
-                # p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-                # out, err = p.communicate()
-
                 if self.topLevelAPI == None:
                     api.close()
                     print("generate_sonarqube_testresults.py::generate_unit : api.close()")            
