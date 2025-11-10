@@ -192,28 +192,12 @@ def saveQATestStatus(mp):
     out, err = p.communicate()
 
 def genQATestResults(mp, level = None, envName = None, verbose = False, encoding = 'utf-8'):
-    try:
-        from vector.apps.DataAPI.manage_models import SystemTest
-        if verbose:
-            print("No need to process system test results using --system-tests-status")
-        return
-    except:
-        pass
 
-    print("   Processing QA test results for " + mp)
-    callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status"
-    if level:
-        callStr += " --level " + level
-        if envName:
-            callStr += " -e " + envName
+    if os.path.exists(report_name):
+        with open(report_name,"rb") as fd:
+            raw = fd.read()
+            out = raw.decode(encoding, 'replace')
             
-    print("  *** running manage command: {}".format(callStr))
-
-    p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    out, err = p.communicate()
-        
-    if err:
-        print("{} {}".format(out, err))
     passed_count, failed_count = processSystemTestResultsData(out.splitlines(), encoding)
     
     saveQATestStatus(mp)

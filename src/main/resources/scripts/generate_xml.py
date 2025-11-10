@@ -1005,6 +1005,28 @@ class GenerateXml(BaseGenerateXml):
         self.noResults = False
         self.useStartLine = useStartLine
 
+
+        if compiler and testsuite and env:
+            level = compiler + "/" + testsuite + "/" + env
+        else:
+            level = ""
+            
+        report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status.html"
+    
+        print("   Creating System Test Status " + self.FullManageProjectName)
+        callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + report_name
+        if level:
+            callStr += " --level " + level
+            if envName:
+                callStr += " -e " + envName
+                
+        print("  *** running manage command: {}".format(callStr))
+        p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        out, err = p.communicate()
+            
+        if err:
+            print("Cannot create system test status report{} {}".format(out, err))
+        
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         build_dir = build_dir.replace("\\","/")
         if build_dir.endswith("/."):
