@@ -280,12 +280,15 @@ class RunFullReportsParallel(object):
             self.VCD) 
             for key in self.envDict.keys()]
 
-        # Run all tasks
-        with multiprocessing.Pool(processes=self.max_concurrent) as pool:
-            results = pool.map(generate_report, variables)  
-        
-        # Force multiprocessing cleanup *now*, before interpreter shutdown
-        multiprocessing.util._exit_function()
+        pool = multiprocessing.Pool(processes=self.max_concurrent)
+        try:
+            results = pool.map(generate_report, variables)
+        finally:
+            pool.close()
+            pool.join()
+            # Optional: force cleanup before interpreter teardown
+            import multiprocessing.util
+            multiprocessing.util._exit_function()
 
         for key, result in results:
             try:
