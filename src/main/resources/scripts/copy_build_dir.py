@@ -238,11 +238,9 @@ def run(ManageProjectName, Level, BaseName, Env, workspace, vCastProjectWorkspac
 
 def getVcastProjectWorkspace(args):
 
-    print("copy_build_dir::getVcastProjectWorkspace : api = VCProjectApi(args.ManageProject)")            
     api = VCProjectApi(args.ManageProject)
     vCastProjectWorkspace = api.project.workspace
     api.close()
-    print("copy_build_dir::getVcastProjectWorkspace : api.close()")            
    
     return vCastProjectWorkspace
 

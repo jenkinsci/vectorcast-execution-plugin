@@ -339,7 +339,6 @@ def generate_html_report(mpName, input_xml, output_html):
     if output_html is None:
         output_html = "pclp_findings.html"
 
-    print("generate_pclp_reports::generate_html_report : vcproj = VCProjectApi(mpFile)")            
     vcproj = VCProjectApi(mpName)
 
     # Set custom report directory to the where this script was
@@ -355,7 +354,6 @@ def generate_html_report(mpName, input_xml, output_html):
             customization_dir=rep_path)
             
     vcproj.close()
-    print("generate_pclp_reports::generate_html_report : vcproj.close()")            
 
 def has_any_coverage(line):
 

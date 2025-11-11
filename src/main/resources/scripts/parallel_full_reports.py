@@ -127,7 +127,6 @@ class RunFullReportsParallel(object):
             except:
                 self.jenkins_workspace = os.getcwd().replace("\\","/") + "/"
 
-        print("parallel_full_reports::__init__: api = VCProjectApi(self.mpName)")
         api = VCProjectApi(self.mpName)
 
         for env in api.Environment.all():
@@ -152,7 +151,6 @@ class RunFullReportsParallel(object):
         self.results = api.project.repository.get_full_status([])
         
         api.close()
-        print("parallel_full_reports::__init__: api.close()")
 
         if args.jobs == "max":
             try:

@@ -236,11 +236,8 @@ def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = Fal
     try:
             
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        print("getjobs::printEnvironmentInfo: api = VCProjectApi(ManageProjectName)")
         api = VCProjectApi(ManageProjectName)
         ret_info = printEnvInfoDataAPI(api, printData, printEnvType)
-        api.close()
-        print("getjobs::printEnvironmentInfo: api.close()")
         return ret_info
 
     

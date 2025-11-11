@@ -393,12 +393,10 @@ def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):
     
 def runCoverageResultsMP(packages, mpFile, verbose = False, extended=False, source_root = ""):
     
-    print("cobertura::runCoverageResultsMP : vcproj = VCProjectApi(mpFile)")            
     vcproj = VCProjectApi(mpFile)
     api = vcproj.project.cover_api    
     results = runCoberturaResults(packages, api, verbose = False, extended = extended, source_root = source_root)
     vcproj.close()
-    print("cobertura::runCoverageResultsMP : vcproj.close()")            
     
     return results
     

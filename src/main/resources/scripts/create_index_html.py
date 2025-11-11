@@ -103,7 +103,6 @@ def create_index_html(mpName, isGitLab = False, output_dir = ""):
     global baseOutputDir
     baseOutputDir = output_dir
     
-    print("create_index_html::create_index_html : vcproj = VCProjectApi(mpName)")            
     vcproj = VCProjectApi(mpName)
     
     # Set custom report directory to the where this script was
@@ -122,7 +121,6 @@ def create_index_html(mpName, isGitLab = False, output_dir = ""):
             customization_dir=rep_path)
             
     vcproj.close()
-    print("create_index_html::create_index_html : vvcproj.close()")
     
 def create_index_html_body ():
     
