@@ -1059,7 +1059,7 @@ class GenerateXml(BaseGenerateXml):
         if os.path.exists(cov_path):
             if not system_tests_status_report_generated:
                 if compiler and testsuite and env:
-                    level = compiler + "/" + testsuite + "/" + env
+                    level = compiler + "_" + testsuite + "_" + env
                     report_name = "{}_{}_system_tests_status.html".format(os.path.basename(self.FullManageProjectName)[:-4], level)
                 else:
                     level = ""

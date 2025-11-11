@@ -43,7 +43,6 @@ else:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
 
 from vector.apps.DataAPI.cover_api import CoverApi
-import multiprocessing
 
 def dump(obj):
     if hasattr(obj, '__dict__'):
@@ -159,7 +158,8 @@ class RunFullReportsParallel(object):
             try:
                 max_cpus = os.cpu_count()  # Python 3.4+
             except AttributeError:
-                max_cpus = multiprocessing.cpu_count()  # Python 2.7 fallback
+                from multiprocessing import cpu_count as mp_cpu_count
+                max_cpus = mp_cpu_count()  # Python 2.7 fallback
             max_licenses = self.getLicenseCount()
             
             print("Max CPUs    : {}".format(max_cpus))
@@ -279,16 +279,19 @@ class RunFullReportsParallel(object):
         return 1
 
     def run(self):
-        
-        pool = multiprocessing.Pool(processes=self.max_concurrent)
         try:
+            from  multiprocessing import Pool as mp_pool
+            pool = mp_pool(processes=self.max_concurrent)
             results = pool.map(generate_report, self.variables)
+        except UnboundLocalError as e:
+            print("For some reason multiprocessing is regarded as a local variable")
+            
         finally:
             pool.close()
             pool.join()
             # Optional: force cleanup before interpreter teardown
-            import multiprocessing.util
-            multiprocessing.util._exit_function()
+            from multiprocessing import util as mp_util
+            mp_util._exit_function()
 
         for key, result in results:
             try:

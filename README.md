@@ -348,6 +348,29 @@ By selecting individual cases, you can view the execution reports, providing ins
 
 ## Known Issues
 
+### ⚠️ Jenkins 2.535 “Form is larger than max length 200000”
+
+**Cause:**  
+Jenkins 2.535 upgraded to Jetty 12, which limits web form submissions to **200 KB** by default. Large Pipeline job configs can exceed this after HTML encoding.
+
+**Fix:**  
+- Move pipeline script to SCM - Instead of keeping the Groovy text inline in the job config, use Pipeline script from SCM.
+- Increase Jetty’s form size limit in your startup command:
+
+```bash
+-Dorg.eclipse.jetty.server.Request.maxFormContentSize=5242880 \
+-Dorg.eclipse.jetty.server.Request.maxFormKeys=10000
+```
+
+**Example**
+```
+java -Dorg.eclipse.jetty.server.Request.maxFormContentSize=5242880 \
+     -jar jenkins.war --httpPort=9090
+```
+
+**Notes**
+Old Jenkins flags `hudson.util.MultipartFormDataParser.MAX_FORM_SIZE` no longer work in 2.535+.
+
 ### Imported Results with Cobertura and LCOV output
 New output formats were added, extended cobertura format output for use with Jenkins Coverage Plugin and LCOV output support.  These reporting scripts do not currently support generating coverage metrics based off of imported results.
 

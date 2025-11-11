@@ -185,15 +185,23 @@ def processSystemTestResultsData(lines, encoding = 'utf-8'):
         
 def genQATestResults(mp, level = None, envName = None, verbose = False, encoding = 'utf-8'):
 
+    if level and envName:
+        nameLevel = level + "_" + envName
+        report_name = "{}_{}_system_tests_status.html".format(os.path.basename(self.FullManageProjectName)[:-4], nameLevel)
+    else:
+        report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status.html"
+
     if os.path.exists(report_name):
         with open(report_name,"rb") as fd:
             raw = fd.read()
             out = raw.decode(encoding, 'replace')
-            
-    passed_count, failed_count = processSystemTestResultsData(out.splitlines(), encoding)
-    
-    saveQATestStatus(mp)
-    
+                            
+        passed_count, failed_count = processSystemTestResultsData(out.splitlines(), encoding)
+    else:
+        print("   ***Cannot file system test status report {}".format(report_name))
+        passed_count = 0
+        failed_count = 0
+        
     return passed_count, failed_count
         
 if __name__ == '__main__':
