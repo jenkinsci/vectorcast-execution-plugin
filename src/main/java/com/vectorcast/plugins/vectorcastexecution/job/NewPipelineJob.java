@@ -452,6 +452,15 @@ public class NewPipelineJob extends BaseJob {
     }
 
     /**
+     * Format the multiline to either be the multiline or empty "".
+     *
+     * @param in input string
+     * @return String correct path.
+     */
+    private String getMultiLineString(String sInVar) {
+        return (sInVar == null || sInVar.trim().isEmpty()) ? "\"\"" : "'''" + sInVar + "'''\n";
+    }
+    /**
      * Generates the <script> portion of the config.xml
      * which defines the pipeline for this pipeline job.
      *
@@ -504,16 +513,16 @@ public class NewPipelineJob extends BaseJob {
             + "//\n"
             + "// ===========================================================\n"
             + "\n"
-            + "def VC_Manage_Project  = \'" + getManageProjectName() + "\'\n"
-            + "def VC_EnvSetup        = '''" + setup + "'''\n"
-            + "def VC_Build_Preamble  = \"" + preamble + "\"\n"
-            + "def VC_EnvTeardown     = '''" + teardown + "'''\n"
+            + "def VC_Manage_Project = \'" + getManageProjectName() + "\'\n"
+            + "def VC_EnvSetup = " + getMultiLineString(setup)
+            + "def VC_Build_Preamble = \"" + preamble + "\"\n"
+            + "def VC_EnvTeardown = " + getMultiLineString(teardown)
             + "def scmStep () { " + pipelineSCM + " }\n"
-            + "def VC_usingSCM = "
-            + String.valueOf(pipelineSCM.length() != 0) + "\n"
-            + "def VC_postScmStepsCmds = '''" + postCheckoutCmds + "'''\n"
-            + "def VC_sharedArtifactDirectory = '''"
-            + sharedArtifactDirectory + "'''\n"
+            + "def VC_usingSCM = " + String.valueOf(pipelineSCM.length() != 0)
+            +   "\n"
+            + "def VC_postScmStepsCmds = " 
+            +   getMultiLineString(postCheckoutCmds)
+            + "def VC_sharedArtifactDirectory = " + sharedArtifactDir + "\"\n"
             + "def VC_Agent_Label = '" + getNodeLabel() + "'\n"
             + "def VC_waitTime = '"  + getWaitTime() + "'\n"
             + "def VC_waitLoops = '" + getWaitLoops() + "'\n"
@@ -530,7 +539,8 @@ public class NewPipelineJob extends BaseJob {
             + "def VC_pclpResultsPattern = '" + getPclpResultsPattern() + "'\n"
             + "def VC_useSquore = "
             +   String.valueOf(getSquoreCommand().length() != 0) + "\n"
-            + "def VC_squoreCommand = '''" + getSquoreCommand() + "'''\n"
+            + "def VC_squoreCommand = " 
+            +     getMultiLineString(getSquoreCommand())
             + "def VC_useCoverageHistory = " + getUseCoverageHistory() + "\n"
             + "def VC_useStrictImport = " + getUseStrictTestcaseImport() + "\n"
             + "def VC_useRGW3 = " + getUseRGW3() + "\n"

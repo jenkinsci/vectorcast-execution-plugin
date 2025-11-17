@@ -9,7 +9,37 @@ def VC_Use_Threshold = true
 //
 // Generic file from VectorCAST Pipeline Plug-in DO NOT ALTER
 //
-// ===============================================================
+// ===============================================================        
+
+// Gathering global variables to be used by functions
+def VC = [
+    mpName: VC_Manage_Project
+    setup: VC_EnvSetup
+    preable: VC_Build_Preamble
+    teardown: VC_EnvTeardown
+    oneChkDir: VC_useOneCheckoutDir
+    usingSCM: VC_usingSCM
+    postSCMSteps: VC_postScmStepsCmds
+    maxParallel: VC_maxParallel
+    useRGW3: VC_useRGW3
+    waitTime: VC_waitTime
+    waitLoops: VC_waitLoops
+    useCI: VC_useCILicense
+    useCBT: VC_useCBT
+    useCoverPlgin: VC_useCoveragePlugin
+    sharedBldDir: VC_sharedArtifactDirectory
+    strictImp: VC_useStrictImport
+    useCoverHist: VC_useCoverageHistory
+    useImpRst: VC_useImportedResults
+    useLocImpRst: VC_useLocalImportedResults
+    useExtImpRst: VC_useExternalImportedResults
+    extRst: VC_externalResultsFilename
+    usePclp: VC_usePCLintPlus 
+    pLcpCmd: VC_pclpCommand 
+    pLcpRsltPattern: VC_pclpResultsPattern
+    useSquore: VC_useSquore 
+    squoreCmd: VC_squoreCommand
+]
 
 // ===============================================================
 //
@@ -409,10 +439,7 @@ def runCommands(cmds, envSetup, useCILicense) {
 //
 // ===============================================================
 
-def setupManageProject(waitTime, waitLoops, manageProject, useCILicense, 
-        sharedArtifactDirectory, envSetup, useExternalImportedResults, 
-        useImportedResults, useLocalImportedResults, externalResultsFilename,
-        useStrictImport, useOneCheckoutDir) {
+def setupManageProject(VC) {
             
     def mpName = getMPname(manageProject)
 
@@ -479,11 +506,7 @@ def setupManageProject(waitTime, waitLoops, manageProject, useCILicense,
 //
 // ===============================================================
 
-def transformIntoStep(inputString, useOneCheckoutDir, usingSCM, envSetup,
-        useRGW3, waitTime, waitLoops, manageProject, useCILicense,
-        envTeardown, useCBT, sharedArtifactDirectory, 
-        useExternalImportedResults, buildPreamble, useImportedResults,
-        useStrictImport, useLocalImportedResults, externalResultsFilename) {
+def transformIntoStep(inputString, VC) {
         
     def compiler = ""
     def test_suite = ""
@@ -549,10 +572,7 @@ def transformIntoStep(inputString, useOneCheckoutDir, usingSCM, envSetup,
                 if (usingSCM && !useOneCheckoutDir) {
 
                     // set options for each manage project pulled out out of SCM
-                    setupManageProject(waitTime, waitLoops, manageProject, useCILicense, 
-                        sharedArtifactDirectory, envSetup, useExternalImportedResults, 
-                        useImportedResults, useLocalImportedResults, externalResultsFilename,
-                        useStrictImport, useOneCheckoutDir)
+                    setupManageProject(VC)
                 }
 
                 // setup the commands for building, executing, and transferring information
@@ -632,19 +652,11 @@ def transformIntoStep(inputString, useOneCheckoutDir, usingSCM, envSetup,
 // Notes    : Use to get a list of system and unit tests jobs
 //
 // ===============================================================
-def stepsForJobList(localEnvList, useOneCheckoutDir, usingSCM, envSetup,
-        useRGW3, waitTime, waitLoops, manageProject, useCILicense,
-        envTeardown, useCBT, sharedArtifactDirectory, 
-        useExternalImportedResults, buildPreamble, useImportedResults,
-        useStrictImport, useLocalImportedResults, externalResultsFilename) {
+def stepsForJobList(localEnvList, VC) {
 
     def jobList = [:]
     localEnvList.each {
-        jobList[it] =  transformIntoStep(it, useOneCheckoutDir, usingSCM, envSetup,
-            useRGW3, waitTime, waitLoops, manageProject, useCILicense,
-            envTeardown, useCBT, sharedArtifactDirectory, 
-            useExternalImportedResults, buildPreamble, useImportedResults,
-            useStrictImport, useLocalImportedResults, externalResultsFilename)
+        jobList[it] =  transformIntoStep(it, VC)
     }
 
     return jobList
@@ -669,14 +681,6 @@ pipeline {
     agent {label VC_Agent_Label as String}
 
     stages {
-        // Place holder for previous stages the customer may need to use
-        stage('Previous-Stage') {
-            steps {
-                script {
-                    println "place holder for previous stages"
-                }
-            }
-        }
 
         // If we are using a single checkout directory option, do the checkout here
         // This stage also includes the implementation for the parameterized Jenkins job
@@ -852,17 +856,10 @@ pipeline {
         stage('System Test Build-Execute Stage') {
             steps {
                 script {
-                    setupManageProject(VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense, 
-                        VC_sharedArtifactDirectory, VC_EnvSetup, VC_useExternalImportedResults, 
-                        VC_useImportedResults, VC_useLocalImportedResults, VC_externalResultsFilename,
-                        VC_useStrictImport, VC_useOneCheckoutDir)
+                    setupManageProject(VC)
 
                     // Get the job list from the system test environment listed
-                    def jobs = stepsForJobList(StEnvList, VC_useOneCheckoutDir, VC_usingSCM, VC_EnvSetup,
-                        VC_useRGW3, VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense,
-                        VC_EnvTeardown, VC_useCBT, VC_sharedArtifactDirectory, 
-                        VC_useExternalImportedResults, VC_Build_Preamble, VC_useImportedResults,
-                        VC_useStrictImport, VC_useLocalImportedResults, VC_externalResultsFilename)
+                    def jobs = stepsForJobList(StEnvList, VC)
 
                     // run each of those jobs in serial
                     jobs.each { name, job ->
@@ -877,17 +874,10 @@ pipeline {
         stage('Unit Test Build-Execute Stage') {
             steps {
                 script {
-                    setupManageProject(VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense, 
-                        VC_sharedArtifactDirectory, VC_EnvSetup, VC_useExternalImportedResults, 
-                        VC_useImportedResults, VC_useLocalImportedResults, VC_externalResultsFilename,
-                        VC_useStrictImport, VC_useOneCheckoutDir)
+                    setupManageProject(VC)
 
                     // Get the job list from the unit test environment listed
-                    def jobs = stepsForJobList(UtEnvList, VC_useOneCheckoutDir, VC_usingSCM, VC_EnvSetup,
-                        VC_useRGW3, VC_waitTime, VC_waitLoops, VC_Manage_Project, VC_useCILicense,
-                        VC_EnvTeardown, VC_useCBT, VC_sharedArtifactDirectory, 
-                        VC_useExternalImportedResults, VC_Build_Preamble, VC_useImportedResults,
-                        VC_useStrictImport, VC_useLocalImportedResults, VC_externalResultsFilename)
+                    def jobs = stepsForJobList(UtEnvList, VC)
 
                     if (VC_maxParallel > 0) {
                         def runningJobs = [:]
@@ -1232,15 +1222,6 @@ pipeline {
                             archiveArtifacts allowEmptyArchive: true, artifacts: 'xml_data/squore_results*.xml'
                         }
                     }
-                }
-            }
-        }
-
-        // Place holder for previous stages the customer may need to use
-        stage('Next-Stage') {
-            steps {
-                script {
-                    println "place holder for next stages"
                 }
             }
         }

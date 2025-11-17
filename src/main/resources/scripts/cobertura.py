@@ -23,12 +23,17 @@
 #
 
 from lxml import etree
+
+from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
+
 try:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi 
     from vector.apps.DataAPI.vcproject_models import VCProject
 except:
     pass
+
 from vector.apps.DataAPI.cover_api import CoverApi
+
 try:
     from vector.apps.DataAPI.unit_test_api import UnitTestApi
 except:
@@ -41,10 +46,10 @@ try:
     from safe_open import open
 except:
     pass
+    
+import shutil
 
 fileList = []
-
-from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding, checkProjectResults
 
 encFmt = getVectorCASTEncoding()
 
@@ -54,12 +59,19 @@ def write_xml(x, name, verbose = False):
         print(etree.tostring(x,pretty_print=True))
 
     xml_str =  "<?xml version='1.0' encoding='UTF-8'?>\n"
-    xml_str += "<!DOCTYPE coverage SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>\n"
+    xml_str += "<!DOCTYPE coverage SYSTEM 'coverage-extended-04.dtd'>\n"
     
     xml_str += etree.tostring(x,pretty_print=True).decode()
 
     with open(name + ".xml", "wb") as fd: 
         fd.write(xml_str.encode(encFmt,"replace"))
+        
+    # copy .dtd file over for verification
+    inFile = "vc_scripts/coverage-extended-04.dtd"
+    outFile = os.path.join(os.path.dirname(name),"coverage-extended-04.dtd")
+    
+    if os.path.exist(inFile):
+        shutil.copy(inFile,outFile)
    
 def getCoveredFunctionCount(source):
     if len(source.functions) == 0:
@@ -116,8 +128,8 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
     file = None
 
     if verbose:
-        print ("   fname   = ", fname)
-        print ("   fpath   = ", fpath)
+        print ("   fname   = " + fname)
+        print ("   fpath   = " + fpath)
     
     for element in testXml.iter():
         if element.tag == "class" and element.attrib['filename'] == fpath:
@@ -390,23 +402,10 @@ def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):
     
 def runCoverageResultsMP(packages, mpFile, verbose = False, extended=False, source_root = ""):
     
-    with VCProjectApi(mpFile) as vcproj:
-
-        anyLocalResults, anyImportedResults = checkProjectResults(vcproj)
-
-        if anyImportedResults:
-            importedResultsError = "  ** Cobertura results does not processing imported results at this time\n\n"
-            print(importedResultsError)
-            return [-1] * 19
-            
-        if not anyLocalResults:
-            localResultsError = "  ** No local results in project to process\n\n"
-            print(localResultsError)
-            return [-1] * 19
-
-        api = vcproj.project.cover_api
-        
-        results = runCoberturaResults(packages, api, verbose = False, extended = extended, source_root = source_root)
+    vcproj = VCProjectApi(mpFile)
+    api = vcproj.project.cover_api    
+    results = runCoberturaResults(packages, api, verbose = False, extended = extended, source_root = source_root)
+    vcproj.close()
     
     return results
     
@@ -781,8 +780,8 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", ve
 if __name__ == '__main__':
     
     if not checkVectorCASTVersion(21):
-        print("Cannot create Cobertura metrics. Please upgrade VectorCAST")
-        sys.exit()
+        print ("Cannot create Cobertura metrics. Please upgrade VectorCAST")
+        sys.exit(0)
             
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject',     help='Manager Project Name')

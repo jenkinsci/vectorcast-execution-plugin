@@ -1,0 +1,101 @@
+<!-- Portions (C) International Organization for Standardization 1986:
+     Permission to copy in any form is granted for use with
+     conforming SGML systems and applications as defined in
+     ISO 8879, provided this notice is included in all copies.
+-->
+
+<!--
+    coverage-extended-04.dtd
+    Based on Cobertura 0.4 DTD
+    Extended for VectorCAST coverage metrics.
+    - Allows <methods> and <lines> in any order under <class>
+    - Removes <lines> from <method> (method is now EMPTY)
+    - Adds extended coverage attributes:
+      statement-rate, mcdcpair-coverage-rate, function-coverage-rate, functioncall-coverage-rate
+-->
+
+  <!ELEMENT coverage (sources?,packages)>
+  <!ATTLIST coverage
+    line-rate                  CDATA #REQUIRED
+    branch-rate                CDATA #REQUIRED
+    version                    CDATA #REQUIRED
+    timestamp                  CDATA #REQUIRED
+    complexity                 CDATA #IMPLIED
+    branches-valid             CDATA #IMPLIED
+    branches-covered           CDATA #IMPLIED
+    lines-valid                CDATA #IMPLIED
+    lines-covered              CDATA #IMPLIED
+    statement-rate             CDATA #IMPLIED
+    mcdcpair-coverage-rate     CDATA #IMPLIED
+    function-coverage-rate     CDATA #IMPLIED
+    functioncall-coverage-rate CDATA #IMPLIED
+  >
+
+  <!ELEMENT sources (source*)>
+  <!ELEMENT source (#PCDATA)>
+  <!ELEMENT packages (package*)>
+
+  <!ELEMENT package (classes)>
+  <!ATTLIST package
+    name                  CDATA #REQUIRED
+    line-rate             CDATA #REQUIRED
+    branch-rate           CDATA #REQUIRED
+    complexity            CDATA #IMPLIED
+    branches-valid        CDATA #IMPLIED
+    branches-covered      CDATA #IMPLIED
+    lines-valid           CDATA #IMPLIED
+    lines-covered         CDATA #IMPLIED
+    statement-rate        CDATA "100%"
+    mcdcpair-coverage     CDATA "100%"
+    function-coverage     CDATA "100%"
+    functioncall-coverage CDATA "100%"
+  >
+  
+  <!ELEMENT classes (class*)>
+
+  <!ELEMENT class (methods,lines)>
+  <!ATTLIST class 
+    name                  CDATA #REQUIRED
+    filename              CDATA #REQUIRED
+    line-rate             CDATA #REQUIRED
+    branch-rate           CDATA #REQUIRED
+    complexity            CDATA #REQUIRED
+    mcdcpair-coverage     CDATA "100%"
+    functioncall-coverage CDATA "100%"
+    function-coverage     CDATA "100%"
+  >
+
+  <!ELEMENT methods (method*)>
+
+  <!ELEMENT method EMPTY>
+  <!ATTLIST method 
+    name                  CDATA #REQUIRED
+    signature             CDATA #REQUIRED
+    line-rate             CDATA #REQUIRED
+    branch-rate           CDATA #REQUIRED
+    complexity            CDATA #REQUIRED
+    mcdcpair-coverage     CDATA "100%"
+    functioncall-coverage CDATA "100%"
+    function-coverage     CDATA "100%"
+  >
+
+  <!ELEMENT lines (line*)>
+
+  <!ELEMENT line (conditions*)>
+  <!ATTLIST line 
+    number                CDATA #REQUIRED
+    hits                  CDATA #REQUIRED
+    branch                CDATA "false"
+    condition-coverage    CDATA "100%"
+    mcdcpair-coverage     CDATA "100%"
+    functioncall-coverage CDATA "100%"
+  >
+
+  <!ELEMENT conditions (condition*)>
+
+  <!ELEMENT condition EMPTY>
+  <!ATTLIST condition 
+    number   CDATA #REQUIRED
+    type     CDATA #REQUIRED
+    coverage CDATA #REQUIRED
+  >
