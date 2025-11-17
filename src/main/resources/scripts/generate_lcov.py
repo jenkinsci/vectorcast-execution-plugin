@@ -341,7 +341,6 @@ def generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False, 
     cmdStr = "genhtml " + pathToInfo + " --output-directory out"
     cmdArr = cmdStr.split()
     try:
-        print("  *** running manage command: {}".format(cmdStr))
         subprocess.Popen(cmdArr).wait()
         return True
     except:

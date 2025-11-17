@@ -669,7 +669,6 @@ class GenerateManageXml (BaseGenerateXml):
         
             print("   Creating System Test Status " + self.FullManageProjectName)
             callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + report_name
-            print("  *** running manage command: {}".format(callStr))
             import subprocess
             p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             out, err = p.communicate()
@@ -1072,7 +1071,6 @@ class GenerateXml(BaseGenerateXml):
                     if env:
                         callStr += " -e " + env
 
-                print("  *** running manage command: {}{}".format(GenerateXml, callStr))
                 import subprocess
                 p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                 out, err = p.communicate()

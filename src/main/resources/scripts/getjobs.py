@@ -143,7 +143,6 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
 
     somethingPrinted = False
     output = ""
-    print("  *** running manage command: {}".format(manageCMD + " --project " + ManageProjectName + " --full-status"))
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --full-status",
                          shell=True,
                          stdout=subprocess.PIPE,
@@ -151,7 +150,6 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
     out, err = p.communicate()
     enabledList = out.splitlines()
 
-    print("  *** running manage command: {}".format(manageCMD + " --project " + ManageProjectName + " --build-directory-name"))
     p = subprocess.Popen(manageCMD + " --project " + ManageProjectName + " --build-directory-name",
                          shell=True,
                          stdout=subprocess.PIPE,
@@ -170,6 +168,7 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
         
         if indent > max_indent and indent <= veryMax:
             max_indent = indent
+            last_index_max_line = line
 
     if max_indent == 8:
         source_match_string    = "^   [^\s]"
@@ -192,6 +191,9 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
         group_match_string     = None
         env_match_string       = "^     [^\s]"
     else:
+        print("Error with full-status report")
+        print("Highest indent is with this line\n" + last_index_max_line)
+        print("\n".join(enabledList))
         raise ValueError("Error deciphering max_index: " +  str(max_indent))
         
     source = None
