@@ -1331,6 +1331,16 @@ class GenerateXml(BaseGenerateXml):
         unitName = ""
 
         if unit:
+            if not tc.execution_status:
+                if tc.status == "TC_EXECUTION_PASSED":
+                    tc.execution_status = "EXEC_SUCCESS_PASS"
+
+                if tc.status == "TC_EXECUTION_FAILED":
+                    tc.execution_status = "EXEC_SUCCESS_FAIL "
+
+                if tc.status == "TC_EXECUTION_NONE":
+                    tc.execution_status = "EXEC_SUCCESS_PASS"
+
             try:
                 filePath = unit.sourcefile.normalized_path(normcase=False)
             except:
