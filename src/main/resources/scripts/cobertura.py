@@ -393,10 +393,16 @@ def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):
     
 def runCoverageResultsMP(packages, mpFile, verbose = False, extended=False, source_root = ""):
     
+    print("[DEBUG] Opening vcproj in copy_build_dir::getVcastProjectWorkspace")
     vcproj = VCProjectApi(mpFile)
+    print("[DEBUG] Opened  vcproj in copy_build_dir::getVcastProjectWorkspace")
+
     api = vcproj.project.cover_api    
     results = runCoberturaResults(packages, api, verbose = False, extended = extended, source_root = source_root)
+
+    print("[DEBUG] Closing vcproj in copy_build_dir::getVcastProjectWorkspace")
     vcproj.close()
+    print("[DEBUG] Closed  vcproj in copy_build_dir::getVcastProjectWorkspace")
     
     return results
     

@@ -336,8 +336,11 @@ class ParallelExecute(object):
 
         self.parallel_exec_info = {}
         self.waiting_execution_queue = {}
-
+        
+        
+        print("[DEBUG] Opening vcproj in prevcast_parallel_build_execute::doit")
         vcproj = VCProjectApi(self.manageProject)
+        print("[DEBUG] Opened vcproj  in prevcast_parallel_build_execute::doit")
 
         if self.tc_order:
             testcase_list_all = self.get_testcase_list(vcproj.Environment.all())
@@ -405,8 +408,9 @@ class ParallelExecute(object):
         self.monitor_jobs()
         
         self.cleanup()
-        
+        print("[DEBUG] Closing vcproj in prevcast_parallel_build_execute::doit")
         vcproj.close()
+        print("[DEBUG] Opened  vcproj in prevcast_parallel_build_execute::doit")
 
 # API for importing the module into another script
 def parallel_build_execute(in_args):

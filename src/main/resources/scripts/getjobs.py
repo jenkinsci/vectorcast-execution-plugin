@@ -239,9 +239,15 @@ def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = Fal
     try:
             
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        api = VCProjectApi(ManageProjectName)
-        ret_info = printEnvInfoDataAPI(api, printData, printEnvType)
-        api.close()
+
+        print("[DEBUG] Opening vcproj in getjobs::printEnvironmentInfo")
+        vcproj = VCProjectApi(ManageProjectName)
+        print("[DEBUG] Opened  vcproj in getjobs::printEnvironmentInfo")
+
+        ret_info = printEnvInfoDataAPI(vcproj, printData, printEnvType)
+        print("[DEBUG] Closing vcproj in getjobs::printEnvironmentInfo")
+        vcproj.close()
+        print("[DEBUG] Closed  vcproj in getjobs::printEnvironmentInfo")
         return ret_info
 
     except:    

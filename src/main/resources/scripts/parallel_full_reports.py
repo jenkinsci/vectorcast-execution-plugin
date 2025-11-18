@@ -125,30 +125,34 @@ class RunFullReportsParallel(object):
             except:
                 self.jenkins_workspace = os.getcwd().replace("\\","/") + "/"
 
-        api = VCProjectApi(self.mpName)
+        print("[DEBUG] Opening vcproj in parallel_full_reports::RunFullReportsParallel")
+        vcproj = VCProjectApi(self.mpName)
+        print("[DEBUG] Opened  vcproj in parallel_full_reports::RunFullReportsParallel")
 
-        for env in api.Environment.all():
+        for env in vcproj.Environment.all():
             if env.is_active:
                 self.envDict[env.level._full_path] = env
 
-        max_envs = len(api.Environment.all())
+        max_envs = len(vcproj.Environment.all())
         
         self.variables = [(key, 
                     self.envDict[key].name, 
                     self.envDict[key].definition.is_monitored, 
                     self.envDict[key].definition.original_environment_directory,  
                     self.envDict[key].relative_working_directory,
-                    isinstance(self.envDict[key].api,CoverApi),  
-                    isinstance(self.envDict[key].api,UnitTestApi),
-                    api.vcm_file, 
-                    api.project.workspace, 
+                    isinstance(self.envDict[key].vcproj,CoverApi),  
+                    isinstance(self.envDict[key].vcproj,UnitTestApi),
+                    vcproj.vcm_file, 
+                    vcproj.project.workspace, 
                     self.jenkins_workspace, 
                     self.VCD) 
                     for key in self.envDict.keys()]
         
-        self.results = api.project.repository.get_full_status([])
+        self.results = vcproj.project.repository.get_full_status([])
         
-        api.close()
+        print("[DEBUG] Closing vcproj in parallel_full_reports::RunFullReportsParallel")
+        vcproj.close()
+        print("[DEBUG] Closed  vcproj in parallel_full_reports::RunFullReportsParallel")
 
         if args.jobs == "max":
             try:

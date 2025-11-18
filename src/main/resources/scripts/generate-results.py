@@ -541,13 +541,17 @@ def buildReports(FullManageProjectName = None,
         print("Cleanup: " + str(time.time()))
     if useNewReport and not legacy:
         try:
+            print("[DEBUG] Opening vcproj in generate-results::buildReports")
             vcproj = VCProjectApi(FullManageProjectName)
+            print("[DEBUG] Opened  vcproj in generate-results::buildReports")
             tool_version = vcproj.tool_version
             if tool_version.startswith("20"):
                 use_manage_api = False
             else:
                 use_manage_api = True
+            print("[DEBUG] Closing vcproj in generate-results::buildReports")
             vcproj.close()
+            print("[DEBUG] Closed  vcproj in generate-results::buildReports")
         except:
             use_manage_api = False
             

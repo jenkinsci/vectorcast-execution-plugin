@@ -57,7 +57,7 @@ except:
             return "0"
         else:
             return str(int(round(100.0 * float(x) / float(y))))
-                   
+
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
 from vcast_utils import dump, getVectorCASTEncoding
@@ -92,7 +92,7 @@ class BaseGenerateXml(object):
 
         # get the VC langaguge and encoding
         self.encFmt = getVectorCASTEncoding()
-        
+
         self.compiler = ""
         self.testsuite = ""
         self.env = ""
@@ -100,6 +100,37 @@ class BaseGenerateXml(object):
 
         if self.teePrint is None:
             self.teePrint = tee_print.TeePrint()
+
+        self.system_tests_status_report_generated = False
+
+
+    def generate_system_test_status_report(self):
+        if self.system_tests_status_report_generated:
+            return
+
+        report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status.html"
+
+        print("   Creating System Test Status " + self.FullManageProjectName)
+        callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + report_name
+
+        import subprocess
+
+        print(callStr)
+        p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        out, err = p.communicate()
+
+        if os.path.exists(report_name):
+            print("File exists: " + report_name)
+        else:
+            print("File not exists: " + report_name)
+
+        if err:
+            print("Cannot create system test status report{} {}".format(out, err))
+
+        self.system_tests_status_report_generated = True
+
+
+
 #
 # BaseGenerateXml - calculate coverage value
 #
@@ -352,7 +383,7 @@ class BaseGenerateXml(object):
         self.fh_data += ('</report>')
         with open(self.cover_report_name,"wb") as fd:
             fd.write(self.fh_data.encode(self.encFmt, "replace"))
-            
+
 #
 # BaseGenerateXml - write the end of the coverage file and close it
 #
@@ -651,34 +682,27 @@ class GenerateManageXml (BaseGenerateXml):
         self.useStartLine = useStartLine
 
         self.cleanupXmlDataDir()
-        
-        tmpApi = VCProjectApi(FullManageProjectName)
-        
+
+        print("[DEBUG] Opening vcproj in GenerateManageXml::__init__")
+        vcproj = VCProjectApi(FullManageProjectName)
+        print("[DEBUG] Opened  vcproj in GenerateManageXml::__init__")
+
         try:
-            self.has_sfp_enabled = tmpApi.environment.get_option("VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE")
+            self.has_sfp_enabled = vcproj.environment.get_option("VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE")
         except:
             self.has_sfp_enabled = False
 
-        self.system_tests_status_report_generated = False
-            
-        hasCover = any(isinstance(env.api, CoverApi) for env in tmpApi.Environment.all())
-        tmpApi.close()
+        hasCover = any(isinstance(env.api, CoverApi) for env in vcproj.Environment.all())
+        print("[DEBUG] Closing vcproj in GenerateManageXml::__init__")
+        vcproj.close()
+        print("[DEBUG] Closed  vcproj in GenerateManageXml::__init__")
 
         if hasCover:
-            report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status.html"
-        
-            print("   Creating System Test Status " + self.FullManageProjectName)
-            callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + report_name
-            import subprocess
-            p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-            out, err = p.communicate()
-                
-            if err:
-                print("Cannot create system test status report{} {}".format(out, err))
-                
-            self.system_tests_status_report_generated = True 
-            
+            self.generate_system_test_status_report()
+
+        print("[DEBUG] Opening self.api in GenerateManageXml::__init__")
         self.api = VCProjectApi(FullManageProjectName)
+        print("[DEBUG] Opened  self.api in GenerateManageXml::__init__")
 
     def cleanupXmlDataDir(self):
         path="xml_data"
@@ -703,8 +727,11 @@ class GenerateManageXml (BaseGenerateXml):
 
     def __del__(self):
         try:
+            print("[DEBUG] Closing self.api in generate_xml::GenerateManageXml::__del__")
             self.api.close()
+            print("[DEBUG] Closed self.api in GenerateManageXml::__del__")
         except:
+            print("[DEBUG] Exception closing in self.api generate_xml::GenerateManageXml::__del__")
             pass
 
 # GenerateManageXml
@@ -855,7 +882,7 @@ class GenerateManageXml (BaseGenerateXml):
             for line in out.split("\n"):
                 if "The HTML report was saved to" in line:
                     fname = line.split("\"")[1]
-                    
+
             if fname:
                 import shutil
                 shutil.copyfile(fname, report_name)
@@ -863,7 +890,7 @@ class GenerateManageXml (BaseGenerateXml):
                 print("Error creating report " + report_name + ". Contact Vector Support")
         except:
             traceback.print_exc()
-            
+
     def runAggregateReport(self,comp,ts,env_name,report_name):
         try:
             from managewait import ManageWait
@@ -1025,6 +1052,7 @@ class GenerateXml(BaseGenerateXml):
         self.topLevelAPI = None
         self.noResults = False
         self.useStartLine = useStartLine
+        self.system_tests_status_report_generated = system_tests_status_report_generated
         
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         build_dir = build_dir.replace("\\","/")
@@ -1054,29 +1082,7 @@ class GenerateXml(BaseGenerateXml):
         cov_path = os.path.join(build_dir,env + '.vcp')
         unit_path = os.path.join(build_dir,env + '.vce')
         if os.path.exists(cov_path):
-            if not system_tests_status_report_generated:
-                if compiler and testsuite and env:
-                    level = compiler + "_" + testsuite + "_" + env
-                    report_name = "{}_{}_system_tests_status.html".format(os.path.basename(self.FullManageProjectName)[:-4], level)
-                else:
-                    level = ""
-                    report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status.html"
-                    
-            
-                print("   Creating System Test Status " + self.FullManageProjectName)
-                callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + report_name
-                
-                if level:
-                    callStr += " --level " + level
-                    if env:
-                        callStr += " -e " + env
-
-                import subprocess
-                p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-                out, err = p.communicate()
-                    
-                if err:
-                    print("Cannot create system test status report{} {}".format(out, err))
+            self.generate_system_test_status_report()
 
             self.api = CoverApi(cov_path)
         elif os.path.exists(unit_path):
@@ -1091,7 +1097,7 @@ class GenerateXml(BaseGenerateXml):
         self.api.commit = dummy
         self.failed_count = 0
         self.passed_count = 0
-            
+
 #
 # GenerateXml - add any compound tests to the unit report
 #
@@ -1120,11 +1126,13 @@ class GenerateXml(BaseGenerateXml):
                 self.start_system_test_file()
 
                 if self.topLevelAPI == None:
-                    api = VCProjectApi(self.FullManageProjectName)
+                    print("[DEBUG] Opening vcproj in generate_xml::GenerateXml::generate_unit")
+                    vcproj = VCProjectApi(self.FullManageProjectName)
+                    print("[DEBUG] Opened  vcproj in generate_xml::GenerateXml::generate_unit")
                 else:
-                    api = self.topLevelAPI
+                    vcproj = self.topLevelAPI
 
-                for env in api.Environment.all():
+                for env in vcproj.Environment.all():
                     if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
                         for st in env.system_tests:
                             pass_fail_rerun = ""
@@ -1141,7 +1149,9 @@ class GenerateXml(BaseGenerateXml):
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
 
                 if self.topLevelAPI == None:
-                    api.close()
+                    print("[DEBUG] Closing vcproj in generate_xml::GenerateXml::generate_unit")
+                    vcproj.close()
+                    print("[DEBUG] Closed  vcproj in generate_xml::GenerateXml::generate_unit")
 
             except ImportError as e:
                 from generate_qa_results_xml import genQATestResults
@@ -1220,11 +1230,13 @@ class GenerateXml(BaseGenerateXml):
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
 
         if self.topLevelAPI == None:
-            api = VCProjectApi(self.FullManageProjectName)
+            print("[DEBUG] Opening vcproj in GenerateManageXml::start_system_test_file")
+            vcproj = VCProjectApi(self.FullManageProjectName)
+            print("[DEBUG] Opened  vcproj in GenerateManageXml::start_system_test_file")
         else:
-            api = self.topLevelAPI
+            vcproj = self.topLevelAPI
 
-        for env in api.Environment.all():
+        for env in vcproj.Environment.all():
             if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
                 for st in env.system_tests:
                     if st.passed == st.total:
@@ -1236,14 +1248,16 @@ class GenerateXml(BaseGenerateXml):
                         self.failed_count += 1
 
         if self.topLevelAPI == None:
-            api.close()
+            print("[DEBUG] Closing vcproj in GenerateManageXml::start_system_test_file")
+            vcproj.close()
+            print("[DEBUG] Closed  vcproj in GenerateManageXml::start_system_test_file")
 
         self.fh_data = ""
         self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")
         self.fh_data += ("<testsuites>\n")
         self.fh_data += ("    <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" %
             (errors,success+failed+errors, failed, escape(self.env, quote=False)))
-            
+
     def start_unit_test_file(self):
 
         errors = 0
@@ -1579,7 +1593,7 @@ class GenerateXml(BaseGenerateXml):
             except UnicodeDecodeError:
                 # Fallback to system/default encoding (e.g. cp936 in CN) with replace
                 out = out.decode(self.encFmt, errors="replace")
-                
+
             os.remove(report_name)
         except:
             out = "No execution results found"

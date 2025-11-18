@@ -103,7 +103,9 @@ def create_index_html(mpName, isGitLab = False, output_dir = ""):
     global baseOutputDir
     baseOutputDir = output_dir
     
+    print("[DEBUG] Opening vcproj in create_index_html::create_index_html")
     vcproj = VCProjectApi(mpName)
+    print("[DEBUG] Opened  vcproj in create_index_html::create_index_html")
     
     # Set custom report directory to the where this script was
     # found. Must contain sections/index_section.py
@@ -120,8 +122,10 @@ def create_index_html(mpName, isGitLab = False, output_dir = ""):
             sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','INDEX_SECTION', 'CUSTOM_FOOTER'],
             customization_dir=rep_path)
             
+    print("[DEBUG] Closing vcproj in create_index_html::create_index_html")
     vcproj.close()
-    
+    print("[DEBUG] Closed  vcproj in create_index_html.::create_index_html")
+   
 def create_index_html_body ():
     
     tempHtmlReportList =  glob.glob(os.path.join(baseOutputDir,"*.html"))

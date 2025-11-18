@@ -144,10 +144,16 @@ def get_function_name_line_number(file_path, function, initial_guess):
 
 def runCoverageResultsMP(mpFile, verbose = False, testName = "", source_root = ""):
 
+    print("[DEBUG] Opening vcproj in generate_lcov::generate_html_report")
     vcproj = VCProjectApi(mpFile)
+    print("[DEBUG] Opened  vcproj in generate_lcov::generate_html_report")
+    
     api = vcproj.project.cover_api
     results = runGcovResults(api, verbose = verbose, testName = vcproj.project.name, source_root=source_root)
+    
+    print("[DEBUG] Closing vcproj in generate_lcov::generate_html_report")
     vcproj.close()
+    print("[DEBUG] Closed  vcproj in generate_lcov::generate_html_report")
     
     return results
     
