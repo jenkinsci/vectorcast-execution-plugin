@@ -162,7 +162,8 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
     
     max_indent = 0
     veryMax = 8
-
+    last_index_max_line = 0
+    
     for line in enabledList:
         indent = len(line) - len(line.lstrip())
         
@@ -192,7 +193,7 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
         env_match_string       = "^     [^\s]"
     else:
         print("Error with full-status report")
-        print("Highest indent is with this line\n" + last_index_max_line)
+        print("Highest indent is with this line\n" + str(last_index_max_line))
         print("\n".join(enabledList))
         raise ValueError("Error deciphering max_index: " +  str(max_indent))
         
