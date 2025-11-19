@@ -735,7 +735,14 @@ def buildReports(FullManageProjectName = None,
                 env = None
         
         if coverProjectInManageProject:
-            generate_qa_results_xml.genQATestResults(FullManageProjectName,saved_level,saved_envName)
+            report_name = os.path.basename(FullManageProjectName)[:-4] + "_system_tests_status.html"
+            callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --system-tests-status="
+            out_mgt = runManageWithWait(callStr, silent=True)
+
+            if os.path.exists(report_name):
+                print("Created: " + report_name)
+            else:
+                print("File not created: " + report_name)
             
         failed_count = 0
         passed_count = 0
