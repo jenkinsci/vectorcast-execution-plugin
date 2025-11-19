@@ -32,7 +32,10 @@ try:
 except:
     pass
 
-from vector.apps.DataAPI.cover_api import CoverApi
+try:
+    from vector.apps.DataAPI.cover_api import CoverApi
+except:
+    pass
 
 try:
     from vector.apps.DataAPI.unit_test_api import UnitTestApi

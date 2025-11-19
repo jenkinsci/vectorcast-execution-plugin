@@ -357,7 +357,7 @@ def runCommands(cmds, envSetup, useCILicense) {
         }
         cmds = localCmds + cmds
         cmds = stripLeadingWhitespace(cmds.replaceAll("_VECTORCAST_DIR","\\\$VECTORCAST_DIR").replaceAll("_RM","rm -rf ").replaceAll("_COPY","cp -p ").replaceAll("_IF_EXIST","if [[ -f ").replaceAll("_IF_THEN"," ]] ; then ").replaceAll("_ENDIF","; fi") )
-        println "Running commands: " + cmds
+        println "Running Linux Command: " + cmds
 
         // run command in shell
         sh label: 'Running VectorCAST Commands', returnStdout: false, script: cmds
@@ -384,16 +384,21 @@ def runCommands(cmds, envSetup, useCILicense) {
         }
         cmds = localCmds + cmds
         cmds = stripLeadingWhitespace(cmds.replaceAll("_VECTORCAST_DIR","%VECTORCAST_DIR%").replaceAll("_RM","DEL /Q ").replaceAll("_COPY","copy /y /b").replaceAll("_IF_EXIST","if exist ").replaceAll("_IF_THEN"," ( ").replaceAll("_ENDIF"," )"))
-        println "Running commands: " + cmds
+        println "Running Windows Command: " + cmds
 
         // run command in bat
         bat label: 'Running VectorCAST Commands', returnStdout: false, script: cmds
     }
 
     // read back the command.log - this is specific to
-    def log = readFile "command.log"
-
-    println "Commands Output: " + log
+    def log = ""
+    
+    if (fileExists("command.log")) {
+        log = readFile "command.log"
+        println "Commands Output: " + log
+    } else {
+        println "Error getting command.log from these commands: " + cmds
+    }
 
     return log
 }
