@@ -33,7 +33,7 @@ import argparse
 from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
 
 if not checkVectorCASTVersion(19):
-    print ("Copy build directory for pipelines not supported. Please upgrade VectorCAST")")
+    print ("Copy build directory for pipelines not supported. Please upgrade VectorCAST")
     sys.exit(0)
 
 try:
@@ -259,7 +259,7 @@ def getVcastProjectWorkspace(args):
 if __name__ == '__main__':
     
     if not checkVectorCASTVersion(19):
-        print ("Pipeline's copy build directory not supported under. Please upgrade VectorCAST")")
+        print ("Pipeline's copy build directory not supported under. Please upgrade VectorCAST")
         sys.exit(0)
 
     parser = argparse.ArgumentParser()
