@@ -192,7 +192,7 @@ def genQATestResults(mp, level = None, envName = None, verbose = False, encoding
     except:
         if verbose:
             print("No QA Environment that can be processed using --system-tests-status")
-        return
+        return passed, failed
 
     if level and envName:
         nameLevel = level + "_" + envName

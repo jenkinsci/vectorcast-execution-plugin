@@ -1154,8 +1154,13 @@ class GenerateXml(BaseGenerateXml):
                     print("[DEBUG] Closed  vcproj in generate_xml::GenerateXml::generate_unit")
 
             except ImportError as e:
+                print("[DEBUG] FullManageProjectName {} =".format(self.FullManageProjectName))
+                print("[DEBUG] compiler/tests = {}/{}".format(self.compiler, self.testsuite))
+                print("[DEBUG] env = {}".format(self.env))
+                print("[DEBUG] encFmt = {}".format(self.encFmt))
+                
                 from generate_qa_results_xml import genQATestResults
-                pc,fc = genQATestResults(self.FullManageProjectName, self.compiler+ "/" + self.testsuite, self.env, True, self.encFmt)
+                pc,fc = genQATestResults(self.FullManageProjectName, self.compiler + "/" + self.testsuite, self.env, True, self.encFmt)
                 self.failed_count += fc
                 self.passed_count += pc
                 return
