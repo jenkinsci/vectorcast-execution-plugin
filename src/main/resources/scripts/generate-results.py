@@ -541,17 +541,13 @@ def buildReports(FullManageProjectName = None,
         print("Cleanup: " + str(time.time()))
     if useNewReport and not legacy:
         try:
-            print("[DEBUG] Opening vcproj in generate-results::buildReports")
             vcproj = VCProjectApi(FullManageProjectName)
-            print("[DEBUG] Opened  vcproj in generate-results::buildReports")
             tool_version = vcproj.tool_version
             if tool_version.startswith("20"):
                 use_manage_api = False
             else:
                 use_manage_api = True
-            print("[DEBUG] Closing vcproj in generate-results::buildReports")
             vcproj.close()
-            print("[DEBUG] Closed  vcproj in generate-results::buildReports")
         except:
             use_manage_api = False
             
@@ -735,14 +731,18 @@ def buildReports(FullManageProjectName = None,
                 env = None
         
         if coverProjectInManageProject:
-            report_name = os.path.basename(FullManageProjectName)[:-4] + "_system_tests_status.html"
-            callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --system-tests-status="
-            out_mgt = runManageWithWait(callStr, silent=True)
+            try:
+                report_name = os.path.basename(FullManageProjectName)[:-4] + "_system_tests_status.html"
+                callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --system-tests-status=" + report_name
+                out_mgt = runManageWithWait(callStr, silent=True)
 
-            if os.path.exists(report_name):
-                print("Created: " + report_name)
-            else:
-                print("File not created: " + report_name)
+                if os.path.exists(report_name):
+                    print("Created: " + report_name)
+                else:
+                    print("File not created: " + report_name)
+
+            except:
+                print("This version of VetorCAST doesn't support QA System Test - Cannot generate System Tests Status Report")
             
         failed_count = 0
         passed_count = 0

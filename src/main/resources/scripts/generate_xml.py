@@ -92,7 +92,7 @@ class BaseGenerateXml(object):
 
         # get the VC langaguge and encoding
         self.encFmt = getVectorCASTEncoding()
-
+        self.fh_data = ""
         self.compiler = ""
         self.testsuite = ""
         self.env = ""
@@ -102,8 +102,7 @@ class BaseGenerateXml(object):
             self.teePrint = tee_print.TeePrint()
 
         self.system_tests_status_report_generated = False
-
-
+            
     def generate_system_test_status_report(self):
         if self.system_tests_status_report_generated:
             return
@@ -128,8 +127,6 @@ class BaseGenerateXml(object):
             print("Cannot create system test status report{} {}".format(out, err))
 
         self.system_tests_status_report_generated = True
-
-
 
 #
 # BaseGenerateXml - calculate coverage value
@@ -683,9 +680,7 @@ class GenerateManageXml (BaseGenerateXml):
 
         self.cleanupXmlDataDir()
 
-        print("[DEBUG] Opening vcproj in GenerateManageXml::__init__")
         vcproj = VCProjectApi(FullManageProjectName)
-        print("[DEBUG] Opened  vcproj in GenerateManageXml::__init__")
 
         try:
             self.has_sfp_enabled = vcproj.environment.get_option("VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE")
@@ -693,16 +688,12 @@ class GenerateManageXml (BaseGenerateXml):
             self.has_sfp_enabled = False
 
         hasCover = any(isinstance(env.api, CoverApi) for env in vcproj.Environment.all())
-        print("[DEBUG] Closing vcproj in GenerateManageXml::__init__")
         vcproj.close()
-        print("[DEBUG] Closed  vcproj in GenerateManageXml::__init__")
 
         if hasCover:
             self.generate_system_test_status_report()
 
-        print("[DEBUG] Opening self.api in GenerateManageXml::__init__")
         self.api = VCProjectApi(FullManageProjectName)
-        print("[DEBUG] Opened  self.api in GenerateManageXml::__init__")
 
     def cleanupXmlDataDir(self):
         path="xml_data"
@@ -727,9 +718,7 @@ class GenerateManageXml (BaseGenerateXml):
 
     def __del__(self):
         try:
-            print("[DEBUG] Closing self.api in generate_xml::GenerateManageXml::__del__")
             self.api.close()
-            print("[DEBUG] Closed self.api in GenerateManageXml::__del__")
         except:
             print("[DEBUG] Exception closing in self.api generate_xml::GenerateManageXml::__del__")
             pass
@@ -1126,9 +1115,7 @@ class GenerateXml(BaseGenerateXml):
                 self.start_system_test_file()
 
                 if self.topLevelAPI == None:
-                    print("[DEBUG] Opening vcproj in generate_xml::GenerateXml::generate_unit")
                     vcproj = VCProjectApi(self.FullManageProjectName)
-                    print("[DEBUG] Opened  vcproj in generate_xml::GenerateXml::generate_unit")
                 else:
                     vcproj = self.topLevelAPI
 
@@ -1149,22 +1136,16 @@ class GenerateXml(BaseGenerateXml):
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
 
                 if self.topLevelAPI == None:
-                    print("[DEBUG] Closing vcproj in generate_xml::GenerateXml::generate_unit")
                     vcproj.close()
-                    print("[DEBUG] Closed  vcproj in generate_xml::GenerateXml::generate_unit")
 
             except ImportError as e:
-                print("[DEBUG] FullManageProjectName {} =".format(self.FullManageProjectName))
-                print("[DEBUG] compiler/tests = {}/{}".format(self.compiler, self.testsuite))
-                print("[DEBUG] env = {}".format(self.env))
-                print("[DEBUG] encFmt = {}".format(self.encFmt))
-                
-                from generate_qa_results_xml import genQATestResults
-                pc,fc = genQATestResults(self.FullManageProjectName, self.compiler + "/" + self.testsuite, self.env, True, self.encFmt)
-                self.failed_count += fc
-                self.passed_count += pc
-                return
+                pass
 
+            from generate_qa_results_xml import genQATestResults
+            pc,fc = genQATestResults(self.FullManageProjectName, self.compiler + "/" + self.testsuite, self.env, True, self.encFmt)
+            self.failed_count += fc
+            self.passed_count += pc 
+            return
         else:
 
             try:
@@ -1235,9 +1216,7 @@ class GenerateXml(BaseGenerateXml):
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
 
         if self.topLevelAPI == None:
-            print("[DEBUG] Opening vcproj in GenerateManageXml::start_system_test_file")
             vcproj = VCProjectApi(self.FullManageProjectName)
-            print("[DEBUG] Opened  vcproj in GenerateManageXml::start_system_test_file")
         else:
             vcproj = self.topLevelAPI
 
@@ -1253,9 +1232,7 @@ class GenerateXml(BaseGenerateXml):
                         self.failed_count += 1
 
         if self.topLevelAPI == None:
-            print("[DEBUG] Closing vcproj in GenerateManageXml::start_system_test_file")
             vcproj.close()
-            print("[DEBUG] Closed  vcproj in GenerateManageXml::start_system_test_file")
 
         self.fh_data = ""
         self.fh_data += ("<?xml version=\"1.0\" encoding=\"" + self.encFmt.upper() + "\"?>\n")

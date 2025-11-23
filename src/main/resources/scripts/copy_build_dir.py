@@ -185,7 +185,6 @@ def run(ManageProjectName, Level, BaseName, Env, workspace, vCastProjectWorkspac
 
     manageCMD = os.path.join(os.environ.get('VECTORCAST_DIR'), "manage")
     cmd = manageCMD + " --project " + ManageProjectName + " --build-directory-name --level " + Level + " -e " + Env
-    print("  *** running manage command: {}".format(cmd))
     p = subprocess.Popen(cmd,
                          shell=True,
                          stdout=subprocess.PIPE,
@@ -244,16 +243,9 @@ def run(ManageProjectName, Level, BaseName, Env, workspace, vCastProjectWorkspac
 
 def getVcastProjectWorkspace(args):
 
-    print("[DEBUG] Opening vcproj in copy_build_dir::getVcastProjectWorkspace")
     vcproj = VCProjectApi(args.ManageProject)
-    print("[DEBUG] Opened  vcproj in copy_build_dir::getVcastProjectWorkspace")
-    
     vCastProjectWorkspace = vcproj.project.workspace
-    
-    print("[DEBUG] Closing vcproj in copy_build_dir::getVcastProjectWorkspace")
     vcproj.close()
-    print("[DEBUG] Closed  vcproj in copy_build_dir::getVcastProjectWorkspace")
-   
     return vCastProjectWorkspace
 
 if __name__ == '__main__':

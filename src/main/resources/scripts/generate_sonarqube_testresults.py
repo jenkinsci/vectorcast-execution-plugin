@@ -24,7 +24,6 @@
 
 from __future__ import print_function
 
-
 import os
 from datetime import datetime
 try:
@@ -259,9 +258,7 @@ class GenerateManageXml (BaseGenerateXml):
                    
         super(GenerateManageXml, self).__init__(FullManageProjectName, verbose, xml_data_dir)
         
-        print("[DEBUG] Opening self.api in generate_sonarqube_testresults::GenerateManageXml::__init__")
         self.api = VCProjectApi(FullManageProjectName)
-        print("[DEBUG] Opened  self.api in generate_sonarqube_testresults::GenerateManageXml::__init__")
 
         self.FullManageProjectName = FullManageProjectName        
         self.generate_exec_rpt_each_testcase = generate_exec_rpt_each_testcase
@@ -281,9 +278,7 @@ class GenerateManageXml (BaseGenerateXml):
 
     def __del__(self):
         try:
-            print("[DEBUG] Closing self.api in generate_sonarqube_testresults::GenerateManageXml::__del__")
             self.api.close()
-            print("[DEBUG] Closed  self.api in generate_sonarqube_testresults::GenerateManageXml::__del__")
         except:
             pass
 
@@ -563,10 +558,7 @@ class GenerateXml(BaseGenerateXml):
         if isinstance(self.api, CoverApi):
             try:
                 if self.topLevelAPI == None:
-                    print("[DEBUG] Opening vcproj in generate_sonarqube_testresults::GenerateManageXml::generate_unit")
                     vcproj = VCProjectApi(self.FullManageProjectName)
-                    print("[DEBUG] Opened  vcproj in generate_sonarqube_testresults::GenerateManageXml::generate_unit")
-                    
                 else:
                     vcproj = self.topLevelAPI
                         
@@ -589,9 +581,7 @@ class GenerateXml(BaseGenerateXml):
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
 
                 if self.topLevelAPI == None:
-                    print("[DEBUG] Closing vcproj in generate_sonarqube_testresults::GenerateManageXml::generate_unit")
                     vcproj.close()
-                    print("[DEBUG] Closing vcproj in generate_sonarqube_testresults::GenerateManageXml::generate_unit")
 
             except ImportError as e:
                 from generate_qa_results_xml import genQATestResults

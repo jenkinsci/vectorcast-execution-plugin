@@ -339,9 +339,7 @@ def generate_html_report(mpName, input_xml, output_html):
     if output_html is None:
         output_html = "pclp_findings.html"
 
-    print("[DEBUG] Opening vcproj in generate_pclp_reports::generate_html_report")
     vcproj = VCProjectApi(mpName)
-    print("[DEBUG] Opened  self.api in generate_pclp_reports::generate_html_report")
 
     # Set custom report directory to the where this script was
     # found. Must contain sections/index_section.py
@@ -355,9 +353,7 @@ def generate_html_report(mpName, input_xml, output_html):
             sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','PCLP_SUMMARY_SECTION','PCLP_DETAILS_SECTION','PCLP_SOURCE_SECTION', 'CUSTOM_FOOTER'],
             customization_dir=rep_path)
             
-    print("[DEBUG] Closing vcproj in generate_pclp_reports::generate_html_report")
     vcproj.close()
-    print("[DEBUG] Closed  vcproj in generate_pclp_reports::generate_html_report")
 
 def has_any_coverage(line):
 

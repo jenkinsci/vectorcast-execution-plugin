@@ -395,9 +395,7 @@ class VectorCASTExecute(object):
 
     def reportCreate(self, report_type, desc):
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        print("[DEBUG] Opening vcproj in vcast_exec::reportCreate")
         vcproj = VCProjectApi(self.FullMP)
-        print("[DEBUG] Opened vcproj in vcast_exec::reportCreate")
         
         for env in vcproj.Environment.all():
             if not env.is_active:
@@ -410,9 +408,7 @@ class VectorCASTExecute(object):
             print("Creating {} HTML report for {} in {}".format(desc, env.name, report_name))
             env.api.report(report_type=report_type, formats=["HTML"], output_file=report_name)
 
-        print("[DEBUG] Closing vcproj in vcast_exec::reportCreate")
         vcproj.close()
-        print("[DEBUG] Closed  vcproj in vcast_exec::reportCreate")
         
     def generateTestCaseMgtRpt(self):
         if not os.path.exists(os.path.join(self.output_dir, "management")):

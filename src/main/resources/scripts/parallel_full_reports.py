@@ -125,9 +125,7 @@ class RunFullReportsParallel(object):
             except:
                 self.jenkins_workspace = os.getcwd().replace("\\","/") + "/"
 
-        print("[DEBUG] Opening vcproj in parallel_full_reports::RunFullReportsParallel")
         vcproj = VCProjectApi(self.mpName)
-        print("[DEBUG] Opened  vcproj in parallel_full_reports::RunFullReportsParallel")
 
         for env in vcproj.Environment.all():
             if env.is_active:
@@ -150,9 +148,7 @@ class RunFullReportsParallel(object):
         
         self.results = vcproj.project.repository.get_full_status([])
         
-        print("[DEBUG] Closing vcproj in parallel_full_reports::RunFullReportsParallel")
         vcproj.close()
-        print("[DEBUG] Closed  vcproj in parallel_full_reports::RunFullReportsParallel")
 
         if args.jobs == "max":
             try:
