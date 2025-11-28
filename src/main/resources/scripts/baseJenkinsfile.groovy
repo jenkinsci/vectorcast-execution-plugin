@@ -41,6 +41,14 @@ def VC = [
     squoreCmd: VC_squoreCommand
 ]
 
+
+
+// ===============================================================
+//
+// Generic file from VectorCAST Pipeline Plug-in DO NOT ALTER
+//
+// ===============================================================
+
 // ===============================================================
 //
 // Function : getFailureUnstablePhrases

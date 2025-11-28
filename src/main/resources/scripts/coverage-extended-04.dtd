@@ -16,10 +16,10 @@
 
   <!ELEMENT coverage (sources?,packages)>
   <!ATTLIST coverage
-    line-rate                  CDATA #REQUIRED
-    branch-rate                CDATA #REQUIRED
     version                    CDATA #REQUIRED
     timestamp                  CDATA #REQUIRED
+    line-rate                  CDATA #IMPLIED
+    branch-rate                CDATA #IMPLIED
     complexity                 CDATA #IMPLIED
     branches-valid             CDATA #IMPLIED
     branches-covered           CDATA #IMPLIED
@@ -38,8 +38,8 @@
   <!ELEMENT package (classes)>
   <!ATTLIST package
     name                  CDATA #REQUIRED
-    line-rate             CDATA #REQUIRED
-    branch-rate           CDATA #REQUIRED
+    line-rate             CDATA #IMPLIED
+    branch-rate           CDATA #IMPLIED
     complexity            CDATA #IMPLIED
     branches-valid        CDATA #IMPLIED
     branches-covered      CDATA #IMPLIED
@@ -57,9 +57,9 @@
   <!ATTLIST class 
     name                  CDATA #REQUIRED
     filename              CDATA #REQUIRED
-    line-rate             CDATA #REQUIRED
-    branch-rate           CDATA #REQUIRED
-    complexity            CDATA #REQUIRED
+    line-rate             CDATA #IMPLIED
+    complexity            CDATA #IMPLIED
+    branch-rate           CDATA #IMPLIED
     mcdcpair-coverage     CDATA "100%"
     functioncall-coverage CDATA "100%"
     function-coverage     CDATA "100%"
@@ -71,9 +71,9 @@
   <!ATTLIST method 
     name                  CDATA #REQUIRED
     signature             CDATA #REQUIRED
-    line-rate             CDATA #REQUIRED
-    branch-rate           CDATA #REQUIRED
-    complexity            CDATA #REQUIRED
+    line-rate             CDATA #IMPLIED
+    branch-rate           CDATA #IMPLIED
+    complexity            CDATA #IMPLIED
     mcdcpair-coverage     CDATA "100%"
     functioncall-coverage CDATA "100%"
     function-coverage     CDATA "100%"
