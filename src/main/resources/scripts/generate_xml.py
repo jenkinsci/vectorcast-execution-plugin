@@ -102,31 +102,25 @@ class BaseGenerateXml(object):
             self.teePrint = tee_print.TeePrint()
 
         self.system_tests_status_report_generated = False
-            
+
     def generate_system_test_status_report(self):
         if self.system_tests_status_report_generated:
             return
 
         report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status.html"
 
-        print("   Creating System Test Status " + self.FullManageProjectName)
-        callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + report_name
+        print("    Creating System Test Status " + self.FullManageProjectName)
+        for report_name_ext in [".txt", ".html"]:
+            report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status" + report_name_ext
+            callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage --project " + self.FullManageProjectName + " --system-tests-status=" + report_name
+            import subprocess
+            p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            out, err = p.communicate()
 
-        import subprocess
+            if err:
+                print("Cannot create system test status report{} {}".format(out, err))
 
-        print(callStr)
-        p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        out, err = p.communicate()
-
-        if os.path.exists(report_name):
-            print("File exists: " + report_name)
-        else:
-            print("File not exists: " + report_name)
-
-        if err:
-            print("Cannot create system test status report{} {}".format(out, err))
-
-        self.system_tests_status_report_generated = True
+            self.system_tests_status_report_generated = True
 
 #
 # BaseGenerateXml - calculate coverage value
@@ -238,26 +232,58 @@ class BaseGenerateXml(object):
                         entry["function"] = '0% (0 / 1)'
 
         if self.has_call_coverage:
-            entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
+            entry["functioncall"] = self.calc_cov_values(
+                metrics.max_covered_function_calls +
+                    metrics.max_annotations_function_calls,
+                metrics.function_calls
+            )
 
         if 'NONE' in cov_type_str:
             return entry
 
         if "MCDC" in cov_type_str:
-            entry["mcdc"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
+            entry["mcdc"] = self.calc_cov_values(
+                metrics.max_covered_mcdc_branches +
+                    metrics.max_annotations_mcdc_branches,
+                metrics.mcdc_branches
+            )
             if not self.simplified_mcdc:
-                entry["mcdc"] = self.calc_cov_values(metrics.max_covered_mcdc_pairs, metrics.mcdc_pairs)
-            entry["branch"] = self.calc_cov_values(metrics.max_covered_mcdc_branches, metrics.mcdc_branches)
+                entry["mcdc"] = self.calc_cov_values(
+                    metrics.max_covered_mcdc_pairs +
+                        metrics.max_annotations_mcdc_pairs,
+                    metrics.mcdc_pairs
+                )
+            entry["branch"] = self.calc_cov_values(
+                metrics.max_covered_mcdc_branches +
+                    metrics.max_annotations_mcdc_branches,
+                metrics.mcdc_branches
+            )
         if "BASIS_PATH" in cov_type_str:
             (cov,total) = unit_or_func.basis_paths_coverage
             entry["basis_path"] = self.calc_cov_values(cov, total)
         if "STATEMENT" in cov_type_str:
-            entry["statement"] = self.calc_cov_values(metrics.max_covered_statements, metrics.statements)
+            entry["statement"] = self.calc_cov_values(
+                metrics.max_covered_statements +
+                    metrics.max_annotations_statements,
+                metrics.statements
+            )
         if "BRANCH" in cov_type_str:
-            entry["branch"] = self.calc_cov_values(metrics.max_covered_branches, metrics.branches)
+            entry["branch"] = self.calc_cov_values(
+                metrics.max_covered_branches +
+                    metrics.max_annotations_branches,
+                metrics.branches
+            )
         if "FUNCTION_FUNCTION_CALL" in cov_type_str:
-            entry["functioncall"] = self.calc_cov_values(metrics.max_covered_function_calls, metrics.function_calls)
-            entry["function"] = self.calc_cov_values(metrics.max_covered_functions, metrics.functions)
+            entry["functioncall"] = self.calc_cov_values(
+                metrics.max_covered_function_calls +
+                    metrics.max_annotations_function_calls,
+                metrics.function_calls
+            )
+            entry["function"] = self.calc_cov_values(
+                metrics.max_covered_functions +
+                    metrics.max_annotations_functions,
+                metrics.functions
+            )
 
         return entry
 #
@@ -333,24 +359,50 @@ class BaseGenerateXml(object):
         entry["functioncall"] = None
 
         if self.toplevel_has_function_coverage:
-            entry["function"] = self.calc_cov_values(self.grand_total_max_covered_functions, self.grand_total_max_coverable_functions)
+            entry["function"] = self.calc_cov_values(
+                self.grand_total_max_covered_functions,
+                self.grand_total_max_coverable_functions
+            )
         if self.toplevel_has_call_coverage:
-            entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)
+            entry["functioncall"] = self.calc_cov_values(
+                self.grand_total_max_covered_function_calls,
+                self.grand_total_function_calls
+            )
 
         if "MCDC" in cov_type_str:
-            entry["mcdc"] = self.calc_cov_values(self.grand_total_max_mcdc_covered_branches, self.grand_total_mcdc_branches)
+            entry["mcdc"] = self.calc_cov_values(
+                self.grand_total_max_mcdc_covered_branches,
+                self.grand_total_mcdc_branches
+            )
             if not self.simplified_mcdc:
-                entry["mcdc"] = self.calc_cov_values(self.grand_total_max_covered_mcdc_pairs, self.grand_total_mcdc_pairs)
-            entry["branch"] = self.calc_cov_values(self.grand_total_max_mcdc_covered_branches, self.grand_total_mcdc_branches)
+                entry["mcdc"] = self.calc_cov_values(
+                    self.grand_total_max_covered_mcdc_pairs,
+                    self.grand_total_mcdc_pairs
+                )
+            entry["branch"] = self.calc_cov_values(
+                self.grand_total_max_mcdc_covered_branches,
+                self.grand_total_mcdc_branches
+            )
         if "BASIS_PATH" in cov_type_str:
-            entry["basis_path"] = self.calc_cov_values(self.grand_total_cov_basis_path, self.grand_total_total_basis_path)
+            entry["basis_path"] = self.calc_cov_values(
+                self.grand_total_cov_basis_path,
+                self.grand_total_total_basis_path
+            )
         if "STATEMENT" in cov_type_str:
-            entry["statement"] = self.calc_cov_values(self.grand_total_max_covered_statements, self.grand_total_statements)
+            entry["statement"] = self.calc_cov_values(
+                self.grand_total_max_covered_statements,
+                self.grand_total_statements
+            )
         if "BRANCH" in cov_type_str:
-            entry["branch"] = self.calc_cov_values(self.grand_total_max_covered_branches, self.grand_total_branches)
+            entry["branch"] = self.calc_cov_values(
+                self.grand_total_max_covered_branches,
+                self.grand_total_branches
+            )
         if "FUNCTION_FUNCTION_CALL" in cov_type_str:
-            entry["functioncall"] = self.calc_cov_values(self.grand_total_max_covered_function_calls, self.grand_total_function_calls)
-
+            entry["functioncall"] = self.calc_cov_values(
+                self.grand_total_max_covered_function_calls,
+                self.grand_total_function_calls
+            )
         return entry
 
 #
@@ -545,21 +597,44 @@ class BaseGenerateXml(object):
             if functions_added:
                 self.our_units.append(entry)
 
-            self.grand_total_max_covered_branches += metrics.max_covered_branches + metrics.max_covered_mcdc_branches
+            self.grand_total_max_covered_branches += (
+                metrics.max_covered_branches +
+                metrics.max_covered_mcdc_branches +
+                metrics.max_annotations_branches +
+                metrics.max_annotations_mcdc_branches
+            )
             self.grand_total_branches += metrics.branches + metrics.mcdc_branches
-            self.grand_total_max_covered_statements += metrics.max_covered_statements
+            self.grand_total_max_covered_statements += (
+                metrics.max_covered_statements + metrics.max_annotations_statements
+            )
             self.grand_total_statements += metrics.statements
-            self.grand_total_max_mcdc_covered_branches += metrics.max_covered_mcdc_branches
+            self.grand_total_max_mcdc_covered_branches += (
+                metrics.max_covered_mcdc_branches +
+                metrics.max_annotations_mcdc_branches
+            )
             self.grand_total_mcdc_branches += metrics.mcdc_branches
-            self.grand_total_max_covered_mcdc_pairs += metrics.max_covered_mcdc_pairs
+            self.grand_total_max_covered_mcdc_pairs += (
+                metrics.max_covered_mcdc_pairs +
+                metrics.max_annotations_mcdc_pairs
+            )
+            
             self.grand_total_mcdc_pairs += metrics.mcdc_pairs
-            self.grand_total_max_covered_function_calls += metrics.max_covered_function_calls
+            self.grand_total_max_covered_function_calls += (
+                metrics.max_covered_function_calls +
+                metrics.max_annotations_function_calls
+            )
+
             self.grand_total_function_calls += metrics.function_calls
 
             try:
                 if self.has_function_coverage:
-                    self.grand_total_max_covered_functions += metrics.covered_functions
-                    self.grand_total_max_coverable_functions += metrics.functions
+                    self.grand_total_max_covered_functions += (
+                        metrics.max_covered_functions +
+                        metrics.max_annotations_functions
+                    )
+                    self.grand_total_max_coverable_functions += (
+                        metrics.functions
+                    )
             except:
                 pass
 
@@ -1042,7 +1117,7 @@ class GenerateXml(BaseGenerateXml):
         self.noResults = False
         self.useStartLine = useStartLine
         self.system_tests_status_report_generated = system_tests_status_report_generated
-        
+
         ## use hash code instead of final directory name as regression scripts can have overlapping final directory names
         build_dir = build_dir.replace("\\","/")
         if build_dir.endswith("/."):
@@ -1058,6 +1133,7 @@ class GenerateXml(BaseGenerateXml):
 
         if verbose:
             print ("HashCode: " + self.hashCode + "for build dir: " + build_dir)
+            print(env)
 
         self.build_dir = build_dir
         self.env = env
@@ -1144,7 +1220,7 @@ class GenerateXml(BaseGenerateXml):
             from generate_qa_results_xml import genQATestResults
             pc,fc = genQATestResults(self.FullManageProjectName, self.compiler + "/" + self.testsuite, self.env, True, self.encFmt)
             self.failed_count += fc
-            self.passed_count += pc 
+            self.passed_count += pc
             return
         else:
 

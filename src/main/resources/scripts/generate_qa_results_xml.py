@@ -211,19 +211,12 @@ def genQATestResults(mp, level = None, envName = None, verbose = False, encoding
     passed_count = 0
     failed_count = 0
 
-    # try:
-        # from vector.apps.DataAPI.manage_models import SystemTest
-    # except:
-        # if verbose:
-            # print("No QA Environment that can be processed using --system-tests-status")
-        # return passed_count, failed_count
-
     if level and envName:
         nameLevel = level + "_" + envName
         nameLevel = nameLevel.replace("\\","/").replace("/","_")
-        report_name = "{}_{}_system_tests_status.html".format(os.path.basename(mp)[:-4], nameLevel)
+        report_name = "{}_{}_system_tests_status.txt".format(os.path.basename(mp)[:-4], nameLevel)
     else:
-        report_name = os.path.basename(mp)[:-4] + "_system_tests_status.html"
+        report_name = os.path.basename(mp)[:-4] + "_system_tests_status.txt"
 
     if os.path.exists(report_name):
         with open(report_name,"rb") as fd:

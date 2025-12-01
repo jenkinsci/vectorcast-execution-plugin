@@ -95,29 +95,37 @@ def has_branch_coverage(line):
 
 def has_anything_covered(line):
     
-    return (line.metrics.covered_statements + 
-        line.metrics.covered_branches + 
-        line.metrics.covered_mcdc_branches + 
-        line.metrics.covered_mcdc_pairs + 
-        line.metrics.covered_functions +
-        line.metrics.covered_function_calls + 
-        line.metrics.max_covered_statements + 
+    return (line.metrics.max_covered_statements +
         line.metrics.max_covered_branches + 
         line.metrics.max_covered_mcdc_branches + 
         line.metrics.max_covered_mcdc_pairs + 
         line.metrics.max_covered_functions +
-        line.metrics.max_covered_function_calls)
+        line.metrics.max_covered_function_calls +
+        line.metrics.max_annotations_statements +
+        line.metrics.max_annotations_branches +
+        line.metrics.max_annotations_mcdc_branches +
+        line.metrics.max_annotations_mcdc_pairs +
+        line.metrics.max_annotations_functions +
+        line.metrics.max_annotations_function_calls)
         
 def has_branches_covered(line):
     
     count = (line.metrics.covered_branches + 
         line.metrics.covered_mcdc_branches + 
-        line.metrics.covered_mcdc_pairs)
+        line.metrics.covered_mcdc_pairs    +
+        line.metrics.max_annotations_branches +
+        line.metrics.max_annotations_mcdc_branches +
+        line.metrics.max_annotations_mcdc_pairs
+        )
         
     if count == 0:
         count = (line.metrics.max_covered_branches + 
             line.metrics.max_covered_mcdc_branches + 
-            line.metrics.max_covered_mcdc_pairs)
+            line.metrics.max_covered_mcdc_pairs +
+            line.metrics.max_annotations_branches +
+            line.metrics.max_annotations_mcdc_branches +
+            line.metrics.max_annotations_mcdc_pairs
+        )
         
     return count
        

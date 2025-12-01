@@ -107,8 +107,12 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
         pass
 
     branch_totals = float(coverAPI.metrics.branches + coverAPI.metrics.mcdc_branches)
-    branch_covered = float(coverAPI.metrics.max_covered_branches + coverAPI.metrics.max_covered_mcdc_branches)
-    
+    branch_covered = float(
+        coverAPI.metrics.max_covered_branches + 
+        coverAPI.metrics.max_covered_mcdc_branches +
+        coverAPI.metrics.max_annotations_branches + 
+        coverAPI.metrics.max_annotations_mcdc_branches
+    )
     if branch_totals > 0:
         branch_pct = branch_covered / branch_totals
     else:
@@ -149,16 +153,27 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
             if coverAPI.metrics.branches or coverAPI.metrics.mcdc_branches:
                 file.attrib['branch-rate'] = str(branch_pct)  
             if coverAPI.metrics.function_calls > 0:
-                funcCallPercentStr = "{:.2f}".format(coverAPI.metrics.max_covered_function_calls_pct) + "% (" + str(coverAPI.metrics.max_covered_function_calls) + "/" + str(coverAPI.metrics.function_calls) + ")"    
+                funcCallPercentStr = "{:.2f}% ( {} / {} )".format(
+                    func.metrics.max_covered_function_calls_pct,
+                    func.metrics.max_covered_function_calls + func.metrics.max_annotations_function_calls,
+                    func.metrics.function_calls
+                )
+                method.attrib['functioncall-coverage'] = funcCallPercentStr
                 file.attrib['functioncall-coverage'] = funcCallPercentStr
             if coverAPI.metrics.mcdc_pairs > 0:
-                mcdcPairPercentStr = "{:.2f}".format(coverAPI.metrics.max_covered_mcdc_pairs_pct) + "% (" + str(coverAPI.metrics.max_covered_mcdc_pairs) + "/" + str(coverAPI.metrics.mcdc_pairs) + ")"             
+                mcdcPairPercentStr = "{:.2f}% ( {} / {} )".format(
+                    func.metrics.max_covered_mcdc_pairs_pct,
+                    func.metrics.max_covered_mcdc_pairs + func.metrics.max_annotations_mcdc_pairs,
+                    func.metrics.mcdc_pairs
+                )
                 file.attrib['mcdcpair-coverage'] = mcdcPairPercentStr
                 
             funcCovTotal, funcTotal = getCoveredFunctionCount(coverAPI)
             
             if funcTotal > 0:            
-                file.attrib['function-coverage'] =  "{:.2f}".format(100.0 *funcCovTotal/funcTotal) + "% (" + str(funcCovTotal) + "/" + str(funcTotal) + ")"  
+                file.attrib['function-coverage'] = "{:.2f}% ( {} / {} )".format(
+                    100.0 *funcCovTotal/funcTotal, funcCovTotal ,funcTotal
+                )
             else:
                 file.attrib['function-coverage'] =  "0.00% (0/0)"  
             
@@ -248,18 +263,18 @@ def has_any_coverage(line):
 
 def has_anything_covered(line):
     
-    return (line.metrics.max_covered_statements + 
+    return (line.metrics.max_covered_statements +
         line.metrics.max_covered_branches + 
         line.metrics.max_covered_mcdc_branches + 
         line.metrics.max_covered_mcdc_pairs + 
         line.metrics.max_covered_functions +
         line.metrics.max_covered_function_calls + 
-        line.metrics.max_covered_statements + 
-        line.metrics.max_covered_branches + 
-        line.metrics.max_covered_mcdc_branches + 
-        line.metrics.max_covered_mcdc_pairs + 
-        line.metrics.max_covered_functions +
-        line.metrics.max_covered_function_calls)
+        line.metrics.max_annotations_statements +
+        line.metrics.max_annotations_branches +
+        line.metrics.max_annotations_mcdc_branches +
+        line.metrics.max_annotations_mcdc_pairs +
+        line.metrics.max_annotations_functions +
+        line.metrics.max_annotations_function_calls)
 
 def processStatementBranchMCDC(fileApi, lines, extended = False):
 
@@ -362,12 +377,15 @@ def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):
             method.attrib['signature'] = func.instrumented_functions[0].parameterized_name.replace(func.name,"",1)    
             method.attrib['line-rate'] = str(func.metrics.max_covered_statements_pct/100.0)
             
-            statementPercentStr = "{:.2f}".format(func.metrics.max_covered_statements_pct) + "% (" + str(func.metrics.max_covered_statements) + "/" + str(func.metrics.statements) + ")"             
+            statementPercentStr = "{:.2f}% ({} / {})".format(
+                func.metrics.max_covered_statements_pct,
+                func.metrics.max_covered_statements + func.metrics.max_annotations_statements,
+                func.metrics.statements)
             #method.attrib['statements'] = statementPercentStr
             
             func_total_br = func.metrics.branches + func.metrics.mcdc_branches
             func_cov_br   = func.metrics.max_covered_branches + func.metrics.max_covered_mcdc_branches
-            
+            func_cov_br  += func.metrics.max_annotations_branches + func.metrics.max_annotations_mcdc_branches
             func_branch_rate = 0.0
             if func_total_br > 0:
                 func_branch_rate = float(func_cov_br) / float(func_total_br)
@@ -376,17 +394,25 @@ def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):
             method.attrib['complexity'] = str(func.metrics.complexity)
                     
             if func.metrics.function_calls > 0:
-                funcCallPercentStr = "{:.2f}".format(func.metrics.max_covered_function_calls_pct) + "% (" + str(func.metrics.max_covered_function_calls) + "/" + str(func.metrics.function_calls) + ")"    
+                funcCallPercentStr = "{:.2f}% ( {} / {} )".format(
+                    func.metrics.max_covered_function_calls_pct,
+                    func.metrics.max_covered_function_calls + func.metrics.max_annotations_function_calls,
+                    func.metrics.function_calls
+                )
                 method.attrib['functioncall-coverage'] = funcCallPercentStr
             if func.metrics.mcdc_pairs > 0:
-                mcdcPairPercentStr = "{:.2f}".format(func.metrics.max_covered_mcdc_pairs_pct) + "% (" + str(func.metrics.max_covered_mcdc_pairs) + "/" + str(func.metrics.mcdc_pairs) + ")"             
+                mcdcPairPercentStr = "{:.2f}% ( {} / {} )".format(
+                    func.metrics.max_covered_mcdc_pairs_pct,
+                    func.metrics.max_covered_mcdc_pairs + func.metrics.max_annotations_mcdc_pairs,
+                    func.metrics.mcdc_pairs
+                )
                 method.attrib['mcdcpair-coverage'] = mcdcPairPercentStr
                 
             if (func.metrics.max_covered_functions_pct +  
                 func.metrics.max_covered_statements_pct + 
                 func.metrics.max_covered_branches_pct + 
                 func.metrics.max_covered_mcdc_branches_pct + 
-                func.metrics.max_covered_mcdc_pairs + 
+                func.metrics.max_covered_mcdc_pairs_pct +
                 func.metrics.max_covered_function_calls_pct) > 0:
                 method.attrib['function-coverage'] = "100% (1/1)"
             else:
@@ -540,16 +566,22 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
                         package.attrib['branch-rate'] = str(branch_rate)
 
                     if file.has_mcdc_coverage:          
-                        mcdcPairPercentStr = "{:.2f}".format(MCDC_rate * 100.0) + "% (" + str(pkg_cov_mcdc) + "/" + str(pkg_total_mcdc) + ")"             
+                        mcdcPairPercentStr = "{:.2f}% ({} / {})".format(
+                            MCDC_rate * 100.0, pkg_cov_mcdc, pkg_total_mcdc
+                        )
                         package.attrib['mcdcpair-coverage'] = mcdcPairPercentStr
                     if file.has_function_call_coverage: 
-                        funcCallPercentStr = "{:.2f}".format(FC_rate * 100.0) + "% (" + str(pkg_cov_fc) + "/" + str(pkg_total_fc) + ")"             
+                        funcCallPercentStr = "{:.2f}% ({} / {})".format(
+                            FC_rate * 100.0, pkg_cov_fc, pkg_total_fc
+                        )
                         package.attrib['functioncall-coverage'] = funcCallPercentStr
                         
                     funcCovTotal, funcTotal = getCoveredFunctionCount(file)
                     if pkg_total_func > 0:
                         func_rate = float(pkg_cov_func) / float(pkg_total_func)
-                        funcPercentStr = "{:.2f}".format(func_rate * 100.0) + "% (" + str(pkg_cov_func) + "/" + str(pkg_total_func) + ")"             
+                        funcPercentStr = "{:.2f}% ({} / {})".format(
+                            func_rate * 100.0, pkg_cov_func, pkg_total_func
+                        )
                         package.attrib['function-coverage'] = funcPercentStr
                     
             path_name = new_path
@@ -582,14 +614,16 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
         total_br += file.metrics.branches + file.metrics.mcdc_branches
         total_st += file.metrics.statements
         cov_br   += file.metrics.max_covered_branches + file.metrics.max_covered_mcdc_branches
-        cov_st   += file.metrics.max_covered_statements
+        cov_br   += file.metrics.max_annotations_branches + file.metrics.max_annotations_mcdc_branches
+        cov_st   += file.metrics.max_covered_statements + file.metrics.max_annotations_statements
 
         pkg_total_br += file.metrics.branches + file.metrics.mcdc_branches
         pkg_total_st += file.metrics.statements
         
 
         pkg_cov_br += file.metrics.max_covered_branches + file.metrics.max_covered_mcdc_branches
-        pkg_cov_st += file.metrics.max_covered_statements
+        pkg_cov_br += file.metrics.max_annotations_branches + file.metrics.max_annotations_mcdc_branches
+        pkg_cov_st += file.metrics.max_covered_statements + file.metrics.max_annotations_statements
 
         vg     += file.metrics.complexity
         pkg_vg += file.metrics.complexity
@@ -598,13 +632,13 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
             total_fc   += file.metrics.function_calls
             total_mcdc += file.metrics.mcdc_pairs
 
-            cov_fc         += file.metrics.max_covered_function_calls
-            cov_mcdc       += file.metrics.max_covered_mcdc_pairs
+            cov_fc         += file.metrics.max_covered_function_calls + file.metrics.max_annotations_function_calls
+            cov_mcdc       += file.metrics.max_covered_mcdc_pairs + file.metrics.max_annotations_mcdc_pairs
             pkg_total_fc   += file.metrics.function_calls
             pkg_total_mcdc += file.metrics.mcdc_pairs
         
-            pkg_cov_fc   += file.metrics.max_covered_function_calls
-            pkg_cov_mcdc += file.metrics.max_covered_mcdc_pairs
+            pkg_cov_fc   += file.metrics.max_covered_function_calls + file.metrics.max_annotations_function_calls
+            pkg_cov_mcdc += file.metrics.max_covered_mcdc_pairs + file.metrics.max_annotations_mcdc_pairs
         
             funcCovTotal, funcTotal = getCoveredFunctionCount(file)
             pkg_total_func += funcTotal
@@ -663,14 +697,20 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
             if file.has_branch_coverage or file.has_mcdc_coverage:        
                 package.attrib['branch-rate'] = str(branch_rate)
             if file.has_mcdc_coverage:          
-                mcdcPairPercentStr = "{:.2f}".format(MCDC_rate * 100.0) + "% (" + str(pkg_cov_mcdc) + "/" + str(pkg_total_mcdc) + ")"             
+                mcdcPairPercentStr = "{:.2f}% ({} / {})".format(
+                    MCDC_rate * 100.0, pkg_cov_mcdc, pkg_total_mcdc
+                )
                 package.attrib['mcdcpair-coverage'] = mcdcPairPercentStr
             if file.has_function_call_coverage: 
-                funcCallPercentStr = "{:.2f}".format(FC_rate * 100.0) + "% (" + str(pkg_cov_fc) + "/" + str(pkg_total_fc) + ")"             
+                funcCallPercentStr = "{:.2f}% ({} / {})".format(
+                    FC_rate * 100.0, pkg_cov_fc, pkg_total_fc
+                )
                 package.attrib['functioncall-coverage'] = funcCallPercentStr
                 
             if pkg_total_func > 0:      
-                funcPercentStr = "{:.2f}".format(func_rate * 100.0) + "% (" + str(pkg_cov_func) + "/" + str(pkg_total_func) + ")"             
+                funcPercentStr = "{:.2f}% ({} / {})".format(
+                    func_rate * 100.0, pkg_cov_func, pkg_total_func
+                )
                 package.attrib['function-coverage'] = funcPercentStr
         package.attrib['complexity'] = str(pkg_vg)
               

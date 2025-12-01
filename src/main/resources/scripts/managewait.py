@@ -85,7 +85,8 @@ class ManageWait(object):
                 except Exception:
                     logfile.write(output.encode('utf-8', 'replace'))
 
-            print(line)
+            if not self.silent:
+                print(line)
             
             queue.put(line)
 
