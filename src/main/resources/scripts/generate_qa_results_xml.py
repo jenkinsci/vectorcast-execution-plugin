@@ -210,13 +210,8 @@ def processSystemTestResultsData(lines, encoding = 'utf-8'):
 def genQATestResults(mp, level = None, envName = None, verbose = False, encoding = 'utf-8'):
     passed_count = 0
     failed_count = 0
-
-    if level and envName:
-        nameLevel = level + "_" + envName
-        nameLevel = nameLevel.replace("\\","/").replace("/","_")
-        report_name = "{}_{}_system_tests_status.txt".format(os.path.basename(mp)[:-4], nameLevel)
-    else:
-        report_name = os.path.basename(mp)[:-4] + "_system_tests_status.txt"
+    
+    report_name = os.path.basename(mp)[:-4] + "_system_tests_status.txt"
 
     if os.path.exists(report_name):
         with open(report_name,"rb") as fd:
