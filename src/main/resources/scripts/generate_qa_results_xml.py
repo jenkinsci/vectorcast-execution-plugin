@@ -213,12 +213,18 @@ def genQATestResults(mp, level = None, envName = None, verbose = False, encoding
     
     report_name = os.path.basename(mp)[:-4] + "_system_tests_status.txt"
 
+    print("[DEBUG] Processing " + report_name)
+    
     if os.path.exists(report_name):
+        print("[DEBUG] " + report_name + " exists")
         with open(report_name,"rb") as fd:
             raw = fd.read()
             out = raw.decode(encoding, 'replace')
                             
         passed_count, failed_count = processSystemTestResultsData(out.splitlines(), encoding)
+        
+    else:
+        print("[DEBUG] " + report_name + " missing")
         
     return passed_count, failed_count
         

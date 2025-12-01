@@ -154,17 +154,17 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
                 file.attrib['branch-rate'] = str(branch_pct)  
             if coverAPI.metrics.function_calls > 0:
                 funcCallPercentStr = "{:.2f}% ( {} / {} )".format(
-                    func.metrics.max_covered_function_calls_pct,
-                    func.metrics.max_covered_function_calls + func.metrics.max_annotations_function_calls,
-                    func.metrics.function_calls
+                    coverAPI.metrics.max_covered_function_calls_pct,
+                    coverAPI.metrics.max_covered_function_calls + coverAPI.metrics.max_annotations_function_calls,
+                    coverAPI.metrics.function_calls
                 )
                 method.attrib['functioncall-coverage'] = funcCallPercentStr
                 file.attrib['functioncall-coverage'] = funcCallPercentStr
             if coverAPI.metrics.mcdc_pairs > 0:
                 mcdcPairPercentStr = "{:.2f}% ( {} / {} )".format(
-                    func.metrics.max_covered_mcdc_pairs_pct,
-                    func.metrics.max_covered_mcdc_pairs + func.metrics.max_annotations_mcdc_pairs,
-                    func.metrics.mcdc_pairs
+                    coverAPI.metrics.max_covered_mcdc_pairs_pct,
+                    coverAPI.metrics.max_covered_mcdc_pairs + coverAPI.metrics.max_annotations_mcdc_pairs,
+                    coverAPI.metrics.mcdc_pairs
                 )
                 file.attrib['mcdcpair-coverage'] = mcdcPairPercentStr
                 
