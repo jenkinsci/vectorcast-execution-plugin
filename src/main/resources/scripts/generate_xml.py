@@ -1215,15 +1215,12 @@ class GenerateXml(BaseGenerateXml):
                     vcproj.close()
 
             except ImportError as e:
-                pass
-
-            from generate_qa_results_xml import genQATestResults
-            pc,fc = genQATestResults(self.FullManageProjectName, self.compiler + "/" + self.testsuite, self.env, True, self.encFmt)
-            self.failed_count += fc
-            self.passed_count += pc
-            return
+                from generate_qa_results_xml import genQATestResults
+                pc,fc = genQATestResults(self.FullManageProjectName, self.compiler + "/" + self.testsuite, self.env, True, self.encFmt)
+                self.failed_count += fc
+                self.passed_count += pc
+                return
         else:
-
             try:
                 self.start_unit_test_file()
                 self.add_compound_tests()

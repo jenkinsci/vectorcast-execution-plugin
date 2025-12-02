@@ -732,12 +732,11 @@ def buildReports(FullManageProjectName = None,
         
         if coverProjectInManageProject:
             try:
-                html_report_name = os.path.basename(FullManageProjectName)[:-4] + "_system_tests_status.html"
-                
                 for report_name_ext in [".txt", ".html"]:
                     report_name = os.path.basename(FullManageProjectName)[:-4] + "_system_tests_status" + report_name_ext
                     callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --system-tests-status=" + report_name
                     out_mgt = runManageWithWait(callStr, silent=True)
+                generate_qa_results_xml.genQATestResults(FullManageProjectName,saved_level,saved_envName)
             except:
                 print("This version of VetorCAST doesn't support QA System Test - Cannot generate System Tests Status Report")
             
