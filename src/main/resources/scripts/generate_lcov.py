@@ -28,19 +28,21 @@ try:
     from vector.apps.DataAPI.vcproject_models import VCProject
 except:
     pass
+
+from vector.apps.DataAPI.cover_api import CoverApi
+
 try:
     from vector.apps.DataAPI.unit_test_api import UnitTestApi
 except:
     from vector.apps.DataAPI.api import Api as UnitTestApi
 
-from vector.apps.DataAPI.cover_api import CoverApi
 import sys, os
 from collections import defaultdict
 from pprint import pprint
 import subprocess
 import argparse
 
-from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding, checkProjectResults
+from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
 try:
     from safe_open import open
 except:
@@ -93,29 +95,37 @@ def has_branch_coverage(line):
 
 def has_anything_covered(line):
     
-    return (line.metrics.covered_statements + 
-        line.metrics.covered_branches + 
-        line.metrics.covered_mcdc_branches + 
-        line.metrics.covered_mcdc_pairs + 
-        line.metrics.covered_functions +
-        line.metrics.covered_function_calls + 
-        line.metrics.max_covered_statements + 
+    return (line.metrics.max_covered_statements +
         line.metrics.max_covered_branches + 
         line.metrics.max_covered_mcdc_branches + 
         line.metrics.max_covered_mcdc_pairs + 
         line.metrics.max_covered_functions +
-        line.metrics.max_covered_function_calls)
+        line.metrics.max_covered_function_calls +
+        line.metrics.max_annotations_statements +
+        line.metrics.max_annotations_branches +
+        line.metrics.max_annotations_mcdc_branches +
+        line.metrics.max_annotations_mcdc_pairs +
+        line.metrics.max_annotations_functions +
+        line.metrics.max_annotations_function_calls)
         
 def has_branches_covered(line):
     
     count = (line.metrics.covered_branches + 
         line.metrics.covered_mcdc_branches + 
-        line.metrics.covered_mcdc_pairs)
+        line.metrics.covered_mcdc_pairs    +
+        line.metrics.max_annotations_branches +
+        line.metrics.max_annotations_mcdc_branches +
+        line.metrics.max_annotations_mcdc_pairs
+        )
         
     if count == 0:
         count = (line.metrics.max_covered_branches + 
             line.metrics.max_covered_mcdc_branches + 
-            line.metrics.max_covered_mcdc_pairs)
+            line.metrics.max_covered_mcdc_pairs +
+            line.metrics.max_annotations_branches +
+            line.metrics.max_annotations_mcdc_branches +
+            line.metrics.max_annotations_mcdc_pairs
+        )
         
     return count
        
@@ -142,23 +152,10 @@ def get_function_name_line_number(file_path, function, initial_guess):
 
 def runCoverageResultsMP(mpFile, verbose = False, testName = "", source_root = ""):
 
-    with VCProjectApi(mpFile) as vcproj:
-    
-        anyLocalResults, anyImportedResults = checkProjectResults(vcproj)
-
-        if anyImportedResults:
-            importedResultsError = "  ** LCOV results does not processing imported results at this time\n\n"
-            print(importedResultsError)
-            return importedResultsError
-            
-        if not anyLocalResults:
-            localResultsError = "  ** No local results in project to process\n\n"
-            print(localResultsError)
-            return localResultsError
-
-        api = vcproj.project.cover_api
-        
-        results = runGcovResults(api, verbose = verbose, testName = vcproj.project.name, source_root=source_root)
+    vcproj = VCProjectApi(mpFile)
+    api = vcproj.project.cover_api
+    results = runGcovResults(api, verbose = verbose, testName = vcproj.project.name, source_root=source_root)
+    vcproj.close()
     
     return results
     
@@ -173,7 +170,7 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
         except:
             prj_dir = os.getcwd().replace("\\","/") + "/"    
     
-    # get a sorted listed of all the files with the proj directory stripped off    
+    # get a sorted listed of all the files with the proj directory stripped off
     for file in api.SourceFile.all():  
         if file.display_name == "":
             continue
@@ -218,11 +215,11 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
         output += sourceFile;
         
         if verbose:
-            print("source_root: ", source_root)
-            print("path       : ", path)
-            print("new_path   : ", new_path)
-            print("file.name  : ", file.name)
-            print("sourceFile : ", sourceFile + "\n")
+            print("source_root: " + source_root)
+            print("path       : " + path)
+            print("new_path   : " + new_path)
+            print("file.name  : " + file.name)
+            print("sourceFile : " + sourceFile + "\n")
 
         for func in file.functions:
             func_name_line_number = get_function_name_line_number(file.display_path, func.name, func.start_line)
@@ -361,7 +358,7 @@ if __name__ == '__main__':
     
     if not checkVectorCASTVersion(21):
         print("Cannot create LCOV metrics. Please upgrade VectorCAST")
-        sys.exit()
+        sys.exit(0)
         
     parser = argparse.ArgumentParser()
     parser.add_argument('vcProjectName', help='VectorCAST Project Name', action="store")

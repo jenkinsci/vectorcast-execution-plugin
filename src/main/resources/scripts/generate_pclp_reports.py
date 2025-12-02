@@ -1,11 +1,26 @@
-#####################################################################
-# PC-lint Plus Report Generator / Output Format Converter
 #
-# Invoke with no arguments for command-line help screen with
-# usage information, option list, and supported output formats.
+# The MIT License
 #
-# Last Updated 2023-02-07
-#####################################################################
+# Copyright 2025 Vector Informatik, GmbH.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
 
 import argparse
 try:
@@ -226,6 +241,7 @@ def generate_source():
         print("XXX Cannot generate Source Code section of the PC-Line Report report")
         print("XXX The Summary and File Detail sections are present")
         print("XXX If you'd like to see the Source Code section of the PC-Line Report, please upgrade VectorCAST")
+        sys.exit(0)
 
     fullMpName = globalState.fullMpName
     msgs = globalState.msgs
@@ -314,7 +330,6 @@ def generate_html_report(mpName, input_xml, output_html):
         print("{} was not found. Skipping PCLP HTML reporting".format(input_xml))
         return
 
-    import pathlib
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
     from vector.apps.ReportBuilder.custom_report import CustomReport
 
@@ -324,19 +339,21 @@ def generate_html_report(mpName, input_xml, output_html):
     if output_html is None:
         output_html = "pclp_findings.html"
 
-    with VCProjectApi(mpName) as vcproj:
+    vcproj = VCProjectApi(mpName)
 
-        # Set custom report directory to the where this script was
-        # found. Must contain sections/index_section.py
-        rep_path = pathlib.Path(__file__).parent.resolve()
-        CustomReport.report_from_api(
-                api=vcproj,
-                title="PC-Lint Plus Results",
-                report_type="INDEX_FILE",
-                formats=["HTML"],
-                output_file=output_html,
-                sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','PCLP_SUMMARY_SECTION','PCLP_DETAILS_SECTION','PCLP_SOURCE_SECTION', 'CUSTOM_FOOTER'],
-                customization_dir=rep_path)
+    # Set custom report directory to the where this script was
+    # found. Must contain sections/index_section.py
+    rep_path = os.path.abspath(os.path.dirname(__file__))
+    CustomReport.report_from_api(
+            api=vcproj,
+            title="PC-Lint Plus Results",
+            report_type="INDEX_FILE",
+            formats=["HTML"],
+            output_file=output_html,
+            sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','PCLP_SUMMARY_SECTION','PCLP_DETAILS_SECTION','PCLP_SOURCE_SECTION', 'CUSTOM_FOOTER'],
+            customization_dir=rep_path)
+            
+    vcproj.close()
 
 def has_any_coverage(line):
 
@@ -512,7 +529,7 @@ def main():
 
     parser.add_argument('--input-xml', action='store', help='XML input filename', required=True)
     parser.add_argument('--output-html', action='store', help='HTML output filename', default = None, required=False)
-    parser.add_argument('--vc-project', action='store', help='VectorCAST Project Name.  Used for source view', dest="full_mp_name", required=True)
+    parser.add_argument('--vc-project', action='store', help='VectorCAST Project Name. Used for source view', dest="full_mp_name", required=True)
 
     parser.add_argument('--output-text', action='store', help=argparse.SUPPRESS, default = None, required=False)
     parser.add_argument('--output-json', action='store', help=argparse.SUPPRESS, default = None, required=False)

@@ -47,9 +47,10 @@ try:
 except:
     pass
 
+from vector.apps.DataAPI.cover_api import CoverApi
+
 from vector.enums import ENVIRONMENT_STATUS_TYPE_T
 
-from vector.apps.DataAPI.cover_api import CoverApi
 try:
     from vector.apps.ReportBuilder.custom_report import fmt_percent
 except:
@@ -290,7 +291,7 @@ class GenerateManageXml (BaseGenerateXml):
                 try:
                     os.remove(file);
                 except:
-                    print("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
+                    print("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ". Check console for environment build/execution errors")
                     if print_exc:  traceback.print_exc()
 
         # we should either have an empty directory or no directory
@@ -299,7 +300,7 @@ class GenerateManageXml (BaseGenerateXml):
                 os.makedirs(path)
             except:
                 print("failed making path: " + path)
-                print("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
+                print("   *INFO: File System Error creating directory: " + path + ". Check console for environment build/execution errors")
                 if print_exc:  traceback.print_exc()
                 
         
@@ -557,11 +558,11 @@ class GenerateXml(BaseGenerateXml):
         if isinstance(self.api, CoverApi):
             try:
                 if self.topLevelAPI == None:
-                    api = VCProjectApi(self.FullManageProjectName)
+                    vcproj = VCProjectApi(self.FullManageProjectName)
                 else:
-                    api = self.topLevelAPI
+                    vcproj = self.topLevelAPI
                         
-                for env in api.Environment.all():
+                for env in vcproj.Environment.all():
                     if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
                         for st in env.system_tests:
                             pass_fail_rerun = ""
@@ -576,15 +577,11 @@ class GenerateXml(BaseGenerateXml):
                                 
                             level = env.compiler.name + "/" + env.testsuite.name + "/" + env.name
                             if self.verbose:
-                                print (level, st.name, pass_fail_rerun)
+                                print ("{} {} {}".format(level, st.name, pass_fail_rerun))
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
 
-                # callStr = os.getenv('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + self.manageProjectName + "_system_tests_status.html"
-                # p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-                # out, err = p.communicate()
-
                 if self.topLevelAPI == None:
-                    api.close()
+                    vcproj.close()
 
             except ImportError as e:
                 from generate_qa_results_xml import genQATestResults
@@ -835,7 +832,7 @@ if __name__ == '__main__':
             args.project += ".vcm"
             
         if not os.path.exists(args.project):
-            print("Path to VectorCAST Project not found: ", args.project)
+            print("Path to VectorCAST Project not found: " + args.project)
             sys.exit(-1)
             
         run(args.project)

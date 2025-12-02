@@ -85,6 +85,9 @@ class ManageWait(object):
                 except Exception:
                     logfile.write(output.encode('utf-8', 'replace'))
 
+            if not self.silent:
+                print(line)
+            
             queue.put(line)
 
     def startOutputThread(self, io_target, logfile):

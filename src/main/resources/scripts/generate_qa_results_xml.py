@@ -1,3 +1,27 @@
+#
+# The MIT License
+#
+# Copyright 2025 Vector Informatik, GmbH.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
 from __future__ import print_function
 import datetime
 try:
@@ -5,7 +29,9 @@ try:
 except ImportError:
     # html not standard module in Python 2.
     from cgi import escape
-import sys, subprocess, os
+import sys, subprocess, os           
+from vcast_utils import dump, getVectorCASTEncoding
+
 global saved_compiler, saved_testsuite, saved_envname
 
 saved_compiler = ""
@@ -18,32 +44,30 @@ def get_timestamp():
     if hour > 12:
         hour -= 12
     return dt.strftime('%d %b %Y  @HR@:%M:%S %p').upper().replace('@HR@', str(hour))
-
+                                                
 def writeJunitHeader(currentEnv, junitfile, failed, total, unit_report_name, encoding = 'UTF-8'):
-    
-    junitfile.write("<?xml version=\"1.0\" encoding=\"" + encoding.upper() + "\"?>\n")
+                     
+    data = "<?xml version=\"1.0\" encoding=\"{}\"?>\n".format(encoding)
+    data += "<testsuites>\n  <!-- {} -->\n".format(unit_report_name)
+    data += "  <testsuite errors=\"{}\" tests=\"{}\" failures=\"{}\" name=\"{}\" id=\"1\">\n".format(0, total, failed, currentEnv)  
 
-    junitfile.write("<testsuites>\n  <!--" + unit_report_name + "-->\n")
-                    
-    junitfile.write("  <testsuite errors=\"%d\" tests=\"%d\" failures=\"%d\" name=\"%s\" id=\"1\">\n" % 
-        (0, total, failed, currentEnv))
+    junitfile.write(data.encode(encoding, "replace"))
 
-def writeJunitData(junitfile,all_tc_data):
-    junitfile.write(all_tc_data)
+def writeJunitData(junitfile,all_tc_data, encoding):
+    junitfile.write(all_tc_data.encode(encoding, "replace"))
     
-def writeJunitFooter(junitfile):
-    junitfile.write("  </testsuite>\n")
-    junitfile.write("</testsuites>\n")
+def writeJunitFooter(junitfile, encoding):
+    junitfile.write("  </testsuite>\n".encode(encoding, "replace"))
+    junitfile.write("</testsuites>\n".encode(encoding, "replace"))
 
 def write_tc_data(currentEnv, unit_report_name, jobNameDotted, passed, failed, error, testcase_data, encoding = 'utf-8', xml_data_dir = "xml_data"):
 
-    fh = open(os.path.join(xml_data_dir,unit_report_name), "w")
-
-    writeJunitHeader(currentEnv, fh, failed, failed+passed, unit_report_name, encoding)
-    writeJunitData(fh, testcase_data)
-    writeJunitFooter(fh)
-    fh.close()
-
+    with open(os.path.join(xml_data_dir,unit_report_name), "wb") as fh:
+        encoding = getVectorCASTEncoding()
+        writeJunitHeader(currentEnv, fh, failed, failed+passed, unit_report_name, encoding)
+        writeJunitData(fh, testcase_data, encoding)
+        writeJunitFooter(fh, encoding)         
+        
 def generateJunitTestCase(jobname, tc_name, passFail):
     testCasePassString ="    <testcase name=\"%s\" classname=\"%s\" time=\"0\"/>\n"
     testCaseFailString ="""    <testcase name="%s" classname="%s" time="0">
@@ -183,36 +207,25 @@ def processSystemTestResultsData(lines, encoding = 'utf-8'):
         
     return passed, failed
         
-def saveQATestStatus(mp):
-    callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status=" + os.path.basename(mp)[:-4] + "_system_tests_status.html"
-    p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    out, err = p.communicate()
-
 def genQATestResults(mp, level = None, envName = None, verbose = False, encoding = 'utf-8'):
-    try:
-        from vector.apps.DataAPI.manage_models import SystemTest
-        if verbose:
-            print("No need to process system test results using --system-tests-status")
-        return
-    except:
-        pass
+    passed_count = 0
+    failed_count = 0
+    
+    report_name = os.path.basename(mp)[:-4] + "_system_tests_status.txt"
 
-    print("   Processing QA test results for " + mp)
-    callStr = os.environ.get('VECTORCAST_DIR') + os.sep + "manage -p " + mp + " --system-tests-status"
-    if level:
-        callStr += " --level " + level
-        if envName:
-            callStr += " -e " + envName
-        
-    p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    out, err = p.communicate()
-        
-    if err:
-        print(out, err)
-    passed_count, failed_count = processSystemTestResultsData(out.splitlines(), encoding)
+    print("[DEBUG] Processing " + report_name)
     
-    saveQATestStatus(mp)
-    
+    if os.path.exists(report_name):
+        print("[DEBUG] " + report_name + " exists")
+        with open(report_name,"rb") as fd:
+            raw = fd.read()
+            out = raw.decode(encoding, 'replace')
+                            
+        passed_count, failed_count = processSystemTestResultsData(out.splitlines(), encoding)
+        
+    else:
+        print("[DEBUG] " + report_name + " missing")
+        
     return passed_count, failed_count
         
 if __name__ == '__main__':

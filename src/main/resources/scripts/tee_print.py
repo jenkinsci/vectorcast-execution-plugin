@@ -37,5 +37,5 @@ class TeePrint(object):
                 self.logfile.write((str(msg) + "\n").encode("utf-8", "replace"))
                 self.logfile.flush()
             except Exception:
-                print("Error writing to logfile: ", self.filename)   
+                print("Error writing to logfile: " + self.filename)   
                 

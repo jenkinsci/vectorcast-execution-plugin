@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -84,7 +84,7 @@ def checkVectorCASTVersion(minimumVersion, quiet = False):
 
     if verNo >= minimumVersion:
         if not quiet:
-            print("Running with VC Version: ", ver);
+            print("Running with VC Version: " + ver);
         return True
         
     if not quiet:

@@ -63,8 +63,8 @@ def checkForEnvChanges(vcm_fname, build_dir, env_name):
         env_coverdb_ts = os.path.getmtime(env_coverdb)
         vcm_file_ts = os.path.getmtime(vcm_fname)
         if (vcm_file_ts > env_coverdb_ts):
-            print ("Changes to .vcm file.  Rebuild all")
-            #print(str(env_coverdb_ts), str(vcm_file_ts))
+            print ("Changes to .vcm file. Rebuild all")
+            print("{} {}".format(str(env_coverdb_ts), str(vcm_file_ts)))
             return " FR"
             
         env_files_latest_ts = 0
@@ -80,8 +80,8 @@ def checkForEnvChanges(vcm_fname, build_dir, env_name):
         env_data_path = os.path.join(vcm_path,vcm_basename, "environment", env_name,"*.*")
         for file in glob.glob(env_data_path):
             if os.path.getmtime(file) > env_coverdb_ts:
-                print(file,"time greater than", env_coverdb)
-                print("force rebuild of enviornment")
+                print("{} time greater than {}", file, env_coverdb)
+                print("Forcing rebuild of enviornment")
                 return "FR"
             
         return " NA"
@@ -162,12 +162,14 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
     
     max_indent = 0
     veryMax = 8
-
+    last_index_max_line = 0
+    
     for line in enabledList:
         indent = len(line) - len(line.lstrip())
         
         if indent > max_indent and indent <= veryMax:
             max_indent = indent
+            last_index_max_line = line
 
     if max_indent == 8:
         source_match_string    = "^   [^\s]"
@@ -190,10 +192,16 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
         group_match_string     = None
         env_match_string       = "^     [^\s]"
     else:
+        print("[DEBUG] Error with full-status report")
+        print("[DEBUG] Highest indent is with this line\n" + str(last_index_max_line))
+        print("\n".join(enabledList))
         raise ValueError("Error deciphering max_index: " +  str(max_indent))
         
     source = None
     machine = None
+    compiler = None
+    testsuite = None
+    env_name = None
         
     for line in enabledList:
         if max_indent == 8 and re.match(source_match_string,line) is not None:
@@ -227,27 +235,25 @@ def printEnvInfoNoDataAPI(ManageProjectName, printData = True, printEnvType = Fa
 
     return output
  
-def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False, legacy = False):
+def printEnvironmentInfo(ManageProjectName, printData = True, printEnvType = False):
     try:
-        if (legacy): raise KeyError
-        
+            
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
-        with VCProjectApi(ManageProjectName) as vcproj:
-            ret_info = printEnvInfoDataAPI(vcproj, printData, printEnvType)
 
+        vcproj = VCProjectApi(ManageProjectName)
+        ret_info = printEnvInfoDataAPI(vcproj, printData, printEnvType)
+        vcproj.close()
         return ret_info
-    
+
     except:    
         return printEnvInfoNoDataAPI(ManageProjectName, printData, printEnvType)
-        
-        
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject', help='Manager Project Name')
     parser.add_argument('-t', '--type',   help='Displays the type of environemnt (Unit test or System test)', action="store_true", default = False)    
-    parser.add_argument('-l', '--legacy',   help='Use the legacy report parsing method - testing only)', action="store_true", default = False)    
     
     args = parser.parse_args()
 
-    printEnvironmentInfo(args.ManageProject, True, args.type, args.legacy)
+    printEnvironmentInfo(args.ManageProject, True, args.type)

@@ -1,3 +1,26 @@
+#
+# The MIT License
+#
+# Copyright 2025 Vector Informatik, GmbH.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
 import os
 import sys
 import argparse
@@ -58,7 +81,7 @@ def getReportName(filename):
         if env_name == None:
             reportName = "Aggregate Coverage Report"
         else:
-            reportName = f"Aggregate Coverage Report {env_name}"
+            reportName = "Aggregate Coverage Report {}".format(env_name)
             reportType = 1
         
     elif searchKeyword(">Full Status Section<", filename)[0] != -1:
@@ -94,7 +117,6 @@ usingGitLabCI = False
 baseOutputDir = ""
 
 def create_index_html(mpName, isGitLab = False, output_dir = ""):
-    import pathlib
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
     from vector.apps.ReportBuilder.custom_report import CustomReport
 
@@ -104,25 +126,24 @@ def create_index_html(mpName, isGitLab = False, output_dir = ""):
     global baseOutputDir
     baseOutputDir = output_dir
     
-    with VCProjectApi(mpName) as vcproj: 
-        # Set custom report directory to the where this script was
-        # found. Must contain sections/index_section.py
-        rep_path = pathlib.Path(__file__).parent.resolve()
-
-        if usingGitLabCI:
-            output_file=os.path.join(baseOutputDir,"index.html")
-        else:
-            output_file=os.path.join(baseOutputDir,"index.html")
-            
-        CustomReport.report_from_api(
-                api=vcproj,
-                title="HTML Reports",
-                report_type="INDEX_FILE",
-                formats=["HTML"],
-                output_file=output_file,
-                sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','INDEX_SECTION', 'CUSTOM_FOOTER'],
-                customization_dir=rep_path)
+    vcproj = VCProjectApi(mpName)
     
+    # Set custom report directory to the where this script was
+    # found. Must contain sections/index_section.py
+    rep_path = os.path.abspath(os.path.dirname(__file__))
+
+    output_file=os.path.join(baseOutputDir,"index.html")
+        
+    CustomReport.report_from_api(
+            api=vcproj,
+            title="HTML Reports",
+            report_type="INDEX_FILE",
+            formats=["HTML"],
+            output_file=output_file,
+            sections=['CUSTOM_HEADER', 'REPORT_TITLE', 'TABLE_OF_CONTENTS','INDEX_SECTION', 'CUSTOM_FOOTER'],
+            customization_dir=rep_path)
+    vcproj.close()
+   
 def create_index_html_body ():
     
     tempHtmlReportList =  glob.glob(os.path.join(baseOutputDir,"*.html"))

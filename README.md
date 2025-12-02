@@ -53,7 +53,7 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
-    * [Version 0.79 (4 Jul 2025)](#version-079-4-jul-2025)
+    * [Version 0.79 (4 Dec 2025)](#version-079-4-dec-2025)
     * [Version 0.78 (14 Jun 2025)](#version-078-14-jun-2025)
     * [Version 0.77 (21 Aug 2024)](#version-077-21-aug-2024)
     * [Version 0.76 (19 Jan 2023)](#version-076-19-jan-2023)
@@ -348,7 +348,34 @@ By selecting individual cases, you can view the execution reports, providing ins
 
 ## Known Issues
 
-### VectorCAST Reports and Jenkins Content Security 
+### 🔥 Jenkins 2.535 “Form is larger than max length 200000”
+
+**Cause:**  
+Jenkins 2.535 upgraded to Jetty 12, which limits web form submissions to **200 KB** by default. Large Pipeline job configs can exceed this after HTML encoding.
+
+**Fix:**  
+- Move pipeline script to SCM - Instead of keeping the Groovy text inline in the job config, use Pipeline script from SCM.
+- Increase Jetty’s form size limit in your startup command:
+
+    ```bash
+    -Dorg.eclipse.jetty.server.Request.maxFormContentSize=5242880 \
+    -Dorg.eclipse.jetty.server.Request.maxFormKeys=10000
+    ```
+
+**Example**
+```
+java -Dorg.eclipse.jetty.server.Request.maxFormContentSize=5242880 \
+     -Dorg.eclipse.jetty.server.Request.maxFormKeys=10000 \
+     -jar jenkins.war --httpPort=9090
+```
+
+**Notes**
+Old Jenkins flags `hudson.util.MultipartFormDataParser.MAX_FORM_SIZE` no longer work in 2.535+.
+
+### ⚠️ Imported Results with Cobertura and LCOV output
+New output formats were added, extended cobertura format output for use with Jenkins Coverage Plugin and LCOV output support.  These reporting scripts do not currently support generating coverage metrics based off of imported results.
+
+### ⚠️ VectorCAST Reports and Jenkins Content Security 
 
 VectorCAST HTML reports for metrics were updated to use cascading style sheets (CSS) in the 2019 release and 2020 for top level project metrics. This was done to offer users greater flexibility in displaying metrics. To maintain single file HTML format, VectorCAST Reports used inline CSS. Inline CSS was disallowed under Jenkins more restrictive CSP.
 
@@ -367,30 +394,30 @@ For more information on the Jenkins CSP, please see [Configuring Content Securit
 
 For more information on VectorCAST Reports and Jenkins Content Security Policy, please see the article [VectorCAST Reports and Jenkins Content Security Policy](https://support.vector.com/kb?sys_kb_id=e54af267db6b6c904896115e68961902&id=kb_article_view&sysparm_rank=8&sysparm_tsqueryId=ba9d8f558707b858b9f233770cbb3543)
 
-### JUnit publisher failing environment with no test cases
+### ⚠️ JUnit publisher failing environment with no test cases
 
 For non-pipeline jobs, JUnit publisher will fail any environments published without test results. If you have an environment with no test results, you will need to manually check the box "Do not fail the build on empty test results" in the Publish JUnit test result report configuration.
 
-### Potential loss of requirements information
+### ⚠️ Potential loss of requirements information
 
 For customers using VectorCAST's requirements gateway, there's a potential for loss of requirements data when running test environments in parallel while using a shared requirements database.
 
-### Test and code coverage reporting with Imported Results
+### ⚠️ Test and code coverage reporting with Imported Results
 
 For environments that use imported results with versions of VectorCAST before 2020, reporting of test results and code coverage will not properly generate because of the lack of required build information.
 
-### Using Change Based Testing Imported Results with QA Project
+### ⚠️ Using Change Based Testing Imported Results with QA Project
 
 VectorCAST/QA projects cannot use imported results for change based testing
 
-### Disabled environments may add coverage metrics
+### ⚠️ Disabled environments may add coverage metrics
 
 In rare cases, VectorCAST projects will have disabled environment with results stored before they were disabled.  In cases where the disabled environments share source file with enabled environments, this may lead addition coverage metrics.  It is recommended to clean the 
 environment before disabling.  This takes into account environments that are directly disabled or disabled at the Compiler or TestSuite Nodes.  To avoid this, please clean environments before disabling them
 
 ## Change Log
 
-### Version 0.79 (4 Jul 2025)
+### Version 0.79 (4 Dec 2025)
 - Moved to minimum Jenkins LTS 2.492.3 and Java 21
     - Validated against Jenkins LTS 2.504.2
     - Validated against Jenkins 2.513
@@ -402,6 +429,7 @@ environment before disabling.  This takes into account environments that are dir
     - Missing def before globals 
         - Pipeline can access VC_ global vars, but not functions
         - Need to pass all required VC_ global vars to functions
+- Fixed encoding issues
 
 ### Version 0.78 (14 Jun 2025)
 - Moved to minimum Jenkins version: 2.452.1 and Java 11

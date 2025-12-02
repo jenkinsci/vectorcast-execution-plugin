@@ -26,18 +26,11 @@ from __future__ import division
 from __future__ import print_function
 
 import sys, os, locale
+
+import sys, os
 # adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-
-# needed because vc18 vpython does not have bs4 package
 if sys.version_info[0] < 3:
-    python_path_updates += os.sep + 'vpython-addons'
+    python_path_updates = os.path.join(os.path.dirname(os.path.abspath(__file__)),'vpython-addons')
     sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
@@ -119,17 +112,27 @@ def fixup_2020_reports(report_name):
         raw = fd.read().decode(encFmt, "replace")
 
     try:
-        # First attempt: use whatever encoding was detected
-        main_soup = BeautifulSoup(raw, features="lxml")
-
-    except Exception as e:
+        # First attempt: use lxml if available, else let BS pick
         try:
-            # Try UTF-8 first as a fallback (should rarely fail if raw is text)
-            main_soup = BeautifulSoup(raw.encode("utf-8", "replace"), "lxml")
+            import lxml  # noqa
+            parser = "lxml"
+        except ImportError:
+            parser = "html.parser"
+
+        main_soup = BeautifulSoup(raw, features=parser)
+
+    except Exception:
+        try:
+            # Fallback to UTF-8
+            main_soup = BeautifulSoup(
+                raw.encode("utf-8", "replace"),
+                features=parser
+            )
         except Exception:
-            # Last resort: try system default encoding (ACP on Windows, etc.)
-            main_soup = BeautifulSoup(raw.encode(encFmt, "replace"), "lxml")
-    
+            main_soup = BeautifulSoup(
+                raw.encode(encFmt, "replace")
+            )
+        
     main_soup = fixup_2020_soup(main_soup)
     
     with open(report_name, "wb") as fd:

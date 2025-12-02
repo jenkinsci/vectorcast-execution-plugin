@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,11 @@ import argparse
 import os
 import sys
 
+import sys, os
 # adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-python_path_updates += os.sep + "vpython-addons"
-sys.path.append(python_path_updates)
+if sys.version_info[0] < 3:
+    python_path_updates = os.path.join(os.path.dirname(os.path.abspath(__file__)),'vpython-addons')
+    sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
 from safe_open import open
@@ -359,7 +355,7 @@ def run(HtmlReportName = "", jobName = "", version= 14):
 
     # verify the html report exists
     if not os.path.isfile(HtmlReportName):
-        raise IOError(HtmlReportName + ' does not exist')
+        raise FileNotFoundError(HtmlReportName + ' does not exist')
         return
         
     # open the file and create BS4 object
@@ -534,7 +530,7 @@ def runCombinedCov(HtmlReportName = ""):
 
     # verify the html report exists
     if not os.path.isfile(HtmlReportName):
-        raise IOError(HtmlReportName + ' does not exist')
+        raise FileNotFoundError(HtmlReportName + ' does not exist')
         return
         
     # open the file and create BS4 object
