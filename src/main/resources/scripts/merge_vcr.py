@@ -96,6 +96,10 @@ def run(origVcrFile, newVcrFile, verbose):
 
     mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, new_cursor, orig_cursor, "result", False, verbose)
     
+    # Close cursors before closing database connections to release file handles
+    new_cursor.close()
+    orig_cursor.close()
+    
     new_db.close()
     orig_db.close()
 
@@ -106,8 +110,8 @@ def run(origVcrFile, newVcrFile, verbose):
     shutil.copyfile(newVcrFile+".zip", newVcrFile)
     
     os.remove(newVcrFile+".zip")
-    shutil.rmtree("newVcr")
-    shutil.rmtree("origVcr")
+    # shutil.rmtree("newVcr")
+    # shutil.rmtree("origVcr")
     
 if __name__ == '__main__':
 
