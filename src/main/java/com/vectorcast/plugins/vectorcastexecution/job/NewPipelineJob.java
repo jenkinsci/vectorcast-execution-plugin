@@ -454,11 +454,19 @@ public class NewPipelineJob extends BaseJob {
     /**
      * Format the multiline to either be the multiline or empty "".
      *
-     * @param in input string
+     * @param sInVar input string
      * @return String correct path.
      */
-    private String getMultiLineString(String sInVar) {
-        return (sInVar == null || sInVar.trim().isEmpty()) ? "\"\"" : "'''" + sInVar + "'''\n";
+    private String getMultiLineString(final String sInVar) {
+        String retStr = "";
+
+        if (sInVar == null || sInVar.trim().isEmpty()) {
+            retStr = "\"\"";
+        } else {
+            retStr = "'''" + sInVar + "'''\n";
+        }
+
+        return retStr;
     }
     /**
      * Generates the <script> portion of the config.xml
@@ -503,55 +511,77 @@ public class NewPipelineJob extends BaseJob {
             vcUseCi = "\"--ci\"";
         }
 
-        String topOfJenkinsfile = " "
-            + "// ===========================================================\n"
-            + "// \n"
-            + "// Auto-generated script by VectorCAST Execution Plug-in \n"
-            + "// based on the information provided when creating the \n"
-            + "//\n"
-            + "//     VectorCAST > Pipeline job\n"
-            + "//\n"
-            + "// ===========================================================\n"
-            + "\n"
-            + "def VC_Manage_Project = \'" + getManageProjectName() + "\'\n"
-            + "def VC_EnvSetup = " + getMultiLineString(setup)
-            + "def VC_Build_Preamble = \"" + preamble + "\"\n"
-            + "def VC_EnvTeardown = " + getMultiLineString(teardown)
-            + "def scmStep () { " + pipelineSCM + " }\n"
-            + "def VC_usingSCM = " + String.valueOf(pipelineSCM.length() != 0)
-            +   "\n"
-            + "def VC_postScmStepsCmds = " 
-            +   getMultiLineString(postCheckoutCmds)
-            + "def VC_sharedArtifactDirectory = " + sharedArtifactDir + "\"\n"
-            + "def VC_Agent_Label = '" + getNodeLabel() + "'\n"
-            + "def VC_waitTime = '"  + getWaitTime() + "'\n"
-            + "def VC_waitLoops = '" + getWaitLoops() + "'\n"
-            + "def VC_maxParallel = " + getMaxParallel().toString() + "\n"
-            + "def VC_useOneCheckoutDir = " + singleCheckout + "\n"
-            + "def VC_useCILicense = " + vcUseCi + "\n"
-            + "def VC_useCBT = " + incremental + "\n"
-            + "def VC_useCoveragePlugin = " + getUseCoveragePlugin() + "\n"
-            + "def VC_createdWithVersion = '"
-            + VcastUtils.getVersion().orElse("Unknown") + "'\n"
-            + "def VC_usePCLintPlus = "
-            + String.valueOf(getPclpCommand().length() != 0) + "\n"
-            + "def VC_pclpCommand = '" + getPclpCommand() + "'\n"
-            + "def VC_pclpResultsPattern = '" + getPclpResultsPattern() + "'\n"
-            + "def VC_useSquore = "
-            +   String.valueOf(getSquoreCommand().length() != 0) + "\n"
-            + "def VC_squoreCommand = " 
-            +     getMultiLineString(getSquoreCommand())
-            + "def VC_useCoverageHistory = " + getUseCoverageHistory() + "\n"
-            + "def VC_useStrictImport = " + getUseStrictTestcaseImport() + "\n"
-            + "def VC_useRGW3 = " + getUseRGW3() + "\n"
-            + "def VC_useImportedResults = " + getUseImportedResults() + "\n"
-            + "def VC_useLocalImportedResults = "
-            + getUseLocalImportedResults() + "\n"
-            + "def VC_useExternalImportedResults = "
-            + getUseExternalImportedResults() + "\n"
-            + "def VC_externalResultsFilename = \""
-            + getExternalResultsFilename() + "\"\n"
-            + "\n";
+        String topOfJenkinsfile = """
+            // ===========================================================
+            //
+            // Auto-generated script by VectorCAST Execution Plug-in
+            // based on the information provided when creating the
+            //
+            //     VectorCAST > Pipeline job
+            //
+            // ===========================================================
+
+            def VC_Manage_Project = '%s'
+            def VC_EnvSetup = %s
+            def VC_Build_Preamble = "%s"
+            def VC_EnvTeardown = %s
+            def scmStep () { %s }
+            def VC_usingSCM = %s
+            def VC_postScmStepsCmds = %s
+            def VC_sharedArtifactDirectory = "%s"
+            def VC_Agent_Label = '%s'
+            def VC_waitTime = '%s'
+            def VC_waitLoops = '%s'
+            def VC_maxParallel = %d
+            def VC_useOneCheckoutDir = %s
+            def VC_useCILicense = %s
+            def VC_useCBT = %s
+            def VC_useCoveragePlugin = %s
+            def VC_createdWithVersion = '%s'
+            def VC_usePCLintPlus = %s
+            def VC_pclpCommand = '%s'
+            def VC_pclpResultsPattern = '%s'
+            def VC_useSquore = %s
+            def VC_squoreCommand = %s
+            def VC_useCoverageHistory = %s
+            def VC_useStrictImport = %s
+            def VC_useRGW3 = %s
+            def VC_useImportedResults = %s
+            def VC_useLocalImportedResults = %s
+            def VC_useExternalImportedResults = %s
+            def VC_externalResultsFilename = "%s"
+
+            """.formatted(
+                getManageProjectName(),
+                getMultiLineString(setup),
+                preamble,
+                getMultiLineString(teardown),
+                pipelineSCM,
+                pipelineSCM.length() != 0,
+                getMultiLineString(postCheckoutCmds),
+                sharedArtifactDirectory,
+                getNodeLabel(),
+                getWaitTime(),
+                getWaitLoops(),
+                getMaxParallel(),
+                singleCheckout,
+                vcUseCi,
+                incremental,
+                getUseCoveragePlugin(),
+                VcastUtils.getVersion().orElse("Unknown"),
+                getPclpCommand().length() != 0,
+                getPclpCommand(),
+                getPclpResultsPattern(),
+                getSquoreCommand().length() != 0,
+                getMultiLineString(getSquoreCommand()),
+                getUseCoverageHistory(),
+                getUseStrictTestcaseImport(),
+                getUseRGW3(),
+                getUseImportedResults(),
+                getUseLocalImportedResults(),
+                getUseExternalImportedResults(),
+                getExternalResultsFilename()
+            );
 
         String baseJenkinsfile = "";
 

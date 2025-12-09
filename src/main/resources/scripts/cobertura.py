@@ -73,7 +73,7 @@ def write_xml(x, name, verbose = False):
     inFile = "vc_scripts/coverage-extended-04.dtd"
     outFile = os.path.join(os.path.dirname(name),"coverage-extended-04.dtd")
     
-    if os.path.exist(inFile):
+    if os.path.exists(inFile):
         shutil.copy(inFile,outFile)
    
 def getCoveredFunctionCount(source):

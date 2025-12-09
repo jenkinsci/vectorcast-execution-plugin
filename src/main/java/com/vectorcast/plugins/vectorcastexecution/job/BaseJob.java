@@ -793,8 +793,8 @@ public abstract class BaseJob {
                     ZERO_PERCENT, EIGHTY_PERCENT,
                     ZERO_PERCENT, EIGHTY_PERCENT);
         VectorCASTPublisher publisher = new VectorCASTPublisher();
-        publisher.includes = "**/coverage_results_*.xml";
-        publisher.healthReports = healthReports;
+        publisher.setIncludes("**/coverage_results_*.xml");
+        publisher.setHealthReports(healthReports);
         publisher.setUseCoverageHistory(useCoverageHistory);
         project.getPublishersList().add(publisher);
     }
@@ -814,38 +814,38 @@ public abstract class BaseJob {
      */
     protected void addJenkinsCoverage(final Project<?, ?> project) {
 
-        List<CoverageQualityGate> qualityGates = null;
 
+        List<CoverageTool> tools = new ArrayList<>();
         CoverageTool tool = new CoverageTool();
         tool.setParser(Parser.VECTORCAST);
         tool.setPattern("xml_data/cobertura/coverage_results*.xml");
+        tools.add(tool);
+
+        List<CoverageQualityGate> qualityGates = new ArrayList<>();
 
         if (getUseCoverageHistory()) {
             CoverageQualityGate statement =
                 new CoverageQualityGate(Metric.LINE);
-            statement.setBaseline(Baseline.PROJECT_DELTA);
+
+            statement.setBaseline(Baseline.PROJECT);
             statement.setCriticality(QualityGateCriticality.ERROR);
             statement.setThreshold(COVERAGE_THRESHOLD);
 
             CoverageQualityGate branch = new CoverageQualityGate(Metric.BRANCH);
-            branch.setBaseline(Baseline.PROJECT_DELTA);
+            branch.setBaseline(Baseline.PROJECT);
             branch.setCriticality(QualityGateCriticality.ERROR);
             branch.setThreshold(COVERAGE_THRESHOLD);
 
-            qualityGates = new ArrayList<CoverageQualityGate>();
             qualityGates.add(statement);
             qualityGates.add(branch);
 
         }
 
-        //tool.setQualityGate();
-        List<CoverageTool> list = new ArrayList<CoverageTool>();
-        list.add(tool);
-
         CoverageRecorder publisher = new CoverageRecorder();
-        publisher.setTools(list);
+        publisher.setTools(tools);
 
-        if (qualityGates != null) {
+        // ONLY call setter if the list has entries
+        if (!qualityGates.isEmpty()) {
             publisher.setQualityGates(qualityGates);
         }
 

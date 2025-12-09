@@ -21,11 +21,10 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.mockito.Mockito;
-import org.mockito.Mockito;
 import hudson.model.Descriptor.FormException;
 
 import static org.mockito.Mockito.when;
+import org.mockito.Mockito;
 
 public class NewPipelineTest {
     final long USE_LOCAL_IMPORTED_RESULTS = 1;

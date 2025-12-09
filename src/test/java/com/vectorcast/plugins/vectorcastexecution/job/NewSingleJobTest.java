@@ -43,7 +43,10 @@ import hudson.model.Descriptor.FormException;
 
 // import hudson.scm.SCM;
 // import jenkins.plugins.git.GitSCMBuilder;
-// import jenkins.scm.api.SCMHead;
+// import jenkins.scm.api.SCMHead;WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+//WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/D:/vector/tools/apache-maven-3.9.11/lib/guice-5.1.0-classes.jar)
+//WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+//WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
 
 // import hudson.scm.subversion.*;
 // import hudson.scm.SubversionSCM;
@@ -127,21 +130,21 @@ public class NewSingleJobTest {
         // Publisher 2 - VectorCASTPublisher
         Assert.assertTrue(publisherList.get(vcPubIndex) instanceof VectorCASTPublisher);
         VectorCASTPublisher vcPublisher = (VectorCASTPublisher)publisherList.get(vcPubIndex);
-        Assert.assertEquals("**/coverage_results_*.xml", vcPublisher.includes);
+        Assert.assertEquals("**/coverage_results_*.xml", vcPublisher.getIncludes());
         Assert.assertEquals(useCoverageHistory, vcPublisher.getUseCoverageHistory());
-        Assert.assertEquals("**/coverage_results_*.xml", vcPublisher.includes);
-        Assert.assertEquals(80, vcPublisher.healthReports.getMaxBasisPath());
-        Assert.assertEquals(0, vcPublisher.healthReports.getMinBasisPath());
-        Assert.assertEquals(100, vcPublisher.healthReports.getMaxStatement());
-        Assert.assertEquals(0, vcPublisher.healthReports.getMinStatement());
-        Assert.assertEquals(70, vcPublisher.healthReports.getMaxBranch());
-        Assert.assertEquals(0, vcPublisher.healthReports.getMinBranch());
-        Assert.assertEquals(80, vcPublisher.healthReports.getMaxFunction());
-        Assert.assertEquals(0, vcPublisher.healthReports.getMinFunction());
-        Assert.assertEquals(80, vcPublisher.healthReports.getMaxFunctionCall());
-        Assert.assertEquals(0, vcPublisher.healthReports.getMinFunctionCall());
-        Assert.assertEquals(80, vcPublisher.healthReports.getMaxMCDC());
-        Assert.assertEquals(0, vcPublisher.healthReports.getMinMCDC());
+        Assert.assertEquals("**/coverage_results_*.xml", vcPublisher.getIncludes());
+        Assert.assertEquals(80, vcPublisher.getHealthReports().getMaxBasisPath());
+        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinBasisPath());
+        Assert.assertEquals(100, vcPublisher.getHealthReports().getMaxStatement());
+        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinStatement());
+        Assert.assertEquals(70, vcPublisher.getHealthReports().getMaxBranch());
+        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinBranch());
+        Assert.assertEquals(80, vcPublisher.getHealthReports().getMaxFunction());
+        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinFunction());
+        Assert.assertEquals(80, vcPublisher.getHealthReports().getMaxFunctionCall());
+        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinFunctionCall());
+        Assert.assertEquals(80, vcPublisher.getHealthReports().getMaxMCDC());
+        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinMCDC());
     }
 
     private void checkCoveragePlugin(DescribableList<Publisher,Descriptor<Publisher>> publisherList, int pubListIndex) {
@@ -305,8 +308,11 @@ public class NewSingleJobTest {
 
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
-        jsonForm.put("coverageDisplayOption", jsonCovDisplay);  // Jenkins Coverage Plugin
-        jsonForm.put("useCoverageHistory", false);  // VectorCAST Coverage Plugin
+        // coverageDisplayOption
+        //      USE_COVERAGE_PLUGIN (1):  Jenkins Coverage Plugin
+        //      USE_VCC_PLUGIN      (2): VectorCAST Coverage Plugin
+        jsonForm.put("coverageDisplayOption", jsonCovDisplay);
+        jsonForm.put("useCoverageHistory", false);
         jsonForm.put("pclpCommand","call lint_my_code.bat");
         jsonForm.put("pclpResultsPattern","lint_results.xml");
 
