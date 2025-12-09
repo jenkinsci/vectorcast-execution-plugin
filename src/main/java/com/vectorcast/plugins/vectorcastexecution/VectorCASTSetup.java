@@ -218,21 +218,19 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                         FilePath dest = new FilePath(
                             destScriptDir, fileOrDir);
 
-                        if (dest != null) {
-                            if (entry.isDirectory()) {
-                                dest.mkdirs();
-                            } else {
-                                FilePath parentDir = dest.getParent();
-                                if (parentDir != null) {
-                                    parentDir.mkdirs();
-                                    try (InputStream is = VectorCASTSetup.class.
-                                        getResourceAsStream("/" + entryName)) {
-                                        dest.copyFrom(is);
-                                    } catch (IOException ex) {
-                                        Logger.getLogger(VectorCASTSetup.class
-                                            .getName())
-                                            .log(Level.INFO, null, ex);
-                                    }
+                        if (entry.isDirectory()) {
+                            dest.mkdirs();
+                        } else {
+                            FilePath parentDir = dest.getParent();
+                            if (parentDir != null) {
+                                parentDir.mkdirs();
+                                try (InputStream is = VectorCASTSetup.class.
+                                    getResourceAsStream("/" + entryName)) {
+                                    dest.copyFrom(is);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(VectorCASTSetup.class
+                                        .getName())
+                                        .log(Level.INFO, null, ex);
                                 }
                             }
                         }
