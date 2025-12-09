@@ -110,8 +110,8 @@ def run(origVcrFile, newVcrFile, verbose):
     shutil.copyfile(newVcrFile+".zip", newVcrFile)
     
     os.remove(newVcrFile+".zip")
-    # shutil.rmtree("newVcr")
-    # shutil.rmtree("origVcr")
+    shutil.rmtree("newVcr")
+    shutil.rmtree("origVcr")
     
 if __name__ == '__main__':
 
