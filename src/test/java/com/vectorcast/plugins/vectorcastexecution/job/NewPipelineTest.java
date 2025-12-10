@@ -6,6 +6,7 @@ import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.security.Permission;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -25,6 +26,8 @@ import hudson.model.Descriptor.FormException;
 
 import static org.mockito.Mockito.when;
 import org.mockito.Mockito;
+import com.cloudbees.hudson.plugins.folder.Folder;
+
 
 public class NewPipelineTest {
     final long USE_LOCAL_IMPORTED_RESULTS = 1;
@@ -39,6 +42,8 @@ public class NewPipelineTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
     private static final String PROJECTNAME = "project_vcast_pipeline";
+
+    private static final String FOLDERNAME = "test_pipeline_folder";
 
     @BeforeEach
     void setUpStaticMocks() {
@@ -64,11 +69,14 @@ public class NewPipelineTest {
 
         when(request.getSubmittedForm()).thenReturn(jsonForm);
 
-        NewPipelineJob job = new NewPipelineJob(request, response);
+        Folder folder = j.jenkins.createProject(Folder.class, FOLDERNAME);
+
+        NewPipelineJob job = new NewPipelineJob(request, response, folder);
 
         Assert.assertEquals("project", job.getBaseName());
         job.create();
         Assert.assertEquals(PROJECTNAME, job.getProjectName());
+        Assert.assertEquals(FOLDERNAME, job.getFolder().getName());
 
         // Pipeline Jobs have no "topProject"
         Assert.assertNull(job.getTopProject());

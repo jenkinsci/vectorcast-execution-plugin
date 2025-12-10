@@ -1,5 +1,6 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import com.vectorcast.plugins.vectorcastcoverage.VectorCASTPublisher;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
@@ -96,8 +97,9 @@ public class NewSingleJobTest {
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
 
         when(request.getSubmittedForm()).thenReturn(jsonForm);
+        Folder folder = j.jenkins.createProject(Folder.class, "test_single");
 
-        NewSingleJob job = new NewSingleJob(request, response);
+        NewSingleJob job = new NewSingleJob(request, response, folder);
 
         Assert.assertEquals("project", job.getBaseName());
         job.create();

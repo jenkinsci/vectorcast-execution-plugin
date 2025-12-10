@@ -28,6 +28,10 @@ import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.model.Action;
 import jenkins.model.Jenkins;
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import java.util.logging.Logger;
 
 /**
  * VectorCASTFolderAction implements actions.
@@ -104,12 +108,56 @@ public class VectorCASTFolderAction implements Action {
     public String getUrlName() {
         return "VectorCAST";
     }
-
     /**
      * Get internal folder variable.
      * @return folder
      */
     public Folder getFolder() {
         return folder;
+    }
+
+    /**
+     * Return Target "this" for render.
+     * @return this
+     */
+    public Object getTarget() {
+        return this;  // allows index.jelly to render
+    }
+
+    /**
+     * Get full folder name variable.
+     * @return full folder name
+     */
+    public String getFolderFullName() {
+        return folder != null ? folder.getFullName() : "";
+    }
+
+    public String getVersion() {
+        return VcastUtils.getVersion().orElse("Unknown");
+    }
+    /**
+     * Get folder name variable.
+     * @return folder name
+     */
+    public String getFolderName() {
+        return folder != null ? folder.getName() : "";
+    }
+
+    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        Logger.getLogger("VCFolderAction").info(
+                "getDynamic: token=" + token + ", folder=" + folder.getFullName()
+        );
+
+        if ("single-job".equals(token)) {
+            return new VectorCASTJobSingle(folder);
+        }
+        if ("pipeline-job".equals(token)) {
+            return new VectorCASTJobPipeline(folder);
+        }
+        if ("diag-job".equals(token)) {
+            return new VectorCASTJobDiag(null);
+        }
+
+        return null;
     }
 }

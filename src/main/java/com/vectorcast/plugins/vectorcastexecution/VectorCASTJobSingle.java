@@ -23,6 +23,7 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
@@ -54,6 +55,16 @@ public class VectorCASTJobSingle extends JobBase {
     /** Project name. */
     private String projectName;
 
+    /** Constructor when creating inside a folder.
+     * @param inputFolder - location of where to create job
+     */
+    public VectorCASTJobSingle(Folder inputFolder){
+        super(inputFolder);
+    }
+    /** Default constructor. */
+    public VectorCASTJobSingle(){
+        this(null);
+    }
     /**
      * Get the project name.
      * @return project name
@@ -115,7 +126,7 @@ public class VectorCASTJobSingle extends JobBase {
             throws ServletException, IOException, Descriptor.FormException {
         try {
             // Create single-job
-            NewSingleJob job = new NewSingleJob(request, response);
+            NewSingleJob job = new NewSingleJob(request, response, folder);
 
             job.create();
             projectName = job.getProjectName();

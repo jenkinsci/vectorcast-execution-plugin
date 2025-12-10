@@ -36,7 +36,7 @@
             <j:out value="${%VCJob.Control.Single.Description}"/>
           </div>
         </t:summary>
-        
+
         <t:summary icon="${it.iconFileName}"
                    href="pipeline-job" iconOnly="true">
           <div class="link"><a href="${href}">${%VCJob.Control.Pipeline.Title}</a></div>

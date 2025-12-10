@@ -25,34 +25,23 @@
 
 package com.vectorcast.plugins.vectorcastexecution;
 
-import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.Extension;
 import hudson.model.Action;
-import jenkins.model.TransientActionFactory;
-
 import java.util.Collection;
 import java.util.Collections;
+import com.cloudbees.hudson.plugins.folder.Folder;
+import jenkins.model.TransientActionFactory;
 
-/**
- * VectorCASTFolderActionFactory implements TransientActionFactory.
- */
 @Extension
-public class VectorCASTFolderActionFactory
-        extends TransientActionFactory<Folder> {
+public class VectorCASTFolderActionFactory extends TransientActionFactory<Folder> {
 
-    /** Type of folder.
-     * @return Class
-     */
     @Override
     public Class<Folder> type() {
         return Folder.class;
     }
 
-    /** Create job in folder.
-     * @return Collection
-     */
     @Override
-    public Collection<? extends Action> createFor(final Folder folder) {
+    public Collection<? extends Action> createFor(Folder folder) {
         return Collections.singletonList(new VectorCASTFolderAction(folder));
     }
 }

@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -47,6 +49,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import hudson.model.AutoCompletionCandidates;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.DataBoundSetter;
+import com.cloudbees.hudson.plugins.folder.Folder;
+import org.kohsuke.stapler.HttpResponses;
+import hudson.model.TopLevelItem;
 
 /**
  * Create pipeline job.
@@ -70,6 +75,18 @@ public class VectorCASTJobPipeline extends JobBase {
 
     /** Pipeline job object. */
     private NewPipelineJob job;
+
+    /** Constructor when creating inside a folder.
+     * @param inputFolder - location of where to create job
+     */
+    public VectorCASTJobPipeline(Folder inputFolder) {
+        super(inputFolder);
+    }
+
+    /** Default constructor. */
+    public VectorCASTJobPipeline() {
+        this(null);
+    }
     /**
      * Get the pipeline job object.
      * @return pipeline job
@@ -169,13 +186,36 @@ public class VectorCASTJobPipeline extends JobBase {
             throws ServletException, IOException, Descriptor.FormException {
         try {
             // Create Pipeline job
-            job = new NewPipelineJob(request, response);
+            job = new NewPipelineJob(request, response, folder);
+
+            Logger.getLogger("VCJobPipeline").info(
+                    "doCreate: creating pipeline job in folder=" +
+                            (folder == null ? "ROOT" : folder.getFullName())
+            );
+
             job.create();
+
+            Logger.getLogger("VCJobPipeline").info(
+                    "doCreate: creating pipeline job in folder=" +
+                            (folder == null ? "ROOT" : folder.getFullName())
+            );
+
             projectName = job.getProjectName();
+
             Logger.getLogger(VectorCASTJobPipeline.class.getName())
                     .log(Level.INFO, "Pipeline Project Name: " + projectName,
                     "Pipeline Project Name: " + projectName);
-            return new HttpRedirect("created");
+
+            TopLevelItem createdItem =
+                    (folder != null) ? folder.getItem(projectName)
+                            : Jenkins.get().getItem(projectName);
+
+            String folderName = (folder != null) ? folder.getFullName() : null;
+
+            return HttpResponses.forwardToView(this, "created")
+                    .with("createdItem", createdItem)
+                    .with("folderName", folderName);
+
         } catch (ScmConflictException ex) {
             scmException = ex;
             return new HttpRedirect("conflict");

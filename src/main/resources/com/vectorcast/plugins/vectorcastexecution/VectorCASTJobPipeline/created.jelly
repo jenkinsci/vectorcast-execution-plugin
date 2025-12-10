@@ -34,7 +34,13 @@
   <l:layout permission="${permission}" title="${%Created.Title}">
     <l:main-panel>
       <h1>${%Created.Title}</h1>
-      <h2><a href="/job/${it.getProjectName()}">${it.getProjectName()}</a></h2>
+      <j:if test="${createdItem != null}">
+        <h2>
+          <a href="${rootURL}/${createdItem.url}">
+            ${createdItem.displayName}
+          </a>
+        </h2>
+      </j:if>
       <p>${%Created.Description}</p>
     </l:main-panel>
   </l:layout>

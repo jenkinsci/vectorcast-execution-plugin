@@ -53,7 +53,8 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
-    * [Version 0.79 (4 Dec 2025)](#version-079-4-dec-2025)
+    * [Version 0.80 (21 Feb 2026)](#version-079-4-dec-2025)
+    * [Version 0.79 (4 Dec 2025)](#version-079-4-dec-2025) 
     * [Version 0.78 (14 Jun 2025)](#version-078-14-jun-2025)
     * [Version 0.77 (21 Aug 2024)](#version-077-21-aug-2024)
     * [Version 0.76 (19 Jan 2023)](#version-076-19-jan-2023)
@@ -416,6 +417,12 @@ In rare cases, VectorCAST projects will have disabled environment with results s
 environment before disabling.  This takes into account environments that are directly disabled or disabled at the Compiler or TestSuite Nodes.  To avoid this, please clean environments before disabling them
 
 ## Change Log
+### Version 0.80 (21 Feb 2026)
+- Moved to minimum Jenkins 2.540
+- Updated Pipeline script:
+  - Structure variable passing
+  - Auto-complete Node Label
+  - Saving Job to a folder
 
 ### Version 0.79 (4 Dec 2025)
 - Moved to minimum Jenkins LTS 2.492.3 and Java 21

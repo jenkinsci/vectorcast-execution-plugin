@@ -62,6 +62,7 @@ import org.kohsuke.stapler.verb.POST;
 import hudson.model.Item;
 import hudson.security.AccessDeniedException3;
 import hudson.security.Permission;
+import com.cloudbees.hudson.plugins.folder.Folder;
 
 
 /**
@@ -171,10 +172,14 @@ public abstract class BaseJob {
     /** Squore execution command. */
     private String squoreCommand;
 
+    /** Folder to create the job in. */
+    private Folder folder;
+
     /**
      * Constructor.
      * @param req request object
      * @param resp response object
+     * @param inputFolder Folder to create the job in
      * @throws ServletException exception
      * @throws IOException exception
      * @throws ExternalResultsFileException exception
@@ -182,7 +187,7 @@ public abstract class BaseJob {
      * @throws BadOptionComboException exception
      */
     protected BaseJob(final StaplerRequest req,
-            final StaplerResponse resp)
+            final StaplerResponse resp, final Folder inputFolder)
             throws ServletException, IOException,
             ExternalResultsFileException, IllegalArgumentException,
             BadOptionComboException {
@@ -191,6 +196,8 @@ public abstract class BaseJob {
         request = req;
         response = resp;
         JSONObject json = request.getSubmittedForm();
+
+        folder = inputFolder;
 
         manageProjectName = json.optString("manageProjectName");
         if (manageProjectName.length() > MAX_STRING_LEN) {
@@ -900,5 +907,21 @@ public abstract class BaseJob {
     protected URL getBaselinePipelineGroovy() {
         // GOOD: The call is always made on an object of the same type.
         return BaseJob.class.getResource("/scripts/baseJenkinsfile.groovy");
+    }
+
+    /**
+     * Getter for folder.
+     * @return Folder of current location
+     */
+    public Folder getFolder() {
+        return folder;
+    }
+
+    /**
+     * Setter for folder.
+     * @param inputFolder  Folder of current location
+     */
+    public void setFolder(Folder inputFolder) {
+        folder = inputFolder;
     }
 }

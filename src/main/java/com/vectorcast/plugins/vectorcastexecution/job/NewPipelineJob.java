@@ -28,6 +28,7 @@ import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
 
 import hudson.model.Descriptor;
+import hudson.model.ItemGroup;
 import hudson.model.Project;
 import net.sf.json.JSONObject;
 
@@ -73,6 +74,7 @@ import hudson.model.Item;
 import hudson.security.AccessDeniedException3;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import com.cloudbees.hudson.plugins.folder.Folder;
 
 /**
  * Create a new single job.
@@ -111,11 +113,12 @@ public class NewPipelineJob extends BaseJob {
      */
     public NewPipelineJob(
             final StaplerRequest request,
-            final StaplerResponse response)
+            final StaplerResponse response,
+            final Folder inputFolder)
             throws ServletException, IOException,
             ScmConflictException, ExternalResultsFileException,
             BadOptionComboException {
-        super(request, response);
+        super(request, response, inputFolder);
 
         JSONObject json = request.getSubmittedForm();
 
@@ -132,12 +135,12 @@ public class NewPipelineJob extends BaseJob {
             json.optString("postSCMCheckoutCommands", null);
         useCBT  = json.optBoolean("useCBT", true);
         useParameters  = json.optBoolean("useParameters", false);
-        if (sharedArtifactDirectory.length() != 0) {
+        if (!sharedArtifactDirectory.isEmpty()) {
             sharedArtifactDirectory = "--workspace="
                 + sharedArtifactDirectory.replace("\\", "/");
         }
 
-        /* absoulte path and SCM checkout of manage project conflicts with
+        /* Absolute path and SCM checkout of manage project conflicts with
            the copy_build_dir.py ability to make LIS files relative path
         */
         String mpName = getManageProjectName();
@@ -157,7 +160,7 @@ public class NewPipelineJob extends BaseJob {
             mpName += ".vcm";
         }
 
-        if (pipelineSCM.length() != 0 && absPath) {
+        if (!pipelineSCM.isEmpty() && absPath) {
             throw new ScmConflictException(pipelineSCM, mpName);
         }
     }
@@ -219,64 +222,63 @@ public class NewPipelineJob extends BaseJob {
         File configFile = writeConfigFileWithFiles();
 
         try {
-
-            // Modify XML to include generated pipeline script,
-            // remove sandbox restriction
             String configPath = configFile.getAbsolutePath();
-            DocumentBuilderFactory documentBuilderFactory =
-                DocumentBuilderFactory.newInstance();
 
-            DocumentBuilder documentBuilder =
-                documentBuilderFactory.newDocumentBuilder();
-            Document document = documentBuilder.parse(configPath);
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(configPath);
 
+            // Insert generated script
             Node scriptNode = document.getElementsByTagName("script").item(0);
             scriptNode.setTextContent(generateJenkinsfile());
 
-            // Write DOM object to the file
-            TransformerFactory transformerFactory =
-                TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            DOMSource domSource = new DOMSource(document);
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            transformer.transform(
+                    new DOMSource(document),
+                    new StreamResult(configFile)
+            );
 
-            StreamResult streamResult = new StreamResult(new File(configPath));
-            transformer.transform(domSource, streamResult);
-
+            // Now create the job **in the correct parent**
             InputStream xmlInput = new FileInputStream(configFile);
 
-            try {
-                /*
-                 * hudson.model.Project Project proj = (Project) Fails with
-                 * java.lang.ClassCastException:
-                 *     org.jenkinsci.plugins.workflow.job.WorkflowJob
-                 * cannot be cast to Project
-                 */
+            ItemGroup<?> parent = (getFolder() != null) ? getFolder() : getInstance();
 
-                getInstance().createProjectFromXML(getProjectName(), xmlInput);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                xmlInput.close();
+            Logger.getLogger("NewPipelineJob")
+                    .info("Creating job '" + getProjectName() +
+                            "' in parent: " + parent.getFullName());
+
+            Logger.getLogger("NewPipelineJob").info(
+                    "DEBUG getFolder() = " + (getFolder() == null ? "NULL" : getFolder().getFullName())
+            );
+
+            if (parent instanceof com.cloudbees.hudson.plugins.folder.Folder) {
+                com.cloudbees.hudson.plugins.folder.Folder f =
+                        (com.cloudbees.hudson.plugins.folder.Folder) parent;
+
+                f.createProjectFromXML(getProjectName(), xmlInput);
+
+            } else if (parent instanceof Jenkins) {
+                Jenkins.get().createProjectFromXML(getProjectName(), xmlInput);
+            } else {
+                throw new IllegalStateException(
+                        "Cannot create project in parent of type: " +
+                                parent.getClass().getName()
+                );
             }
 
-        } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-             e.printStackTrace();
-       }
+            xmlInput.close();
 
-        if (!configFile.delete()) {
-            throw new IOException("Unable to delete file: "
-                + configFile.getAbsolutePath());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error creating pipeline job", e);
         }
 
+        if (!configFile.delete()) {
+            throw new IOException("Unable to delete: " + configFile.getAbsolutePath());
+        }
     }
+
 
     /**
      * Create the Pipeline Jenkinsfile script.

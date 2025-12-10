@@ -23,6 +23,7 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
@@ -41,6 +42,17 @@ public abstract class JobBase implements ExtensionPoint, Action,
 
     /** SCM to use initially. */
     private SCM scm;
+
+    /** Folder location of where the job gets created. */
+    protected Folder folder;
+
+    /**
+     * Default Constructor.
+     */
+    public JobBase(Folder inputFolder) {
+        folder = inputFolder;
+        scm = new NullSCM();
+    }
     /**
      * Default Constructor.
      */

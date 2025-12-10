@@ -13,32 +13,34 @@ def VC_Use_Threshold = true
 
 // Gathering global variables to be used by functions
 def VC = [
-    mpName: VC_Manage_Project
-    setup: VC_EnvSetup
-    preable: VC_Build_Preamble
-    teardown: VC_EnvTeardown
-    oneChkDir: VC_useOneCheckoutDir
-    usingSCM: VC_usingSCM
-    postSCMSteps: VC_postScmStepsCmds
-    maxParallel: VC_maxParallel
-    useRGW3: VC_useRGW3
-    waitTime: VC_waitTime
-    waitLoops: VC_waitLoops
-    useCI: VC_useCILicense
-    useCBT: VC_useCBT
-    useCoverPlgin: VC_useCoveragePlugin
-    sharedBldDir: VC_sharedArtifactDirectory
-    strictImp: VC_useStrictImport
-    useCoverHist: VC_useCoverageHistory
-    useImpRst: VC_useImportedResults
-    useLocImpRst: VC_useLocalImportedResults
-    useExtImpRst: VC_useExternalImportedResults
-    extRst: VC_externalResultsFilename
-    usePclp: VC_usePCLintPlus 
-    pLcpCmd: VC_pclpCommand 
-    pLcpRsltPattern: VC_pclpResultsPattern
-    useSquore: VC_useSquore 
-    squoreCmd: VC_squoreCommand
+    mpName:             VC_Manage_Project
+    setup:              VC_EnvSetup
+    preable:            VC_Build_Preamble
+    teardown:           VC_EnvTeardown
+    oneChkDir:          VC_useOneCheckoutDir
+    usingSCM:           VC_usingSCM
+    postSCMSteps:       VC_postScmStepsCmds
+    maxParallel:        VC_maxParallel
+    useRGW3:            VC_useRGW3
+    waitTime:           VC_waitTime
+    waitLoops:          VC_waitLoops
+    useCI:              VC_useCILicense
+    useCBT:             VC_useCBT
+    useCoverPlgin:      VC_useCoveragePlugin
+    sharedBldDir:       VC_sharedArtifactDirectory
+    strictImp:          VC_useStrictImport
+    useCoverHist:       VC_useCoverageHistory
+    useImpRst:          VC_useImportedResults
+    useLocImpRst:       VC_useLocalImportedResults
+    useExtImpRst:       VC_useExternalImportedResults
+    extRst:             VC_externalResultsFilename
+    usePclp:            VC_usePCLintPlus 
+    pLcpCmd:            VC_pclpCommand 
+    pLcpRsltPattern:    VC_pclpResultsPattern
+    useSquore:          VC_useSquore 
+    squoreCmd:          VC_squoreCommand
+    healthyTarget:      VC_Healthy_Target
+    useThreshold:       VC_Use_Threshold
 ]
 
 
@@ -49,103 +51,7 @@ def VC = [
 //
 // ===============================================================
 
-// ===============================================================
-//
-// Function : getFailureUnstablePhrases
-// Inputs   : N/A
-// Action   : Builds two lists and returns them
-// Returns  : Returns a list of failure/unstable phrases
-// Notes    :
-//
-// ===============================================================
 
-def getFailureUnstablePhrases() {
-
-    def FailurePhrases = ["No valid edition(s) available",
-                      "py did not execute correctly",
-                      "Traceback (most recent call last)",
-                      "Failed to acquire lock on environment",
-                      "Environment Creation Failed",
-                      "Error with Test Case Management Report",
-                      "FLEXlm Error",
-                      "Unable to obtain license",
-                      "INCR_BUILD_FAILED",
-                      "Environment was not successfully built",
-                      "NOT_LINKED",
-                      "Preprocess Failed",
-                      "Abnormal Termination on Environment",
-                      "not recognized as an internal or external command",
-                      "Another Workspace with this path already exists",
-                      "Destination directory or database is not writable",
-                      "Could not acquire a read lock on the project's vcm file",
-                      "No environments found in ",
-                      ".vcm is invalid",
-                      "Invalid Workspace. Please ensure the directory and database contain write permission",
-                      "The environment is invalid because",
-                      "Please ensure that the project has the proper permissions and that the environment is not being accessed by another process.",
-                      "Error: That command is not permitted in continuous integration mode",
-                      "has been opened by a newer version of VectorCAST.  Please upgrade this version of VectorCAST to open the project"
-                      ]
-
-    def UnstablePhrases = ["Dropping probe point",
-                        "Value Line Error - Command Ignored",
-                        "INFO: Problem parsing test results file",
-                        "INFO: File System Error ",
-                        "ERROR: Error accessing DataAPI",
-                        "ERROR: Undefined Error",
-                        "Unapplied Test Data"
-                        ]
-
-    return [FailurePhrases, UnstablePhrases]
-}
-
-
-// ===============================================================
-//
-// Function : checkLogsForErrors
-// Inputs   : log
-// Action   : Scans the input log file to for keywords listed above
-// Returns  : found foundKeywords, failure and/or unstable_flag
-// Notes    : Used to Check for VectorCAST build errors/problems
-//
-// ===============================================================
-
-def checkLogsForErrors(log) {
-
-    def boolean failure = false;
-    def boolean unstable_flag = false;
-    def foundKeywords = ""
-
-    def FailurePhrases = ""
-    def UnstablePhrases = ""
-
-    (FailurePhrases, UnstablePhrases) = getFailureUnstablePhrases()
-
-    // Check for unstable first
-    // Loop over all the unstable keywords above
-    UnstablePhrases.each {
-        if (log.contains(it)) {
-            // found a phrase considered unstable, mark the build accordingly
-            foundKeywords =  foundKeywords + it + ", "
-            unstable_flag = true
-        }
-    }
-
-    // The check for failure keywords first
-    // Loop over all the failure keywords above
-    FailurePhrases.each {
-        if (log.contains(it)) {
-            // found a phrase considered failure, mark the build accordingly
-            foundKeywords =  foundKeywords + it + ", "
-            failure = true
-        }
-    }
-    if (foundKeywords.endsWith(", ")) {
-        foundKeywords = foundKeywords[0..-3]
-    }
-
-    return [foundKeywords, failure, unstable_flag]
-}
 
 // ===============================================================
 //
@@ -169,58 +75,6 @@ def pluginCreateSummary(inIcon, inText) {
        addSummary icon: inIcon, text: inText
     }
 }
-
-
-// ===============================================================
-//
-// Function : checkBuildLogForErrors
-// Inputs   : logFile
-// Action   : Scans the input log file to for keywords listed above
-// Returns  : found foundKeywords, failure and/or unstable_flag
-// Notes    : Used to Check for VectorCAST build errors/problems
-//
-// ===============================================================
-
-def checkBuildLogForErrors(logFile) {
-
-    def boolean failure = false;
-    def boolean unstable_flag = false;
-    def foundKeywords = ""
-    def output = ""
-    def status = 0
-    def FailurePhrases = ""
-    def UnstablePhrases = ""
-    def cmd = ""
-
-    (FailurePhrases, UnstablePhrases) = getFailureUnstablePhrases()
-
-    writeFile file: "phrases.txt", text: UnstablePhrases.join("\n") + "\n" + FailurePhrases.join("\n")
-
-    if (isUnix()) {
-        cmd =  "grep -f phrases.txt " + logFile + " > search_results.txt"
-        status = sh label: 'Checking build log for errors', returnStatus: true, script: cmd
-    } else {
-        cmd =  "findstr /g:phrases.txt " + logFile + " > search_results.txt"
-        status = bat label: 'Checking build log for errors', returnStatus: true, script: cmd
-    }
-
-    if (status == 0) {
-        output = readFile("search_results.txt")
-        foundKeywords += output.replaceAll("\n",",")
-        return checkLogsForErrors(output)
-    } else {
-        return [foundKeywords, failure, unstable_flag]
-    }
-
-    error ("Error in checking build log file: " + cmd)
-
-}
-
-// ***************************************************************
-//
-//                           SCM Utilities
-//
-// ***************************************************************
 
 // ***************************************************************
 //
@@ -318,30 +172,6 @@ def formatPath(inPath) {
 
 def fixUpName(name) {
     return name.replace("/","_").replaceAll('\\%..','_').replaceAll('\\W','_')
-}
-
-// ===============================================================
-//
-// Function : concatenateBuildLogs
-// Inputs   : file list
-// Action   : Concatenate build logs into one file
-// Returns  : None
-// Notes    : Generate-Overall-Reports
-//
-// ===============================================================
-
-def concatenateBuildLogs(logFileNames, outputFileName, envSetup, useCILicense) {
-
-    def cmd = ""
-    if (isUnix()) {
-        cmd =  "cat "
-    } else {
-        cmd =  "type "
-    }
-
-    cmd += logFileNames + " > " + outputFileName
-
-    runCommands(cmd, envSetup, useCILicense)
 }
 
 
@@ -616,7 +446,7 @@ def transformIntoStep(inputString, VC) {
                 def boolean unstable_flag = false
 
                 // check log for errors/unstable keywords
-                (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText)
+                (foundKeywords, failure, unstable_flag) = VCUtils.checkLogsForErrors(buildLogText)
 
                 // if we didn't fail and don't have a shared artifact directory - we may have to copy back build directory artifacts...
                 if (!failure && sharedArtifactDirectory.length() == 0) {
@@ -642,7 +472,7 @@ def transformIntoStep(inputString, VC) {
                 println "Finished Build-Execute Stage for ${compiler}/${test_suite}/${environment}"
 
                 // check log for errors/unstable keywords again since the copy build dir could have thrown errors/unstable keywords
-                (foundKeywords, failure, unstable_flag) = checkLogsForErrors(buildLogText)
+                (foundKeywords, failure, unstable_flag) = VCUtils.checkLogsForErrors(buildLogText)
 
                 // if something failed, raise an error
                 if (failure) {
@@ -915,181 +745,8 @@ pipeline {
 
         // Generating the reports needed for VectorCAST/Coverage plugin and JUnit
         stage('Generate-Overall-Reports') {
-
             steps {
-                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-
-                    // Run the setup step to copy over the scripts
-                    step([$class: 'VectorCASTSetup'])
-
-                    // run script to unstash files and generate results/reports
-                    script {
-                        def buildLogText = ""
-                        def buildFileNames = ""
-                        def compiler = ""
-                        def test_suite = ""
-                        def environment = ""
-                        def source = ""
-                        def machine = ""
-                        def level = ""
-                        def cmds = ""
-                        def boolean failure = false;
-                        def boolean unstable_flag = false;
-                        def foundKeywords = ""
-                        
-
-                        // Loop over all environnment and unstash each of the files
-                        // These files will be logs and build artifacts
-                        EnvList.each {
-                            def trimmedLine = it.trim()
-                            def wordCount = trimmedLine.split(/\s+/).length
-                            if (wordCount == 3) {
-                            (compiler, test_suite, environment) = it.split()
-                                level = compiler + "/" + test_suite
-                            } else if (wordCount == 5) {
-                                (compiler, test_suite, environment, source, machine) = it.split()
-                                level = source + "/" + machine + "/" + compiler + "/" + test_suite
-                            }
-                            String stashName = fixUpName("${env.JOB_NAME}_${compiler}_${test_suite}_${environment}-build-execute-stage")
-
-                            try {
-                                unstash stashName as String
-                                buildFileNames += "${compiler}_${test_suite}_${environment}_build.log "
-
-                            }
-                            catch (Exception ex) {
-                                println ex
-                            }
-                            if (VC_sharedArtifactDirectory.length() > 0) {
-                                def fixedJobName = fixUpName("${env.JOB_NAME}")
-                                buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC_Manage_Project} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar""", VC_EnvSetup, VC_useCILicense)
-                            }
-                        }
-
-                        if (VC_sharedArtifactDirectory.length() > 0) {
-                            def artifact_dir = ""
-                            try {
-                                artifact_dir = VC_sharedArtifactDirectory.split(" ")[1]
-                            }
-                            catch (Exception ex) {
-                                artifact_dir = VC_sharedArtifactDirectory.split("=")[1]
-                            }
-                            def coverDBpath = formatPath(artifact_dir + "/vcast_data/cover.db")
-                            def coverSfpDBpath = formatPath(artifact_dir + "/vcast_data/vcprj.db")
-
-                            cmds = """
-                                _RM ${coverDBpath}
-                                _RM ${coverSfpDBpath}
-                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_useCILicense} --refresh"
-                            """
-                            buildLogText += runCommands(cmds, VC_EnvSetup, VC_useCILicense)
-                        }
-
-                        concatenateBuildLogs(buildFileNames, "unstashed_build.log", VC_EnvSetup, VC_useCILicense)
-
-                        // get the manage project's base name for use in rebuild naming
-                        def mpName = getMPname(VC_Manage_Project)
-
-
-                        // if we are using SCM and not using a shared artifact directory...
-                        if (VC_usingSCM && !VC_useOneCheckoutDir && VC_sharedArtifactDirectory.length() == 0) {
-                            // run a script to extract stashed files and process data into xml reports
-                            def mpPath = getMPpath(VC_Manage_Project)
-                            def coverDBpath = formatPath(mpPath + "/build/vcast_data/cover.db")
-                            def coverSfpDBpath = formatPath(mpPath + "/build/vcast_data/vcprj.db")
-                            cmds = """
-                                _RM ${coverDBpath}
-                                _RM ${coverSfpDBpath}
-                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/extract_build_dir.py  --leave_files
-                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_useCILicense} --refresh"
-                            """
-                            buildLogText += runCommands(cmds, VC_EnvSetup, VC_useCILicense)
-
-                        }
-
-                        // run the metrics at the end
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC_Manage_Project} --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --junit --buildlog unstashed_build.log""", VC_EnvSetup, VC_useCILicense)
-                        buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/parallel_full_reports.py  ${VC_Manage_Project} --jobs max""", VC_EnvSetup, VC_useCILicense)
-
-                        if (VC_useRGW3) {
-                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/patch_rgw_directory.py  ${VC_Manage_Project}""", VC_EnvSetup, VC_useCILicense)
-                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_useCILicense} --clicast-args rgw export" """, VC_EnvSetup, VC_useCILicense)
-                        }
-
-                        if (VC_useCoveragePlugin) {
-                            buildLogText += runCommands("""_VECTORCAST_DIR/vpython  "${env.WORKSPACE}"/vc_scripts/cobertura.py --extended ${VC_Manage_Project}""", VC_EnvSetup, VC_useCILicense)
-                        }
-
-                        cmds =  """
-                            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py ${mpName} --rptfmt HTML
-                            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/full_report_no_toc.py "${VC_Manage_Project}"
-                            _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_useCILicense} --create-report=aggregate   --output=${mpName}_aggregate_report.html"
-                        """
-
-                        if (VC_useImportedResults) {
-                            if (VC_useLocalImportedResults) {
-                                cmds += """
-                                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC_waitTime} --wait_loops ${VC_waitLoops} --command_line "--project "${VC_Manage_Project}"  ${VC_useCILicense} --export-result=${mpName}_results.vcr"
-                                    _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/merge_vcr.py --new ${mpName}_results.vcr --orig ${mpName}_results_orig.vcr
-
-                                """
-                            }
-                        }
-
-                        buildLogText += runCommands(cmds, VC_EnvSetup, VC_useCILicense)
-
-                        writeFile file: "metrics_build.log", text: buildLogText
-
-                        buildFileNames += "metrics_build.log "
-
-                        concatenateBuildLogs(buildFileNames, "complete_build.log", VC_EnvSetup, VC_useCILicense)
-
-                        (foundKeywords, failure, unstable_flag) = checkBuildLogForErrors("complete_build.log")
-
-                        if (failure) {
-                            throw new Exception ("Error in Commands: " + foundKeywords)
-                        }
-
-                        if (VC_useCoveragePlugin) {
-                            // Send reports to the Jenkins Coverage Plugin
-                            discoverReferenceBuild()
-                            if (VC_useCoverageHistory) {
-                                recordCoverage qualityGates: [[baseline: 'PROJECT_DELTA', criticality: 'NOTE', metric: 'LINE', threshold: -0.001], [baseline: 'PROJECT_DELTA', criticality: 'FAILURE', metric: 'BRANCH', threshold: -0.001]], tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
-                            } else {
-                                recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
-                            }
-
-                        } else {
-                            def currResult = ""
-                            if (VC_useCoverageHistory) {
-                                currResult = currentBuild.result
-                            }
-
-                            // Send reports to the VectorCAST Coverage Plugin
-                            step([$class: 'VectorCASTPublisher',
-                                includes: 'xml_data/coverage_results*.xml',
-                                useThreshold: VC_Use_Threshold,
-                                healthyTarget:   VC_Healthy_Target,
-                                useCoverageHistory: VC_useCoverageHistory,
-                                maxHistory : 20])
-
-                            if (VC_useCoverageHistory) {
-                                if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
-                                    pluginCreateSummary("icon-error icon-xlg", "Code Coverage Decreased")
-                                    currentBuild.description += "Code coverage decreased.  See console log for details\n"
-                                    addBadge icon: "icon-error icon-xlg", text: "Code Coverage Decreased"
-                                }
-                            }
-                        }
-
-
-                        // Send test results to JUnit plugin
-                        step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
-                    }
-                }
-
-                // Save all the html, xml, and txt files
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, xml_data/**/*.xml, unit_test_*.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr'
+                VCStages.generateOverallReports(VC, EnvList, )    
             }
         }
 
@@ -1106,7 +763,7 @@ pipeline {
                         def boolean failure = false
                         def boolean unstable_flag = false
 
-                        (foundKeywords, failure, unstable_flag) = checkBuildLogForErrors('complete_build.log')
+                        (foundKeywords, failure, unstable_flag) = VCUtils.checkBuildLogForErrors('complete_build.log')
 
                         // if the found keywords is great that the init value \n then we found something
                         // set the build description accordingly

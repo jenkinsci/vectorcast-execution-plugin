@@ -23,11 +23,32 @@
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
+
   <l:layout title="${%VCFolder.FolderAction.Title}">
     <l:main-panel>
-      <h1>"${%VCFolder.FolderAction.Header}": ${it.folder.name}</h1>
-      <p>"${%VCFolder.FolderAction.Description}"</p>
+      <h1>${%VCFolder.FolderAction.Title(it.folderName)}</h1>
+      <p>
+        ${%VCFolder.FolderAction.Description(it.folderFullName)}
+      </p>
+      <table>
+        <t:summary icon="${it.iconFileName}"
+                   href="single-job" iconOnly="true">
+          <div class="link"><a href="${href}">${%VCFolder.FolderAction.Single.Title}</a></div>
+          <div style="color:gray; text-decoration:none;">
+            <j:out value="${%VCFolder.FolderAction.Single.Description}"/>
+          </div>
+        </t:summary>
+
+        <t:summary icon="${it.iconFileName}"
+                   href="pipeline-job" iconOnly="true">
+          <div class="link"><a href="${href}">${%VCFolder.FolderAction.Pipeline.Title}</a></div>
+          <div style="color:gray; text-decoration:none;">
+            <j:out value="${%VCFolder.FolderAction.Pipeline.Description}"/>
+          </div>
+        </t:summary>
+       </table>
+      <br><small><i>${%VCFolder.FolderAction.Options.Version}: v${it.version}</i></small></br>
     </l:main-panel>
   </l:layout>
 </j:jelly>

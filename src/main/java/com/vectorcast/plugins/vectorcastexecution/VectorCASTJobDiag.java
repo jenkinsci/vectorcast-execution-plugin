@@ -34,6 +34,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import com.cloudbees.hudson.plugins.folder.Folder;
 
 /**
  * Create VectorCAST diagnostic job.
@@ -47,8 +48,23 @@ public class VectorCASTJobDiag extends JobBase {
     /** The response to jenkins. */
     private StaplerResponse jenkinsResponse;
 
+    /** The response to jenkins. */
+    private Folder folder;
+
     /** Name of diagnostic job. */
     public static final String PROJECT_NAME = "VectorCAST-Diagnostics";
+
+    /** Constructor when creating inside a folder.
+     * @param inputFolder - location of where to create job
+     */
+    public VectorCASTJobDiag(Folder inputFolder) {
+        super(inputFolder);
+    }
+
+    /** Default constructor. */
+    public VectorCASTJobDiag() {
+        this(null);
+    }
 
     /**
      * Get the diagnostics job URL.

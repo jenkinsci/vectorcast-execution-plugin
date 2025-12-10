@@ -39,7 +39,7 @@ import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 public class VectorCASTJobRoot implements RootAction {
 
     /** Folder variable for creating jobs in folder. */
-    private final Folder folder; // null if global
+    protected final Folder folder; // null if global
 
     /**
      * Constructor for folder context.
@@ -56,16 +56,24 @@ public class VectorCASTJobRoot implements RootAction {
         this.folder = null;
     }
 
+    /** Getter for folder.
+     * @return Folder
+     */
+    public Folder getFolder() {
+        return folder;
+    }
+
     /**
      * Get name of top-level action/url.
      * @return url
      */
     @Override
     public String getUrlName() {
-        if (folder != null) {
-            return "VectorCAST"; // relative to folder
+        if (!Jenkins.get().hasPermission(VcastUtils.getViewPermission())) {
+            return null; // hide it from the UI
         }
-        return "VectorCAST"; // global
+
+        return "VectorCAST"; // folder or global use same name
     }
 
    /**
@@ -117,7 +125,7 @@ public class VectorCASTJobRoot implements RootAction {
      */
     @Override
     public String getDisplayName() {
-        return Messages.VectorCASTCommand_AddVCJob();
+        return Messages.VectorCASTRootAction_DisplayName();
     }
 
     /**

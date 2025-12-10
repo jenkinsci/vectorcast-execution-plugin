@@ -23,6 +23,7 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
@@ -60,10 +61,10 @@ public class NewSingleJob extends BaseJob {
    * @throws BadOptionComboException exception
    */
   public NewSingleJob(final StaplerRequest request,
-        final StaplerResponse response)
+        final StaplerResponse response, final Folder folder)
         throws ServletException, IOException, ExternalResultsFileException,
         BadOptionComboException {
-    super(request, response);
+    super(request, response, folder);
   }
   /**
    * Gets the configruation for Windows.
