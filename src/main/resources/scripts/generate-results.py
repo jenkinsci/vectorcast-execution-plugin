@@ -300,7 +300,7 @@ def fixup_css(report_name):
         return
 
     with open(report_name,"rb") as fd:
-        data = fd.read().decode(encFmt,"replace")
+        data = fd.read().decode('utf-8','replace')
 
     #fix up inline CSS because of Content Security Policy violation
     newData = data[: data.index("<style>")-1] +  """
@@ -315,7 +315,7 @@ def fixup_css(report_name):
     newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
     
     with open(report_name, "wb") as fd:
-        fd.write(newData.encode(encFmt,"replace"))
+        fd.write(newData.encode('utf-8','replace'))
    
     workspace = os.getenv("WORKSPACE")
     if workspace is None:
@@ -781,8 +781,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject',                    help='Manager Project Name')
     parser.add_argument('-v', '--verbose',                  help='Enable verbose output', action="store_true")
-    parser.add_argument('-l', '--level',                    help='Environment Name if only doing single environment. Should be in the form of level/env')
-    parser.add_argument('-e', '--environment',              help='Environment Name if only doing single environment. Should be in the form of level/env')
+    parser.add_argument('-l', '--level',                    help='Level for doing single environment.  Should be in the form of compiler/testsuite')
+    parser.add_argument('-e', '--environment',              help='Environment Name if only doing single environment')
     parser.add_argument('-g', '--dont-generate-individual-reports',   
                                                             help='Don\'t Generated Individual Reports. Below VC2019 - this just controls execution report generate. VC2019 and later - execution reports for each testcase won\'t be generated',  action="store_true", default=False)
     parser.add_argument('--wait_time',                      help='Time (in seconds) to wait between execution attempts', type=int, default=30)
