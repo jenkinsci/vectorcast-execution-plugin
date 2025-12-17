@@ -11,7 +11,19 @@
         <artifactId>plugin</artifactId>
         <version>5.9</version>
     </parent>
-
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-weekly</artifactId>
+                <version>5639.v2b_974a_e901e8</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>vectorcast-execution</artifactId>
     <version>0.79-SNAPSHOT</version>
@@ -22,7 +34,7 @@
 
     <!-- Minimum Jenkins core -->
     <properties>
-        <jenkins.version>2.540</jenkins.version>
+        <jenkins.version>2.541</jenkins.version>
         <changelist>-SNAPSHOT</changelist>
     </properties>
     <organization>
@@ -59,32 +71,19 @@
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-weekly</artifactId>
-                <version>5639.v2b_974a_e901e8</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jenkins-ci.plugins</groupId>
-                <artifactId>vectorcast-coverage</artifactId>
-                <version>0.23-SNAPSHOT</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    
+
 
     <dependencies>
-
+            
         <!-- Your coverage plugin -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>vectorcast-coverage</artifactId>
-        </dependency>
+            <version>0.23-SNAPSHOT</version>
+        </dependency>            
 
-        <!-- Jenkins plugins — versions provided by BOM -->
+        <!-- Jenkins plugins - versions provided by BOM -->
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>warnings-ng</artifactId>
@@ -146,10 +145,8 @@
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-durable-task-step</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-cps</artifactId>
-        </dependency>
+
+
 
         <dependency>
             <groupId>org.mockito</groupId>
@@ -173,8 +170,20 @@
     </dependencies>
 
     <build>
-        <plugins>
+      <resources>
+        <resource>
+          <directory>src/main/resources</directory>
+        </resource>
+        <resource>
+          <directory>${project.basedir}/vars</directory>
+          <targetPath>vars</targetPath>
+          <includes>
+            <include>**/*.groovy</include>
+          </includes>
+        </resource>
+      </resources>
 
+        <plugins>
             <!-- Java 21 bytecode (required), Java 25 runtime allowed -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

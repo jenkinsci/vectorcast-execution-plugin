@@ -299,7 +299,7 @@ def fixup_css(report_name):
         return
 
     with open(report_name,"rb") as fd:
-        data = fd.read().decode(encFmt,"replace")
+        data = fd.read().decode('utf-8','replace')
 
     #fix up inline CSS because of Content Security Policy violation
     newData = data[: data.index("<style>")-1] +  """
@@ -314,7 +314,7 @@ def fixup_css(report_name):
     newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
     
     with open(report_name, "wb") as fd:
-        fd.write(newData.encode(encFmt,"replace"))
+        fd.write(newData.encode('utf-8','replace'))
    
     workspace = os.getenv("WORKSPACE")
     if workspace is None:

@@ -1,11 +1,10 @@
 package com.vectorcast.plugins.vectorcastexecution
 
 
-// Current one from Layla @ TTband
-class VectorCASTUtilsImpl {
+class VectorCASTLogsImpl {
 
     def script
-    VectorCASTUtilsImpl(script) { this.script = script }
+    VectorCASTLogsImpl(script) { this.script = script }
 
     // ===============================================================
     //
