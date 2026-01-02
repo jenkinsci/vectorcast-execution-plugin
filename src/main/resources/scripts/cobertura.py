@@ -167,7 +167,6 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
                     coverAPI.metrics.max_covered_function_calls + coverAPI.metrics.max_annotations_function_calls,
                     coverAPI.metrics.function_calls
                 )
-                method.attrib['functioncall-coverage'] = funcCallPercentStr
                 file.attrib['functioncall-coverage'] = funcCallPercentStr
             if coverAPI.metrics.mcdc_pairs > 0:
                 mcdcPairPercentStr = "{:.2f}% ( {} / {} )".format(
