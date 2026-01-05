@@ -78,15 +78,24 @@ def getReportName(filename):
     
     if searchKeyword(">Aggregate Coverage Report<", filename)[0] != -1:
         env_name = getEnvName("<tr><th>Environment Name</th><td>",filename)
-        if env_name == None:
-            reportName = "Aggregate Coverage Report"
-        else:
-            reportName = "Aggregate Coverage Report {}".format(env_name)
+        reportName = "Aggregate Coverage Report"
+        if env_name:
+            reportName += " " + env_name
             reportType = 1
         
     elif searchKeyword(">Full Status Section<", filename)[0] != -1:
         reportName = "Full Status Report"
         
+    elif searchKeyword("Testcase Management Report", filename)[0] != -1:
+        env_name = getEnvName("<tr><th>Environment Name</th><td>",filename)
+        reportName = "Testcase Management Report " + env_name
+        reportType = 3
+
+    elif searchKeyword("Test Results Management Report", filename)[0] != -1:
+        env_name = getEnvName("<tr><th>Environment Name</th><td>",filename)
+        reportName = "Test Results Management Report " + env_name
+        reportType = 3
+
     elif searchKeyword("Manage Incremental Rebuild Report", filename)[0] != -1:
         reportName = "Incremental Report Report"
     

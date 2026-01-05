@@ -107,8 +107,6 @@ class BaseGenerateXml(object):
         if self.system_tests_status_report_generated:
             return
 
-        report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status.html"
-
         print("    Creating System Test Status " + self.FullManageProjectName)
         for report_name_ext in [".txt", ".html"]:
             report_name = os.path.basename(self.FullManageProjectName)[:-4] + "_system_tests_status" + report_name_ext
@@ -840,8 +838,8 @@ class GenerateManageXml (BaseGenerateXml):
         if not fixup:
             return
 
-        with open(report_name,"r") as fd:
-            data = fd.read()
+        with open(report_name,"rb") as fd:
+            data = fd.read().decode('utf-8','replace')
 
         #fix up inline CSS because of Content Security Policy violation
         newData = data[: data.index("<style>")-1] +  """
@@ -856,7 +854,7 @@ class GenerateManageXml (BaseGenerateXml):
         newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
 
         with open(report_name, "wb") as fd:
-            fd.write(newData.encode(self.encFmt, "replace"))
+            fd.write(newData.encode('utf-8','replace'))
 
         workspace = os.getenv("WORKSPACE")
         if workspace is None:
@@ -1280,8 +1278,6 @@ class GenerateXml(BaseGenerateXml):
 #
 
     def start_system_test_file(self):
-
-
         errors = 0
         failed = 0
         success = 0

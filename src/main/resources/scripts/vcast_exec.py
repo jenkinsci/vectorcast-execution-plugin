@@ -395,21 +395,34 @@ class VectorCASTExecute(object):
 
     def reportCreate(self, report_type, desc):
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
+        from vector.apps.DataAPI.cover_api import CoverApi
         vcproj = VCProjectApi(self.FullMP)
-        
+
+        forCover = {"FULL_REPORT": "AGGREGATE_REPORT",
+                    "MANAGEMENT_REPORT": "COVER_MANAGEMENT_REPORT"}
+
         for env in vcproj.Environment.all():
             if not env.is_active:
                 continue
 
             self.needIndexHtml = True
 
-            report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_management_report.html"
-            report_name = os.path.join(self.output_dir, "management",report_name)
-            print("Creating {} HTML report for {} in {}".format(desc, env.name, report_name))
-            env.api.report(report_type=report_type, formats=["HTML"], output_file=report_name)
+            if "MANAGEMENT_REPORT" in report_type:
+                report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_management_report.html"
+                report_name = os.path.join(self.output_dir, "management",report_name)
+                print("Creating {} HTML report for {} in {}".format(desc, env.name, report_name))
+            else:
+                report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_full_report.html"
+                report_name = os.path.join(self.output_dir, "management",report_name)
+                print("Creating {} HTML report for {} in {}".format(desc, env.name, report_name))
+                
+            if isinstance(env.api, CoverApi):
+                env.api.report(report_type=forCover[report_type], formats=["HTML"], output_file=report_name)
+            else:
+                env.api.report(report_type=report_type, formats=["HTML"], output_file=report_name)
 
         vcproj.close()
-        
+
     def generateTestCaseMgtRpt(self):
         if not os.path.exists(os.path.join(self.output_dir, "management")):
             os.makedirs(os.path.join(self.output_dir, "management"))
@@ -421,9 +434,9 @@ class VectorCASTExecute(object):
             print("Creating Test Case Management HTML report")
 
             self.reportCreate(
-                report_type = "MANAGEMENT_REPORT", 
+                report_type = "MANAGEMENT_REPORT",
                 desc = "Test Case Management"
-            )                
+            )
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
 
@@ -438,9 +451,9 @@ class VectorCASTExecute(object):
         if checkVectorCASTVersion(21):
             print("Creating Unit Test Case Full Report")
             self.reportCreate(
-                report_type = "FULL_REPORT", 
+                report_type = "FULL_REPORT",
                 desc = "Full Report"
-            )                
+            )
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
 
