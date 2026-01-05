@@ -56,6 +56,11 @@ public abstract class VectorCASTGroovyBridge implements Serializable {
         this.implClassName = Objects.requireNonNull(implClassName, "implClassName");
     }
 
+    /** Getter for pipeline script. */
+    protected final CpsScript getScript() {
+        return script;
+    }
+
     /**
      * Gets (and lazily creates) the Groovy delegate implementation object.
      *

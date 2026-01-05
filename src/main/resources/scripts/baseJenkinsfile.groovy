@@ -78,8 +78,113 @@ def VC = [
     healthyTarget:      VC_Healthy_Target,
     useThreshold:       VC_Use_Threshold,
     failurePhrases:     VC_failurePhrases,
-    unstablePhrases:    VC_unstablePhrases
+    unstablePhrases:    VC_unstablePhrases,
+    createdWithVersion: VC_createdWithVersion,
+    vcastProjectDir:    (env.VCAST_PROJECT_DIR?.trim() ? env.VCAST_PROJECT_DIR.trim() : ""),
+    forceNodeExecName:  (env.VCAST_FORCE_NODE_EXEC_NAME?.trim() ? env.VCAST_FORCE_NODE_EXEC_NAME.trim() : ""),
+
+    // below are the DSL script shortcuts
+    execDsl:            VectorCASTExecution,
+    logsDsl:            VectorCASTLogs,
+    addToolsDsl:        VectorCASTAdditionalTools,
+    helpersDsl:         VectorCASTHelpers,
+    metricsDsl:         VectorCASTMetrics,
+    singleDsl:          VectorCASTSingleCheckout
 ]
+
+def runCommands(cmds) {
+    // clean out old command.log file
+    writeFile file: "command.log", text: ""
+    
+    if (isUnix()) {
+        sh label : 'Running VectorCAST Commands', returnStdout: false, script: cmds
+    } else {
+        bat label : 'Running VectorCAST Commands', returnStdout: false, script: cmds
+    }
+    // get the log file and return it
+    return (readFile("command.log"))
+}
+
+// ===============================================================
+// Function : pluginCreateSummary
+// ===============================================================
+def pluginCreateSummary(inIcon, inText) {
+    try {
+        createSummary icon: inIcon, text: inText
+    } catch (Exception e) {
+        addSummary icon: inIcon, text: inText
+    }
+}
+
+
+def makeStepFromSpec(VC, spec) {
+    return {
+        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+            node(spec.nodeID as String) {
+
+                if (!VC.oneChkDir) {
+                    scmStep()
+                }
+
+                step([$class: 'VectorCASTSetup'])
+
+                // run commands via your CPS-safe runner
+                def buildLogText = runCommands(spec.cmds)
+
+                writeFile file: "${spec.compiler}_${spec.test_suite}_${spec.environment}_build.log",
+                          text: buildLogText
+
+                stash includes: "${spec.compiler}_${spec.test_suite}_${spec.environment}_build.log, ...",
+                      name: spec.stashName
+            }
+        }
+    }
+}
+
+def stepsForJobList(VC, localEnvList) {
+    def jobList = [:]
+    localEnvList.each { line ->
+        def spec = VectorCASTExecution.buildStepSpec(VC, line)
+        jobList[line] = makeStepFromSpec(VC, spec)
+    }
+
+    return jobList
+}
+
+// ===============================================================
+//
+// Function : concatenateBuildLogs
+// Inputs   : file list
+// Action   : Concatenate build logs into one file
+// Returns  : None
+// Notes    : Generate-Overall-Reports
+//
+// ===============================================================
+
+def concatenateBuildLogs(logFileNames, outputFileName) {
+
+    def cmd = ""
+    if (isUnix()) {
+        cmd =  "cat "
+    } else {
+        cmd =  "type "
+    }
+
+    cmd += logFileNames.join(" ") + " > " + outputFileName
+
+    return runCommands(cmd)
+}
+
+def getRepo(VC) {
+    scmStep()
+
+    // If there are post SCM checkout steps, do them now
+    if (VC.postSCMSteps) {
+        def cmds = VectorCASTExecution.getRunCommands(VC, VC.postSCMSteps)
+        runCommands(cmds)
+    }
+}
+
 
 // ***************************************************************
 //
@@ -93,11 +198,13 @@ pipeline {
     agent {label VC.label as String}
 
     stages {
-
         stage('Update for Single Checkout') {
             steps {
                 script {
-                    VectorCASTStages.updateForSingleCheckout(VC)
+                    def needsCheckout = VectorCASTSingleCheckout.updateForSingleCheckout(VC)
+                    if (needsCheckout) {
+                        getRepo(VC)
+                    }
                 }
             }
         }
@@ -105,10 +212,27 @@ pipeline {
         stage('Get Environment Info') {
             steps {
                 script {
-                    def envInfo = VectorCASTStages.getEnvironmentInfo(VC)
+                    
+                    if (currentBuild.description == null) {
+                        currentBuild.description = ""
+                    }
 
-                    VC.UtEnvList  = envInfo[0]
-                    VC.StEnvList  = envInfo[1]
+                    if (!VC.oneChkDir) {
+                        getRepo(VC)
+                    }
+
+                    step([$class: 'VectorCASTSetup'])
+
+                    def cmds = """"""
+                    cmds += """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive
+                               _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC.mpName} --type
+                    """
+                    
+                    def runCmds = VectorCASTExecution.getRunCommands(VC, cmds)
+                    def getJobsLog = runCommands(runCmds)
+                    def (UtEnvList, StEnvList) = VectorCASTEnvInfo.getEnvironmentInfo(getJobsLog)
+                    VC.StEnvList = StEnvList
+                    VC.UtEnvList = UtEnvList
                 }
             }
         }
@@ -117,8 +241,17 @@ pipeline {
         stage('System Test Build Execute Stage') {
             steps {
                 script {
-                    VectorCASTStages.systemTestingSerial(VC)
-               }
+                    runCommands(VectorCASTExecution.getSetupManageProject(VC))
+
+                    // Get the job list from the system test environment listed
+                    def jobs = stepsForJobList(VC, VC.StEnvList)
+
+                    // run each of those jobs in serial
+                    jobs.each { name, job ->
+                        echo ("Running System Test Job: " + name)
+                        job.call()
+                    }
+                }
             }
         }
 
@@ -126,7 +259,28 @@ pipeline {
         stage('Unit Test Build Execute Stage') {
             steps {
                 script {
-                    VectorCASTStages.unitTestingParallel(VC)
+                    runCommands(VectorCASTExecution.getSetupManageProject(VC))
+
+                    // Get the job list from the unit test environment listed
+                    def jobs = stepsForJobList(VC, VC.UtEnvList)
+
+                    if (VC.maxParallel) {
+                        def runningJobs = [:]
+                        jobs.each { job ->
+                            runningJobs.put(job.key, job.value)
+                            if (runningJobs.size() == VC.maxParallel) {
+                                parallel(runningJobs)
+                                runningJobs = [:]
+                            }
+                        }
+                        if (runningJobs.size() > 0) {
+                            parallel(runningJobs)
+                            runningJobs = [:]
+                        }
+                    } else {
+                        // run those jobs in parallel
+                        parallel(jobs)
+                    }
                 }
             }
         }
@@ -135,23 +289,76 @@ pipeline {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 
-                    // Run the setup step to copy over the scripts
                     step([$class: 'VectorCASTSetup'])
 
-                    // run script to unstash files and generate results/reports
                     script {
-                        // --report_only_failures - report on only failed test cases
-                        // --no_full_report - Don't generate full reports
-                        // --dont-generate-individual-reports -
-                        //      Below VC2019 - this just controls execution report generate.
-                        //      VC2019 and later - execution reports for each testcase won't be generated
-                        //
-                        // Example: extraResultOptions = ['--report_only_failures', '--no_full_report', '--dont-generate-individual-reports' ]
+                        def buildFileNames = []
+                        def cmds = ""
+                        def buildLogText = ""
 
-                        // add options from above as needed
-                        def extraResultOptions = []
-                        VectorCASTStages.generateOverallReports(VC, extraResultOptions)
+                        (VC.UtEnvList + VC.StEnvList).each {
+                            def ret = VectorCASTMetrics.getMetricsEnvCmds(VC, it)
+
+                            buildFileNames << ret.buildFileName
+
+                            cmds = VectorCASTExecution.getRunCommands(VC, ret.cmds)
+                            
+                            unstash(ret.stashName)
+                            buildLogText += runCommands(cmds)
+                        }
+                        
+                        concatenateBuildLogs(buildFileNames, "unstashed_build.log")
+
+                        cmds = VectorCASTMetrics.getMetricsCmds(VC, [""])
+                        
+                        buildLogText += runCommands(cmds)
+                        
+                        writeFile file: "metrics_build.log", text: buildLogText
+                        buildFileNames << "metrics_build.log"
+                        
+                        concatenateBuildLogs(buildFileNames, "complete_build.log")
+
+                        (foundKeywords, failureFlag, unstableFlag) = VC.logsDsl.checkBuildLogForErrors(VC, "complete_build.log")
+                        if (failureFlag) {
+                            throw new Exception ("Error in Commands: " + foundKeywords)
+                        }
+                        
+                        if (VC.useCoverPlgin) {
+                            // Send reports to the Jenkins Coverage Plugin
+                            discoverReferenceBuild()
+                            if (VC.useCoverHist) {
+                                recordCoverage qualityGates: [[baseline: 'PROJECT_DELTA', criticality: 'NOTE', metric: 'LINE', threshold: -0.001], [baseline: 'PROJECT_DELTA', criticality: 'FAILURE', metric: 'BRANCH', threshold: -0.001]], tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
+                            } else {
+                                recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
+                            }
+
+                        } else {
+                            def currResult = ""
+                            if (VC.useCoverHist) {
+                                currResult = currentBuild.result
+                            }
+
+                            // Send reports to the VectorCAST Coverage Plugin
+                            step([$class: 'VectorCASTPublisher',
+                                         includes: 'xml_data/coverage_results*.xml',
+                                         useThreshold: VC.useThreshold,
+                                         healthyTarget:   VC.healthyTarget,
+                                         useCoverageHistory: VC.useCoverHist,
+                                         maxHistory : 20])
+
+                            if (VC.useCoverHist) {
+                                if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
+                                    pluginCreateSummary("icon-error icon-xlg", "Code Coverage Decreased")
+                                    currentBuild.description += "Code coverage decreased.  See console log for details\n"
+                                    addBadge(
+                                            icon: "icon-error icon-xlg",
+                                            text: "Code Coverage Decreased"
+                                    )
+                                }
+                            }
+                        }
                     }
+
 
                     // Send test results to JUnit plugin
                     step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
@@ -166,7 +373,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
-                        VectorCASTStages.checkBuildLog(VC)
+                        VectorCASTLogs.checkBuildLog(VC)
                     }
                 }
             }
@@ -176,7 +383,22 @@ pipeline {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
-                        VectorCASTStages.additionalTools(VC)
+                        def cmds = ""
+
+                        // If there's a PC Lint Plus command...
+                        if (VC.usePclp) {
+                            cmds = VectorCASTExecution.getRunCommands(VC, VC.pLcpCmd)
+                            runCommands(cmds)
+                            recordIssues(tools: [pcLint(pattern: VC.pclpRsltPattern,reportEncoding: 'UTF-8')])
+                            archiveArtifacts(allowEmptyArchive: true,artifacts: VC.pclpRsltPattern)
+                        }
+
+                        // If we are using Squore...
+                        if (VC.useSquore) {
+                            cmds = VectorCASTExecution.getRunCommands(VC, VC.squoreCmd)
+                            runCommands(cmds)
+                            archiveArtifacts(allowEmptyArchive: true,artifacts: 'xml_data/squore_results*.xml')
+                        }
                     }
                 }
             }

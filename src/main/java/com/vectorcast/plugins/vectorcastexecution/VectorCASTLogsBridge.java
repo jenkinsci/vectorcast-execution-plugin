@@ -40,4 +40,11 @@ public class VectorCASTLogsBridge extends VectorCASTGroovyBridge {
     public Object checkBuildLogForErrors(final Object VC, final String logFile) {
         return getDelegate().invokeMethod("checkBuildLogForErrors", new Object[]{VC, logFile});
     }
+
+    /**
+     * Forwards to Groovy: {@code checkBuildLog(logFile)}.
+     */
+    public Object checkBuildLog(final Object VC) {
+        return getDelegate().invokeMethod("checkBuildLog", VC);
+    }
 }
