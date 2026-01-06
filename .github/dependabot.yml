@@ -5,7 +5,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "tms_079"
+    target-branch: "tms_079_dependbot"
     open-pull-requests-limit: 10
     commit-message:
       prefix: ""
