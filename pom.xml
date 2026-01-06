@@ -247,7 +247,7 @@
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
-                <version>3.9</version>
+                <version>3.1787.vd08d76c755ef</version>
                 <extensions>true</extensions>
                 <configuration>
                     <minimumJavaVersion>21</minimumJavaVersion>
