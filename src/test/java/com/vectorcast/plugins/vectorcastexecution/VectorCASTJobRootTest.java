@@ -1,57 +1,35 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
-import com.cloudbees.hudson.plugins.folder.Folder;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.junit.Rule;
-import org.junit.Test;
+import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
+import org.htmlunit.html.HtmlPage;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+@WithJenkins
 public class VectorCASTJobRootTest {
 
-    /** Jenkins rule for testing. */
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
-
-    /**
-     * Ensure the global RootAction extension loads.
-     */
     @Test
-    public void loadsGlobalRootAction() {
-        boolean hasRootAction = r.jenkins.getExtensionList(hudson.model.RootAction.class).stream()
-            .anyMatch(a -> a instanceof VectorCASTJobRoot);
-
-        assertThat("VectorCASTJobRoot should be registered as a RootAction", hasRootAction, is(true));
+    public void loadsAsExtension_andHasUrl(JenkinsRule rule) {
+        var list = rule.jenkins.getExtensionList(VectorCASTJobRoot.class);
+        assertThat("extension should load", list, is(not(empty())));
+        VectorCASTJobRoot action = list.get(0);
+        assertThat(action.getUrlName(), is("VectorCAST"));
+        assertThat(action.getDisplayName(), is("VectorCAST"));
+        assertThat(action.getIconFileName(), is("/plugin/vectorcast-execution/icons/vector_favicon_bw.png"));
+        action.getDynamic("VectorCAST");
     }
 
-    /**
-     * Ensure a folder gets a VectorCASTFolderAction attached by the factory.
-     * @throws Exception 
-     */
     @Test
-    public void folderGetsVectorCASTAction() throws Exception {
-        Folder f = r.jenkins.createProject(Folder.class, "myFolder");
-
-        System.out.println("Folder actions:");
-        f.getAllActions().forEach(a -> System.out.println(" - " + a.getClass()));
-
-        boolean hasFolderAction = f.getAllActions().stream()
-            .anyMatch(a -> a instanceof VectorCASTFolderAction);
-
-        assertThat("Folder should contain a VectorCASTFolderAction", hasFolderAction, is(true));
-    }
-
-    /**
-     * Ensure the folder VectorCAST page renders correctly (index.jelly).
-     * @throws Exception 
-     */
-    @Test
-    public void folderVectorCASTPageRenders() throws Exception {
-        Folder f = r.jenkins.createProject(Folder.class, "myFolder");
-
-        // Try to load the VectorCAST folder action page
-        r.createWebClient().goTo("job/myFolder/VectorCAST/");
+    public void rendersIndexJelly(JenkinsRule rule) throws Exception {
+        var wc = rule.createWebClient();
+        HtmlPage page = wc.goTo("VectorCAST");           // same as "/my-action/"
+        assertThat(page.getTitleText(), containsString("VectorCAST"));
+        assertThat(page.asNormalizedText(), containsString("VectorCAST Jobs"));
     }
 }

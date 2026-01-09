@@ -58,11 +58,11 @@ public class VectorCASTJobSingle extends JobBase {
     /** Constructor when creating inside a folder.
      * @param inputFolder - location of where to create job
      */
-    public VectorCASTJobSingle(Folder inputFolder){
+    public VectorCASTJobSingle(final Folder inputFolder) {
         super(inputFolder);
     }
     /** Default constructor. */
-    public VectorCASTJobSingle(){
+    public VectorCASTJobSingle() {
         this(null);
     }
     /**
@@ -126,7 +126,7 @@ public class VectorCASTJobSingle extends JobBase {
             throws ServletException, IOException, Descriptor.FormException {
         try {
             // Create single-job
-            NewSingleJob job = new NewSingleJob(request, response, folder);
+            NewSingleJob job = new NewSingleJob(request, response, getFolder());
 
             job.create();
             projectName = job.getProjectName();

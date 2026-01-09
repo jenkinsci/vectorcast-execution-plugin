@@ -39,7 +39,6 @@ import java.io.InputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.IOUtils;
 
@@ -48,10 +47,8 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -105,6 +102,7 @@ public class NewPipelineJob extends BaseJob {
      *
      * @param request   request object
      * @param response  response object
+     * @param inputFolder folder to create the jobs
      * @throws ServletException exception
      * @throws IOException      exception
      * @throws ScmConflictException      exception
@@ -224,7 +222,8 @@ public class NewPipelineJob extends BaseJob {
         try {
             String configPath = configFile.getAbsolutePath();
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory =
+                    DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(configPath);
 
@@ -242,28 +241,29 @@ public class NewPipelineJob extends BaseJob {
             // Now create the job **in the correct parent**
             InputStream xmlInput = new FileInputStream(configFile);
 
-            ItemGroup<?> parent = (getFolder() != null) ? getFolder() : getInstance();
+            ItemGroup<?> parent = (getFolder() != null)
+                    ? getFolder() : getInstance();
 
             Logger.getLogger("NewPipelineJob")
-                    .info("Creating job '" + getProjectName() +
-                            "' in parent: " + parent.getFullName());
+                .info("Creating job '" + getProjectName()
+                + "' in parent: " + parent.getFullName());
 
             Logger.getLogger("NewPipelineJob").info(
-                    "DEBUG getFolder() = " + (getFolder() == null ? "NULL" : getFolder().getFullName())
+                "DEBUG getFolder() = "
+                + (getFolder() == null ? "NULL" : getFolder().getFullName())
             );
 
-            if (parent instanceof com.cloudbees.hudson.plugins.folder.Folder) {
-                com.cloudbees.hudson.plugins.folder.Folder f =
-                        (com.cloudbees.hudson.plugins.folder.Folder) parent;
+            if (parent instanceof Folder) {
+                Folder currFolder = (Folder) parent;
 
-                f.createProjectFromXML(getProjectName(), xmlInput);
+                currFolder.createProjectFromXML(getProjectName(), xmlInput);
 
             } else if (parent instanceof Jenkins) {
                 Jenkins.get().createProjectFromXML(getProjectName(), xmlInput);
             } else {
                 throw new IllegalStateException(
-                        "Cannot create project in parent of type: " +
-                                parent.getClass().getName()
+                    "Cannot create project in parent of type: "
+                    + parent.getClass().getName()
                 );
             }
 
@@ -275,7 +275,8 @@ public class NewPipelineJob extends BaseJob {
         }
 
         if (!configFile.delete()) {
-            throw new IOException("Unable to delete: " + configFile.getAbsolutePath());
+            throw new IOException("Unable to delete: "
+                + configFile.getAbsolutePath());
         }
     }
 
@@ -465,7 +466,7 @@ public class NewPipelineJob extends BaseJob {
         if (sInVar == null || sInVar.trim().isEmpty()) {
             retStr = "\"\"";
         } else {
-            retStr = "'''" + sInVar + "'''\n";
+            retStr = "'''" + sInVar + "'''";
         }
 
         return retStr;
@@ -473,7 +474,6 @@ public class NewPipelineJob extends BaseJob {
     /**
      * Generates the <script> portion of the config.xml
      * which defines the pipeline for this pipeline job.
-     *
      *
      * @return script portion of pipeline job.
      * @throws IOException
@@ -607,7 +607,6 @@ public class NewPipelineJob extends BaseJob {
         }
 
         return  topOfJenkinsfile + baseJenkinsfile;
-
     }
 
 

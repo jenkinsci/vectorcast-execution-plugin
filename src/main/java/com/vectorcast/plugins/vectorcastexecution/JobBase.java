@@ -44,12 +44,13 @@ public abstract class JobBase implements ExtensionPoint, Action,
     private SCM scm;
 
     /** Folder location of where the job gets created. */
-    protected Folder folder;
+    private Folder folder;
 
     /**
-     * Default Constructor.
+     * Parameter Constructor.
+     * @param inputFolder - location of where the job gets created
      */
-    public JobBase(Folder inputFolder) {
+    public JobBase(final Folder inputFolder) {
         folder = inputFolder;
         scm = new NullSCM();
     }
@@ -59,6 +60,7 @@ public abstract class JobBase implements ExtensionPoint, Action,
     public JobBase() {
         scm = new NullSCM();
     }
+
     /**
      * Get the SCM.
      * @return the SCM
@@ -66,6 +68,7 @@ public abstract class JobBase implements ExtensionPoint, Action,
     public SCM getTheScm() {
         return scm;
     }
+
     /**
      * Set the SCM object.
      * @param inScm new SCM
@@ -73,6 +76,7 @@ public abstract class JobBase implements ExtensionPoint, Action,
     public void setTheScm(final SCM inScm) {
         this.scm = inScm;
     }
+
     /**
      * Default icon name.
      * @return icon name
@@ -114,6 +118,7 @@ public abstract class JobBase implements ExtensionPoint, Action,
             return null;
         }
     }
+
     /**
      * Default URL name.
      * @return url name
@@ -122,6 +127,7 @@ public abstract class JobBase implements ExtensionPoint, Action,
     public String getUrlName() {
         return getClass().getSimpleName();
     }
+
     /**
      * Default display name.
      * @return name
@@ -130,6 +136,7 @@ public abstract class JobBase implements ExtensionPoint, Action,
     public String getDisplayName() {
         return getClass().getSimpleName();
     }
+
     /**
      * Default descriptor.
      * @return descriptor
@@ -145,5 +152,21 @@ public abstract class JobBase implements ExtensionPoint, Action,
      */
     public static ExtensionList<JobBase> all() {
         return Jenkins.get().getExtensionList(JobBase.class);
+    }
+
+    /**
+     * Getter for folder.
+     * @return current folder
+     */
+    public Folder getFolder() {
+        return folder;
+    }
+
+    /**
+     * Getter for folder.
+     * @param inputFolder current folder to create job
+     */
+    public void setFolder(final Folder inputFolder) {
+        folder = inputFolder;
     }
 }

@@ -26,33 +26,34 @@ package com.vectorcast.plugins.vectorcastexecution;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import org.junit.ClassRule;
-import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+@WithJenkins
 public class VectorCASTCommandTest {
-    @ClassRule
-    public static JenkinsRule jenkins = new JenkinsRule();
     
     @Test
-    public void testOnWindows() throws Exception {
+    public void testOnWindows(JenkinsRule rule) throws Exception {
         // Only applies on Windows
         if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
-            FreeStyleProject project = jenkins.createFreeStyleProject();
+            FreeStyleProject project = rule.createFreeStyleProject();
             project.getBuildersList().add(new VectorCASTCommand("echo \"Windows Command\"", "Unix Command"));
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-            jenkins.assertBuildStatus(Result.SUCCESS, build);
+            rule.assertBuildStatus(Result.SUCCESS, build);
         }
     }
     
     @Test
-    public void testOnLinux() throws Exception {
+    public void testOnLinux(JenkinsRule rule) throws Exception {
         // Only applies on Windows
         if (System.getProperty("os.name").toLowerCase().indexOf("win") == -1) {
-            FreeStyleProject project = jenkins.createFreeStyleProject();
+            FreeStyleProject project = rule.createFreeStyleProject();
             project.getBuildersList().add(new VectorCASTCommand("Windows Command", "echo \"Unix Command\""));
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-            jenkins.assertBuildStatus(Result.SUCCESS, build);
+            rule.assertBuildStatus(Result.SUCCESS, build);
         }
     }
 }

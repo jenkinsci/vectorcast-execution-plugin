@@ -18,11 +18,6 @@ import net.sf.json.JSONObject;
 
 import hudson.tasks.junit.JUnitResultArchiver;
 import hudson.plugins.copyartifact.CopyArtifact;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -31,6 +26,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.when;
+import org.mockito.Mockito;
 
 import io.jenkins.plugins.coverage.metrics.steps.CoverageRecorder;
 import io.jenkins.plugins.coverage.metrics.steps.CoverageTool;
@@ -39,20 +35,14 @@ import java.util.List;
 import java.io.IOException;
 import javax.servlet.ServletException;
 
-
+import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.model.Descriptor.FormException;
 
-// import hudson.scm.SCM;
-// import jenkins.plugins.git.GitSCMBuilder;
-// import jenkins.scm.api.SCMHead;WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
-//WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/D:/vector/tools/apache-maven-3.9.11/lib/guice-5.1.0-classes.jar)
-//WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
-//WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-// import hudson.scm.subversion.*;
-// import hudson.scm.SubversionSCM;
-// import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
-
+@WithJenkins
 public class NewSingleJobTest {
 
     final String DEFAULT_ARTIFACT_LIST = "**/*.html, xml_data/**/*.xml,"
@@ -69,111 +59,100 @@ public class NewSingleJobTest {
     /** VectorCAST Coverage plugin selection. */
     private static final long USE_VCC_PLUGIN = 2;
 
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
     private static final String PROJECTNAME = "project.vcast.single";
 
-    @BeforeEach
-    void setUpStaticMocks() {
-    }
-
-    @AfterEach
-    void tearDownStaticMocks() {
-    }
-
-    private NewSingleJob setupTestBasic(JSONObject jsonForm) throws ServletException, IOException,
+    private NewSingleJob setupTestBasic(JSONObject jsonForm, JenkinsRule rule) throws ServletException, IOException,
             ExternalResultsFileException, FormException, JobAlreadyExistsException,
             InvalidProjectFileException, Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         MockAuthorizationStrategy mockStrategy = new MockAuthorizationStrategy();
         mockStrategy.grant(Jenkins.READ).everywhere().to("devel");
         for (Permission p : Item.PERMISSIONS.getPermissions()) {
             mockStrategy.grant(p).everywhere().to("devel");
         }
-        j.jenkins.setAuthorizationStrategy(mockStrategy);
+        rule.jenkins.setAuthorizationStrategy(mockStrategy);
 
         StaplerRequest request = Mockito.mock(StaplerRequest.class);
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
 
         when(request.getSubmittedForm()).thenReturn(jsonForm);
-        Folder folder = j.jenkins.createProject(Folder.class, "test_single");
+        Folder folder = rule.jenkins.createProject(Folder.class, "test_single");
 
         NewSingleJob job = new NewSingleJob(request, response, folder);
 
-        Assert.assertEquals("project", job.getBaseName());
+        assertEquals("project", job.getBaseName());
         job.create();
-        Assert.assertEquals(PROJECTNAME, job.getProjectName());
-        Assert.assertNotNull(job.getTopProject());
+        assertEquals(PROJECTNAME, job.getProjectName());
+        assertNotNull(job.getTopProject());
 
         return job;
     }
 
     private void checkJunitGroovy(DescribableList<Publisher,Descriptor<Publisher>> publisherList, int jUnitIndex, int groovyIndex) {
         // Publisher 1- JUnitResultArchiver
-        Assert.assertTrue(publisherList.get(jUnitIndex) instanceof JUnitResultArchiver);
+        assertTrue(publisherList.get(jUnitIndex) instanceof JUnitResultArchiver);
         JUnitResultArchiver jUnit = (JUnitResultArchiver)publisherList.get(jUnitIndex);
-        Assert.assertEquals("**/test_results_*.xml", jUnit.getTestResults());
+        assertEquals("**/test_results_*.xml", jUnit.getTestResults());
 
         // Publisher 5 - GroovyPostbuildRecorder
-        Assert.assertTrue(publisherList.get(groovyIndex) instanceof GroovyPostbuildRecorder);
+        assertTrue(publisherList.get(groovyIndex) instanceof GroovyPostbuildRecorder);
         GroovyPostbuildRecorder groovyScript = (GroovyPostbuildRecorder)publisherList.get(groovyIndex);
-        Assert.assertEquals(/*unstable*/1, groovyScript.getBehavior());
+        assertEquals(/*unstable*/1, groovyScript.getBehavior());
 
     }
 
     private void checkArchiverList(ArtifactArchiver archiver, String artifactsList) {
         String artifactsFromArchiver = archiver.getArtifacts();
-        Assert.assertEquals(artifactsList,artifactsFromArchiver);
-        Assert.assertFalse(archiver.getAllowEmptyArchive());
+        assertEquals(artifactsList,artifactsFromArchiver);
+        assertFalse(archiver.getAllowEmptyArchive());
     }
 
     private void checkVectorCASTPublisher(DescribableList<Publisher,Descriptor<Publisher>> publisherList, Boolean useCoverageHistory, int vcPubIndex) {
         // Publisher 2 - VectorCASTPublisher
-        Assert.assertTrue(publisherList.get(vcPubIndex) instanceof VectorCASTPublisher);
+        assertTrue(publisherList.get(vcPubIndex) instanceof VectorCASTPublisher);
         VectorCASTPublisher vcPublisher = (VectorCASTPublisher)publisherList.get(vcPubIndex);
-        Assert.assertEquals("**/coverage_results_*.xml", vcPublisher.getIncludes());
-        Assert.assertEquals(useCoverageHistory, vcPublisher.getUseCoverageHistory());
-        Assert.assertEquals("**/coverage_results_*.xml", vcPublisher.getIncludes());
-        Assert.assertEquals(80, vcPublisher.getHealthReports().getMaxBasisPath());
-        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinBasisPath());
-        Assert.assertEquals(100, vcPublisher.getHealthReports().getMaxStatement());
-        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinStatement());
-        Assert.assertEquals(70, vcPublisher.getHealthReports().getMaxBranch());
-        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinBranch());
-        Assert.assertEquals(80, vcPublisher.getHealthReports().getMaxFunction());
-        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinFunction());
-        Assert.assertEquals(80, vcPublisher.getHealthReports().getMaxFunctionCall());
-        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinFunctionCall());
-        Assert.assertEquals(80, vcPublisher.getHealthReports().getMaxMCDC());
-        Assert.assertEquals(0, vcPublisher.getHealthReports().getMinMCDC());
+        assertEquals("**/coverage_results_*.xml", vcPublisher.getIncludes());
+        assertEquals(useCoverageHistory, vcPublisher.getUseCoverageHistory());
+        assertEquals("**/coverage_results_*.xml", vcPublisher.getIncludes());
+        assertEquals(80, vcPublisher.getHealthReports().getMaxBasisPath());
+        assertEquals(0, vcPublisher.getHealthReports().getMinBasisPath());
+        assertEquals(100, vcPublisher.getHealthReports().getMaxStatement());
+        assertEquals(0, vcPublisher.getHealthReports().getMinStatement());
+        assertEquals(70, vcPublisher.getHealthReports().getMaxBranch());
+        assertEquals(0, vcPublisher.getHealthReports().getMinBranch());
+        assertEquals(80, vcPublisher.getHealthReports().getMaxFunction());
+        assertEquals(0, vcPublisher.getHealthReports().getMinFunction());
+        assertEquals(80, vcPublisher.getHealthReports().getMaxFunctionCall());
+        assertEquals(0, vcPublisher.getHealthReports().getMinFunctionCall());
+        assertEquals(80, vcPublisher.getHealthReports().getMaxMCDC());
+        assertEquals(0, vcPublisher.getHealthReports().getMinMCDC());
     }
 
     private void checkCoveragePlugin(DescribableList<Publisher,Descriptor<Publisher>> publisherList, int pubListIndex) {
 
         // Publisher 2 - CoverageRecorder
-        Assert.assertTrue(publisherList.get(pubListIndex) instanceof CoverageRecorder);
+        assertTrue(publisherList.get(pubListIndex) instanceof CoverageRecorder);
         CoverageRecorder publisher = (CoverageRecorder) publisherList.get(pubListIndex);
 
         // CoverageRecorder > CoverageTool
         List<CoverageTool> coverageToolsList = publisher.getTools();
-        Assert.assertEquals(1, coverageToolsList.size());
-        Assert.assertTrue(coverageToolsList.get(0) instanceof CoverageTool);
+        assertEquals(1, coverageToolsList.size());
+        assertTrue(coverageToolsList.get(0) instanceof CoverageTool);
         CoverageTool coverageTool = coverageToolsList.get(0);
 
-        Assert.assertEquals("xml_data/cobertura/coverage_results*.xml", coverageTool.getPattern());
-        Assert.assertEquals(Parser.VECTORCAST, coverageTool.getParser());
+        assertEquals("xml_data/cobertura/coverage_results*.xml", coverageTool.getPattern());
+        assertEquals(Parser.VECTORCAST, coverageTool.getParser());
     }
 
     private void checkBuildWrappers(NewSingleJob job, int builderSize){
 
         // Check build wrappers...
         DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList = job.getTopProject().getBuildWrappersList();
-        Assert.assertEquals(builderSize, bldWrappersList.size());
+        assertEquals(builderSize, bldWrappersList.size());
         BuildWrapper wrapper = bldWrappersList.get(0);
-        Assert.assertTrue(wrapper instanceof PreBuildCleanup);
+        assertTrue(wrapper instanceof PreBuildCleanup);
         PreBuildCleanup cleanup = (PreBuildCleanup)wrapper;
-        Assert.assertTrue(cleanup.getDeleteDirs());
+        assertTrue(cleanup.getDeleteDirs());
     }
 
     private void checkBuildAction (NewSingleJob job, Boolean checkBuildAction) {
@@ -181,26 +160,26 @@ public class NewSingleJobTest {
         DescribableList<Builder,Descriptor<Builder>> bldrsList = job.getTopProject().getBuildersList();
 
         if (checkBuildAction) {
-            Assert.assertEquals(3, bldrsList.size());
-            Assert.assertTrue(bldrsList.get(0) instanceof CopyArtifact);
-            Assert.assertTrue(bldrsList.get(1) instanceof VectorCASTSetup);
-            Assert.assertTrue(bldrsList.get(2) instanceof VectorCASTCommand);
+            assertEquals(3, bldrsList.size());
+            assertTrue(bldrsList.get(0) instanceof CopyArtifact);
+            assertTrue(bldrsList.get(1) instanceof VectorCASTSetup);
+            assertTrue(bldrsList.get(2) instanceof VectorCASTCommand);
         } else {
-            Assert.assertEquals(2, bldrsList.size());
-            Assert.assertTrue(bldrsList.get(0) instanceof VectorCASTSetup);
-            Assert.assertTrue(bldrsList.get(1) instanceof VectorCASTCommand);
+            assertEquals(2, bldrsList.size());
+            assertTrue(bldrsList.get(0) instanceof VectorCASTSetup);
+            assertTrue(bldrsList.get(1) instanceof VectorCASTCommand);
         }
     }
 
     private void checkImportedResults(NewSingleJob job, long useLocalResults, Boolean useExternalResults, String externalResultsFilename) {
         if (useLocalResults == USE_LOCAL_IMPORTED_RESULTS) {
-            Assert.assertTrue(job.getUseLocalImportedResults());
+            assertTrue(job.getUseLocalImportedResults());
         }
         else if (useLocalResults == USE_EXTERNAL_IMPORTED_RESULTS) {
-            Assert.assertFalse(job.getUseLocalImportedResults());
+            assertFalse(job.getUseLocalImportedResults());
         }
-        Assert.assertEquals(useExternalResults, job.getUseExternalImportedResults());
-        Assert.assertEquals(externalResultsFilename, job.getExternalResultsFilename());
+        assertEquals(useExternalResults, job.getUseExternalImportedResults());
+        assertEquals(externalResultsFilename, job.getExternalResultsFilename());
     }
 
     private void checkAdditionalTools (NewSingleJob job,
@@ -208,9 +187,9 @@ public class NewSingleJobTest {
             final String pclpCommand,
             final String pclpResultsPattern) {
 
-        Assert.assertEquals(squoreCommand, job.getSquoreCommand());
-        Assert.assertEquals(pclpCommand, job.getPclpCommand());
-        Assert.assertEquals(pclpResultsPattern, job.getPclpResultsPattern());
+        assertEquals(squoreCommand, job.getSquoreCommand());
+        assertEquals(pclpCommand, job.getPclpCommand());
+        assertEquals(pclpResultsPattern, job.getPclpResultsPattern());
     }
 
     private void checkOptions (NewSingleJob job,
@@ -222,17 +201,17 @@ public class NewSingleJobTest {
                 Boolean useImportedResults,
                 Boolean useCoverageHistory) {
 
-        Assert.assertEquals(optionExecutionReport, job.getOptionExecutionReport());
-        Assert.assertEquals(optionUseReporting, job.getOptionUseReporting());
-        Assert.assertEquals(useCiLicense, job.getUseCILicenses());
-        Assert.assertEquals(useStrictTestcaseImport, job.getUseStrictTestcaseImport());
-        Assert.assertEquals(useRGW3, job.getUseRGW3());
-        Assert.assertEquals(useImportedResults, job.getUseImportedResults());
-        Assert.assertEquals(useCoverageHistory, job.getUseCoverageHistory());
+        assertEquals(optionExecutionReport, job.getOptionExecutionReport());
+        assertEquals(optionUseReporting, job.getOptionUseReporting());
+        assertEquals(useCiLicense, job.getUseCILicenses());
+        assertEquals(useStrictTestcaseImport, job.getUseStrictTestcaseImport());
+        assertEquals(useRGW3, job.getUseRGW3());
+        assertEquals(useImportedResults, job.getUseImportedResults());
+        assertEquals(useCoverageHistory, job.getUseCoverageHistory());
     }
 
     @Test
-    public void testBasic() throws Exception {
+    public void testBasic(JenkinsRule rule) throws Exception {
         JSONObject jsonForm = new JSONObject();
 
         JSONObject jsonCovDisplay  = new JSONObject();
@@ -244,14 +223,14 @@ public class NewSingleJobTest {
         jsonForm.put("optionExecutionReport", true);
         jsonForm.put("useStrictTestcaseImport", true);
 
-        NewSingleJob job = setupTestBasic(jsonForm);
+        NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         // Check publishers...
         DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
-        Assert.assertEquals(4, publisherList.size());
+        assertEquals(4, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
-        Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
+        assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
 
         checkBuildWrappers(job, 1);
@@ -262,7 +241,7 @@ public class NewSingleJobTest {
     }
 
     @Test
-    public void testAdditionalTools() throws Exception {
+    public void testAdditionalTools(JenkinsRule rule) throws Exception {
 
         JSONObject jsonForm = new JSONObject();
         JSONObject jsonCovDisplay  = new JSONObject();
@@ -276,14 +255,14 @@ public class NewSingleJobTest {
         jsonForm.put("pclpResultsPattern","lint_results.xml");
         jsonForm.put("squoreCommand","hello squore test world");
 
-        NewSingleJob job = setupTestBasic(jsonForm);
+        NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         // Check publishers...
         DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
-        Assert.assertEquals(5, publisherList.size());
+        assertEquals(5, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
-        Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
+        assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
 
         String addToolArtifacts = DEFAULT_ARTIFACT_LIST;
@@ -301,7 +280,7 @@ public class NewSingleJobTest {
     }
 
     @Test
-    public void testCoveragePlugin() throws Exception {
+    public void testCoveragePlugin(JenkinsRule rule) throws Exception {
 
         JSONObject jsonForm = new JSONObject();
 
@@ -310,22 +289,19 @@ public class NewSingleJobTest {
 
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
-        // coverageDisplayOption
-        //      USE_COVERAGE_PLUGIN (1):  Jenkins Coverage Plugin
-        //      USE_VCC_PLUGIN      (2): VectorCAST Coverage Plugin
-        jsonForm.put("coverageDisplayOption", jsonCovDisplay);
-        jsonForm.put("useCoverageHistory", false);
+        jsonForm.put("coverageDisplayOption", jsonCovDisplay);  // Jenkins Coverage Plugin
+        jsonForm.put("useCoverageHistory", false);  // VectorCAST Coverage Plugin
         jsonForm.put("pclpCommand","call lint_my_code.bat");
         jsonForm.put("pclpResultsPattern","lint_results.xml");
 
-        NewSingleJob job = setupTestBasic(jsonForm);
+        NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         // Check publishers...
         DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
-        Assert.assertEquals(6, publisherList.size());
+        assertEquals(6, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
-        Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
+        assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
 
         String addToolArtifacts = DEFAULT_ARTIFACT_LIST;
@@ -339,7 +315,7 @@ public class NewSingleJobTest {
     }
 
     @Test
-    public void testLocalImportedResults() throws Exception {
+    public void testLocalImportedResults(JenkinsRule rule) throws Exception {
 
         JSONObject jsonImportResults  = new JSONObject();
         jsonImportResults.put("value", USE_LOCAL_IMPORTED_RESULTS);
@@ -354,14 +330,14 @@ public class NewSingleJobTest {
         jsonForm.put("useImportedResults", true);
         jsonForm.put("importedResults", jsonImportResults);
 
-        NewSingleJob job = setupTestBasic(jsonForm);
+        NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         // Check publishers...
         DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
-        Assert.assertEquals(5, publisherList.size());
+        assertEquals(5, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
-        Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
+        assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
 
         checkBuildWrappers(job, 1);
@@ -372,8 +348,7 @@ public class NewSingleJobTest {
         checkImportedResults(job, USE_LOCAL_IMPORTED_RESULTS, false, "");
     }
 
-    @Test
-    public void testExternalImportedResults() throws Exception {
+    public void testExternalImportedResults(JenkinsRule rule) throws Exception {
 
         JSONObject jsonImportResults  = new JSONObject();
         jsonImportResults.put("value", USE_EXTERNAL_IMPORTED_RESULTS);
@@ -389,14 +364,14 @@ public class NewSingleJobTest {
         jsonForm.put("useImportedResults", true);
         jsonForm.put("importedResults", jsonImportResults);
 
-        NewSingleJob job = setupTestBasic(jsonForm);
+        NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         // Check publishers...
         DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
-        Assert.assertEquals(5, publisherList.size());
+        assertEquals(5, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
-        Assert.assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
+        assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
         ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
 
         checkBuildWrappers(job, 1);
@@ -408,18 +383,18 @@ public class NewSingleJobTest {
     }
 
     @Test
-    public void testDefaultOptions() throws Exception {
+    public void testDefaultOptions(JenkinsRule rule) throws Exception {
 
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
 
-        NewSingleJob job = setupTestBasic(jsonForm);
+        NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         checkOptions (job, true, true, false, true, false, false, false);
     }
 
     @Test
-    public void testFalseOptions() throws Exception {
+    public void testFalseOptions(JenkinsRule rule) throws Exception {
 
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
@@ -431,13 +406,13 @@ public class NewSingleJobTest {
         jsonForm.put("useImportedResults", false);
         jsonForm.put("useCoverageHistory", false);
 
-        NewSingleJob job = setupTestBasic(jsonForm);
+        NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         checkOptions (job, false, false, false, false, false, false, false);
     }
 
     @Test
-    public void testTrueOptions() throws Exception {
+    public void testTrueOptions(JenkinsRule rule) throws Exception {
 
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
@@ -455,7 +430,7 @@ public class NewSingleJobTest {
 
         jsonForm.put("coverageDisplayOption", jsonCovDisplay);
 
-        NewSingleJob job = setupTestBasic(jsonForm);
+        NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         checkOptions (job, true, true, true, true, true, true, true);
     }

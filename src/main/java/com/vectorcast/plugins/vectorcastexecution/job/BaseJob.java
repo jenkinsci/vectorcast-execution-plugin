@@ -921,7 +921,7 @@ public abstract class BaseJob {
      * Setter for folder.
      * @param inputFolder  Folder of current location
      */
-    public void setFolder(Folder inputFolder) {
+    public void setFolder(final Folder inputFolder) {
         folder = inputFolder;
     }
 }

@@ -39,7 +39,7 @@ import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 public class VectorCASTJobRoot implements RootAction {
 
     /** Folder variable for creating jobs in folder. */
-    protected final Folder folder; // null if global
+    private final Folder folder; // null if global
 
     /**
      * Constructor for folder context.

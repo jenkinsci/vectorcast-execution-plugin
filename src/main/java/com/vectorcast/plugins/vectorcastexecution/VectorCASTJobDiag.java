@@ -57,7 +57,7 @@ public class VectorCASTJobDiag extends JobBase {
     /** Constructor when creating inside a folder.
      * @param inputFolder - location of where to create job
      */
-    public VectorCASTJobDiag(Folder inputFolder) {
+    public VectorCASTJobDiag(final Folder inputFolder) {
         super(inputFolder);
     }
 
@@ -292,4 +292,3 @@ public class VectorCASTJobDiag extends JobBase {
         return new HttpRedirect("done");
     }
 }
-

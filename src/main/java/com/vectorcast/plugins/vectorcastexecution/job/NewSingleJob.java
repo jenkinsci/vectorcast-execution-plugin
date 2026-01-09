@@ -55,6 +55,7 @@ public class NewSingleJob extends BaseJob {
    * Constructor.
    * @param request request object
    * @param response response object
+   * @param folder that contains the job location
    * @throws ServletException exception
    * @throws IOException exception
    * @throws ExternalResultsFileException exception

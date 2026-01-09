@@ -31,17 +31,26 @@ import java.util.Collection;
 import java.util.Collections;
 import com.cloudbees.hudson.plugins.folder.Folder;
 import jenkins.model.TransientActionFactory;
+import org.jspecify.annotations.NonNull;
 
 @Extension
-public class VectorCASTFolderActionFactory extends TransientActionFactory<Folder> {
+public class VectorCASTFolderActionFactory
+        extends TransientActionFactory<Folder> {
 
+    /** Get type of this class.
+     * @return type of Factor - Class<Folder>
+     */
     @Override
     public Class<Folder> type() {
         return Folder.class;
     }
 
-    @Override
-    public Collection<? extends Action> createFor(Folder folder) {
+    /** Creates this type of action for folder.
+     * @param folder - Folder to create job in
+     * @return Collection of actions
+     */
+    @Override @NonNull
+    public Collection<? extends Action> createFor(final Folder folder) {
         return Collections.singletonList(new VectorCASTFolderAction(folder));
     }
 }

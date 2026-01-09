@@ -132,9 +132,14 @@ public class VectorCASTFolderAction implements Action {
         return folder != null ? folder.getFullName() : "";
     }
 
+    /**
+     * Get version of plugin.
+     * @return version of the plugin
+     */
     public String getVersion() {
         return VcastUtils.getVersion().orElse("Unknown");
     }
+
     /**
      * Get folder name variable.
      * @return folder name
@@ -143,9 +148,20 @@ public class VectorCASTFolderAction implements Action {
         return folder != null ? folder.getName() : "";
     }
 
-    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+    /** Get dynamic job based on folder and type.
+     * @param token type of job
+     * @param req stapler request
+     * @param rsp stapler response
+     * @return newly created job
+     */
+    public Object getDynamic(final String token,
+            final StaplerRequest req, final StaplerResponse rsp) {
+
         Logger.getLogger("VCFolderAction").info(
-                "getDynamic: token=" + token + ", folder=" + folder.getFullName()
+            "getDynamic: token="
+            + token
+            + ", folder="
+            + folder.getFullName()
         );
 
         if ("single-job".equals(token)) {

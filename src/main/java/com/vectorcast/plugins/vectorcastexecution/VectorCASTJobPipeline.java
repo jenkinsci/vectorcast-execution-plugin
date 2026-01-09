@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import org.jspecify.annotations.NonNull;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -79,7 +80,7 @@ public class VectorCASTJobPipeline extends JobBase {
     /** Constructor when creating inside a folder.
      * @param inputFolder - location of where to create job
      */
-    public VectorCASTJobPipeline(Folder inputFolder) {
+    public VectorCASTJobPipeline(final Folder inputFolder) {
         super(inputFolder);
     }
 
@@ -153,7 +154,7 @@ public class VectorCASTJobPipeline extends JobBase {
     @Extension
     public static final class DescriptorImpl extends JobBaseDescriptor {
 
-        @Override
+        @Override @NonNull
         public String getDisplayName() {
             return "VectorCAST Pipeline Job";
         }
@@ -185,19 +186,22 @@ public class VectorCASTJobPipeline extends JobBase {
             final StaplerResponse response)
             throws ServletException, IOException, Descriptor.FormException {
         try {
+
+            Folder currFolder = getFolder();
+
             // Create Pipeline job
-            job = new NewPipelineJob(request, response, folder);
+            job = new NewPipelineJob(request, response, currFolder);
 
             Logger.getLogger("VCJobPipeline").info(
-                    "doCreate: creating pipeline job in folder=" +
-                            (folder == null ? "ROOT" : folder.getFullName())
+                "doCreate: creating pipeline job in folder="
+                + (currFolder == null ? "ROOT" : currFolder.getFullName())
             );
 
             job.create();
 
             Logger.getLogger("VCJobPipeline").info(
-                    "doCreate: creating pipeline job in folder=" +
-                            (folder == null ? "ROOT" : folder.getFullName())
+                "doCreate: creating pipeline job in folder="
+                + (currFolder == null ? "ROOT" : currFolder.getFullName())
             );
 
             projectName = job.getProjectName();
@@ -207,10 +211,11 @@ public class VectorCASTJobPipeline extends JobBase {
                     "Pipeline Project Name: " + projectName);
 
             TopLevelItem createdItem =
-                    (folder != null) ? folder.getItem(projectName)
+                    (currFolder != null) ? currFolder.getItem(projectName)
                             : Jenkins.get().getItem(projectName);
 
-            String folderName = (folder != null) ? folder.getFullName() : null;
+            String folderName = (
+                    currFolder != null) ? currFolder.getFullName() : null;
 
             return HttpResponses.forwardToView(this, "created")
                     .with("createdItem", createdItem)

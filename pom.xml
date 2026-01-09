@@ -9,7 +9,8 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>5.9</version>
+        <version>5.28</version>
+        <relativePath/>
     </parent>
     
     <dependencyManagement>
@@ -18,8 +19,18 @@
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-weekly</artifactId>
                 <version>5639.v2b_974a_e901e8</version>
-                <type>pom</type>
                 <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.jenkins-ci.main</groupId>
+                <artifactId>maven-plugin</artifactId>
+                <version>3.27</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.logging.log4j</groupId>
+              <artifactId>log4j-api</artifactId>
+              <version>2.25.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -34,8 +45,13 @@
 
     <!-- Minimum Jenkins core -->
     <properties>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <findbugs.failOnError>false</findbugs.failOnError>
         <jenkins.version>2.541</jenkins.version>
         <changelist>-SNAPSHOT</changelist>
+        <lintCompilerArgs>-Xlint:-options</lintCompilerArgs>
     </properties>
     <organization>
         <name>Vector Informatik, GmbH</name>
@@ -75,6 +91,12 @@
 
 
     <dependencies>
+        <!-- JUnit 5 (Jupiter) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
             
         <!-- Your coverage plugin -->
         <dependency>
@@ -115,6 +137,19 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>copyartifact</artifactId>
         </dependency>
+        
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <version>4.9.8</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+       
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials-binding</artifactId>
@@ -159,6 +194,7 @@
         <dependency>
             <groupId>org.jenkinsci.plugins</groupId>
             <artifactId>pipeline-model-definition</artifactId>
+          <scope>compile</scope>
         </dependency>
 
         <!-- For folder jobs -->
@@ -166,9 +202,56 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>cloudbees-folder</artifactId>
         </dependency>
+        <dependency>
+          <groupId>org.jenkins-ci</groupId>
+          <artifactId>test-annotations</artifactId>
+          <version>1.5</version>
+          <scope>test</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>org.junit.vintage</groupId>
+              <artifactId>junit-vintage-engine</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
 
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>lint</id>
+            <properties>
+                <lintCompilerArgs>-Xlint:all,-processing</lintCompilerArgs>
+            </properties>
+        </profile>
+        <profile>
+            <id>jacoco</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.14</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <!-- attached to Maven test phase -->
+                            <execution>
+                                <id>report</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <build>
       <resources>
         <resource>
@@ -184,20 +267,46 @@
       </resources>
 
         <plugins>
-            <!-- Java 21 bytecode (required), Java 25 runtime allowed -->
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jxr-plugin</artifactId>
+              <version>3.6.0</version>
+              <executions>
+                <execution>
+                  <id>jxr</id>
+                  <phase>site</phase>
+                  <goals>
+                    <goal>jxr</goal>
+                    <goal>test-jxr</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+
+               
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.14.1</version>
                 <configuration>
-                    <release>21</release>
+                    <source>21</source>
+                    <target>21</target>
+                    <compilerArgs>
+                        <arg>${lintCompilerArgs}</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
-
+            
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>3.5.4</version> <!-- Use latest stable -->
+              <configuration>
+                <excludeJUnit5Engines>junit-vintage</excludeJUnit5Engines>
+                <forkCount>1C</forkCount> <!-- 1 JVM per CPU core -->
+                <reuseForks>true</reuseForks>
+                <perCoreThreadCount>true</perCoreThreadCount>
+                <useUnlimitedThreads>true</useUnlimitedThreads>
                     <argLine>
                         --enable-native-access=ALL-UNNAMED
                         --add-opens java.base/java.lang=ALL-UNNAMED
@@ -207,10 +316,11 @@
                 </configuration>
             </plugin>
 
-            <!-- Jenkins plugin packaging -->
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
+                <version>3.1773.v3646231d4c22</version>
+                <extensions>true</extensions>
             </plugin>
 
         </plugins>

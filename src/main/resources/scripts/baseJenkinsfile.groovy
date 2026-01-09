@@ -86,7 +86,6 @@ def VC = [
     // below are the DSL script shortcuts
     execDsl:            VectorCASTExecution,
     logsDsl:            VectorCASTLogs,
-    addToolsDsl:        VectorCASTAdditionalTools,
     helpersDsl:         VectorCASTHelpers,
     metricsDsl:         VectorCASTMetrics,
     singleDsl:          VectorCASTSingleCheckout
@@ -95,7 +94,7 @@ def VC = [
 def runCommands(cmds) {
     // clean out old command.log file
     writeFile file: "command.log", text: ""
-    
+
     if (isUnix()) {
         sh label : 'Running VectorCAST Commands', returnStdout: false, script: cmds
     } else {
@@ -185,6 +184,7 @@ def getRepo(VC) {
     }
 }
 
+def readIfExists = { f -> fileExists(f) ? readFile(f) : null }
 
 // ***************************************************************
 //
@@ -240,6 +240,7 @@ pipeline {
         // This is the stage that we use the EnvList via stepsForJobList >> transformIntoStep
         stage('System Test Build Execute Stage') {
             steps {
+                step([$class: 'VectorCASTSetup'])
                 script {
                     runCommands(VectorCASTExecution.getSetupManageProject(VC))
 
@@ -288,9 +289,6 @@ pipeline {
         stage('Generate Overall Reports') {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-
-                    step([$class: 'VectorCASTSetup'])
-
                     script {
                         def buildFileNames = []
                         def cmds = ""
@@ -318,7 +316,8 @@ pipeline {
                         
                         concatenateBuildLogs(buildFileNames, "complete_build.log")
 
-                        (foundKeywords, failureFlag, unstableFlag) = VC.logsDsl.checkBuildLogForErrors(VC, "complete_build.log")
+                        def (foundKeywords, failureFlag, unstableFlag) = VectorCASTLogs.checkLogsForErrors(VC, "complete_build.log")  
+			
                         if (failureFlag) {
                             throw new Exception ("Error in Commands: " + foundKeywords)
                         }
@@ -359,7 +358,6 @@ pipeline {
                         }
                     }
 
-
                     // Send test results to JUnit plugin
                     step([$class: 'JUnitResultArchiver', keepLongStdio: true, allowEmptyResults: true, testResults: '**/test_results_*.xml'])
 
@@ -370,13 +368,50 @@ pipeline {
         }
 
         stage('Check Build Log') {
-            steps {
-                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                    script {
-                        VectorCASTLogs.checkBuildLog(VC)
-                    }
-                }
+          steps {
+            script {
+              def mpName = VectorCASTHelpers.getMpName(VC.mpName)
+
+              // 1) do the “step stuff” here
+              def completeLog = readFile('complete_build.log')
+
+              // IMPORTANT: use a pure “checkLogsForErrors(logText)” function, not the old grep/findstr stepper.
+              def (foundKeywords, failure_flag, unstable_flag) = VectorCASTLogs.checkLogsForErrors(VC, completeLog)
+
+              def inputs = [
+                foundKeywords     : foundKeywords,
+                failure_flag      : failure_flag,
+                unstable_flag     : unstable_flag,
+                coverageDiffHtml  : readIfExists('coverage_diffs.html_tmp'),
+                combinedIncrHtml  : VC.useCBT ? readIfExists('combined_incr_rebuild.tmp') : null,
+                fullReportHtml    : readIfExists("${mpName}_full_report.html_tmp"),
+                metricsReportHtml : readIfExists("${mpName}_metrics_report.html_tmp"),
+                unitTestFailCount : readIfExists('unit_test_fail_count.txt')
+              ]
+
+              // 2) bridged groovy returns a plan
+              def plan = VectorCASTLogs.checkBuildLogPlan(VC, inputs)
+
+              // 3) apply the plan using pipeline steps
+              if (plan.descriptionAppend) currentBuild.description = (currentBuild.description ?: "") + plan.descriptionAppend
+              if (plan.setResult) currentBuild.result = plan.setResult
+
+              if (plan.summaryIcon && plan.summaryHtml) {
+                pluginCreateSummary(plan.summaryIcon, plan.summaryHtml)
+              }
+
+              if (plan.cleanupCmds) {
+                def cleanupRun = VectorCASTExecution.getRunCommands(VC, plan.cleanupCmds)
+                runCommands(cleanupRun)
+              }
+
+              if (plan.failMessage) {
+                error(plan.failMessage)
+              } else if (plan.unstableMessage) {
+                unstable(plan.unstableMessage)
+              }
             }
+          }
         }
 
         stage('Additional Tools') {
