@@ -91,9 +91,19 @@ def VC = [
     singleDsl:          VectorCASTSingleCheckout
 ]
 
+
+// ===============================================================
+// Function : runCommands
+// ===============================================================
 def runCommands(cmds) {
+    if (!cmds?.trim()) {
+        return ("")
+    }
+
     // clean out old command.log file
     writeFile file: "command.log", text: ""
+
+    echo "Running commands ${cmds}"
 
     if (isUnix()) {
         sh label : 'Running VectorCAST Commands', returnStdout: false, script: cmds
@@ -115,7 +125,9 @@ def pluginCreateSummary(inIcon, inText) {
     }
 }
 
-
+// ===============================================================
+// Function : makeStepFromSpec
+// ===============================================================
 def makeStepFromSpec(VC, spec) {
     return {
         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
@@ -130,16 +142,29 @@ def makeStepFromSpec(VC, spec) {
                 // run commands via your CPS-safe runner
                 def buildLogText = runCommands(spec.cmds)
 
-                writeFile file: "${spec.compiler}_${spec.test_suite}_${spec.environment}_build.log",
+                def key = "${spec.compiler}_${spec.test_suite}_${spec.environment}"
+
+                writeFile file: "${key}_build.log",
                           text: buildLogText
 
-                stash includes: "${spec.compiler}_${spec.test_suite}_${spec.environment}_build.log, ...",
-                      name: spec.stashName
+                def stashIncludes = [
+                        "**/${key}_rebuild.html",
+                        "execution/*.html",
+                        "management/*${key}*",
+                        "xml_data/*${key}*",
+                        "${fixedJobName}_${key}_build.tar",
+                ].join(', ')
+
+                stash includes: stashIncludes,
+                        name: spec.stashName
             }
         }
     }
 }
 
+// ===============================================================
+// Function : stepsForJobList
+// ===============================================================
 def stepsForJobList(VC, localEnvList) {
     def jobList = [:]
     localEnvList.each { line ->
@@ -151,29 +176,27 @@ def stepsForJobList(VC, localEnvList) {
 }
 
 // ===============================================================
-//
 // Function : concatenateBuildLogs
-// Inputs   : file list
-// Action   : Concatenate build logs into one file
-// Returns  : None
-// Notes    : Generate-Overall-Reports
-//
 // ===============================================================
-
 def concatenateBuildLogs(logFileNames, outputFileName) {
-
     def cmd = ""
+    def err = ""
     if (isUnix()) {
         cmd =  "cat "
+        err = "/dev/null"
     } else {
         cmd =  "type "
+        err = "nul"
     }
 
-    cmd += logFileNames.join(" ") + " > " + outputFileName
+    cmd += logFileNames.join(" ") + " > ${outputFileName} 2>${err}"
 
     return runCommands(cmd)
 }
 
+// ===============================================================
+// Function : getRepo
+// ===============================================================
 def getRepo(VC) {
     scmStep()
 
@@ -184,6 +207,9 @@ def getRepo(VC) {
     }
 }
 
+// ===============================================================
+// Function : readIfExists
+// ===============================================================
 def readIfExists = { f -> fileExists(f) ? readFile(f) : null }
 
 // ***************************************************************
@@ -208,11 +234,10 @@ pipeline {
                 }
             }
         }
-
         stage('Get Environment Info') {
             steps {
                 script {
-                    
+
                     if (currentBuild.description == null) {
                         currentBuild.description = ""
                     }
@@ -227,7 +252,7 @@ pipeline {
                     cmds += """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/archive_extract_reports.py --archive
                                _VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/getjobs.py ${VC.mpName} --type
                     """
-                    
+
                     def runCmds = VectorCASTExecution.getRunCommands(VC, cmds)
                     def getJobsLog = runCommands(runCmds)
                     def (UtEnvList, StEnvList) = VectorCASTEnvInfo.getEnvironmentInfo(getJobsLog)
@@ -236,7 +261,6 @@ pipeline {
                 }
             }
         }
-
         // This is the stage that we use the EnvList via stepsForJobList >> transformIntoStep
         stage('System Test Build Execute Stage') {
             steps {
@@ -255,7 +279,6 @@ pipeline {
                 }
             }
         }
-
         // This is the stage that we use the EnvList via stepsForJobList >> transformIntoStep
         stage('Unit Test Build Execute Stage') {
             steps {
@@ -285,7 +308,6 @@ pipeline {
                 }
             }
         }
-
         stage('Generate Overall Reports') {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
@@ -299,29 +321,23 @@ pipeline {
 
                             buildFileNames << ret.buildFileName
 
-                            cmds = VectorCASTExecution.getRunCommands(VC, ret.cmds)
-                            
                             unstash(ret.stashName)
                             buildLogText += runCommands(cmds)
                         }
-                        
+
                         concatenateBuildLogs(buildFileNames, "unstashed_build.log")
 
                         cmds = VectorCASTMetrics.getMetricsCmds(VC, [""])
-                        
+
                         buildLogText += runCommands(cmds)
-                        
+
                         writeFile file: "metrics_build.log", text: buildLogText
                         buildFileNames << "metrics_build.log"
-                        
                         concatenateBuildLogs(buildFileNames, "complete_build.log")
+                        def (foundKeywords, failureFlag, unstableFlag) = VectorCASTLogs.checkLogsForErrors(VC, "complete_build.log")
 
-                        def (foundKeywords, failureFlag, unstableFlag) = VectorCASTLogs.checkLogsForErrors(VC, "complete_build.log")  
-			
-                        if (failureFlag) {
-                            throw new Exception ("Error in Commands: " + foundKeywords)
-                        }
-                        
+                        if (failureFlag) throw new Exception ("Error in Commands: " + foundKeywords)
+
                         if (VC.useCoverPlgin) {
                             // Send reports to the Jenkins Coverage Plugin
                             discoverReferenceBuild()
@@ -330,7 +346,6 @@ pipeline {
                             } else {
                                 recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
                             }
-
                         } else {
                             def currResult = ""
                             if (VC.useCoverHist) {
@@ -339,11 +354,11 @@ pipeline {
 
                             // Send reports to the VectorCAST Coverage Plugin
                             step([$class: 'VectorCASTPublisher',
-                                         includes: 'xml_data/coverage_results*.xml',
-                                         useThreshold: VC.useThreshold,
-                                         healthyTarget:   VC.healthyTarget,
-                                         useCoverageHistory: VC.useCoverHist,
-                                         maxHistory : 20])
+                                  includes: 'xml_data/coverage_results*.xml',
+                                  useThreshold: VC.useThreshold,
+                                  healthyTarget:   VC.healthyTarget,
+                                  useCoverageHistory: VC.useCoverHist,
+                                  maxHistory : 20])
 
                             if (VC.useCoverHist) {
                                 if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
@@ -372,10 +387,10 @@ pipeline {
             script {
               def mpName = VectorCASTHelpers.getMpName(VC.mpName)
 
-              // 1) do the “step stuff” here
+              // 1) do the ?step stuff? here
               def completeLog = readFile('complete_build.log')
 
-              // IMPORTANT: use a pure “checkLogsForErrors(logText)” function, not the old grep/findstr stepper.
+              // IMPORTANT: use a pure ?checkLogsForErrors(logText)? function, not the old grep/findstr stepper.
               def (foundKeywords, failure_flag, unstable_flag) = VectorCASTLogs.checkLogsForErrors(VC, completeLog)
 
               def inputs = [

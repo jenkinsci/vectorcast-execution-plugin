@@ -6,16 +6,6 @@ class VectorCASTMetricsImpl {
 
     VectorCASTMetricsImpl(script) { this.script = script }
 
-
-    // ===============================================================
-    // Function : concatenateBuildLogs (PRIVATE)
-    // ===============================================================
-    def concatenateBuildLogs(VC, logFileNames, outputFileName) {
-        def cmd = script.isUnix() ? "cat " : "type "
-        cmd += "${logFileNames} > ${outputFileName}"
-        VC.execDsl.runCommands(VC, cmd)
-    }
-
     // ===============================================================
     //
     // Function : getMetricsEnvCmds
@@ -50,17 +40,29 @@ class VectorCASTMetricsImpl {
             level = source + "/" + machine + "/" + compiler + "/" + test_suite
         }
         results.stashName = VC.helpersDsl.fixUpName("${VC.jobName}_${compiler}_${test_suite}_${environment}-build-execute-stage")
+        results.buildFileName = "${compiler}_${test_suite}_${environment}_build.log "
 
-        try {
-            results.buildFileName = "${compiler}_${test_suite}_${environment}_build.log "
-        }
-        catch (Exception ex) {
-            script.echo ex
-        }
         if (VC.sharedBldDir) {
             def fixedJobName = VC.helpersDsl.fixUpName("${script.env.JOB_NAME}")
             results.cmds += "_VECTORCAST_DIR/vpython " $ { script.env.WORKSPACE } "/vc_scripts/copy_build_dir.py ${VC.mpName} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar\n"
         }
+
+        results.cmds = (results.cmds?.trim()) ? VC.execDsl.getRunCommands(VC, results.cmds) : ""
+
+        return results
+    }
+
+    def getMetricsCmds(VC, List extraResultOptions) {
+
+        def cmds = ""
+
+        def extraOptStr = (extraResultOptions ?: [])
+                .collect { it?.toString()?.trim() }
+                .findAll { it }
+                .join(' ')
+
+        // get the manage project's base name for use in rebuild naming
+        def mpName = VC.helpersDsl.getMpName(VC.mpName)
 
         if (VC.sharedBldDir) {
             def artifact_dir = ""
@@ -79,25 +81,6 @@ class VectorCASTMetricsImpl {
                 _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}"  ${VC.useCI} --refresh"
             """
         }
-
-        results.cmds = VC.execDsl.getRunCommands(VC, results.cmds)
-
-        return results
-    }
-
-    def getMetricsCmds(VC, List extraResultOptions) {
-
-        def cmds = script.isUnix() ? "cat " : "type "
-        cmds += "${VC.buildFileNames} > unstashed_build.log\n"
-
-        def extraOptStr = (extraResultOptions ?: [])
-                .collect { it?.toString()?.trim() }
-                .findAll { it }
-                .join(' ')
-
-
-        // get the manage project's base name for use in rebuild naming
-        def mpName = VC.helpersDsl.getMpName(VC.mpName)
 
         // if we are using SCM and not using a shared artifact directory...
         if (VC.usingSCM && !VC.oneChkDir && VC.sharedBldDir.length() == 0) {
@@ -131,7 +114,7 @@ class VectorCASTMetricsImpl {
         }
 
         cmds += """
-            _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py ${mpName} --rptfmt HTML
+            _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py ${mpName} --rptfmt HTML --verbose
             _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/full_report_no_toc.py "${VC.mpName}"
             _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}"  ${VC.useCI} --create-report=aggregate   --output=${mpName}_aggregate_report.html"
         """
@@ -149,4 +132,3 @@ class VectorCASTMetricsImpl {
         return cmds
     }
 }
-

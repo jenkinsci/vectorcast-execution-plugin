@@ -419,10 +419,12 @@ environment before disabling.  This takes into account environments that are dir
 ## Change Log
 ### Version 0.80 (21 Feb 2026)
 - Moved to minimum Jenkins 2.540
-- Updated Pipeline script:
+- Auto-complete Node Label
+- Saving Job to a folder
+- Removing test case execution reports from passing test cases
+- Minimize job configuration side:
   - Structure variable passing
-  - Auto-complete Node Label
-  - Saving Job to a folder
+  - Support for Jenkins libraries
 
 ### Version 0.79 (4 Dec 2025)
 - Moved to minimum Jenkins LTS 2.492.3 and Java 21

@@ -23,22 +23,15 @@ class VectorCASTExecutionImpl {
         def stashName = VC.helpersDsl.fixUpName("${VC.jobName}_${compiler}_${test_suite}_${environment}-build-execute-stage")
         def nodeID = (VC.forceNodeExecName ?: compiler)
 
-        def cmds = ""
+        def cmds = "${VC.setup}\n"
 
         if (VC.useRGW3) {
-            cmds = """
-                ${VC.setup}
-                _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/patch_rgw_directory.py "${VC.mpName}"
-                ${VC.reamble} _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --level ${level} -e ${environment} --build-execute ${VC.useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
-                ${VC.teardown}
-            """
-        } else {
-            cmds = """
-                ${VC.setup}
-                ${VC.preamble} _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --level ${level} -e ${environment} --build-execute ${VC.useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
-                ${VC.teardown}
-            """
+            cmds += "_VECTORCAST_DIR/vpython \"${script.env.WORKSPACE}\"/vc_scripts/patch_rgw_directory.py \"${VC.mpName}\"\n"
         }
+        cmds += """
+            ${VC.preamble} _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --level ${level} -e ${environment} --build-execute ${VC.useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+            ${VC.teardown}
+        """
 
         cmds = getRunCommands(VC,cmds)
 

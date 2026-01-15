@@ -37,8 +37,9 @@ import org.jspecify.annotations.NonNull;
 public class VectorCASTFolderActionFactory
         extends TransientActionFactory<Folder> {
 
-    /** Get type of this class.
-     * @return type of Factor - Class<Folder>
+    /**
+     * Returns the type handled by this factory.
+     * @return {@code Class<Folder>}
      */
     @Override
     public Class<Folder> type() {
