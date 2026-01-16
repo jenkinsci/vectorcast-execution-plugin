@@ -68,7 +68,6 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-2.492.x</artifactId>
-                <!--version>4983.v7891e5d14987</version -->
                 <version>5473.vb_9533d9e5d88</version>
                 <scope>import</scope>
                 <type>pom</type>
@@ -112,7 +111,7 @@
         
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
-            <artifactId>coverage</artifactId>
+            <artifactId>coverage</artifactId>  <!-- 2.3060.v035a_5557cdb_c -->
         </dependency>
 
         <dependency>

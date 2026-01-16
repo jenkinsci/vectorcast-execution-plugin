@@ -1,11 +1,11 @@
 version: 2
 updates:
-  # Maven Dependencies for Jenkins Plugin - Target `tms_079`
+  # Maven Dependencies for Jenkins Plugin - Target
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "tms_079_dependbot"
+    target-branch: "master"
     open-pull-requests-limit: 10
     commit-message:
       prefix: ""
