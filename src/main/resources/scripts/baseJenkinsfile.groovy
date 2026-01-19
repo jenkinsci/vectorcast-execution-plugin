@@ -82,15 +82,12 @@ def VC = [
     createdWithVersion: VC_createdWithVersion,
     vcastProjectDir:    (env.VCAST_PROJECT_DIR?.trim() ? env.VCAST_PROJECT_DIR.trim() : ""),
     forceNodeExecName:  (env.VCAST_FORCE_NODE_EXEC_NAME?.trim() ? env.VCAST_FORCE_NODE_EXEC_NAME.trim() : ""),
+    jobName:            env.JOB_Name,
 
     // below are the DSL script shortcuts
     execDsl:            VectorCASTExecution,
-    logsDsl:            VectorCASTLogs,
-    helpersDsl:         VectorCASTHelpers,
-    metricsDsl:         VectorCASTMetrics,
-    singleDsl:          VectorCASTSingleCheckout
+    helpersDsl:         VectorCASTHelpers
 ]
-
 
 // ===============================================================
 // Function : runCommands
@@ -111,7 +108,7 @@ def runCommands(cmds) {
         bat label : 'Running VectorCAST Commands', returnStdout: false, script: cmds
     }
     // get the log file and return it
-    return (readFile("command.log"))
+    return fileExists('command.log') ? readFile('command.log') : ''
 }
 
 // ===============================================================
@@ -146,6 +143,13 @@ def makeStepFromSpec(VC, spec) {
 
                 writeFile file: "${key}_build.log",
                           text: buildLogText
+
+                def fixedJobName = VectorCASTHelpers.fixUpName("${env.JOB_NAME}")
+
+                echo """
+                    Rebuild Name : **/${key}_rebuild.html
+                    BuildTar Name: ${fixedJobName}_${key}_build.tar"
+                """
 
                 def stashIncludes = [
                         "**/${key}_rebuild.html",
@@ -386,11 +390,8 @@ pipeline {
           steps {
             script {
               def mpName = VectorCASTHelpers.getMpName(VC.mpName)
-
-              // 1) do the ?step stuff? here
               def completeLog = readFile('complete_build.log')
 
-              // IMPORTANT: use a pure ?checkLogsForErrors(logText)? function, not the old grep/findstr stepper.
               def (foundKeywords, failure_flag, unstable_flag) = VectorCASTLogs.checkLogsForErrors(VC, completeLog)
 
               def inputs = [
