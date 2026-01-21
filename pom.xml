@@ -12,7 +12,7 @@
         <version>5.28</version>
         <relativePath/>
     </parent>
-    
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -34,7 +34,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    
+
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>vectorcast-execution</artifactId>
     <version>0.79-SNAPSHOT</version>
@@ -87,7 +87,7 @@
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
-    
+
 
 
     <dependencies>
@@ -97,13 +97,13 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-            
+
         <!-- Your coverage plugin -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>vectorcast-coverage</artifactId>
             <version>0.23-SNAPSHOT</version>
-        </dependency>            
+        </dependency>
 
         <!-- Jenkins plugins - versions provided by BOM -->
         <dependency>
@@ -124,7 +124,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>coverage</artifactId>
@@ -137,19 +137,19 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>copyartifact</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
             <version>4.9.8</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-       
+
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials-binding</artifactId>
@@ -257,16 +257,19 @@
         <resource>
           <directory>src/main/resources</directory>
         </resource>
-        <resource>
-          <directory>${project.basedir}/vars</directory>
-          <targetPath>vars</targetPath>
-          <includes>
-            <include>**/*.groovy</include>
-          </includes>
-        </resource>
       </resources>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.6.0</version>
+
+                <configuration>
+                    <configLocation>${project.basedir}/checkstyle.xml</configLocation>
+                </configuration>
+            </plugin>
+
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-jxr-plugin</artifactId>
@@ -283,7 +286,7 @@
               </executions>
             </plugin>
 
-               
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -296,7 +299,7 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
-            
+
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>

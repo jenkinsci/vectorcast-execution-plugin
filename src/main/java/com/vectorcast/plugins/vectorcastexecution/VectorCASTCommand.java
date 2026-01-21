@@ -72,22 +72,22 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
 
     /**
      * Create a VectorCAST command.
-     * @param inWinCmd the windows variant of the command
-     * @param inLinuxCmd the unix variant of the command
+     * @param winCommand the windows variant of the command
+     * @param unixCommand the unix variant of the command
      */
     @DataBoundConstructor
-    @SuppressWarnings("checkstyle:HiddenField")
-    public VectorCASTCommand(final String inWinCmd,
-            final String inLinuxCmd) {
-        this.winCommand = inWinCmd;
-        this.unixCommand = inLinuxCmd;
+    public VectorCASTCommand(final String winCommand,
+            final String unixCommand) {
+
+        this.winCommand = winCommand;
+        this.unixCommand = unixCommand;
     }
 
     /**
      * Perform the script to run the job.
      * @param build info
      * @param workspace info
-     * @param launcher info
+     * @param launcher   info
      * @param listener info
      */
     @Override
@@ -98,6 +98,10 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
             // Get the windows batch command and run it if this node is Windows
             //
             String windowsCmd = getWinCommand();
+
+            Logger.getLogger(VectorCASTCommand.class.getName()).log(Level.INFO,
+                "VectorCASTCommand::perform: windowsCmd: " + windowsCmd);
+
             BatchFile batchFile = new BatchFile(windowsCmd);
             try {
                 if (!batchFile.perform((AbstractBuild<?, ?>) build,
@@ -117,6 +121,8 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
             // Get the Linux/Unix batch command and
             // run it if this node is not Windows
             String unixCmd = getUnixCommand();
+            Logger.getLogger(VectorCASTCommand.class.getName()).log(Level.INFO,
+                "VectorCASTCommand::perform: unixCmd: " + unixCmd);
             Shell shell = new Shell(unixCmd);
             try {
                 if (!shell.perform((AbstractBuild<?, ?>) build,
