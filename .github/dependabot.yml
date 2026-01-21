@@ -20,6 +20,12 @@ updates:
         versions:
           - ">= 3.0.0"
 
+         # Defer JUnit changes until v0.80 (tms_080)
+      - dependency-name: "org.junit.jupiter:*"
+      - dependency-name: "org.junit.platform:*"
+      - dependency-name: "org.junit.vintage:*"
+      - dependency-name: "junit:junit"
+                                              
   # GitHub Actions - Still on master
   - package-ecosystem: "github-actions"
     directory: "/"

@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>5.28</version>
+        <version>5.2102.v5f5fe09fccf1</version>
         <relativePath/>
     </parent>
     <name>VectorCAST Execution</name>
@@ -299,7 +299,7 @@
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
-                <version>3.1773.v3646231d4c22</version>
+                <version>3.1787.vd08d76c755ef</version>
                 <extensions>true</extensions>
             </plugin>
 
