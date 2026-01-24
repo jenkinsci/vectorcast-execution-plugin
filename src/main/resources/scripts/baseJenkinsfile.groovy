@@ -152,11 +152,9 @@ def makeStepFromSpec(VC, spec) {
                 """
 
                 def stashIncludes = [
-                        "**/${key}_rebuild.html",
-                        "execution/*.html",
-                        "management/*${key}*",
-                        "xml_data/*${key}*",
-                        "${fixedJobName}_${key}_build.tar",
+                    "${key}_build.log",
+                    "${key}_rebuild.html",
+                    "${fixedJobName}_${key}_build.tar",
                 ].join(', ')
 
                 stash includes: stashIncludes,

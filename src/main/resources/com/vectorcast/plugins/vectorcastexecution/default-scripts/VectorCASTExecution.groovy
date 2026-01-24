@@ -23,7 +23,7 @@ class VectorCASTExecutionImpl {
         def stashName = VC.helpersDsl.fixUpName("${VC.jobName}_${compiler}_${test_suite}_${environment}-build-execute-stage")
         def nodeID = (VC.forceNodeExecName ?: compiler)
 
-        def cmds = "${VC.setup}\n"
+        def cmds = ""
 
         if (VC.useRGW3) {
             cmds += "_VECTORCAST_DIR/vpython \"${script.env.WORKSPACE}\"/vc_scripts/patch_rgw_directory.py \"${VC.mpName}\"\n"
