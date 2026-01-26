@@ -50,6 +50,7 @@ except:
     import prevcast_parallel_build_execute as parallel_build_execute
 
 from vcast_utils import checkVectorCASTVersion, dump, getVectorCASTEncoding
+from check_build_log import check_build_log
 
 from enum import Enum
 
@@ -549,7 +550,8 @@ if __name__ == '__main__':
     metricsGroup.add_argument('--pclp_output_html', help='Generate static analysis results from PC-lint Plus XML file to an HTML output', action="store", default = "pclp_findings.html")
     metricsGroup.add_argument('--exit_with_failed_count', help='Returns failed test case count as script exit. Set a value to indicate a percentage above which the job will be marked as failed',
                                nargs='?', default='not present', const='(default 0)')
-
+    metricsGroup.add_argument('--check_build_log', help='Checks build log for a list of error phrases. Returns failure if any are found.',
+                               action="store_true", default = False)
     reportGroup = parser.add_argument_group('Report Selection', 'VectorCAST Manage reports that can be generated')
     reportGroup.add_argument('--aggregate', help='Generate aggregate coverage report VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--metrics', help='Generate metrics reports for VectorCAST Project', action="store_true", default = False)
@@ -642,4 +644,7 @@ if __name__ == '__main__':
     if vcExec.useJunitFailCountPct:
         print("--exit_with_failed_count=" + args.exit_with_failed_count + " specified. Fail Percent = " + str(round(vcExec.failed_pct,0)) + "% Return code: " + str(vcExec.failed_count))
         sys.exit(vcExec.failed_count)
+        
+    if args.check_build_log:
+        sys.exit(check_build_log(vcExec.build_log_name))
 
