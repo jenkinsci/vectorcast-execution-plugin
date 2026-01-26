@@ -26,18 +26,6 @@ class VectorCASTHelpersImpl {
     }
 
     // ===============================================================
-    // Function : formatPath (PRIVATE)
-    // Notes    : On Windows, changes / separators to \
-    // ===============================================================
-    def formatPath(inPath) {
-        def outPath = inPath ?: ""
-        if (!script.isUnix()) {
-            outPath = inPath.replace("/", "\\\\")
-        }
-        return outPath
-    }
-
-    // ===============================================================
     //
     // Function : getMpName
     // Inputs   : None

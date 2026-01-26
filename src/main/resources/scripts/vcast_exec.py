@@ -50,6 +50,7 @@ except:
     import prevcast_parallel_build_execute as parallel_build_execute
 
 from vcast_utils import checkVectorCASTVersion, dump, getVectorCASTEncoding
+from check_build_log import check_build_log
 
 from enum import Enum
 
@@ -397,10 +398,9 @@ class VectorCASTExecute(object):
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         from vector.apps.DataAPI.cover_api import CoverApi
         vcproj = VCProjectApi(self.FullMP)
-
+        
         forCover = {"FULL_REPORT": "AGGREGATE_REPORT",
                     "MANAGEMENT_REPORT": "COVER_MANAGEMENT_REPORT"}
-
         for env in vcproj.Environment.all():
             if not env.is_active:
                 continue
@@ -415,14 +415,13 @@ class VectorCASTExecute(object):
                 report_name = env.compiler.name + "_" + env.testsuite.name + "_" + env.name + "_full_report.html"
                 report_name = os.path.join(self.output_dir, "management",report_name)
                 print("Creating {} HTML report for {} in {}".format(desc, env.name, report_name))
-                
             if isinstance(env.api, CoverApi):
                 env.api.report(report_type=forCover[report_type], formats=["HTML"], output_file=report_name)
             else:
                 env.api.report(report_type=report_type, formats=["HTML"], output_file=report_name)
 
         vcproj.close()
-
+        
     def generateTestCaseMgtRpt(self):
         if not os.path.exists(os.path.join(self.output_dir, "management")):
             os.makedirs(os.path.join(self.output_dir, "management"))
@@ -434,9 +433,9 @@ class VectorCASTExecute(object):
             print("Creating Test Case Management HTML report")
 
             self.reportCreate(
-                report_type = "MANAGEMENT_REPORT",
+                report_type = "MANAGEMENT_REPORT", 
                 desc = "Test Case Management"
-            )
+            )                
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
 
@@ -451,9 +450,9 @@ class VectorCASTExecute(object):
         if checkVectorCASTVersion(21):
             print("Creating Unit Test Case Full Report")
             self.reportCreate(
-                report_type = "FULL_REPORT",
+                report_type = "FULL_REPORT", 
                 desc = "Full Report"
-            )
+            )                
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
 
@@ -549,7 +548,8 @@ if __name__ == '__main__':
     metricsGroup.add_argument('--pclp_output_html', help='Generate static analysis results from PC-lint Plus XML file to an HTML output', action="store", default = "pclp_findings.html")
     metricsGroup.add_argument('--exit_with_failed_count', help='Returns failed test case count as script exit. Set a value to indicate a percentage above which the job will be marked as failed',
                                nargs='?', default='not present', const='(default 0)')
-
+    metricsGroup.add_argument('--check_build_log', help='Checks build log for a list of error phrases. Returns failure if any are found.',
+                               action="store_true", default = False)
     reportGroup = parser.add_argument_group('Report Selection', 'VectorCAST Manage reports that can be generated')
     reportGroup.add_argument('--aggregate', help='Generate aggregate coverage report VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--metrics', help='Generate metrics reports for VectorCAST Project', action="store_true", default = False)
@@ -642,4 +642,7 @@ if __name__ == '__main__':
     if vcExec.useJunitFailCountPct:
         print("--exit_with_failed_count=" + args.exit_with_failed_count + " specified. Fail Percent = " + str(round(vcExec.failed_pct,0)) + "% Return code: " + str(vcExec.failed_count))
         sys.exit(vcExec.failed_count)
+        
+    if args.check_build_log:
+        sys.exit(check_build_log(vcExec.build_log_name))
 

@@ -44,7 +44,7 @@ class VectorCASTMetricsImpl {
 
         if (VC.sharedBldDir) {
             def fixedJobName = VC.helpersDsl.fixUpName("${script.env.JOB_NAME}")
-            results.cmds += "_VECTORCAST_DIR/vpython " $ { script.env.WORKSPACE } "/vc_scripts/copy_build_dir.py ${VC.mpName} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar\n"
+            results.cmds += "_VECTORCAST_DIR/vpython \"${script.env.WORKSPACE}/vc_scripts/copy_build_dir.py\" ${VC.mpName} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar\n"
         }
 
         results.cmds = (results.cmds?.trim()) ? VC.execDsl.getRunCommands(VC, results.cmds) : ""
@@ -70,6 +70,18 @@ class VectorCASTMetricsImpl {
             mpPath = mpFullName
         }
         return mpPath
+    }
+
+    // ===============================================================
+    // Function : formatPath (PRIVATE)
+    // Notes    : On Windows, changes / separators to \
+    // ===============================================================
+    def formatPath(inPath) {
+        def outPath = inPath ?: ""
+        if (!script.isUnix()) {
+            outPath = inPath.replace("/", "\\\\")
+        }
+        return outPath
     }
 
     def getMetricsCmds(VC, List extraResultOptions) {

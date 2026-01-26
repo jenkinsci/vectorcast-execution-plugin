@@ -42,16 +42,6 @@ public class VectorCASTHelpersBridge extends VectorCASTGroovyBridge {
     }
 
     /**
-     * Forwards to Groovy: {@code formatPath(inPath)}.
-     * @param inPath path that needs formatting
-     * @return path formatted properly
-     */
-    public String formatPath(final String inPath) {
-        Object r = getDelegate().invokeMethod("formatPath", inPath);
-        return (r != null) ? r.toString() : "";
-    }
-
-    /**
      * Forwards to Groovy: {@code getMpName(inputMpName)}.
      * @param inputMpName - default path VCproject name
      * @return just the manage project name
