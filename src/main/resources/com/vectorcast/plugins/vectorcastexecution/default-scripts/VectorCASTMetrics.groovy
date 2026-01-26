@@ -55,14 +55,14 @@ class VectorCASTMetricsImpl {
     // ===============================================================
     //
     // Function : getMPpath
-    // Inputs   : None
+    // Inputs   : mpFullPath
     // Action   : Returns the path name to the manage project's directory
     // Notes    : Used for accessing the build directory
     //
     // ===============================================================
-    def getMPpath() {
+    def getMPpath(mpFullPath) {
         // get the manage projects full name and base name
-        def mpFullName = VC_Manage_Project
+        def mpFullName = mpFullPath
         def mpPath = ""
         if (mpFullName.toLowerCase().endsWith(".vcm")) {
             mpPath = mpFullName.take(mpFullName.lastIndexOf('.'))
