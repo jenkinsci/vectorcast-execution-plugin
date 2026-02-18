@@ -141,7 +141,7 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
         if ".h" in fname:
             fname = fname.split(".h")[0]
         file.attrib['name'] = fname.replace(".","_")
-        file.attrib['filename'] = fpath 
+        file.attrib['filename'] = os.path.abspath(fpath).replace("\\","/")
         
         if coverAPI.metrics.statements > 0:     
             file.attrib['line-rate'] = str(statement_pct)
