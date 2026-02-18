@@ -42,7 +42,7 @@ class VectorCASTMetricsImpl {
         results.stashName = VC.helpersDsl.fixUpName("${VC.jobName}_${compiler}_${test_suite}_${environment}-build-execute-stage")
         results.buildFileName = "${compiler}_${test_suite}_${environment}_build.log "
 
-        if (VC.sharedBldDir) {
+        if (!VC.sharedBldDir) {
             def fixedJobName = VC.helpersDsl.fixUpName("${script.env.JOB_NAME}")
             results.cmds += "_VECTORCAST_DIR/vpython \"${script.env.WORKSPACE}/vc_scripts/copy_build_dir.py\" ${VC.mpName} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar\n"
         }
@@ -96,23 +96,23 @@ class VectorCASTMetricsImpl {
         // get the manage project's base name for use in rebuild naming
         def mpName = VC.helpersDsl.getMpName(VC.mpName)
 
-        if (VC.sharedBldDir) {
-            def artifact_dir = ""
-            try {
-                artifact_dir = VC.sharedBldDir.split(" ")[1]
-            }
-            catch (Exception ex) {
-                artifact_dir = VC.sharedBldDir.split("=")[1]
-            }
-            def coverDBpath = formatPath(artifact_dir + "/vcast_data/cover.db")
-            def coverSfpDBpath = formatPath(artifact_dir + "/vcast_data/vcprj.db")
-
-            results.cmds += """
-                _RM ${coverDBpath}
-                _RM ${coverSfpDBpath}
-                _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}"  ${VC.useCI} --refresh"
-            """
-        }
+//        if (VC.sharedBldDir) {
+//            def artifact_dir = ""
+//            try {
+//                artifact_dir = VC.sharedBldDir.split(" ")[1]
+//            }
+//            catch (Exception ex) {
+//                artifact_dir = VC.sharedBldDir.split("=")[1]
+//            }
+//            def coverDBpath = formatPath(artifact_dir + "/vcast_data/cover.db")
+//            def coverSfpDBpath = formatPath(artifact_dir + "/vcast_data/vcprj.db")
+//
+//            cmds += """
+//                _RM ${coverDBpath}
+//                _RM ${coverSfpDBpath}
+//                _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}"  ${VC.useCI} --refresh"
+//           """
+//        }
 
         // if we are using SCM and not using a shared artifact directory...
         if (VC.usingSCM && !VC.oneChkDir && VC.sharedBldDir.length() == 0) {

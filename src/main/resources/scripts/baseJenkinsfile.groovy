@@ -90,8 +90,6 @@ def VC = [
 ]
 
 // ===============================================================
-// Function : runCommands
-// ===============================================================
 def runCommands(cmds) {
     if (!cmds?.trim()) {
         return ("")
@@ -112,8 +110,6 @@ def runCommands(cmds) {
 }
 
 // ===============================================================
-// Function : pluginCreateSummary
-// ===============================================================
 def pluginCreateSummary(inIcon, inText) {
     try {
         createSummary icon: inIcon, text: inText
@@ -123,33 +119,38 @@ def pluginCreateSummary(inIcon, inText) {
 }
 
 // ===============================================================
-// Function : makeStepFromSpec
-// ===============================================================
 def makeStepFromSpec(VC, spec) {
     return {
         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
             node(spec.nodeID as String) {
 
                 if (!VC.oneChkDir) {
-                    scmStep()
+                    getRepo(VC)
                 }
 
                 step([$class: 'VectorCASTSetup'])
 
                 // run commands via your CPS-safe runner
                 def buildLogText = runCommands(spec.cmds)
+                
+                def (foundKeywords, failureFlag, unstableFlag) = checkLogsForErrors(VC, buildLogText)
 
+                def fixedJobName = VectorCASTHelpers.fixUpName("${env.JOB_NAME}")
                 def key = "${spec.compiler}_${spec.test_suite}_${spec.environment}"
+		
+                // if we didn't fail and don't have a shared artifact directory - we may have to copy back build directory artifacts...
+                if (!failureFlag && !VC.sharedBldDir) {
+
+                    // if we are using an SCM checkout and we aren't using a single checkout directory, we need to copy back build artifacts
+                    if (VC.usingSCM && !VC.oneChkDir) {
+                        def cmds = VectorCASTExecution.getRunCommands(VC, """_VECTORCAST_DIR/vpython "${env.WORKSPACE}"/vc_scripts/copy_build_dir.py ${VC.mpName} --level ${spec.level} --basename ${fixedJobName}_${key} --environment ${spec.environment}""")
+
+                        buildLogText += runCommands(cmds)
+                    }
+                }
 
                 writeFile file: "${key}_build.log",
                           text: buildLogText
-
-                def fixedJobName = VectorCASTHelpers.fixUpName("${env.JOB_NAME}")
-
-                echo """
-                    Rebuild Name : **/${key}_rebuild.html
-                    BuildTar Name: ${fixedJobName}_${key}_build.tar"
-                """
 
                 def stashIncludes = [
                     "${key}_build.log",
@@ -165,8 +166,6 @@ def makeStepFromSpec(VC, spec) {
 }
 
 // ===============================================================
-// Function : stepsForJobList
-// ===============================================================
 def stepsForJobList(VC, localEnvList) {
     def jobList = [:]
     localEnvList.each { line ->
@@ -177,8 +176,6 @@ def stepsForJobList(VC, localEnvList) {
     return jobList
 }
 
-// ===============================================================
-// Function : concatenateBuildLogs
 // ===============================================================
 def concatenateBuildLogs(logFileNames, outputFileName) {
     def cmd = ""
@@ -197,8 +194,6 @@ def concatenateBuildLogs(logFileNames, outputFileName) {
 }
 
 // ===============================================================
-// Function : getRepo
-// ===============================================================
 def getRepo(VC) {
     scmStep()
 
@@ -210,9 +205,23 @@ def getRepo(VC) {
 }
 
 // ===============================================================
-// Function : readIfExists
-// ===============================================================
 def readIfExists = { f -> fileExists(f) ? readFile(f) : null }
+
+// ===============================================================
+def checkLogsForErrors(VC, String logText) {
+    def found = []
+    def failure_flag = false
+    def unstable_flag = false
+    logText = logText ?: ""   // guard null
+
+    def failurePhrases  = (VC?.failurePhrases  ?: []) as List
+    def unstablePhrases = (VC?.unstablePhrases ?: []) as List
+
+    unstablePhrases.each { p -> if (p && logText.contains(p)) { found << p; unstable_flag = true } }
+    failurePhrases.each  { p -> if (p && logText.contains(p)) { found << p; failure_flag = true } }
+
+    return [found.unique().join(", "), failure_flag, unstable_flag]
+}
 
 // ***************************************************************
 //
@@ -266,7 +275,6 @@ pipeline {
         // This is the stage that we use the EnvList via stepsForJobList >> transformIntoStep
         stage('System Test Build Execute Stage') {
             steps {
-                step([$class: 'VectorCASTSetup'])
                 script {
                     runCommands(VectorCASTExecution.getSetupManageProject(VC))
 
@@ -336,7 +344,7 @@ pipeline {
                         writeFile file: "metrics_build.log", text: buildLogText
                         buildFileNames << "metrics_build.log"
                         concatenateBuildLogs(buildFileNames, "complete_build.log")
-                        def (foundKeywords, failureFlag, unstableFlag) = VectorCASTLogs.checkLogsForErrors(VC, "complete_build.log")
+                        def (foundKeywords, failureFlag, unstableFlag) = checkLogsForErrors(VC, readIfExists("complete_build.log"))
 
                         if (failureFlag) throw new Exception ("Error in Commands: " + foundKeywords)
 
@@ -388,9 +396,8 @@ pipeline {
           steps {
             script {
               def mpName = VectorCASTHelpers.getMpName(VC.mpName)
-              def completeLog = readFile('complete_build.log')
 
-              def (foundKeywords, failure_flag, unstable_flag) = VectorCASTLogs.checkLogsForErrors(VC, completeLog)
+              def (foundKeywords, failure_flag, unstable_flag) = checkLogsForErrors(VC, readIfExists('complete_build.log'))
 
               def inputs = [
                 foundKeywords     : foundKeywords,

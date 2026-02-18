@@ -33,18 +33,6 @@ public class VectorCASTLogsBridge extends VectorCASTGroovyBridge {
     }
 
     /**
-     * Forwards to Groovy: {@code checkLogsForErrors(VC, log)}.
-     * @param vc global VectorCAST settings from Jenkinsfile
-     * @param log log to check
-     * @return object containing errors and flags
-     */
-    public Object checkLogsForErrors(final Object vc, final String log) {
-        return getDelegate().invokeMethod(
-            "checkLogsForErrors", new Object[] {vc, log }
-        );
-    }
-
-    /**
      * Forwards to Groovy: {@code checkBuildLogPlan(VC, inputs)}.
      * @param vc global VectorCAST settings from Jenkinsfile
      * @param inputs for generating the checks

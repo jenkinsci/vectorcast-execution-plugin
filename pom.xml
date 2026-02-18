@@ -2,14 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
-
     <!-- Jenkins plugin parent that supports Java 21&25 -->
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>5.28</version>
+        <version>6.2128.v999f813cd6c3</version>
         <relativePath/>
     </parent>
 
@@ -205,7 +203,7 @@
         <dependency>
           <groupId>org.jenkins-ci</groupId>
           <artifactId>test-annotations</artifactId>
-          <version>1.5</version>
+          <version>124.vd3dd48ed21ee</version>
           <scope>test</scope>
           <exclusions>
             <exclusion>
@@ -290,7 +288,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.15.0</version>
                 <configuration>
                     <source>21</source>
                     <target>21</target>
@@ -322,7 +320,7 @@
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
-                <version>3.1773.v3646231d4c22</version>
+                <version>3.1816.v6ed1e566d656</version>
                 <extensions>true</extensions>
             </plugin>
 

@@ -4,20 +4,6 @@ class VectorCASTLogsImpl {
     def script
     VectorCASTLogsImpl(script) { this.script = script }
 
-    def checkLogsForErrors(VC, String logText) {
-        def found = []
-        def failure_flag = false
-        def unstable_flag = false
-
-        def failurePhrases  = (VC?.failurePhrases  ?: []) as List
-        def unstablePhrases = (VC?.unstablePhrases ?: []) as List
-
-        unstablePhrases.each { p -> if (p && logText.contains(p)) { found << p; unstable_flag = true } }
-        failurePhrases.each  { p -> if (p && logText.contains(p)) { found << p; failure_flag = true } }
-
-        return [found.unique().join(", "), failure_flag, unstable_flag]
-    }
-
     /**
      * Bridge-safe: NO pipeline steps here.
      *
