@@ -53,7 +53,7 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Using Change Based Testing Imported Results with QA Project](#using-change-based-testing-imported-results-with-qa-project)
     * [Disabled environments may add coverage metrics](#disabled-environments-may-add-coverage-metrics)
   * [Change Log](#change-log)
-    * [Version 0.79 (4 Dec 2025)](#version-079-4-dec-2025)
+    * [Version 0.79 (20 Feb 2026)](#version-079-20-feb-2026 )
     * [Version 0.78 (14 Jun 2025)](#version-078-14-jun-2025)
     * [Version 0.77 (21 Aug 2024)](#version-077-21-aug-2024)
     * [Version 0.76 (19 Jan 2023)](#version-076-19-jan-2023)
@@ -417,19 +417,22 @@ environment before disabling.  This takes into account environments that are dir
 
 ## Change Log
 
-### Version 0.79 (4 Dec 2025)
+### Version 0.79 (20 Feb 2026)
 - Moved to minimum Jenkins LTS 2.492.3 and Java 21
-    - Validated against Jenkins LTS 2.504.2
-    - Validated against Jenkins 2.513
+    - Validated against Jenkins LTS 2.528.3
+    - Validated against Jenkins 2.541
 - Update pom.xml to get a build of the plugin and to Java21
 - Update NewSingleJob to catch new exception thrown from SecureGroovyScript
 - Removing support for TESTinsights 
 - Updating parallel_full_reports.py NVLM support to support 9.0.22
-- Update jenkinsfile pipeline script to match up with the latest groovy interpreter
+- Update Jenkinsfile pipeline script to match up with the latest groovy interpreter
     - Missing def before globals 
         - Pipeline can access VC_ global vars, but not functions
         - Need to pass all required VC_ global vars to functions
 - Fixed encoding issues
+- Added support for Variant Logic Tests
+- Updated metrics scripts for CBA data and Coded Test Results
+- Updated SQLite scripts to support VectorCAST 2026
 
 ### Version 0.78 (14 Jun 2025)
 - Moved to minimum Jenkins version: 2.452.1 and Java 11
