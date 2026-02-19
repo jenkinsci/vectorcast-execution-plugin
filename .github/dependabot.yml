@@ -1,12 +1,12 @@
 version: 2
 updates:
-  # Maven Dependencies for Jenkins Plugin - Target
+  # Maven Dependencies for Jenkins Plugin - Target `tms_079`
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
       interval: "daily"
     target-branch: "master"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 20
     commit-message:
       prefix: ""
     ignore:
@@ -20,12 +20,6 @@ updates:
         versions:
           - ">= 3.0.0"
 
-         # Defer JUnit changes until v0.80 (tms_080)
-      - dependency-name: "org.junit.jupiter:*"
-      - dependency-name: "org.junit.platform:*"
-      - dependency-name: "org.junit.vintage:*"
-      - dependency-name: "junit:junit"
-                                              
   # GitHub Actions - Still on master
   - package-ecosystem: "github-actions"
     directory: "/"
