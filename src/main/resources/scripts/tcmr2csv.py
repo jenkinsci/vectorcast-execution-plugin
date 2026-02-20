@@ -29,18 +29,17 @@ import argparse
 import os
 import sys
 
+import sys, os
 # adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-python_path_updates += os.sep + "vpython-addons"
-sys.path.append(python_path_updates)
+if sys.version_info[0] < 3:
+    python_path_updates = os.path.join(os.path.dirname(os.path.abspath(__file__)),'vpython-addons')
+    sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
 from safe_open import open
+from vcast_utils import getVectorCASTEncoding
+    
+encFmt = getVectorCASTEncoding()
 
 #global variables
 global manageProjectName
@@ -183,11 +182,8 @@ def procTestResults(HtmlReportName, table, level):
         # write data to the CSV file
         csv_file_data += (info[UNIT_NAME_COL] + "," + info[SUBPROG_COL] + "," + info[TEST_CASE_COL] + "," + info[TC_STATUS_COL] + "\n")
 
-    with open(CsvFileName,"w") as fd:
-        try:
-            fd.write(unicode(csv_file_data,"utf-8"))
-        except:
-            fd.write(csv_file_data)
+    with open(CsvFileName,"wb") as fd:
+        fd.write(csv_file_data.encode(encFmt, "replace"))
             
     return CsvFileName
 
@@ -344,11 +340,9 @@ def procCoverageResults(HtmlReportName,table, level):
             # write data to CSV file
             csv_file_data += (dataStr[:-1] + "\n")
         
-    with open(CsvFileName,"w") as fd:
-        try:
-            fd.write(unicode(csv_file_data,"utf-8"))
-        except:
-            fd.write(csv_file_data)
+    with open(CsvFileName,"wb") as fd:
+        fd.write(csv_file_data.encode(encFmt, "replace"))
+
     return CsvFileName
     
     
@@ -361,12 +355,12 @@ def run(HtmlReportName = "", jobName = "", version= 14):
 
     # verify the html report exists
     if not os.path.isfile(HtmlReportName):
-        raise IOError(HtmlReportName + ' does not exist')
+        raise FileNotFoundError(HtmlReportName + ' does not exist')
         return
         
     # open the file and create BS4 object
-    with open(HtmlReportName,"r") as fd:
-        html_doc = fd.read()
+    with open(HtmlReportName,"rb") as fd:
+        html_doc = fd.read().decode(encFmt,"replace")
         soup = BeautifulSoup(html_doc,'html.parser')
 
     # find all tables and loop over
@@ -427,16 +421,16 @@ def processTotals(complexityIndex, columnTitles, info):
         os.mkdir("xml_data")
     xml_file = os.path.join("xml_data", "coverage_results_top-level.xml")
     
-    with open(xml_file,"w") as fd:
+    with open(xml_file,"wb") as fd:
         time_tuple = time.localtime()
         date_string = time.strftime("%m/%d/%Y", time_tuple)
         time_string = time.strftime("%I:%M %p", time_tuple)
         datetime_str = date_string + "\t" + time_string
-        fd.write("<!-- VectorCAST/Jenkins Integration, Generated " + datetime_str+ " -->\n")
-        fd.write("<report>\n")
-        fd.write("  <version value=\"3\"/>\n")
-        fd.write(dataStr)
-        fd.write("</report>\n\n")
+        fd.write(("<!-- VectorCAST/Jenkins Integration, Generated " + datetime_str+ " -->\n").encode(encFmt,"replace"))
+        fd.write("<report>\n".encode(encFmt,"replace"))
+        fd.write("  <version value=\"3\"/>\n".encode(encFmt,"replace"))
+        fd.write(dataStr.encode(encFmt,"replace"))
+        fd.write("</report>\n\n".encode(encFmt,"replace"))
 
 def procCombinedCoverageResults(HtmlReportName,table):
 
@@ -536,12 +530,12 @@ def runCombinedCov(HtmlReportName = ""):
 
     # verify the html report exists
     if not os.path.isfile(HtmlReportName):
-        raise IOError(HtmlReportName + ' does not exist')
+        raise FileNotFoundError(HtmlReportName + ' does not exist')
         return
         
     # open the file and create BS4 object
-    with open(HtmlReportName,"r") as fd:
-        html_doc = fd.read()
+    with open(HtmlReportName,"rb") as fd:
+        html_doc = fd.read().decode(encFmt, "replace")
         
     soup = BeautifulSoup(html_doc,'html.parser')
 

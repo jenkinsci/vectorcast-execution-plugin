@@ -22,7 +22,7 @@ def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, cursor_new, cursor_orig, 
     values_placeholders = ', '.join(['?' for x in column_names])  # format appropriately
     
     # SQL select columns from table
-    s = "SELECT %s FROM %s" % (', '.join(column_names), table_name)
+    s = "SELECT %s FROM %s" % (', '.join(column_names), table_name)	
     orig_data = cursor_orig.execute(s).fetchall()
     new_data  = cursor_new.execute(s).fetchall()
 
@@ -95,6 +95,10 @@ def run(origVcrFile, newVcrFile, verbose):
     orig_cursor = orig_db.cursor()
 
     mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, new_cursor, orig_cursor, "result", False, verbose)
+    
+    # Close cursors before closing database connections to release file handles
+    new_cursor.close()
+    orig_cursor.close()
     
     new_db.close()
     orig_db.close()

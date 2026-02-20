@@ -25,25 +25,22 @@
 from __future__ import division
 from __future__ import print_function
 
+import sys, os, locale
+
 import sys, os
 # adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-
-# needed because vc18 vpython does not have bs4 package
 if sys.version_info[0] < 3:
-    python_path_updates += os.sep + 'vpython-addons'
+    python_path_updates = os.path.join(os.path.dirname(os.path.abspath(__file__)),'vpython-addons')
     sys.path.append(python_path_updates)
 
 from bs4 import BeautifulSoup
-from safe_open import open
+try:
+    from safe_open import open
+except:
+    pass
 
 import tee_print
+from vcast_utils import getVectorCASTEncoding
     
 def fixup_2020_soup(main_soup):
 
@@ -76,6 +73,7 @@ def fixup_2020_soup(main_soup):
                    'col_subprogram': 'word-break:break-all;width:30%;',
                    'col_complexity': 'white-space:nowrap;',
                    'col_metric': 'white-space:nowrap;',
+                   'mcdc-all-pairs': 'white-space:nowrap;',
                    'i0' : 'padding-left:0.25em;min-width:11em',
                    'i1' : 'padding-left: 1.25em;min-width: 11em;',
                    'i2' : 'padding-left: 2.25em;',
@@ -107,18 +105,42 @@ def fixup_2020_soup(main_soup):
     return main_soup
 
 def fixup_2020_reports(report_name):
-    with open(report_name,"r") as fd:    
+
+    encFmt = getVectorCASTEncoding()
+
+    with open(report_name, "rb") as fd:
+        raw = fd.read().decode(encFmt, "replace")
+
+    try:
+        # First attempt: use lxml if available, else let BS pick
         try:
-            main_soup = BeautifulSoup(fd,features="lxml")
-        except:
-            main_soup = BeautifulSoup(fd)
+            import lxml  # noqa
+            parser = "lxml"
+        except ImportError:
+            parser = "html.parser"
+
+        main_soup = BeautifulSoup(raw, features=parser)
+
+    except Exception:
+        try:
+            # Fallback to UTF-8
+            main_soup = BeautifulSoup(
+                raw.encode("utf-8", "replace"),
+                features=parser
+            )
+        except Exception:
+            main_soup = BeautifulSoup(
+                raw.encode(encFmt, "replace")
+            )
         
     main_soup = fixup_2020_soup(main_soup)
     
-    with open(report_name,"w") as fd:    
-        fd.write(main_soup.prettify(formatter="html"))
-        
+    with open(report_name, "wb") as fd:
+        fd.write(main_soup.prettify(formatter="html").encode(encFmt, "replace"))
+
+    
 if __name__ == '__main__':
+
     report_name = sys.argv[1]
     fixup_2020_reports(report_name)
     

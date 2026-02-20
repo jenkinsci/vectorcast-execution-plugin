@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,56 @@ import os
 import inspect
 
 def __get_script_filename():
-    # Get the previous frame in the call stack (i.e., the caller)
-    caller_frame = inspect.stack()[2]
-    
+    """Return 'filename::function#line' of the caller. Compatible with Python 2.7-3.9."""
     try:
-        caller_filename = caller_frame.filename
-    except:
-        caller_filename = caller_frame[1]  # In Python 2.7, the filename is the second item in the frame
+        stack = inspect.stack()
+        # [2] = caller of the function that called this
+        frameinfo = stack[2]
 
-    return os.path.basename(caller_filename)
+        # Handle both 2.x and 3.x attribute names
+        filename = getattr(frameinfo, 'filename', frameinfo[1])
+        funcname = getattr(frameinfo, 'function', frameinfo[3])
+        lineno = getattr(frameinfo, 'lineno', frameinfo[2])
+    except Exception:
+        filename = '<unknown>'
+        funcname = '<unknown>'
+        lineno = -1
+    finally:
+        # Clean up to prevent reference cycles (important for Py2)
+        del stack
 
+    return "%s::%s#%s" % (os.path.basename(filename), funcname, lineno)
 
+def checkProjectResults(vcproj):
+    
+    anyLocalResults = False
+    anyImportedResults = False
+
+    try:
+        results = vcproj.project.repository.get_full_status([])
+        all_envs = []
+        for env in vcproj.Environment.all():
+            if env.is_active:
+                all_envs.append(env.level._full_path)
+
+        for result in results:
+            if result in all_envs:
+                if results[result]['local'] != {}:
+                    anyLocalResults = True
+
+                if results[result]['imported'] != {}:
+                    anyImportedResults = True
+    except Exception as e:
+        print(e)
+        
+    return anyLocalResults, anyImportedResults
+    
 def checkVectorCASTVersion(minimumVersion, quiet = False):
     
+    encFmt = getVectorCASTEncoding()
     tool_version = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "tool_version.txt")
-    with open(tool_version,"r") as fd:
-        ver = fd.read()
+    with open(tool_version,"rb") as fd:
+        ver = fd.read().decode(encFmt,"replace")
     
     try:
         verNo = int(ver.split(" ",1)[0])
@@ -50,7 +84,7 @@ def checkVectorCASTVersion(minimumVersion, quiet = False):
 
     if verNo >= minimumVersion:
         if not quiet:
-            print("Running with VC Version: ", ver);
+            print("Running with VC Version: " + ver);
         return True
         
     if not quiet:
@@ -76,6 +110,28 @@ def fmt_percent(num, dom):
     else:
         str_num = "0%"
     return str_num
+    
+def getVectorCASTEncoding():
+
+    import locale
+    
+    # get the VC langaguge and encoding
+    enc = locale.getpreferredencoding(False)
+        
+    return enc;
+    
+def printVectorLogo():
+    print( "                                                                                  ####                             ")
+    print( "                                                                                  ########                         ")
+    print( "                                                                                  ###########                      ")
+    print( "          @@@    @@@   @@@@@@@@    @@@@@@@ @@@@@@@@@@  @@@@@@@@    @@@@@@@@          ###########                   ")
+    print( "           @@@@ @@@    @@@        @@@         @@@     @@@@  @@@@   @@@   @@@            ###########                ")
+    print( "            @@@@@@     @@@@@@    @@@          @@@    @@@     @@@   @@@@@@@@@               ##########              ")
+    print( "             @@@@      @@@        @@@         @@@     @@@@  @@@@   @@@@@@@@             ###########                ")
+    print( "              @@       @@@@@@@@    @@@@@@@    @@@      @@@@@@@@    @@@  @@@@         ###########                   ")
+    print( "                                                                                  ###########                      ")
+    print( "                                                                                  ########                         ")
+    print( "                                                                                  ####                             ")
 
 if __name__ == '__main__':
 

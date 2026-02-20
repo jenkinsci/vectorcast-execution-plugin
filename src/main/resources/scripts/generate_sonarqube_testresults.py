@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -47,15 +47,18 @@ try:
 except:
     pass
 
+from vector.apps.DataAPI.cover_api import CoverApi
+
 from vector.enums import ENVIRONMENT_STATUS_TYPE_T
 
-from vector.apps.DataAPI.cover_api import CoverApi
 try:
     from vector.apps.ReportBuilder.custom_report import fmt_percent
 except:
     from vcast_utils import fmt_percent
     pass
-        
+    
+from vcast_utils import getVectorCASTEncoding
+
 from operator import attrgetter
 import hashlib 
 import traceback
@@ -96,15 +99,7 @@ class BaseGenerateXml(object):
         self.test_id = 1
         
         # get the VC langaguge and encoding
-        self.encFmt = 'utf-8'
-        from vector.apps.DataAPI.configuration import vcastqt_global_options
-        self.lang = vcastqt_global_options.get('Translator','english')
-        if self.lang == "english":
-            self.encFmt = "utf-8"
-        if self.lang == "japanese":
-            self.encFmt = "shift-jis"
-        if self.lang == "chinese":
-            self.encFmt = "GBK"
+        self.encFmt = getVectorCASTEncoding()
             
         self.failDict = {}
         self.passDict = {}
@@ -281,6 +276,12 @@ class GenerateManageXml (BaseGenerateXml):
 
         self.cleanupXmlDataDir()
 
+    def __del__(self):
+        try:
+            self.api.close()
+        except:
+            pass
+
     def cleanupXmlDataDir(self):
         path=os.path.join(self.xml_data_dir,"sonarqube")
         import glob
@@ -290,7 +291,7 @@ class GenerateManageXml (BaseGenerateXml):
                 try:
                     os.remove(file);
                 except:
-                    print("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ".  Check console for environment build/execution errors")
+                    print("   *INFO: File System Error removing file after failed to remove directory: " + path + "/" + file + ". Check console for environment build/execution errors")
                     if print_exc:  traceback.print_exc()
 
         # we should either have an empty directory or no directory
@@ -299,14 +300,9 @@ class GenerateManageXml (BaseGenerateXml):
                 os.makedirs(path)
             except:
                 print("failed making path: " + path)
-                print("   *INFO: File System Error creating directory: " + path + ".  Check console for environment build/execution errors")
+                print("   *INFO: File System Error creating directory: " + path + ". Check console for environment build/execution errors")
                 if print_exc:  traceback.print_exc()
                 
-    def __del__(self):
-        try:
-            self.api.close()
-        except:
-            pass
         
     def generate_local_results(self, results, key):
         # get the level from the name
@@ -468,8 +464,8 @@ class GenerateManageXml (BaseGenerateXml):
         
         self.fh_data += "</TestRun>\n"
         
-        with open(self.unit_report_name, "w") as fd:
-            fd.write(self.fh_data)
+        with open(self.unit_report_name, "wb") as fd:
+            fd.write(self.fh_data.encode(self.encFmt, "replace"))
 
         
             
@@ -562,11 +558,11 @@ class GenerateXml(BaseGenerateXml):
         if isinstance(self.api, CoverApi):
             try:
                 if self.topLevelAPI == None:
-                    api = VCProjectApi(self.FullManageProjectName)
+                    vcproj = VCProjectApi(self.FullManageProjectName)
                 else:
-                    api = self.topLevelAPI
+                    vcproj = self.topLevelAPI
                         
-                for env in api.Environment.all():
+                for env in vcproj.Environment.all():
                     if env.compiler.name == self.compiler and env.testsuite.name == self.testsuite and env.name == self.env and env.system_tests:
                         for st in env.system_tests:
                             pass_fail_rerun = ""
@@ -581,15 +577,11 @@ class GenerateXml(BaseGenerateXml):
                                 
                             level = env.compiler.name + "/" + env.testsuite.name + "/" + env.name
                             if self.verbose:
-                                print (level, st.name, pass_fail_rerun)
+                                print ("{} {} {}".format(level, st.name, pass_fail_rerun))
                             self.write_testcase(st, level, st.name, env.definition.is_monitored)
 
-                # callStr = os.getenv('VECTORCAST_DIR') + os.sep + "manage -p " + self.FullManageProjectName + " --system-tests-status=" + self.manageProjectName + "_system_tests_status.html"
-                # p = subprocess.Popen(callStr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-                # out, err = p.communicate()
-
                 if self.topLevelAPI == None:
-                    api.close()
+                    vcproj.close()
 
             except ImportError as e:
                 from generate_qa_results_xml import genQATestResults
@@ -646,8 +638,8 @@ class GenerateXml(BaseGenerateXml):
     def end_test_results_file(self):
         self.fh_data += "</TestRun>\n"
         
-        with open(self.unit_report_name, "w") as fd:
-            fd.write(self.fh_data)
+        with open(self.unit_report_name, "wb") as fd:
+            fd.write(self.fh_data.encode(encFmt, "replace"))
 
 #
 # GenerateXml - start the JUnit XML file
@@ -840,7 +832,7 @@ if __name__ == '__main__':
             args.project += ".vcm"
             
         if not os.path.exists(args.project):
-            print("Path to VectorCAST Project not found: ", args.project)
+            print("Path to VectorCAST Project not found: " + args.project)
             sys.exit(-1)
             
         run(args.project)

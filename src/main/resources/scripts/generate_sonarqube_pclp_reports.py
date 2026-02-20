@@ -19,6 +19,15 @@ import os
 
 from pprint import pprint
 
+try:
+    from safe_open import open
+except:
+    pass
+
+from vcast_utils import getVectorCASTEncoding
+    
+encFmt = getVectorCASTEncoding()
+
 # PC-lint Plus message representation and parsing
 
 class Message:
@@ -294,8 +303,8 @@ def emit_gitlab(msgs):
 # Driver
 
 def write_output(output, filename):
-    with open(filename, 'w') as file:
-        file.write(output)
+    with open(filename, 'wb') as file:
+        file.write(output.encode(encFmt, "replace"))
         
 def generate_reports(input_xml, output_text = None, output_html = None, output_json = None, output_gitlab = None):
     msgs = parse_msgs(input_xml)

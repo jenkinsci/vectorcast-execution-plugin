@@ -18,3 +18,4 @@ work/**
 
 /src/main/resources/scripts/*.pyc
 /src/main/resources/scripts/vpython-addons/bs4/*.pyc
+.idea

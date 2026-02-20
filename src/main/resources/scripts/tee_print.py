@@ -1,28 +1,41 @@
-#tee_print.py
+# tee_print.py
 from __future__ import print_function
+import sys
+from vcast_utils import getVectorCASTEncoding
 
 class TeePrint(object):
-    def __init__(self, filename = "command.log", verbose = False):
+    def __init__(self, filename="command.log", verbose=False):
+        self.filename = filename
         self.verbose = verbose
-        self.logfile = open(filename, 'a')
+        self.encFmt = getVectorCASTEncoding()    
+        self.logfile = open(filename, "ab")     
+
 
     def __enter__(self):
         return self
 
-    def __exit__(self, exct_type, exce_value, traceback):
+    def __exit__(self, exct_type, exec_value, traceback):
         try:
             self.logfile.close()
-        except:
+        except Exception:
             pass
 
-    def teePrint(self, str):
-        print (str)
-        self.logfile.write(str + "\n")
-        
+    def teePrint(self, msg):
+        # --- Normalize message to text (unicode in Py2, str in Py3)
+        if not isinstance(msg, (str, bytes)):
+            msg = str(msg)
 
-if __name__ == '__main__':
+        print(msg)
 
-    with TeePrint() as teePrint:
-        teePrint.teePrint("Hello world")
-        teePrint.teePrint("Hello world")
-        teePrint.teePrint("Hello world")
+        # --- File ---
+        try:
+            self.logfile.write((msg + "\n").encode(self.encFmt, "replace"))
+            self.logfile.flush()
+        except Exception:
+            # Last-chance fallback
+            try:
+                self.logfile.write((str(msg) + "\n").encode("utf-8", "replace"))
+                self.logfile.flush()
+            except Exception:
+                print("Error writing to logfile: " + self.filename)   
+                

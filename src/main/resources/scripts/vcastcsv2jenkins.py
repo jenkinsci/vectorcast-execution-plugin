@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-#vcastcsv2jenkins.py
 
 from __future__ import division
 from __future__ import print_function
@@ -36,19 +35,11 @@ import shutil
 import cgi
 from safe_open import open
 
-# adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-# needed because vc18 vpython does not have bs4 package
-if sys.version_info[0] < 3:
-    python_path_updates += os.sep + 'vpython-addons'
-    sys.path.append(python_path_updates)
-
 from xml.sax.saxutils import escape
+
+from vcast_utils import getVectorCASTEncoding
+
+encFmt = getVectorCASTEncoding()
 
 # column constants
 UNIT_NAME_COL = 0
@@ -111,8 +102,9 @@ def readCsvFile(csvFilename):
     global jobNameDotted
 
     #mode = 'r' if sys.version_info[0] >= 3 else 'rb'
-    with open(csvFilename, "r") as fd:
-        csvList = fd.readlines()
+    with open(csvFilename, "rb") as fd:
+        csvList = [line.decode(encFmt, "replace") for line in fd.readlines()]
+        
     os.remove(csvFilename)
 
     fullManageProject = csvList[0].split(",")[1].rstrip()
@@ -235,8 +227,8 @@ def runCsv2JenkinsTestResults(csvFilename, junit):
 
     junitData += writeJunitFooter()
     
-    with open(csvFilename[:-4]+".xml","w") as fd:
-        fd.write(junitData)
+    with open(csvFilename[:-4]+".xml","wb") as fd:
+        fd.write(junitData.encode(encFmt, "replace"))
 
 def determineCoverage(titles):
     global stIndex,brIndex,pairIndex,pathIndex,baIndex,fncIndex,fncCallIndex,VgIndex
@@ -574,11 +566,11 @@ def runCsv2JenkinsCoverageResults(csvFilename):
     #write out the footer information for emma format
     emmaData += writeEmmaFooter()
 
-    with open(csvFilename[:-4]+".xml","w") as fd:
-        fd.write(emmaData)
+    with open(csvFilename[:-4]+".xml","wb") as fd:
+        fd.write(emmaData.encode(encFmt, "replace"))
 
 def writeBlankCCFile():
-    with open("coverage_results_blank.xml","w") as fd:
+    with open("coverage_results_blank.xml","wb") as fd:
         fd.write("""<report>
   <version value="3"/>
 <data>
@@ -586,7 +578,7 @@ def writeBlankCCFile():
 <coverage type="complexity, %" value="0% (0 / 0)"/>
 </all>
 </data>
-</report>""")
+</report>""".encode(encFmt,"replace"))
     print("Generating a blank coverage report\n")
 
 def run(test = "",coverage="", useExecRpt = True, version=14, junit = True):

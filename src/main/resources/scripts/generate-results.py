@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2024 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,23 +38,8 @@ import parse_traceback
 import tee_print
 
 from safe_open import open
+from vcast_utils import getVectorCASTEncoding
 
-# adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-
-if sys.version_info[0] < 3:
-    python_path_updates += os.sep + 'vpython-addons'
-    sys.path.append(python_path_updates)
-    using_27_python = True
-else:
-    using_27_python = False
 
 import tcmr2csv
 import vcastcsv2jenkins
@@ -81,7 +66,9 @@ try:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi
 except:
     pass
-    
+
+encFmt = getVectorCASTEncoding()
+
 #global variables
 global verbose
 global print_exc
@@ -178,11 +165,14 @@ def readManageVersion(ManageFile):
     version = 14
     if os.path.isfile(ManageFile + ".vcm"):
         ManageFile = ManageFile + '.vcm'
-    with open(ManageFile, 'r') as projFile:
-        for line in projFile:
+        
+    with open(ManageFile, 'rb') as projFile:
+        for raw_line in projFile:                      # iterates lazily, line by line
+            line = raw_line.decode(encFmt, "replace")  # decode each line
             if 'version' in line and 'project' in line:
                 version = int(re.findall(r'\d+', line)[0])
                 break
+
     if verbose:
         print("Version of VectorCAST project file = %d" % version)
         print("(Levels change in version 17 (*maybe) and above)")
@@ -308,8 +298,8 @@ def fixup_css(report_name):
     if not need_fixup:
         return
 
-    with open(report_name,"r") as fd:
-        data = fd.read() 
+    with open(report_name,"rb") as fd:
+        data = fd.read().decode('utf-8','replace')
 
     #fix up inline CSS because of Content Security Policy violation
     newData = data[: data.index("<style>")-1] +  """
@@ -323,8 +313,8 @@ def fixup_css(report_name):
     regex_str = r"<img alt=\"Vector\".*"
     newData =  re.sub(regex_str,"<img alt=\"Vector\" src=\"vectorcast.png\"/>",newData)
     
-    with open(report_name, "w") as fd:
-        fd.write(newData)
+    with open(report_name, "wb") as fd:
+        fd.write(newData.encode('utf-8','replace'))
    
     workspace = os.getenv("WORKSPACE")
     if workspace is None:
@@ -449,7 +439,7 @@ def useNewAPI(FullManageProjectName, manageEnvs, level, envName, cbtDict, genera
         
     for currentEnv in manageEnvs:
         if skipReporting(manageEnvs[currentEnv]["build_dir"], use_archive_extract, cbtDict):
-            print("   No Change for " + currentEnv + ".  Skipping reporting.")
+            print("   No Change for " + currentEnv + ". Skipping reporting.")
             continue 
 
         if envName == None:
@@ -516,7 +506,7 @@ def buildReports(FullManageProjectName = None,
     
    # make sure the project exists
     if not os.path.isfile(FullManageProjectName) and not os.path.isfile(FullManageProjectName + ".vcm"):
-        raise IOError(FullManageProjectName + ' does not exist')
+        raise FileNotFoundError(FullManageProjectName + ' does not exist')
         return
         
     manageProjectName = os.path.splitext(os.path.basename(FullManageProjectName))[0]
@@ -539,7 +529,7 @@ def buildReports(FullManageProjectName = None,
             if verbose:
                 print("Removing file: " + file)
         except Exception as e:
-            teePrint.teePrint("   *INFO: File System Error removing " + file + ".  Check console for environment build/execution errors")
+            teePrint.teePrint("   *INFO: File System Error removing " + file + ". Check console for environment build/execution errors")
             if print_exc:  traceback.print_exc()
    
     failed_count = 0
@@ -550,15 +540,14 @@ def buildReports(FullManageProjectName = None,
         print("Cleanup: " + str(time.time()))
     if useNewReport and not legacy:
         try:
-            api = VCProjectApi(FullManageProjectName)
-            tool_version = api.tool_version
+            vcproj = VCProjectApi(FullManageProjectName)
+            tool_version = vcproj.tool_version
             if tool_version.startswith("20"):
                 use_manage_api = False
             else:
                 use_manage_api = True
-            api.close()
+            vcproj.close()
         except:
-            ##teePrint.teePrint("   *INFO: Issue getting tool version from: " + FullManageProjectName)
             use_manage_api = False
             
         if use_manage_api:
@@ -576,23 +565,16 @@ def buildReports(FullManageProjectName = None,
                 manageEnvs, level, envName, cbtDict, generate_individual_reports, 
                 use_archive_extract, report_only_failures, no_full_report,
                 useStartLine, teePrint, use_cte)
-            
-        with open("unit_test_fail_count.txt", "w") as fd:
-            failed_str = str(failed_count)
-            try:
-                fd.write(unicode(failed_str))
-            except:
-                fd.write(failed_str)    
-           
-        with open("unit_test_passfail_count.txt", "w") as fd:
-            passfail_str = str(passed_count) + " " + str(failed_count)
-            try:
-                fd.write(unicode(passfail_str))
-            except:
-                fd.write(passfail_str)    
-           
+                
         if timing:
             print("XML and Individual reports: " + str(time.time()))
+
+        with open("unit_test_fail_count.txt", "wb") as fd:
+            fd.write(str(failed_count).encode(encFmt, "replace"))
+
+        with open("unit_test_passfail_count.txt", "wb") as fd:
+            text = "{} {}".format(passed_count, failed_count)
+            fd.write(text.encode(encFmt, "replace"))
 
     ### NOT Using new data API        
     else:
@@ -671,8 +653,8 @@ def buildReports(FullManageProjectName = None,
             print(out)
 
         # save the output of the manage command for debug purposes
-        with open("build.log","w") as fd:
-            fd.write(out)
+        with open("build.log","wb") as fd:
+            fd.write(out.encode(encFmt, "replace"))
         
         copyList = []
         jobName = ""
@@ -748,43 +730,42 @@ def buildReports(FullManageProjectName = None,
                 env = None
         
         if coverProjectInManageProject:
-            generate_qa_results_xml.genQATestResults(FullManageProjectName,saved_level,saved_envName)
+            try:
+                for report_name_ext in [".txt", ".html"]:
+                    report_name = os.path.basename(FullManageProjectName)[:-4] + "_system_tests_status" + report_name_ext
+                    callStr = cmd_prefix + "manage --project " + FullManageProjectName + " --system-tests-status=" + report_name
+                    out_mgt = runManageWithWait(callStr, silent=True)
+                generate_qa_results_xml.genQATestResults(FullManageProjectName,saved_level,saved_envName)
+            except:
+                print("This version of VetorCAST doesn't support QA System Test - Cannot generate System Tests Status Report")
             
         failed_count = 0
         passed_count = 0
         try:
             for file in glob.glob("xml_data/test_results_*.xml"):
-                with open(file,"r") as fd:
-                    lines = fd.readlines()
-            
+                with open(file,"rb") as fd:
+                    lines = [line.decode(encFmt, "replace") for line in fd.readlines()]
+
                 for line in lines:
                     if "failures" in line:
                         failed_count += int(line.split("\"")[5])
                         passed_count += int(line.split("\"")[3]) - failed_count
                         break
+                        
+            with open("unit_test_fail_count.txt", "wb") as fd:
+                fd.write(str(failed_count).encode(encFmt, "replace"))
+
+            with open("unit_test_passfail_count.txt", "wb") as fd:
+                text = "{} {}".format(passed_count, failed_count)
+                fd.write(text.encode(encFmt, "replace"))
+
         except:
             teePrint.teePrint ("   *INFO: Problem parsing test results file for unit testcase failure count: " + file)
             if print_exc:  traceback.print_exc()
             
-        with open("unit_test_fail_count.txt", "w") as fd:
-            failed_str = str(failed_count)
-            try:
-                fd.write(unicode(failed_str))
-            except:
-                fd.write(failed_str)    
-
-        with open("unit_test_passfail_count.txt", "w") as fd:
-            passfail_str = str(passed_count) + " " + str(failed_count)
-            try:
-                fd.write(unicode(passfail_str))
-            except:
-                fd.write(passfail_str)    
-           
-
         for file in copyList:
-
             if verbose:
-                print("moving %s -> %s" % (file[0], file[1]))
+                print("moving {} -> {}".format(file[0], file[1]))
 
             shutil.move(file[0], file[1])
             
@@ -799,8 +780,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject',                    help='Manager Project Name')
     parser.add_argument('-v', '--verbose',                  help='Enable verbose output', action="store_true")
-    parser.add_argument('-l', '--level',                    help='Environment Name if only doing single environment.  Should be in the form of level/env')
-    parser.add_argument('-e', '--environment',              help='Environment Name if only doing single environment.  Should be in the form of level/env')
+    parser.add_argument('-l', '--level',                    help='Level for doing single environment.  Should be in the form of compiler/testsuite')
+    parser.add_argument('-e', '--environment',              help='Environment Name if only doing single environment')
     parser.add_argument('-g', '--dont-generate-individual-reports',   
                                                             help='Don\'t Generated Individual Reports. Below VC2019 - this just controls execution report generate. VC2019 and later - execution reports for each testcase won\'t be generated',  action="store_true", default=False)
     parser.add_argument('--wait_time',                      help='Time (in seconds) to wait between execution attempts', type=int, default=30)
@@ -837,8 +818,8 @@ if __name__ == '__main__':
         
     try:
         tool_version = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "tool_version.txt")
-        with open(tool_version,"r") as fd:
-            ver = fd.read()
+        with open(tool_version,"rb") as fd:
+            ver = fd.read().decode(encFmt, "replace")
             
         if ver.startswith("19 "):
             need_fixup = True
@@ -871,8 +852,9 @@ if __name__ == '__main__':
         
 
     if args.buildlog and os.path.exists(args.buildlog):
-        with open(args.buildlog,"r") as fd:
-            buildLogData = fd.readlines()
+        with open(args.buildlog,"rb") as fd:
+            buildLogData = [line.decode(encFmt, "replace") for line in fd.readlines()]
+            
         cbt = ParseConsoleForCBT(verbose)
         cbtDict = cbt.parse(buildLogData)
         

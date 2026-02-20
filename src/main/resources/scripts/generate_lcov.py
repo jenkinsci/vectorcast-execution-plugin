@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2020 Vector Informatik, GmbH.
+# Copyright 2025 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,19 +28,32 @@ try:
     from vector.apps.DataAPI.vcproject_models import VCProject
 except:
     pass
+
+from vector.apps.DataAPI.cover_api import CoverApi
+
 try:
     from vector.apps.DataAPI.unit_test_api import UnitTestApi
 except:
     from vector.apps.DataAPI.api import Api as UnitTestApi
 
-from vector.apps.DataAPI.cover_api import CoverApi
 import sys, os
 from collections import defaultdict
 from pprint import pprint
 import subprocess
 import argparse
 
-from vcast_utils import dump, checkVectorCASTVersion
+from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
+try:
+    from safe_open import open
+except:
+    pass
+    
+try:
+    import math
+    INF = math.inf
+except Exception:
+    INF = float("inf")  # Py2-compatible
+encFmt = getVectorCASTEncoding()
 
 fileList = []
 
@@ -82,58 +95,69 @@ def has_branch_coverage(line):
 
 def has_anything_covered(line):
     
-    return (line.metrics.covered_statements + 
-        line.metrics.covered_branches + 
-        line.metrics.covered_mcdc_branches + 
-        line.metrics.covered_mcdc_pairs + 
-        line.metrics.covered_functions +
-        line.metrics.covered_function_calls + 
-        line.metrics.max_covered_statements + 
+    return (line.metrics.max_covered_statements +
         line.metrics.max_covered_branches + 
         line.metrics.max_covered_mcdc_branches + 
         line.metrics.max_covered_mcdc_pairs + 
         line.metrics.max_covered_functions +
-        line.metrics.max_covered_function_calls)
+        line.metrics.max_covered_function_calls +
+        line.metrics.max_annotations_statements +
+        line.metrics.max_annotations_branches +
+        line.metrics.max_annotations_mcdc_branches +
+        line.metrics.max_annotations_mcdc_pairs +
+        line.metrics.max_annotations_functions +
+        line.metrics.max_annotations_function_calls)
         
 def has_branches_covered(line):
     
     count = (line.metrics.covered_branches + 
         line.metrics.covered_mcdc_branches + 
-        line.metrics.covered_mcdc_pairs)
+        line.metrics.covered_mcdc_pairs    +
+        line.metrics.max_annotations_branches +
+        line.metrics.max_annotations_mcdc_branches +
+        line.metrics.max_annotations_mcdc_pairs
+        )
         
     if count == 0:
         count = (line.metrics.max_covered_branches + 
             line.metrics.max_covered_mcdc_branches + 
-            line.metrics.max_covered_mcdc_pairs)
+            line.metrics.max_covered_mcdc_pairs +
+            line.metrics.max_annotations_branches +
+            line.metrics.max_annotations_mcdc_branches +
+            line.metrics.max_annotations_mcdc_pairs
+        )
         
     return count
        
 def get_function_name_line_number(file_path, function, initial_guess):
 
-    with open(file_path,"r") as fd:
-        lines = fd.readlines()
+    with open(file_path, "rb") as fd:
+        lines = [line.decode(encFmt, "replace") for line in fd.readlines()]
 
-    line_number_closest_so_far = initial_guess;
-    delta = 9999999999;
+    if initial_guess is None or initial_guess >= len(lines):
+        initial_guess = len(lines) - 1
 
-    # print(function, line_number_closest_so_far, delta, initial_guess)
-    for count, line in enumerate(reversed(lines[:initial_guess+1])):
-        if function in line.replace(" ",""):
+    line_number_closest_so_far = initial_guess
+    delta = INF
+
+    for count, line in enumerate(reversed(lines[:initial_guess + 1])):
+        if function in line.replace(" ", ""):
             line_num = initial_guess - count
             if abs(line_num - initial_guess) < delta:
                 line_number_closest_so_far = line_num
                 delta = abs(line_num - initial_guess)
-                # print(function, line_number_closest_so_far, delta, initial_guess)
-    
-    # print(line_number_closest_so_far + 1,function)
-    return line_number_closest_so_far + 1 ## add one since python starts from 0
+
+    return line_number_closest_so_far + 1  # convert 0-based to 1-based
+
 
 def runCoverageResultsMP(mpFile, verbose = False, testName = "", source_root = ""):
 
     vcproj = VCProjectApi(mpFile)
     api = vcproj.project.cover_api
+    results = runGcovResults(api, verbose = verbose, testName = vcproj.project.name, source_root=source_root)
+    vcproj.close()
     
-    return runGcovResults(api, verbose = verbose, testName = vcproj.project.name, source_root=source_root)
+    return results
     
 def runGcovResults(api, verbose = False, testName = "", source_root = "") :
    
@@ -155,7 +179,10 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
             
         fname = file.display_name
         fpath = file.display_path.rsplit('.',1)[0]
-        fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
+        try:
+            fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
+        except:
+            fpath = fpath.replace("\\","/")
 
         fileDict[fpath] = file
 
@@ -188,11 +215,11 @@ def runGcovResults(api, verbose = False, testName = "", source_root = "") :
         output += sourceFile;
         
         if verbose:
-            print("source_root: ", source_root)
-            print("path       : ", path)
-            print("new_path   : ", new_path)
-            print("file.name  : ", file.name)
-            print("sourceFile : ", sourceFile + "\n")
+            print("source_root: " + source_root)
+            print("path       : " + path)
+            print("new_path   : " + new_path)
+            print("file.name  : " + file.name)
+            print("sourceFile : " + sourceFile + "\n")
 
         for func in file.functions:
             func_name_line_number = get_function_name_line_number(file.display_path, func.name, func.start_line)
@@ -316,7 +343,8 @@ def generateCoverageResults(inFile, xml_data_dir = "xml_data", verbose = False, 
         os.makedirs(lcov_data_dir)
 
     pathToInfo = os.path.join(lcov_data_dir, name + ".info")
-    open(pathToInfo, "w").write(output)
+    with open(pathToInfo, "wb") as fd: 
+        fd.write(output.encode(encFmt, "replace"))
 
     cmdStr = "genhtml " + pathToInfo + " --output-directory out"
     cmdArr = cmdStr.split()
@@ -330,7 +358,7 @@ if __name__ == '__main__':
     
     if not checkVectorCASTVersion(21):
         print("Cannot create LCOV metrics. Please upgrade VectorCAST")
-        sys.exit()
+        sys.exit(0)
         
     parser = argparse.ArgumentParser()
     parser.add_argument('vcProjectName', help='VectorCAST Project Name', action="store")

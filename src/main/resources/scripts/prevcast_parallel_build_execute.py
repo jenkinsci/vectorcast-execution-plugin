@@ -1,26 +1,36 @@
-#parallel_build_execute.py
+#
+# The MIT License
+#
+# Copyright 2025 Vector Informatik, GmbH.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
 
 import sys, os, subprocess, argparse, glob, shutil
 from pprint import pprint
-import pdb, time
+import time
 from datetime import timedelta
 from io import open
 
 import incremental_build_report_aggregator
 
-# adding path
-workspace = os.getenv("WORKSPACE")
-if workspace is None:
-    workspace = os.getcwd()
-
-jenkinsScriptHome = os.path.join(workspace,"vc_scripts")
-python_path_updates = jenkinsScriptHome
-sys.path.append(python_path_updates)
-
-# needed because vc18 vpython does not have bs4 package
-if sys.version_info[0] < 3:
-    python_path_updates += os.sep + 'vpython-addons'
-    sys.path.append(python_path_updates)
+from vcast_utils import getVectorCASTEncoding
 
 try:
     from vector.apps.DataAPI.vcproject_api import VCProjectApi 
@@ -34,15 +44,19 @@ except:
 
 from threading import Thread, Lock
 try:
-        from Queue import Queue, Empty
+    from Queue import Queue, Empty
 except ImportError:
-        from queue import Queue, Empty  # python 3.x
- 
+    from queue import Queue, Empty  # python 3.x
+try:
+    from safe_open import open
+except:
+    pass
+
 VCD = os.environ['VECTORCAST_DIR']
 MONITOR_SLEEP=6
 
-VERSION="v0.2"
-VERSION_DATE="2023-10-14"
+VERSION="v0.79"
+VERSION_DATE="2025-10-29"
 
 class ParallelExecute(object):
     def __init__(self):
@@ -56,9 +70,9 @@ class ParallelExecute(object):
         self.testsuite = None
         self.incremental = ""
         self.verbose = False
+        # get the VC encoding
+        self.encFmt = getVectorCASTEncoding()
         
-
-
     def parseParallelExecuteArgs(self):
         parser = argparse.ArgumentParser()        
         # running from manage
@@ -96,7 +110,7 @@ class ParallelExecute(object):
             self.priority_list = []
         else:
             self.priority_list = args.prioritize.split(',')
-            print("Adding the following environments to the top of the que: " + ",".join(self.priority_list))
+            print("Adding the following environments to the top of the que: {}".format(",".join(self.priority_list)))
         
         self.compiler = args.compiler 
         self.testsuite = args.testsuite
@@ -106,7 +120,7 @@ class ParallelExecute(object):
             sys.exit()
         
         if not os.path.isfile(self.manageProject) and not os.path.isfile(self.manageProject + ".vcm"):
-            raise IOError(self.manageProject + ' does not exist')
+            raise FileNotFoundError(self.manageProject + ' does not exist')
             return
             
         if args.incremental:
@@ -131,7 +145,8 @@ class ParallelExecute(object):
         self.running_jobs = 0
         self.lock = Lock()
         self.system_test_lock = Lock()
-        self.mpName = self.manageProject.replace(".vcm","").rsplit("/",1)[1]
+        self.mpName = self.manageProject.replace(".vcm","")
+        self.mpName = os.path.basename(self.mpName)
         
     def th_Print (self, str):
         self.lock.acquire()
@@ -163,35 +178,36 @@ class ParallelExecute(object):
             
 
         log_name = ".".join(["build",compiler, testsuite, env,"log"])
-        build_log = open(log_name,"w")
         
-        start_time = time.time()
-        if not self.dryrun:
-            if self.verbose:
-                print("\nStarting an environment job for " + env + " environment.  Exec Command:\n\t" + exec_cmd)
-            process = subprocess.Popen(exec_cmd, shell=True, stdout=build_log, stderr=build_log)    
-            process.wait()
-        else:
-            if self.verbose:
-                self.th_Print ("RUN>> " + exec_cmd)
-            else:
-                self.th_Print ("RUN>> " + full_name )
-            
-        end_time = time.time()
-        uptime = end_time - start_time
-        human_uptime = str(timedelta(seconds=int(uptime)))
-        self.jobs_run_time[full_name] = human_uptime
+        with open(log_name, "wb") as build_log:  # 'wb' is safest across OSes
+            start_time = time.time()
 
-        build_log.close()
+            if not self.dryrun:
+                if self.verbose:
+                    print("\nStarting an environment job for {} environment.\nExec Command:\n\t{}".format(env, exec_cmd))
+                process = subprocess.Popen(exec_cmd, shell=True, stdout=build_log, stderr=build_log)
+                process.wait()
+            else:
+                msg = "RUN>> " + (exec_cmd if self.verbose else full_name)
+                self.th_Print(msg)
+
+            end_time = time.time()
+            human_uptime = str(timedelta(seconds=int(end_time - start_time)))
+            self.jobs_run_time[full_name] = human_uptime
+
 
         if self.verbose:
-            with open(log_name, 'r', encoding='utf-8') as bldlog:
-                if "Environment built Successfully" not in bldlog.read():
-                    print("\nERROR!!! Environment " + env + " not built successfully!  See " + log_name + " for more details")
+            with open(log_name, 'rb') as bldlog:
+                data = bldlog.read().decode('utf-8','replace')
+
+                if "Creating report in" in data.split('\n')[0]:    
+                    print("\nRebuild/Reexecute unnecessary for {} environment. Run Time was  {}.".format(env, human_uptime))
+                elif "Environment built Successfully" not in data:
+                    print("\nERROR!!! Environment {} not built successfully!  See {} for more details".format(env,log_name))
                 else:
-                    print("\nCompleted execution of " + env + " environment.  Run Time was  " + human_uptime + ".")
+                    print("\nCompleted execution of {} environment. Run Time was {}.".format(env, human_uptime))
         
-        #print ("Harness Loading/Execution", full_name, "Complete")
+        #print ("Harness Loading/Execution {} Complete".format(full_name))
         exec_queue.get()
         queue.task_done()
         
@@ -236,7 +252,7 @@ class ParallelExecute(object):
     def monitor_jobs(self):
         
         while self.running_jobs != 0:
-            print ("\n\nWaiting on jobs (", self.running_jobs , len(self.currently_executing_jobs), ")")
+            print ("\n\nWaiting on jobs ({} {})".format(self.running_jobs , len(self.currently_executing_jobs)))
             print ("===============\n  ")
             si = self.currently_executing_jobs
             si.sort()
@@ -245,7 +261,7 @@ class ParallelExecute(object):
             for compiler in self.waiting_execution_queue:
                 qsz = self.waiting_execution_queue[compiler].qsize()
                 if qsz > 0:
-                    print ("  >> ", compiler, "has", qsz,  "environment(s) in queue")
+                    print ("  >> {} has {} environment(s) in queue".format(compiler, qsz))
             
             time.sleep(MONITOR_SLEEP)
 
@@ -261,9 +277,9 @@ class ParallelExecute(object):
 
         print ("\n\nSummary of Parallel Execution")
         print (    "=============================")
-        print ("  Total time :", script_human_uptime)
+        print ("  Total time : {}".format(script_human_uptime))
         for job in self.jobs_run_time:
-            print ("  ", self.jobs_run_time[job], job)
+            print ("  {} {}".format(self.jobs_run_time[job], job))
 
     def get_testcase_list(self,env_list):
         new_env_list = []
@@ -283,10 +299,13 @@ class ParallelExecute(object):
             if '.tst' in efile:
                 test_file = efile
                 break
-        with open(test_file, 'r', encoding='utf-8') as tst:
-            for line in tst:
+                
+        with open(test_file, 'rb') as tst:
+            for raw in tst:  # each iteration reads the next line
+                line = raw.decode(self.encFmt, 'replace')
                 if 'TEST.NAME' in line:
                     count += 1
+                                        
         return count
 
     def cleanup(self):
@@ -294,12 +313,17 @@ class ParallelExecute(object):
         print ("\n\n")
         
         build_log_data = ""
+
         for file in glob.glob("build*.log"):
-            build_log_data += "\n".join(open(file,"r").readlines())
+            with open(file, "rb") as fd:
+                # read as bytes, then decode manually - works in Py2 and Py3
+                build_log_data += fd.read().decode(self.encFmt, "replace")
+                
             if not self.verbose:
                 os.remove(file)
             
-        open(self.mpName + "_build.log","w", encoding="utf-8").write(build_log_data)
+        with open(self.mpName + "_build.log","wb") as fd: 
+            fd.write(build_log_data.encode(self.encFmt, "replace"))
         
         if self.incremental:
             incremental_build_report_aggregator.parse_html_files(self.mpName)
@@ -310,16 +334,16 @@ class ParallelExecute(object):
         process = subprocess.Popen(exec_cmd, shell=True)
         process.wait()
 
-        api = VCProjectApi(self.manageProject)
-              
         self.parallel_exec_info = {}
         self.waiting_execution_queue = {}
+        
+        vcproj = VCProjectApi(self.manageProject)
 
         if self.tc_order:
-            testcase_list_all = self.get_testcase_list(api.Environment.all())
+            testcase_list_all = self.get_testcase_list(vcproj.Environment.all())
         else:
-            testcase_list_all = api.Environment.all()
-
+            testcase_list_all = vcproj.Environment.all()
+            
         testcase_list = []
         for env in testcase_list_all:
             if not env.is_active:                
@@ -355,11 +379,6 @@ class ParallelExecute(object):
                         else:
                             env_list.append([full_name, isSystemTest])
                         self.waiting_execution_queue[compiler] = Queue()
-                    
-                #waiting_execution_queue[compiler].append(full_name)
-                
-        api.close()
-        
         if self.verbose:
             pprint(self.parallel_exec_info)
 
@@ -386,6 +405,7 @@ class ParallelExecute(object):
         self.monitor_jobs()
         
         self.cleanup()
+        vcproj.close()
 
 # API for importing the module into another script
 def parallel_build_execute(in_args):
@@ -399,7 +419,7 @@ def parallel_build_execute(in_args):
         sys.argv = prev_argv
 
 if __name__ == '__main__':
-    print ("VectorCAST parallel_build_execute.py ", VERSION, "  ", VERSION_DATE)
+    print ("VectorCAST parallel_build_execute.py {} {}".format(VERSION, VERSION_DATE))
     pe = ParallelExecute()
     pe.parseParallelExecuteArgs()
     pe.doit()

@@ -25,23 +25,7 @@ import contextlib
 import os
 
 from io import open as _open
-
-def new_get_file_encoding():
-    # get the VC langaguge and encoding
-    cur_encoding = "utf-8"
-    try:
-        from vector.apps.DataAPI.configuration import vcastqt_global_options
-        lang = vcastqt_global_options.get('Translator','english')
-        if lang == "english":
-            cur_encoding = "utf-8"
-        if lang == "japanese":
-            cur_encoding = "shift-jis"
-        if lang == "chinese":
-            cur_encoding = "GBK"
-    except:
-        pass
-        
-    return cur_encoding
+from vcast_utils import getVectorCASTEncoding
 
 @contextlib.contextmanager
 def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None):
@@ -52,11 +36,9 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
         except:
             fd = _open(file, mode, buffering, encoding, errors, newline, closefd)
     else:
-        if os.path.exists(file):
-            encoding = new_get_file_encoding()
-        else:
-            encoding = "utf-8"
-        fd = _open(file, mode, buffering, encoding, errors, newline)
+        encFmt = getVectorCASTEncoding()
+        
+        fd = _open(file, mode, buffering, encFmt, errors, newline)
     
     try:
         yield fd
