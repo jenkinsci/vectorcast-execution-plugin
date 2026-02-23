@@ -292,7 +292,7 @@
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
-              <version>3.5.4</version> <!-- Use latest stable -->
+              <version>3.5.5</version> <!-- Use latest stable -->
               <configuration>
                 <excludeJUnit5Engines>junit-vintage</excludeJUnit5Engines>
                 <forkCount>1C</forkCount> <!-- 1 JVM per CPU core -->
