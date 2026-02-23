@@ -27,7 +27,7 @@
         <findbugs.failOnError>false</findbugs.failOnError>
         <jenkins.version>2.492.3</jenkins.version>
         <lintCompilerArgs>-Xlint:-options</lintCompilerArgs>
-        
+        <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     </properties>
     <organization>
         <name>Vector Informatik, GmbH</name>
@@ -365,3 +365,4 @@
         </plugins>
     </build>
 </project>
+
