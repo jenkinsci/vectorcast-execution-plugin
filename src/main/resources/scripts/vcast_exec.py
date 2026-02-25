@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 #
 
-import os, subprocess,argparse, glob, sys, shutil
+import os, subprocess, argparse, glob, sys, shutil
 
 from managewait import ManageWait
 
@@ -51,6 +51,9 @@ except:
 
 from vcast_utils import checkVectorCASTVersion, dump, getVectorCASTEncoding
 from check_build_log import check_build_log
+
+import shlex, platform
+from pathlib import Path
 
 from enum import Enum
 
@@ -259,6 +262,29 @@ class VectorCASTExecute(object):
         except:
             pass
 
+    def import_env_from_setup(self, setup_path: str) -> None:
+        print("Running setup script {setup_path}")
+        setup = Path(setup_path)
+        if platform.system().lower().startswith("win"):
+            # call setup_env.bat in cmd.exe and dump env via `set`
+            cmd = f'call {setup} && set'
+                        
+            p = subprocess.run(["cmd", "/c", cmd], capture_output=True, text=True)
+        else:
+            # source setup_env.sh in bash and dump env via `env`
+            # (setup script must be source-able)
+            bash_cmd = f'source {shlex.quote(str(setup))} >/dev/null 2>&1; env'
+            p = subprocess.run(["bash", "-lc", bash_cmd], capture_output=True, text=True)
+        
+        if p.returncode != 0:
+            print (f"Setup script failed ({setup_path}) -> errno: {p.returncode}:\n{p.stderr}")
+            raise RuntimeError(f"Setup script failed ({setup_path}):\n{p.stderr}")
+
+        for line in p.stdout.splitlines():
+            if "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            os.environ[k] = v
 
     def generateIndexHtml(self):
         if not checkVectorCASTVersion(21):
@@ -529,10 +555,11 @@ if __name__ == '__main__':
 
     actionGroup = parser.add_argument_group('Script Actions', 'Options for the main tasks')
     actionGroup.add_argument('--build-execute', help='Builds and exeuctes the VectorCAST Project', action="store_true", default = False)
+    actionGroup.add_argument("--setup", default="", help="Path to setup_env.bat/.sh (optional)")
+
     parser_specify = actionGroup.add_mutually_exclusive_group()
     parser_specify.add_argument('--build',       help='Only builds the VectorCAST Project', action="store_true", default = False)
     parser_specify.add_argument('--incremental', help='Use Change Based Testing (Cannot be used with --build)', action="store_true", default = False)
-
     metricsGroup = parser.add_argument_group('Metrics Options', 'Options generating metrics')
     metricsGroup.add_argument('--output_dir',  help='Set the base directory of the xml_data directory. Default is the workspace directory', default = None)
     metricsGroup.add_argument('--source_root', help='Set the absolute path for the source file in coverage reporting', default = "")
@@ -550,6 +577,7 @@ if __name__ == '__main__':
                                nargs='?', default='not present', const='(default 0)')
     metricsGroup.add_argument('--check_build_log', help='Checks build log for a list of error phrases. Returns failure if any are found.',
                                action="store_true", default = False)
+                               
     reportGroup = parser.add_argument_group('Report Selection', 'VectorCAST Manage reports that can be generated')
     reportGroup.add_argument('--aggregate', help='Generate aggregate coverage report VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--metrics', help='Generate metrics reports for VectorCAST Project', action="store_true", default = False)
@@ -576,6 +604,10 @@ if __name__ == '__main__':
     actionGroup.add_argument('--version', help='Displays the version information', action="store_true", default = False)
 
     args = parser.parse_args()
+    
+    if args.verbose:
+        import sys, shlex
+        print("argv:", shlex.join(sys.argv))  # py3.8+
 
     if args.version:
         displayVersion()
@@ -605,6 +637,9 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     vcExec = VectorCASTExecute(args)
+    
+    if args.setup:
+        vcExec.import_env_from_setup(args.setup)
 
     if args.build_execute or args.build:
         vcExec.runExec()
