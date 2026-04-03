@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2020 Vector Informatik, GmbH.
+# Copyright 2026 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -94,11 +94,11 @@ def has_branch_coverage(line):
         
 
 def has_anything_covered(line):
-    
+
     return (line.metrics.max_covered_statements +
-        line.metrics.max_covered_branches + 
-        line.metrics.max_covered_mcdc_branches + 
-        line.metrics.max_covered_mcdc_pairs + 
+        line.metrics.max_covered_branches +
+        line.metrics.max_covered_mcdc_branches +
+        line.metrics.max_covered_mcdc_pairs +
         line.metrics.max_covered_functions +
         line.metrics.max_covered_function_calls +
         line.metrics.max_annotations_statements +

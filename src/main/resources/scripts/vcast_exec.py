@@ -85,6 +85,7 @@ def displayVersion():
     else:
         print("Can't Read Version of Jenkins Integration. See console log.")
 
+
 class VectorCASTExecute(object):
 
     def detect_ci_tool(self):
@@ -268,14 +269,14 @@ class VectorCASTExecute(object):
         if platform.system().lower().startswith("win"):
             # call setup_env.bat in cmd.exe and dump env via `set`
             cmd = f'call {setup} && set'
-                        
+
             p = subprocess.run(["cmd", "/c", cmd], capture_output=True, text=True)
         else:
             # source setup_env.sh in bash and dump env via `env`
             # (setup script must be source-able)
             bash_cmd = f'source {shlex.quote(str(setup))} >/dev/null 2>&1; env'
             p = subprocess.run(["bash", "-lc", bash_cmd], capture_output=True, text=True)
-        
+
         if p.returncode != 0:
             print (f"Setup script failed ({setup_path}) -> errno: {p.returncode}:\n{p.stderr}")
             raise RuntimeError(f"Setup script failed ({setup_path}):\n{p.stderr}")
@@ -424,7 +425,7 @@ class VectorCASTExecute(object):
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
         from vector.apps.DataAPI.cover_api import CoverApi
         vcproj = VCProjectApi(self.FullMP)
-        
+
         forCover = {"FULL_REPORT": "AGGREGATE_REPORT",
                     "MANAGEMENT_REPORT": "COVER_MANAGEMENT_REPORT"}
         for env in vcproj.Environment.all():
@@ -447,7 +448,7 @@ class VectorCASTExecute(object):
                 env.api.report(report_type=report_type, formats=["HTML"], output_file=report_name)
 
         vcproj.close()
-        
+
     def generateTestCaseMgtRpt(self):
         if not os.path.exists(os.path.join(self.output_dir, "management")):
             os.makedirs(os.path.join(self.output_dir, "management"))
@@ -459,9 +460,9 @@ class VectorCASTExecute(object):
             print("Creating Test Case Management HTML report")
 
             self.reportCreate(
-                report_type = "MANAGEMENT_REPORT", 
+                report_type = "MANAGEMENT_REPORT",
                 desc = "Test Case Management"
-            )                
+            )
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
 
@@ -476,9 +477,9 @@ class VectorCASTExecute(object):
         if checkVectorCASTVersion(21):
             print("Creating Unit Test Case Full Report")
             self.reportCreate(
-                report_type = "FULL_REPORT", 
+                report_type = "FULL_REPORT",
                 desc = "Full Report"
-            )                
+            )
         else:
             print("Cannot create Test Case Management HTML report. Please upgrade VectorCAST")
 
@@ -577,7 +578,7 @@ if __name__ == '__main__':
                                nargs='?', default='not present', const='(default 0)')
     metricsGroup.add_argument('--check_build_log', help='Checks build log for a list of error phrases. Returns failure if any are found.',
                                action="store_true", default = False)
-                               
+
     reportGroup = parser.add_argument_group('Report Selection', 'VectorCAST Manage reports that can be generated')
     reportGroup.add_argument('--aggregate', help='Generate aggregate coverage report VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--metrics', help='Generate metrics reports for VectorCAST Project', action="store_true", default = False)
@@ -604,7 +605,7 @@ if __name__ == '__main__':
     actionGroup.add_argument('--version', help='Displays the version information', action="store_true", default = False)
 
     args = parser.parse_args()
-    
+
     if args.verbose:
         import sys, shlex
         print("argv:", shlex.join(sys.argv))  # py3.8+
@@ -637,7 +638,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     vcExec = VectorCASTExecute(args)
-    
+
     if args.setup:
         vcExec.import_env_from_setup(args.setup)
 
@@ -677,7 +678,7 @@ if __name__ == '__main__':
     if vcExec.useJunitFailCountPct:
         print("--exit_with_failed_count=" + args.exit_with_failed_count + " specified. Fail Percent = " + str(round(vcExec.failed_pct,0)) + "% Return code: " + str(vcExec.failed_count))
         sys.exit(vcExec.failed_count)
-        
+
     if args.check_build_log:
         sys.exit(check_build_log(vcExec.build_log_name))
 

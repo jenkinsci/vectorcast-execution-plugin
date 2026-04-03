@@ -66,6 +66,8 @@ class ParseConsoleForCBT(object):
         currTestNdx = 0
 
         tempLine = ""
+        fileName = ""
+        func = ""
         for line in console_log:
             try:
                 tempLine = line
@@ -201,7 +203,7 @@ if __name__ == '__main__':
     with open(sys.argv[1], "rb") as fd:
         buildLogData = [line.decode(encFmt, "replace") for line in fd.readlines()]
 
-    parser = ParseConsoleForCBT(True)
+    parser = ParseConsoleForCBT(False)
     parser.parse(buildLogData)
     pprint(parser.parse(buildLogData), width=132)
     
