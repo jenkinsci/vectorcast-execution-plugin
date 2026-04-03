@@ -5,7 +5,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "master"
+    target-branch: "tms_080"
     open-pull-requests-limit: 10
     commit-message:
       prefix: ""
