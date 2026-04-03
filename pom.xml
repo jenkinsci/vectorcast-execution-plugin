@@ -50,7 +50,8 @@
         <jenkins.version>2.541</jenkins.version>
         <changelist>-SNAPSHOT</changelist>
         <lintCompilerArgs>-Xlint:-options</lintCompilerArgs>
-        <ban-junit4-imports.skip>false</ban-junit4-imports.skip>        
+        <ban-junit4-imports.skip>false</ban-junit4-imports.skip>   
+        <jacocoArgLine></jacocoArgLine>        
     </properties>
     <organization>
         <name>Vector Informatik, GmbH</name>
@@ -137,14 +138,14 @@
             <artifactId>groovy-postbuild</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>`
+            <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>copyartifact</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.9.8.3</version>
+            <version>4.9.8</version>
         </dependency>
 
         <dependency>
