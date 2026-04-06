@@ -112,9 +112,9 @@ def runCommands(cmds) {
 // ===============================================================
 def pluginCreateSummary(inIcon, inText) {
     try {
-        createSummary icon: inIcon, text: inText
-    } catch (Exception e) {
         addSummary icon: inIcon, text: inText
+    } catch (NoSuchMethodError e) {
+        createSummary icon: inIcon, text: inText
     }
 }
 

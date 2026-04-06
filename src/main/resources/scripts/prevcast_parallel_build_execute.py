@@ -55,8 +55,8 @@ except:
 VCD = os.environ['VECTORCAST_DIR']
 MONITOR_SLEEP=6
 
-VERSION="v0.79"
-VERSION_DATE="2025-10-29"
+VERSION="v0.80"
+VERSION_DATE="2026-6-19"
 
 class ParallelExecute(object):
     def __init__(self):

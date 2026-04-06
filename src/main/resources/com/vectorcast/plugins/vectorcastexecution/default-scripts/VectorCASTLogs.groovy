@@ -27,8 +27,6 @@ class VectorCASTLogsImpl {
      *  - cleanupCmds (String)      // uses _RM macros
      */
     def checkBuildLogPlan(VC, Map inputs) {
-        script.echo "Entry checkBuildLogPlan"
-
         def mpName = VC.helpersDsl.getMpName(VC.mpName)
 
         def foundKeywords = (inputs.foundKeywords ?: "").toString()
@@ -37,8 +35,6 @@ class VectorCASTLogsImpl {
 
         def descAdd = ""
         if (foundKeywords) {
-            script.echo "BP1"
-
             descAdd += "Problematic data found in console output, search the console output for the following phrases: ${foundKeywords}\n"
         }
 
@@ -47,7 +43,6 @@ class VectorCASTLogsImpl {
 
         // coverage diffs is optional
         if (inputs.coverageDiffHtml) {
-            script.echo "BP2"
             summaryHtml += hr + inputs.coverageDiffHtml
         }
 
@@ -59,39 +54,31 @@ class VectorCASTLogsImpl {
         def finalSummary = null
 
         if (VC.useCBT) {
-            script.echo "BP3"
             def hasCombined = (inputs.combinedIncrHtml ? true : false)
 
             if (hasCombined && hasFull && hasMetrics) {
-                script.echo "BP4"
                 summaryIcon = "icon-document icon-xlg"
                 finalSummary =
                         hr + inputs.combinedIncrHtml +
                         hr + inputs.fullReportHtml +
                         hr + inputs.metricsReportHtml
                 if (summaryHtml) {
-                    script.echo "BP4.1"
                     finalSummary = summaryHtml + finalSummary
                 }
             } else {
-                script.echo "BP5"
                 setResult = "UNSTABLE"
                 summaryIcon = "icon-warning icon-xlg"
                 finalSummary = "General Failure"
                 descAdd += "General Failure, Incremental Build Report or Full Report Not Present. Please see the console for more information\n"
             }
         } else {
-            script.echo "BP6"
             if (hasFull && hasMetrics) {
-                script.echo "BP7"
                 summaryIcon = "icon-document icon-xlg"
                 finalSummary = inputs.fullReportHtml + "<br> " + inputs.metricsReportHtml
                 if (summaryHtml){
-                    script.echo "BP8"
                     finalSummary = summaryHtml + hr + finalSummary
                 }
             } else {
-                script.echo "BP9"
                 setResult = "UNSTABLE"
                 summaryIcon = "icon-warning icon-xlg"
                 finalSummary = "General Failure"
@@ -102,7 +89,6 @@ class VectorCASTLogsImpl {
         // unit test fail count handling (caller reads file)
         def utc = (inputs.unitTestFailCount ?: "").toString().trim()
         if (utc && utc != "0") {
-            script.echo "BP10"
             descAdd += "Failed test cases, Junit will mark at least as UNSTABLE\n"
         }
 
@@ -118,13 +104,9 @@ class VectorCASTLogsImpl {
         def failMessage = null
         def unstableMessage = null
         if (failure_flag) {
-            script.echo "BP11"
-
             setResult = "FAILURE"
             failMessage = "Raising Error: Problematic data found in console output, search the console output for the following phrases: ${foundKeywords}"
         } else if (unstable_flag) {
-            script.echo "BP12"
-
             unstableMessage = "Triggering stage unstable because keywords found: ${foundKeywords}"
         }
 

@@ -356,8 +356,15 @@ def parse_html_files(mpName, verbose = False):
     # ---------------------------------------------------------------------
     for div in main_soup.find_all("div", {'class': 'contents-block'}):
         div.decompose()
+    
+    for div in main_soup.find_all("div", {'id':'title-bar'}): 
+        div.decompose()
 
+    for title in main_soup.find_all("title"): 
+        title.decompose()
+        
     div = main_soup.find("div", {'class': 'report-body'})
+    
     if div:
         div['class'] = "report-body no-toc"
 
