@@ -354,23 +354,11 @@ def parse_html_files(mpName, verbose = False):
     # ---------------------------------------------------------------------
     # Cleanup + output
     # ---------------------------------------------------------------------
-    for div in main_soup.find_all("div", {'class': 'contents-block'}):
-        div.decompose()
     
-    for div in main_soup.find_all("div", {'id':'title-bar'}): 
-        div.decompose()
-
-    for title in main_soup.find_all("title"): 
-        title.decompose()
-        
-    div = main_soup.find("div", {'class': 'report-body'})
-    
-    if div:
-        div['class'] = "report-body no-toc"
-
-    # Write final combined report
+    import fixup_reports
+    main_soup = fixup_reports.fixup_2020_soup(main_soup)
     data = main_soup.prettify(formatter="html")
-
+    
     try:
         with open(mpName + "_rebuild.html", "wb") as fd:
             fd.write(data.encode(encFmt, "replace"))
@@ -379,13 +367,6 @@ def parse_html_files(mpName, verbose = False):
         # Python 2.7 fallback (no encoding arg)
         with open(mpName + "_rebuild.html", "wb") as fd:
             fd.write(data.encode("utf-8", "replace"))
-
-    # Optional VectorCAST-specific fixup
-    try:
-        import fixup_reports
-        main_soup = fixup_reports.fixup_2020_soup(main_soup)
-    except Exception as e:
-        log("[WARN] fixup_reports failed or not present: {}".format(e))
 
     # Write temporary combined file
     with open("combined_incr_rebuild.tmp", "wb") as fd:

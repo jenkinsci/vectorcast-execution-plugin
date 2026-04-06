@@ -51,10 +51,19 @@ def fixup_2020_soup(main_soup):
     #   - adjust the <th> tags to use style vs class
     #   - adjust the <td> tags to use style vs class
     
-    for div in main_soup.find_all("div", {'class':'contents-block'}): 
-        div.decompose()
+    for divClassTypes in ['contents-block', 'return-to-top']:
+        for div in main_soup.find_all("div", {'class':divClassTypes}): 
+            div.decompose()
         
-    for div in main_soup.find_all("div", {'id':'title-bar'}): 
+    for divIdTypes in ['title-bar', 'report-title', 'return-to-top']:
+        for div in main_soup.find_all("div", {'id':divIdTypes}): 
+            div.decompose()
+        
+    blocks = main_soup.find_all("div", class_="report-block")
+
+    config_blocks = [div for div in blocks if div.find("a", id="ConfigurationData")]
+
+    for div in config_blocks:
         div.decompose()
         
     for title in main_soup.find_all("title"): 
@@ -68,8 +77,8 @@ def fixup_2020_soup(main_soup):
         pass
         
     for th in main_soup.find_all("th",): 
-        th['style'] = "border-bottom:1px solid #e5e5e5;text-align:left;padding:0.25em;padding-right:1em;"
-        
+        th['style'] = "border:1px solid #e5e5e5;text-align:left;padding:0.25em;padding-right:1em;"
+                    
     # replace class with style because Jenkins won't be able to use the .css in the build summary area
     class2style = {'bold-text' : 'font-weight: bold;',
                    'col_unit': 'word-break:break-all;width:30%;',
@@ -88,7 +97,7 @@ def fixup_2020_soup(main_soup):
                    'danger'  : 'background-color:#facaca;'}
 
     for td in main_soup.find_all("td"):
-        style = 'border-bottom:1px solid #e5e5e5;'
+        style = 'border:1px solid #e5e5e5;'
         try:
             for item in td['class']:
                 try:
@@ -104,7 +113,12 @@ def fixup_2020_soup(main_soup):
             td['style'] = style
         except:
             pass  
-            
+
+   # for cell in main_soup.find_all(["th", "td"]):
+        # style = cell.get("style")
+        # if style and "border-bottom:1px" in style:
+            # cell["style"] = style.replace("border-bottom:", "border:")
+ 
     return main_soup
 
 def fixup_2020_reports(report_name):
