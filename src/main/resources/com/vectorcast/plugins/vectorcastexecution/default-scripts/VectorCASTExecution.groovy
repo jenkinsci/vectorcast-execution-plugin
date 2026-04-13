@@ -20,7 +20,7 @@ class VectorCASTExecutionImpl {
             level = "${source}/${machine}/${compiler}/${test_suite}"
         }
 
-        def stashName = VC.helpersDsl.fixUpName("${VC.jobName}_${compiler}_${test_suite}_${environment}-build-execute-stage")
+        def stashName = VC.utilsDsl.fixUpName("${VC.jobName}_${compiler}_${test_suite}_${environment}-build-execute-stage")
         def nodeID = (VC.forceNodeExecName ?: compiler)
 
         def cmds = ""
@@ -144,7 +144,7 @@ class VectorCASTExecutionImpl {
     // ===============================================================
     def getSetupManageProject(VC) {
 
-        def mpName = VC.helpersDsl.getMpName(VC.mpName)
+        def mpName = VC.utilsDsl.getMpName(VC.mpName)
 
         mpName = mpName ?: "Unknown"
 

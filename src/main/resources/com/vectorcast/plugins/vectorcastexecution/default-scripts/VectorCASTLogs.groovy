@@ -27,7 +27,7 @@ class VectorCASTLogsImpl {
      *  - cleanupCmds (String)      // uses _RM macros
      */
     def checkBuildLogPlan(VC, Map inputs) {
-        def mpName = VC.helpersDsl.getMpName(VC.mpName)
+        def mpName = VC.utilsDsl.getMpName(VC.mpName)
 
         def foundKeywords = (inputs.foundKeywords ?: "").toString()
         def failure_flag = (inputs.failure_flag ? true : false)

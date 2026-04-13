@@ -39,11 +39,11 @@ class VectorCASTMetricsImpl {
             (compiler, test_suite, environment, source, machine) = envDesc.split()
             level = source + "/" + machine + "/" + compiler + "/" + test_suite
         }
-        results.stashName = VC.helpersDsl.fixUpName("${VC.jobName}_${compiler}_${test_suite}_${environment}-build-execute-stage")
+        results.stashName = VC.utilsDsl.fixUpName("${VC.jobName}_${compiler}_${test_suite}_${environment}-build-execute-stage")
         results.buildFileName = "${compiler}_${test_suite}_${environment}_build.log "
 
         if (!VC.sharedBldDir) {
-            def fixedJobName = VC.helpersDsl.fixUpName("${script.env.JOB_NAME}")
+            def fixedJobName = VC.utilsDsl.fixUpName("${script.env.JOB_NAME}")
             results.cmds += "_VECTORCAST_DIR/vpython \"${script.env.WORKSPACE}/vc_scripts/copy_build_dir.py\" ${VC.mpName} --level ${level} --basename ${fixedJobName}_${compiler}_${test_suite}_${environment} --environment ${environment} --notar\n"
         }
 
@@ -94,7 +94,7 @@ class VectorCASTMetricsImpl {
                 .join(' ')
 
         // get the manage project's base name for use in rebuild naming
-        def mpName = VC.helpersDsl.getMpName(VC.mpName)
+        def mpName = VC.utilsDsl.getMpName(VC.mpName)
 
 //        if (VC.sharedBldDir) {
 //            def artifact_dir = ""

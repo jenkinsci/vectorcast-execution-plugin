@@ -86,7 +86,7 @@ def VC = [
 
     // below are the DSL script shortcuts
     execDsl:            VectorCASTExecution,
-    helpersDsl:         VectorCASTHelpers
+    utilsDsl:           VectorCASTUtils
 ]
 
 // ===============================================================
@@ -135,7 +135,7 @@ def makeStepFromSpec(VC, spec) {
                 
                 def (foundKeywords, failureFlag, unstableFlag) = checkLogsForErrors(VC, buildLogText)
 
-                def fixedJobName = VectorCASTHelpers.fixUpName("${env.JOB_NAME}")
+                def fixedJobName = VectorCASTUtils.fixUpName("${env.JOB_NAME}")
                 def key = "${spec.compiler}_${spec.test_suite}_${spec.environment}"
 		
                 // if we didn't fail and don't have a shared artifact directory - we may have to copy back build directory artifacts...
@@ -266,7 +266,7 @@ pipeline {
 
                     def runCmds = VectorCASTExecution.getRunCommands(VC, cmds)
                     def getJobsLog = runCommands(runCmds)
-                    def (UtEnvList, StEnvList) = VectorCASTEnvInfo.getEnvironmentInfo(getJobsLog)
+                    def (UtEnvList, StEnvList) = VectorCASTUtils.getEnvironmentInfo(getJobsLog)
                     VC.StEnvList = StEnvList
                     VC.UtEnvList = UtEnvList
                 }
@@ -395,7 +395,7 @@ pipeline {
         stage('Check Build Log') {
           steps {
             script {
-              def mpName = VectorCASTHelpers.getMpName(VC.mpName)
+              def mpName = VectorCASTUtils.getMpName(VC.mpName)
 
               def (foundKeywords, failure_flag, unstable_flag) = checkLogsForErrors(VC, readIfExists('complete_build.log'))
 

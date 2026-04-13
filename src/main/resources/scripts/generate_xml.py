@@ -131,9 +131,36 @@ class BaseGenerateXml(object):
             column = '%s%% (%d / %d)' % (fmt_percent(x, y), x, y)
 
         return column
+        
+    def convertTestHistory (self,status):
+        convertDict = {'TEST_HISTORY_FAILURE_REASON_DATA_SKEW_UNDERFLOW':"Harness Data Underflow",
+                       'TEST_HISTORY_FAILURE_REASON_DATA_SKEW_OVERFLOW':"Harness Data Overflow",
+                       'TEST_HISTORY_FAILURE_REASON_HARNESS_FAILURE':"Harness Error",
+                       'TEST_HISTORY_FAILURE_REASON_THISTORY_FILE_DOES_NOT_EXIST':"Event History Missing",
+                       'TEST_HISTORY_FAILURE_REASON_THISTORY_LINE_INVALID':"Event Data Invalid",
+                       'TEST_HISTORY_FAILURE_REASON_THISTORY_ENDED_PREMATURELY':"Event History Processing Failed",
+                       'TEST_HISTORY_FAILURE_REASON_EXPECTED_ENDED_PREMATURELY':"Event History Processing Failed",
+                       'TEST_HISTORY_FAILURE_REASON_HARNESS_COMMNAD_INVALID':"Harness Command Invalid",
+                       'TEST_HISTORY_FAILURE_REASON_TEST_HISTORY_OUTPUT_FILES_CONTAIN_ERROR':"Test History Output Files contain errors",
+                       'TEST_HISTORY_FAILURE_REASON_STRICT_IMPORT_FAILED':"Strict Import Failure - See Scripting Log under Test=>View ",
+                       'TEST_HISTORY_FAILURE_REASON_MACRO_NOT_FOUND':"Symbolic constant not found",
+                       'TEST_HISTORY_FAILURE_REASON_SYMBOL_OR_MACRO_NOT_FOUND':"Symbolic constant not found",
+                       'TEST_HISTORY_FAILURE_REASON_SYMBOL_OR_MACRO_TYPE_MISMATCH':"Symbolic constant has incorrect type",
+                       'TEST_HISTORY_FAILURE_REASON_EMPTY_TESTCASES':"Empty Test Case",
+                       'TEST_HISTORY_FAILURE_REASON_NO_EXPECTED_VALUES':"No expected values",
+                       'TEST_HISTORY_FAILURE_REASON_NO_EXPECTED_RETURN':"No expected return",
+                       'TEST_HISTORY_FAILURE_REASON_EXECUTABLE_MISSING':"Executable Missing",
+                       'TEST_HISTORY_FAILURE_REASON_MAX_VARY_EXCEEDED':"Max Vary Failure - too many Range/List input values ",
+                       'TEST_HISTORY_FAILURE_REASON_INSUFFICIENT_HEAP_SIZE':"VCAST_malloc failed - insufficient heap.",
+                       'TEST_HISTORY_FAILURE_REASON_LIBRARY_MALLOC_FAILED':"malloc failed - memory was exhausted",
+                       'TEST_HISTORY_FAILURE_REASON_TRUNCATED_HARNESS_DATA':"Truncated Harness Data",
+                       'TEST_HISTORY_FAILURE_REASON_HARNESS_STDOUT_DATA_UNDERFLOW':"Harness Standard Out Data Underflow",
+                       'TEST_HISTORY_FAILURE_REASON_MAX_STRING_LENGTH_EXCEEDED':"Harness Maximum String Length Exceeded",
+                       'TEST_HISTORY_FAILURE_REASON_TIMEOUT_EXCEEDED':"Timed Out"}
+        return convertDict[str(status)]
 
     def convertTcStatus(self, status):
-        convertDict = { 'TCR_STATUS_OK' : 'Testcase passed',
+        convertDict = { 'TCR_STATUS_OK' : 'Testcase can run',
                         'TCR_STRICT_IMPORT_FAILED' : 'Strict Testcase Import Failure',
                         'TCR_MAXIMUM_VARY_EXCEEDED' : 'Maximum varied parameters exceeded',
                         'TCR_EMPTY_TEST_CASES' : 'Empty testcase',
@@ -1394,17 +1421,21 @@ class GenerateXml(BaseGenerateXml):
         fpath = ""
         startLine = ""
         unitName = ""
-
+        
+        failureReasons = ""
+        didntRunReason = ""
+        
         if unit:
-            if not tc.execution_status:
-                if tc.status == "TC_EXECUTION_PASSED":
-                    tc.execution_status = "EXEC_SUCCESS_PASS"
+            if tc.status == "TC_EXECUTION_PASSED":
+                pass
 
-                if tc.status == "TC_EXECUTION_FAILED":
-                    tc.execution_status = "EXEC_SUCCESS_FAIL "
+            if tc.status == "TC_EXECUTION_FAILED":
+                for reason in tc.failure_reasons:
+                    failureReasons += self.convertTestHistory(reason) + ' | '
+                failureReasons = failureReasons[:-3]
 
-                if tc.status == "TC_EXECUTION_NONE":
-                    tc.execution_status = "EXEC_SUCCESS_PASS"
+            if tc.status == "TC_EXECUTION_NONE":
+                didntRunReason = self.convertTcStatus(tc.testcase_status)
 
             try:
                 filePath = unit.sourcefile.normalized_path(normcase=False)
@@ -1521,9 +1552,9 @@ class GenerateXml(BaseGenerateXml):
 
             # Failure takes priority
             if tc.status != "TC_EXECUTION_NONE":
-                failure_message = self.convertExecStatus(tc.execution_status)
+                failure_message = failureReasons
             else:
-                failure_message = "Test Not Executed"
+                failure_message = didntRunReason
 
         msg = ""
         status = ""
