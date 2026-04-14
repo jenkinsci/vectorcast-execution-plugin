@@ -276,6 +276,17 @@ pipeline {
         stage('System Test Build Execute Stage') {
             steps {
                 script {
+                
+                    if (vc.useImpRst) {
+                        if (vc.useLocImpRst) {
+                            try {
+                                copyArtifacts filter: "${mpName}_results.vcr", fingerprintArtifacts: true, optional: true, projectName: "${env.JOB_NAME}", selector: lastSuccessful()
+                            } catch(Exception e) {
+                                print "No result artifact to use"
+                            }
+                        }
+                    }
+
                     runCommands(VectorCASTExecution.getSetupManageProject(VC))
 
                     // Get the job list from the system test environment listed

@@ -174,6 +174,20 @@ class VectorCASTExecutionImpl {
                 _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --config VCAST_DEPENDENCY_CACHE_DIR=./vcqik"
             """
         }
+        if (VC.useImpRst) {
+            if (VC.useLocImpRst) {
+                cmds += """
+                    _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --force --import-result=${mpName}_results.vcr"
+                    _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --status"
+                    _IF_EXIST ${mpName}_results.vcr _IF_THEN _COPY ${mpName}_results.vcr ${mpName}_results_orig.vcr _ENDIF
+                """
+            } else if (VC.useExtImpRst && VC.extRst)  {
+                cmds += """
+                    _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --force --import-result=${VC.extRst}"
+                    _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --status"
+                    """
+            }
+        }
 
         return getRunCommands(VC,cmds)
 
