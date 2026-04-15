@@ -278,8 +278,8 @@ pipeline {
             steps {
                 script {
                 
-                    if (vc.useImpRst) {
-                        if (vc.useLocImpRst) {
+                    if (VC.useImpRst) {
+                        if (VC.useLocImpRst) {
                             try {
                                 copyArtifacts filter: "${mpName}_results.vcr", fingerprintArtifacts: true, optional: true, projectName: "${env.JOB_NAME}", selector: lastSuccessful()
                             } catch(Exception e) {
