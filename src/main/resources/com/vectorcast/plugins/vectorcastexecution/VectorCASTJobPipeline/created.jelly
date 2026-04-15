@@ -35,13 +35,14 @@
     <l:main-panel>
       <h1>${%Created.Title}</h1>
       <j:if test="${createdItem != null}">
-        <h2>
-          <a href="${rootURL}/${createdItem.url}">
-            ${createdItem.displayName}
-          </a>
-        </h2>
+        <p>${%Created.Description}</p>
+        <p>
+          Link to job: <a href="${rootURL}/${createdItem.url}">${createdItem.displayName}</a>
+        </p>
+        <p>
+            The job needs to have its pipeline script approved: <a href="${rootURL}/scriptApproval">Open Script Approval</a>        
+        </p>
       </j:if>
-      <p>${%Created.Description}</p>
     </l:main-panel>
   </l:layout>
 </j:jelly>
