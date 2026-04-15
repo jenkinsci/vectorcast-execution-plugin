@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>6.2138.v03274d462c13</version>
+        <version>6.2152.ve00a_731c3ce9</version>
         <relativePath/>
     </parent>
 
@@ -15,8 +15,8 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-weekly</artifactId>
-                <version>5639.v2b_974a_e901e8</version>
+                <artifactId>bom-2.541.x</artifactId>
+                <version>6237.v4da_61a_4a_19e5</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -35,7 +35,7 @@
 
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>vectorcast-execution</artifactId>
-    <version>0.79-SNAPSHOT</version>
+    <version>0.80-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <name>VectorCAST Execution Plugin</name>
@@ -47,7 +47,7 @@
         <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <findbugs.failOnError>false</findbugs.failOnError>
-        <jenkins.version>2.541</jenkins.version>
+        <jenkins.version>2.541.3</jenkins.version>
         <changelist>-SNAPSHOT</changelist>
         <lintCompilerArgs>-Xlint:-options</lintCompilerArgs>
         <ban-junit4-imports.skip>false</ban-junit4-imports.skip>   
@@ -180,11 +180,11 @@
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-basic-steps</artifactId>
         </dependency>
-        <dependency>
+<!--         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-durable-task-step</artifactId>
         </dependency>
-
+ -->
 
 
         <dependency>

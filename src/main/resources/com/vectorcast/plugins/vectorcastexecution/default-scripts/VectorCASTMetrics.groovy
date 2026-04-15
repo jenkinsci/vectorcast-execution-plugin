@@ -157,6 +157,15 @@ class VectorCASTMetricsImpl {
                     _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}"  ${VC.useCI} --export-result=${mpName}_results.vcr"
                     _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/merge_vcr.py --new ${mpName}_results.vcr --orig ${mpName}_results_orig.vcr
                 """
+            } else if (VC.useExtImpRst && VC.extRst)  {
+                origFname = VC.extRst.replaceFirst(/(\.[^.]*)$/, '_orig$1')
+                cmds += """
+                    _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --force --export-result=${VC.extRst}"
+                    _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/merge_vcr.py --new ${VC.extRst} --orig ${origFname} 
+                """
+                if (VC.recommitExtRsltCmd) {
+                    cmds += "{VC.recommitExtRsltCmd}"
+                }
             }
         }
         cmds = VC.execDsl.getRunCommands(VC, cmds)

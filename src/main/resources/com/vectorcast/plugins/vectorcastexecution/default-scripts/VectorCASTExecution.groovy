@@ -182,9 +182,13 @@ class VectorCASTExecutionImpl {
                     _IF_EXIST ${mpName}_results.vcr _IF_THEN _COPY ${mpName}_results.vcr ${mpName}_results_orig.vcr _ENDIF
                 """
             } else if (VC.useExtImpRst && VC.extRst)  {
+                def origFname = VC.extRst.replaceFirst(/(\.[^.]*)$/, '_orig$1')
+
                 cmds += """
                     _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --force --import-result=${VC.extRst}"
                     _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --status"
+                    _IF_EXIST ${VC.extRst} _IF_THEN _COPY ${VC.extRst} ${origFname} _ENDIF
+                    
                     """
             }
         }

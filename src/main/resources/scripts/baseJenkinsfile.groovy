@@ -69,6 +69,7 @@ def VC = [
     useImpRst:          VC_useImportedResults,
     useLocImpRst:       VC_useLocalImportedResults,
     useExtImpRst:       VC_useExternalImportedResults,
+    recommitExtRslt:    "",
     extRst:             VC_externalResultsFilename,
     usePclp:            VC_usePCLintPlus,
     pLcpCmd:            VC_pclpCommand,
