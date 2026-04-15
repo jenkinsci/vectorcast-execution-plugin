@@ -170,10 +170,10 @@ public class VectorCASTFolderAction implements Action {
         if ("pipeline-job".equals(token)) {
             return new VectorCASTJobPipeline(folder);
         }
-        if ("diag-job".equals(token)) {
+/*         if ("diag-job".equals(token)) {
             return new VectorCASTJobDiag(null);
         }
-
+ */
         return null;
     }
 }
