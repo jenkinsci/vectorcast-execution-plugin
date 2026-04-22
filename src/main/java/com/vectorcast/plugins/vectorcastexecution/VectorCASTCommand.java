@@ -99,9 +99,6 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
             //
             String windowsCmd = getWinCommand();
 
-            Logger.getLogger(VectorCASTCommand.class.getName()).log(Level.INFO,
-                "VectorCASTCommand::perform: windowsCmd: " + windowsCmd);
-
             BatchFile batchFile = new BatchFile(windowsCmd);
             try {
                 if (!batchFile.perform((AbstractBuild<?, ?>) build,
@@ -121,8 +118,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
             // Get the Linux/Unix batch command and
             // run it if this node is not Windows
             String unixCmd = getUnixCommand();
-            Logger.getLogger(VectorCASTCommand.class.getName()).log(Level.INFO,
-                "VectorCASTCommand::perform: unixCmd: " + unixCmd);
+        
             Shell shell = new Shell(unixCmd);
             try {
                 if (!shell.perform((AbstractBuild<?, ?>) build,

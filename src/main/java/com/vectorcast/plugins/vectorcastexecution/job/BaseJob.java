@@ -924,4 +924,35 @@ public abstract class BaseJob {
     public void setFolder(final Folder inputFolder) {
         folder = inputFolder;
     }
+    
+    /**
+     * Check If Project Exists.
+     * @param inProjectName  project name looking to get created
+     * @throws IOException exception
+     * @throws JobAlreadyExistsException exception
+     */
+    protected Boolean checkIfProjectExists(String inProjectName) 
+        throws IOException, JobAlreadyExistsException {
+        
+        String fullProjectName = "";
+        
+        if (getFolder() == null) {
+            fullProjectName = inProjectName;
+        } else {
+            fullProjectName = getFolder().getFullName() + "/" + inProjectName;
+        }
+
+        for (String name : getInstance().getJobNames()) {
+            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO,
+                "Checking " + name + " for " + fullProjectName);
+                
+            if (name.equals(fullProjectName)) {
+                Logger.getLogger(BaseJob.class.getName()).log(Level.INFO,
+                    "Job Already Exists Exception: " + fullProjectName);
+                throw new JobAlreadyExistsException(fullProjectName);
+            }
+        }
+        return false;
+    }
+    
 }

@@ -175,7 +175,7 @@ public class NewPipelineJob extends BaseJob {
     protected Project<?, ?> createProject()
         throws IOException, JobAlreadyExistsException {
 
-        String projectName;
+        String projectName = "";
 
         if (getBaseName().isEmpty()) {
             getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED,
@@ -194,13 +194,11 @@ public class NewPipelineJob extends BaseJob {
 
         setProjectName(projectName);
 
-        if (getInstance().getJobNames().contains(projectName)) {
-            throw new JobAlreadyExistsException(projectName);
-        }
+        checkIfProjectExists(projectName);
 
         Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO,
-                "Pipeline Project Name: " + projectName,
                 "Pipeline Project Name: " + projectName);
+
         return null;
     }
 
@@ -247,11 +245,6 @@ public class NewPipelineJob extends BaseJob {
             Logger.getLogger("NewPipelineJob")
                 .info("Creating job '" + getProjectName()
                 + "' in parent: " + parent.getFullName());
-
-            Logger.getLogger("NewPipelineJob").info(
-                "DEBUG getFolder() = "
-                + (getFolder() == null ? "NULL" : getFolder().getFullName())
-            );
 
             if (parent instanceof Folder) {
                 Folder currFolder = (Folder) parent;
@@ -513,47 +506,47 @@ public class NewPipelineJob extends BaseJob {
             vcUseCi = "\"--ci\"";
         }
 
-        String topOfJenkinsfile = """
-            // ===========================================================
-            //
-            // Auto-generated script by VectorCAST Execution Plug-in
-            // based on the information provided when creating the
-            //
-            //     VectorCAST > Pipeline job
-            //
-            // ===========================================================
+        String topOfJenkinsfile =
+            "// ===========================================================%n" +
+            "//%n" +
+            "// Auto-generated script by VectorCAST Execution Plug-in%n" +
+            "// based on the information provided when creating the%n" +
+            "//%n" +
+            "//     VectorCAST > Pipeline job%n" +
+            "//%n" +
+            "// ===========================================================%n" +
+            "%n" +
+            "def VC_Manage_Project = '%s'%n" +
+            "def VC_EnvSetup = %s%n" +
+            "def VC_Build_Preamble = \"%s\"%n" +
+            "def VC_EnvTeardown = %s%n" +
+            "def scmStep () { %s }%n" +
+            "def VC_usingSCM = %s%n" +
+            "def VC_postScmStepsCmds = %s%n" +
+            "def VC_sharedArtifactDirectory = \"%s\"%n" +
+            "def VC_Agent_Label = '%s'%n" +
+            "def VC_waitTime = '%s'%n" +
+            "def VC_waitLoops = '%s'%n" +
+            "def VC_maxParallel = %d%n" +
+            "def VC_useOneCheckoutDir = %s%n" +
+            "def VC_useCILicense = %s%n" +
+            "def VC_useCBT = %s%n" +
+            "def VC_useCoveragePlugin = %s%n" +
+            "def VC_createdWithVersion = '%s'%n" +
+            "def VC_usePCLintPlus = %s%n" +
+            "def VC_pclpCommand = '%s'%n" +
+            "def VC_pclpResultsPattern = '%s'%n" +
+            "def VC_useSquore = %s%n" +
+            "def VC_squoreCommand = %s%n" +
+            "def VC_useCoverageHistory = %s%n" +
+            "def VC_useStrictImport = %s%n" +
+            "def VC_useRGW3 = %s%n" +
+            "def VC_useImportedResults = %s%n" +
+            "def VC_useLocalImportedResults = %s%n" +
+            "def VC_useExternalImportedResults = %s%n" +
+            "def VC_externalResultsFilename = \"%s\"%n";
 
-            def VC_Manage_Project = '%s'
-            def VC_EnvSetup = %s
-            def VC_Build_Preamble = "%s"
-            def VC_EnvTeardown = %s
-            def scmStep () { %s }
-            def VC_usingSCM = %s
-            def VC_postScmStepsCmds = %s
-            def VC_sharedArtifactDirectory = "%s"
-            def VC_Agent_Label = '%s'
-            def VC_waitTime = '%s'
-            def VC_waitLoops = '%s'
-            def VC_maxParallel = %d
-            def VC_useOneCheckoutDir = %s
-            def VC_useCILicense = %s
-            def VC_useCBT = %s
-            def VC_useCoveragePlugin = %s
-            def VC_createdWithVersion = '%s'
-            def VC_usePCLintPlus = %s
-            def VC_pclpCommand = '%s'
-            def VC_pclpResultsPattern = '%s'
-            def VC_useSquore = %s
-            def VC_squoreCommand = %s
-            def VC_useCoverageHistory = %s
-            def VC_useStrictImport = %s
-            def VC_useRGW3 = %s
-            def VC_useImportedResults = %s
-            def VC_useLocalImportedResults = %s
-            def VC_useExternalImportedResults = %s
-            def VC_externalResultsFilename = "%s"
-
-            """.formatted(
+            topOfJenkinsfile = topOfJenkinsfile.formatted(
                 getManageProjectName(),
                 getMultiLineString(setup),
                 preamble,

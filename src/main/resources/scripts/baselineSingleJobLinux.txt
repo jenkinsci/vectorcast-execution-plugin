@@ -1,10 +1,6 @@
 
 # Baseline Single Job Linux Batch file
 
-# Environment setup macros (kept as-is)
-$VCAST_ENVIRONMENT_SETUP_LINUX
-$VCAST_USE_CI_LICENSES_LINUX
-
 export VCAST_RPTS_PRETTY_PRINT_HTML=FALSE
 export VCAST_NO_FILE_TRUNCATION=1
 export VCAST_RPTS_SELF_CONTAINED=FALSE

@@ -10,6 +10,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.io.InputStream;
+import java.io.IOException;
 
 /**
  * Base bridge for exposing a Pipeline global backed by a
@@ -89,7 +91,9 @@ public abstract class VectorCASTGroovyBridge implements Serializable {
      * @throws IllegalStateException if the resource is missing,
      *      fails to compile, or the impl class cannot be created
      */
-    protected GroovyObject getDelegate() {
+    protected GroovyObject getDelegate() 
+            throws IllegalStateException {
+                
         if (delegate != null) {
             return delegate;
         }
@@ -125,23 +129,35 @@ public abstract class VectorCASTGroovyBridge implements Serializable {
      *
      * @param inputResourcePath classpath resource path beginning with '/'
      * @return full resource content as text
+     * @throws IllegalStateException
      */
-    private String readBundledGroovy(final String inputResourcePath) {
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(
-                    getClass().getResourceAsStream(inputResourcePath),
-                    "Missing resource: " + inputResourcePath),
-                StandardCharsets.UTF_8
-        ))) {
-            final StringBuilder sb = new StringBuilder();
+    private String readBundledGroovy(final String inputResourcePath)
+            throws IllegalStateException {
+
+        final InputStream raw =
+            VectorCASTGroovyBridge.class.getResourceAsStream(inputResourcePath);
+
+        if (raw == null) {
+            throw new IllegalStateException(
+                "Missing resource: " + inputResourcePath
+            );
+        }
+
+        try (
+            InputStream in = raw;
+            BufferedReader r = new BufferedReader(
+                new InputStreamReader(in, StandardCharsets.UTF_8)
+            )
+        ) {
+            StringBuilder sb = new StringBuilder();
             String line;
             while ((line = r.readLine()) != null) {
                 sb.append(line).append('\n');
             }
             return sb.toString();
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed reading bundled Groovy: "
-                + inputResourcePath, e
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                "Failed reading bundled Groovy: " + inputResourcePath, e
             );
         }
     }

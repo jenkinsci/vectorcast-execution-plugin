@@ -68,9 +68,6 @@ public class VectorCASTJobPipeline extends JobBase {
     /** Job exists exception. */
     private ExternalResultsFileException extResException;
 
-    /** project name. */
-    private String projectName;
-
     /** Node Label. */
     private String nodeLabel;
 
@@ -94,13 +91,6 @@ public class VectorCASTJobPipeline extends JobBase {
      */
     public NewPipelineJob getJob() {
         return job;
-    }
-    /**
-     * Get the project name.
-     * @return project name
-     */
-    public String getProjectName() {
-        return projectName;
     }
     /**
      * Get the job already exists exception.
@@ -199,12 +189,7 @@ public class VectorCASTJobPipeline extends JobBase {
 
             job.create();
 
-            Logger.getLogger("VCJobPipeline").info(
-                "doCreate: creating pipeline job in folder="
-                + (currFolder == null ? "ROOT" : currFolder.getFullName())
-            );
-
-            projectName = job.getProjectName();
+            String projectName = job.getProjectName();
 
             Logger.getLogger(VectorCASTJobPipeline.class.getName())
                     .log(Level.INFO, "Pipeline Project Name: " + projectName,

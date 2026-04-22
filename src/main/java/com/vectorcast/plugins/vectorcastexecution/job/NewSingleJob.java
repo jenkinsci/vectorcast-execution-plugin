@@ -32,6 +32,8 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Project;
 import hudson.model.labels.LabelAtom;
+import hudson.model.ItemGroup;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -108,7 +110,7 @@ public class NewSingleJob extends BaseJob {
     } catch (IOException ex) {
         Logger.getLogger(NewSingleJob.class.getName())
             .log(Level.INFO, null, ex);
-        win += "Missing baseline single job script for windows";
+        win += "Missing baseline single job script for Windows";
     } finally {
         if (in != null) {
             in.close();
@@ -163,7 +165,7 @@ public class NewSingleJob extends BaseJob {
     } catch (IOException ex) {
         Logger.getLogger(NewSingleJob.class.getName()).
             log(Level.INFO, null, ex);
-        unix += "Missing baseline single job script for windows";
+        unix += "Missing baseline single job script for Linux";
     } finally {
         if (in != null) {
             in.close();
@@ -369,6 +371,7 @@ public class NewSingleJob extends BaseJob {
   @Override
   protected Project<?, ?> createProject()
         throws IOException, JobAlreadyExistsException {
+
     if (getBaseName().isEmpty()) {
       getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED,
         "No project name specified");
@@ -378,13 +381,45 @@ public class NewSingleJob extends BaseJob {
     if (getJobName() != null && !getJobName().isEmpty()) {
       projectName = getJobName();
     }
-    if (getInstance().getJobNames().contains(projectName)) {
-      throw new JobAlreadyExistsException(projectName);
+    
+    if (checkIfProjectExists(projectName)) {
+        return null;
     }
-    Project<?, ?> project = getInstance()
-        .createProject(FreeStyleProject.class, projectName);
-
+    
     setProjectName(projectName);
+
+    ItemGroup<?> parent = (getFolder() != null)
+            ? getFolder() : getInstance();
+
+    Project<?, ?> project;
+
+    if (parent instanceof Folder) {
+        Folder currFolder = (Folder) parent;
+
+        Logger.getLogger(NewSingleJob.class.getName()).log(Level.INFO,
+            "Parent is a folder: " + currFolder.getFullName() 
+        );
+            
+        project = currFolder.createProject(
+            FreeStyleProject.class, projectName
+        );
+    } else if (parent instanceof Jenkins) {
+        Logger.getLogger(NewSingleJob.class.getName()).log(Level.INFO,
+            "Parent is a Jernkins root folder" 
+        );
+        project = Jenkins.get().createProject(
+            FreeStyleProject.class, projectName
+        );
+    } else {
+        throw new IllegalStateException(
+            "Cannot create project in parent of type: "
+            + parent.getClass().getName()
+        );
+    }
+
+/*     Project<?, ?> project = getInstance()
+        .createProject(FreeStyleProject.class, projectName);
+ */
 
     if (getNodeLabel() != null && !getNodeLabel().isEmpty()) {
       Label label = new LabelAtom(getNodeLabel());

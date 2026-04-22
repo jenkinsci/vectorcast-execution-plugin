@@ -31,8 +31,7 @@ import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import java.util.logging.Logger;
-
+ 
 /**
  * VectorCASTFolderAction implements actions.
  */
@@ -156,13 +155,6 @@ public class VectorCASTFolderAction implements Action {
      */
     public Object getDynamic(final String token,
             final StaplerRequest req, final StaplerResponse rsp) {
-
-        Logger.getLogger("VCFolderAction").info(
-            "getDynamic: token="
-            + token
-            + ", folder="
-            + folder.getFullName()
-        );
 
         if ("single-job".equals(token)) {
             return new VectorCASTJobSingle(folder);

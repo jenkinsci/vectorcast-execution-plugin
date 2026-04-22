@@ -23,19 +23,26 @@
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" 
-         xmlns:st="jelly:stapler" 
-         xmlns:d="jelly:define" 
-         xmlns:l="/lib/layout" 
-         xmlns:t="/lib/hudson" 
+<j:jelly xmlns:j="jelly:core"
+         xmlns:st="jelly:stapler"
+         xmlns:d="jelly:define"
+         xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson"
          xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project"
          xmlns:vc="/lib/VectorCAST">
   <l:layout permission="${permission}" title="${%Created.Title}">
     <l:main-panel>
       <h1>${%Created.Title}</h1>
-      <h2><a href="/job/${it.getProjectName()}">${it.getProjectName()}</a></h2>
-      <p>${%Created.Description}</p>
+      <j:if test="${createdItem != null}">
+        <p>${%Created.Description}</p>
+        <p>
+          Link to job: <a href="${rootURL}/${createdItem.url}">${createdItem.displayName}</a>
+        </p>
+        <p>
+            The job needs to have its pipeline script approved: <a href="${rootURL}/scriptApproval">Open Script Approval</a>
+        </p>
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

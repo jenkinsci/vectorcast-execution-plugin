@@ -41,9 +41,12 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.HttpResponses;
 
 import hudson.model.AutoCompletionCandidates;
 import org.kohsuke.stapler.QueryParameter;
+import hudson.model.TopLevelItem;
+import jenkins.model.Jenkins;
 
 /**
  * Create single job.
@@ -125,12 +128,28 @@ public class VectorCASTJobSingle extends JobBase {
             final StaplerResponse response)
             throws ServletException, IOException, Descriptor.FormException {
         try {
+
+            Folder currFolder = getFolder();
+
             // Create single-job
-            NewSingleJob job = new NewSingleJob(request, response, getFolder());
+            NewSingleJob job = new NewSingleJob(request, response, currFolder);
+
 
             job.create();
+
             projectName = job.getProjectName();
-            return new HttpRedirect("created");
+
+            TopLevelItem createdItem =
+                    (currFolder != null) ? currFolder.getItem(projectName)
+                            : Jenkins.get().getItem(projectName);
+
+            String folderName = (
+                    currFolder != null) ? currFolder.getFullName() : null;
+
+            return HttpResponses.forwardToView(this, "created")
+                .with("createdItem", createdItem)
+                .with("folderName", folderName);
+
         } catch (JobAlreadyExistsException ex) {
             exception = ex;
             return new HttpRedirect("exists");
