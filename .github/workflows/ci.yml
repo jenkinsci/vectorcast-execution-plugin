@@ -33,4 +33,11 @@ jobs:
       - name: Build with Maven
         env:
           BROWSER: chrome-container
-        run: mvn -V --color always -ntp clean verify --file pom.xml -Djenkins.test.timeout=5000 -Dgpg.skip
+        run: |
+            git clone https://github.com/jenkinsci/vectorcast-coverage-plugin.git
+            cd vectorcast-coverage-plugin
+            git checkout tms_023
+            mvn -B -ntp -DskipTests clean install
+            cd ..
+            cd vectorcast-execution-plugin
+            mvn -V --color always -ntp clean verify --file pom.xml -Djenkins.test.timeout=5000 -Dgpg.skip
