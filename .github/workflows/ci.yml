@@ -34,10 +34,9 @@ jobs:
         env:
           BROWSER: chrome-container
         run: |
-            git clone https://github.com/jenkinsci/vectorcast-coverage-plugin.git
-            cd vectorcast-coverage-plugin
-            git checkout tms_023
-            mvn -B -ntp -DskipTests clean install
-            cd ..
-            cd vectorcast-execution-plugin
-            mvn -V --color always -ntp clean verify --file pom.xml -Djenkins.test.timeout=5000 -Dgpg.skip
+          git clone https://github.com/jenkinsci/vectorcast-coverage-plugin.git
+          pushd vectorcast-coverage-plugin
+          git checkout tms_023
+          mvn -B -ntp -DskipTests clean install
+          popd
+          mvn -V --color always -ntp clean verify --file pom.xml -Djenkins.test.timeout=5000 -Dgpg.skip
