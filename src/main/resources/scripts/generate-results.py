@@ -83,7 +83,6 @@ wait_loops = 1
 
 import getjobs
 
-
 def skipReporting(build_dir, skipReportsForSkippedEnvs, cbtDict):
 
     import hashlib 
@@ -849,7 +848,6 @@ if __name__ == '__main__':
     wait_loops = args.wait_loops
 
     junit = True
-        
 
     if args.buildlog and os.path.exists(args.buildlog):
         with open(args.buildlog,"rb") as fd:

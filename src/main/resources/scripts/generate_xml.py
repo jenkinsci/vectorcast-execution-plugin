@@ -1,7 +1,7 @@
 #
 # The MIT License
 #
-# Copyright 2025 Vector Informatik, GmbH.
+# Copyright 2026 Vector Informatik, GmbH.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,6 @@ except:
     pass
 
 from vector.apps.DataAPI.cover_api import CoverApi
-
 try:
     from vector.apps.ReportBuilder.custom_report import fmt_percent
 except:
@@ -552,6 +551,11 @@ class BaseGenerateXml(object):
         overallCoverageTypes = set()
 
         for srcFile in self.units:
+            if not srcFile.unit_of_interest:
+                if srcFile.coverage_type == COVERAGE_TYPE_TYPE_T.NONE:
+                    continue
+            if self.using_cover and not srcFile.is_instrumented:
+                continue
 
             if not self.hasAnyCov(srcFile):
                 continue
@@ -1547,6 +1551,9 @@ class GenerateXml(BaseGenerateXml):
                 classname,
                 tc_name_full)
 
+            exp_pass += summary.control_flow_total - summary.control_flow_fail
+            exp_total += summary.control_flow_total + summary.signals + summary.unexpected_exceptions
+
             if tc.testcase_status == "TCR_STRICT_IMPORT_FAILED":
                 result += "\nStrict Test Import Failure."
 
@@ -1712,6 +1719,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('environment', help='VectorCAST environment name')
     parser.add_argument('-v', '--verbose', default=False, help='Enable verbose output', action="store_true")
+    parser.add_argument('--ci', help='Use continuous integration licenses', action="store_true", default=False)
     args = parser.parse_args()
 
     envPath = os.path.dirname(os.path.abspath(args.environment))

@@ -63,6 +63,8 @@ import hudson.model.Item;
 import hudson.security.AccessDeniedException3;
 import hudson.security.Permission;
 import com.cloudbees.hudson.plugins.folder.Folder;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 
 /**
