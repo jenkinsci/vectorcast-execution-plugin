@@ -418,7 +418,7 @@ environment before disabling.  This takes into account environments that are dir
 
 ## Change Log
 ### Version 0.80 (21 Feb 2026)
-- Moved to minimum Jenkins 2.540
+- Moved to minimum Jenkins 2.555.1 LTS
 - Auto-complete Node Label
 - Saving Job to a folder
 - Removing test case execution reports from passing test cases

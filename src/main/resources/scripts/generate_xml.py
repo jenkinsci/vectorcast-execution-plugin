@@ -88,7 +88,8 @@ class BaseGenerateXml(object):
         self.print_exc = False
         self.teePrint = teePrint
         self.use_cte = use_cte
-
+        self.using_cover = False
+        
         # get the VC langaguge and encoding
         self.encFmt = getVectorCASTEncoding()
         self.fh_data = ""
@@ -1179,6 +1180,7 @@ class GenerateXml(BaseGenerateXml):
             self.generate_system_test_status_report()
 
             self.api = CoverApi(cov_path)
+            self.using_cover = True
         elif os.path.exists(unit_path):
             self.api = UnitTestApi(unit_path)
         else:
