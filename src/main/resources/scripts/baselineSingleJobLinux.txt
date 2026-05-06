@@ -13,7 +13,7 @@ fi
 # --- Default Setup ---
 "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --full-status"
 "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --force --release-locks"
-"$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --config VCAST_CUSTOM_REPORT_FORMAT=${VCAST_REPORT_FORMAT}"
+"$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --config VCAST_CUSTOM_REPORT_FORMAT=${VCAST_HTML_OR_TEXT}"
 
 # --- Use Imported Results ---
 if [ "${VCAST_USE_IMPORTED_RESULTS}" -eq 1 ]; then
@@ -46,7 +46,7 @@ fi
 
 # --- Reporting / Plugins ---
 if [ "${VCAST_OPTION_USE_REPORTING}" -eq 1 ]; then
-  "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
+  "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --config VCAST_CUSTOM_REPORT_FORMAT=${VCAST_HTML_OR_TEXT}"
   "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/generate-results.py" --junit --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" "${VCAST_PROJECT_NAME}" --buildlog complete_build.log
 
   if [ "${VCAST_USE_RGW3}" -eq 1 ]; then
