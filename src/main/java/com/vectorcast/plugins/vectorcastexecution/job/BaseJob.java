@@ -793,8 +793,8 @@ public abstract class BaseJob {
                     ZERO_PERCENT, EIGHTY_PERCENT,
                     ZERO_PERCENT, EIGHTY_PERCENT);
         VectorCASTPublisher publisher = new VectorCASTPublisher();
-        publisher.includes = "**/coverage_results_*.xml";
-        publisher.healthReports = healthReports;
+        publisher.setIncludes("**/coverage_results_*.xml");
+        publisher.setHealthReports(healthReports);
         publisher.setUseCoverageHistory(useCoverageHistory);
         project.getPublishersList().add(publisher);
     }
