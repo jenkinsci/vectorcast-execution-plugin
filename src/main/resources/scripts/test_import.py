@@ -6,7 +6,7 @@ try:
 except NameError:
     ModuleNotFoundError = ImportError
 
-os.environ['JENKINS_URL'] = 'http://localhost:8080/'
+os.environ['JENKINS_URL'] = 'http://localhost:24923/'
 os.environ['USERNAME'] = 'tms'
 os.environ['PASSWORD'] = 'schneider'
 
