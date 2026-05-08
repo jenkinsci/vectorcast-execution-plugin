@@ -201,7 +201,7 @@
         <dependency>
           <groupId>org.jenkins-ci</groupId>
           <artifactId>test-annotations</artifactId>
-          <version>124.vd3dd48ed21ee</version>
+          <version>127.v2f87da_3ce079</version>
           <scope>test</scope>
           <exclusions>
             <exclusion>
