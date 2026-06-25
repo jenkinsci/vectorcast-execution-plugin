@@ -92,7 +92,7 @@ def generate_report(params):
         return key, stdout.strip()
     except Exception as e:
         import traceback
-        return key, "Error: " + trackback.format_exc()
+        return key, "Error: " + trackbace.format_exc()
 
     return key, "Success: " + report_name + ": " + result
 

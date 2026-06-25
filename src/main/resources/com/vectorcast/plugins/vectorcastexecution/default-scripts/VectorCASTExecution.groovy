@@ -104,6 +104,7 @@ class VectorCASTExecutionImpl {
                             .replace("_IF_EXIST", "if [[ -f ")
                             .replace("_IF_THEN", " ]] ; then ")
                             .replace("_ENDIF", "; fi")
+                            .replace("_ECHO", "echo ")
             )
 
         } else {
@@ -133,6 +134,7 @@ class VectorCASTExecutionImpl {
                             .replace("_IF_EXIST", "if exist ")
                             .replace("_IF_THEN", " ( ")
                             .replace("_ENDIF", " )")
+                            .replace("_ECHO", "echo ")
             )
         }
 
@@ -147,6 +149,11 @@ class VectorCASTExecutionImpl {
         def mpName = VC.utilsDsl.getMpName(VC.mpName)
 
         mpName = mpName ?: "Unknown"
+
+        def extRst = VC.extRst
+        if (!script.isUnix()) {
+            extRst    = extRst.replace('/', '\\')
+        }
 
         def cmds = ""
 
@@ -179,16 +186,14 @@ class VectorCASTExecutionImpl {
                 cmds += """
                     _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --force --import-result=${mpName}_results.vcr"
                     _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --status"
-                    _IF_EXIST ${mpName}_results.vcr _IF_THEN _COPY ${mpName}_results.vcr ${mpName}_results_orig.vcr _ENDIF
+                    _IF_EXIST "${mpName}_results.vcr" _IF_THEN _COPY ${mpName}_results.vcr ${mpName}_results_orig.vcr _ENDIF
                 """
             } else if (VC.useExtImpRst && VC.extRst)  {
-                def origFname = VC.extRst.replaceFirst(/(\.[^.]*)$/, '_orig$1')
-
+                def origFname = extRst.replaceFirst(/(\.[^.]*)$/, '_orig$1')
                 cmds += """
                     _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --force --import-result=${VC.extRst}"
                     _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --status"
-                    _IF_EXIST ${VC.extRst} _IF_THEN _COPY ${VC.extRst} ${origFname} _ENDIF
-                    
+                    _IF_EXIST "${extRst}" _IF_THEN _COPY ${extRst} ${origFname} _ENDIF
                     """
             }
         }

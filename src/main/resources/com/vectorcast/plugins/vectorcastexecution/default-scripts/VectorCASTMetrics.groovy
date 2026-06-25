@@ -92,6 +92,11 @@ class VectorCASTMetricsImpl {
                 .collect { it?.toString()?.trim() }
                 .findAll { it }
                 .join(' ')
+                
+        def extRst = VC.extRst
+        if (!script.isUnix()) {
+            extRst    = extRst.replace('/', '\\')
+        }
 
         // get the manage project's base name for use in rebuild naming
         def mpName = VC.utilsDsl.getMpName(VC.mpName)
@@ -158,10 +163,11 @@ class VectorCASTMetricsImpl {
                     _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/merge_vcr.py --new ${mpName}_results.vcr --orig ${mpName}_results_orig.vcr
                 """
             } else if (VC.useExtImpRst && VC.extRst)  {
-                origFname = VC.extRst.replaceFirst(/(\.[^.]*)$/, '_orig$1')
+                def origFname = extRst.replaceFirst(/(\.[^.]*)$/, '_orig$1')
                 cmds += """
-                    _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --force --export-result=${VC.extRst}"
-                    _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/merge_vcr.py --new ${VC.extRst} --orig ${origFname} 
+                    _ECHO "--new ${extRst} --orig ${origFname}"
+                    _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --force --export-result=${extRst}"
+                    _IF_EXIST "${extRst}" _IF_THEN _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/merge_vcr.py --new ${extRst} --orig ${origFname} _ENDIF
                 """
                 if (VC.recommitExtRsltCmd) {
                     cmds += "{VC.recommitExtRsltCmd}"

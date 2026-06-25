@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-import subprocess, os
+import subprocess, os, sys
 import argparse
 from managewait import ManageWait
 
@@ -42,7 +42,8 @@ def getReqRepo(VC_Manage_Project):
             break
     
     if reqRepoDir is None:
-        raise EnvironmentError("Requirements Repository Directory not set")
+        print("Requirements Repository Directory not set...exiting")
+        sys.exit()
 
     reqRepoDir = reqRepoDir.replace("\\","/").strip()
     
@@ -54,7 +55,7 @@ def updateReqRepo(VC_Manage_Project, VC_Workspace, top_level):
     
     VC_Workspace = VC_Workspace.replace("\\","/")
     
-    reqRepoDir = getReqRepo(VC_Manage_Project,)
+    reqRepoDir = getReqRepo(VC_Manage_Project)
         
     projDir = VC_Manage_Project.replace("\\","/").rsplit("/",1)[0]
     

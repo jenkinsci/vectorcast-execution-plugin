@@ -134,7 +134,6 @@ def create_index_html(mpName, isGitLab = False, output_dir = ""):
 
     global baseOutputDir
     baseOutputDir = output_dir
-
     vcproj = VCProjectApi(mpName)
 
     # Set custom report directory to the where this script was
@@ -177,11 +176,8 @@ def create_index_html_body ():
     miscEntries = []
 
     for html_file_name in htmlReportList:
-
+        
         reportName, reportType = getReportName(html_file_name)
-
-        if usingGitLabCI:
-            html_file_name = os.path.join("..", html_file_name)
 
         if reportType == 1:
             indEnvFullEntries.append((reportName,html_file_name))

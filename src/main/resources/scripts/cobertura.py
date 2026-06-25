@@ -56,6 +56,8 @@ fileList = []
 
 encFmt = getVectorCASTEncoding()
 
+vgByFunction = {}
+
 def write_xml(x, name, verbose = False):
 
     if verbose:
@@ -106,14 +108,8 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
         except:
             prj_dir = os.getcwd().replace("\\","/") + "/"
 
-
     fname = coverAPI.display_name
-    fpath = coverAPI.display_path
-    try:
-        fpath = os.path.relpath(fpath,prj_dir).replace("\\","/")
-    except:
-        fpath = fpath.replace("\\","/")
-        pass
+    fpath = coverAPI._relative_path.replace("\\","/")
 
     branch_totals = float(coverAPI.metrics.branches + coverAPI.metrics.mcdc_branches)
     branch_covered = float(
@@ -151,7 +147,7 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
         if ".h" in fname:
             fname = fname.split(".h")[0]
         file.attrib['name'] = fname.replace(".","_")
-        file.attrib['filename'] = os.path.abspath(fpath).replace("\\","/")
+        file.attrib['filename'] = fpath #os.path.abspath(fpath).replace("\\","/")
 
         if coverAPI.metrics.statements > 0:
             file.attrib['line-rate'] = str(statement_pct)
@@ -370,6 +366,15 @@ def processStatementBranchMCDC(fileApi, lines, extended = False):
 
     return linesCovered, linesTotal
 
+def updateVgByFunction(coverXML, coverApi):
+    
+    for func in coverApi.functions:
+        
+        if isinstance(func.instrumented_functions[0].parameterized_name, bool):
+            continue
+
+        fullName = func.source_file.path + "::" + func.instrumented_functions[0].parameterized_name
+        vgByFunction[fullName] = func.metrics.complexity
 
 def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):
 
@@ -634,6 +639,8 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
 
         vg     += file.metrics.complexity
         pkg_vg += file.metrics.complexity
+        
+        updateVgByFunction(classes, file)
 
         if extended:
             total_fc   += file.metrics.function_calls
@@ -750,7 +757,8 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
     return total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, vg
 
 
-def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", verbose = False, extended = False, source_root = "" ):
+def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", 
+        verbose = False, extended = False, source_root = "", covToDisplay="statement"):
 
     cwd = os.getcwd()
     xml_data_dir = os.path.join(cwd,xml_data_dir)
@@ -807,7 +815,38 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", ve
     if FC_rate     != -1.0: print ("function calls: {:.2f}% ({:d} out of {:d})".format(FC_rate*100.0, cov_fc, total_fc))
     if MCDC_rate   != -1.0: print ("mcdc pairs: {:.2f}% ({:d} out of {:d})".format(MCDC_rate*100.0, cov_mcdc, total_mcdc))
 
-    if statement_rate   != -1.0: print ("coverage: {:.2f}% of statements".format(statement_rate*100.0))
+    # use selected coverage from --covToDisplay option
+    match covToDisplay:
+        case "statement":
+            if statement_rate != -1.0: 
+                print ("coverage: {:.2f}% of statements".format(statement_rate*100.0))
+            else:
+                print (f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
+
+        case "branch":
+            if branch_rate != -1.0: 
+                print ("coverage: {:.2f}% of branch".format(branch_rate*100.0))
+            else:
+                print (f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
+
+        case "mcdc":
+            if MCDC_rate != -1.0: 
+                print ("coverage: {:.2f}% of mcdc pairs".format(MCDC_rate*100.0))
+            else:
+                print (f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
+
+        case "function":
+            if func_rate != -1.0: 
+                print ("coverage: {:.2f}% of functions".format(func_rate*100.0))
+            else:
+                print (f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
+
+        case "functioncall":
+            if FC_rate != -1.0: 
+                print ("coverage: {:.2f}% of function calls".format(FC_rate*100.0))
+            else:
+                print (f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
+        
     if complexity       != -1.0: print ("complexity: {:d}".format(complexity))
     source = etree.SubElement(sources, "source")
     source.text = "./"

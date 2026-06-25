@@ -60,7 +60,6 @@ except:
 from operator import attrgetter
 from vector.enums import COVERAGE_TYPE_TYPE_T
 from vcast_utils import dump, getVectorCASTEncoding
-
 import hashlib
 import traceback
 import parse_traceback
@@ -129,7 +128,6 @@ class BaseGenerateXml(object):
             column = None
         else:
             column = '%s%% (%d / %d)' % (fmt_percent(x, y), x, y)
-
         return column
         
     def convertTestHistory (self,status):
@@ -1178,11 +1176,11 @@ class GenerateXml(BaseGenerateXml):
         unit_path = os.path.join(build_dir,env + '.vce')
         if os.path.exists(cov_path):
             self.generate_system_test_status_report()
-
-            self.api = CoverApi(cov_path)
             self.using_cover = True
+            self.api = CoverApi(cov_path)
         elif os.path.exists(unit_path):
             self.api = UnitTestApi(unit_path)
+            self.using_cover = False
         else:
             self.api = None
             if verbose:

@@ -28,7 +28,9 @@ VC_failurePhrases = [
     "not permitted in continuous integration mode",
     "has been opened by a newer version of VectorCAST",
     "Environment built but not Compiled",
-    "ERROR: Compile failed for unit"
+    "Harness Link Failure",
+    "ERROR: Compile failed for unit",
+    "Environment built but not Linked"
 ]
 
 VC_unstablePhrases = [

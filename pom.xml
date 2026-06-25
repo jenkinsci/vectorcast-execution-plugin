@@ -16,7 +16,7 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-2.555.x</artifactId>
-                <version>6364.v16b_76a_4023c7</version>
+                <version>6418.vf54872a_65165</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -47,7 +47,7 @@
         <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <findbugs.failOnError>false</findbugs.failOnError>
-        <jenkins.version>2.555.1</jenkins.version>
+        <jenkins.version>2.555.3</jenkins.version>
         <changelist>-SNAPSHOT</changelist>
         <lintCompilerArgs>-Xlint:-options</lintCompilerArgs>
         <ban-junit4-imports.skip>false</ban-junit4-imports.skip>   
@@ -106,7 +106,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>vectorcast-coverage</artifactId>
-            <version>0.23</version>
+            <version>0.24-SNAPSHOT</version>
         </dependency>
 
         <!-- Jenkins plugins - versions provided by BOM -->
@@ -209,7 +209,7 @@
         <dependency>
           <groupId>org.jenkins-ci</groupId>
           <artifactId>test-annotations</artifactId>
-          <version>128.v4dca_0066164b_</version>
+          <version>127.v2f87da_3ce079</version>
           <scope>test</scope>
           <exclusions>
             <exclusion>
