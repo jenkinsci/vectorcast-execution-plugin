@@ -66,8 +66,9 @@ def fixup_2020_soup(main_soup):
     for div in config_blocks:
         div.decompose()
         
-    for title in main_soup.find_all("title"): 
-        title.decompose()
+    ## need this for TF
+    # for title in main_soup.find_all("title"): 
+        # title.decompose()
         
     #<div class="report-body no-toc" id="main-scroller">
     div = main_soup.find("div", {'class':'report-body'})    

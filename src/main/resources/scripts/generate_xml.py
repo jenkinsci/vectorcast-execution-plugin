@@ -1646,8 +1646,6 @@ class GenerateXml(BaseGenerateXml):
 
     def __get_testcase_execution_results(self, tc, classname, tc_name):
 
-        if not self.testcase_failed(tc):
-            return ""
             
         if not self.generate_exec_rpt_each_testcase:
             return "Execution Report disabled by using --dont-generate-individual-reports"
