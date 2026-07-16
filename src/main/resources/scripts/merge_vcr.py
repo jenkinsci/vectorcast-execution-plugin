@@ -5,7 +5,7 @@ import zipfile, glob
 from pprint import pprint
 import argparse
 
-def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, cursor_new, cursor_orig, table_name, del_old_table = False, verbose = False):
+def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, outputVcrFile, cursor_new, cursor_orig, table_name, del_old_table = False, verbose = False):
     '''
     This function merges the content of a specific table from an old cursor into a new cursor. 
     
@@ -52,12 +52,12 @@ def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, cursor_new, cursor_orig, 
     cursor_orig.executemany(s, new_data)
     if (cursor_orig.connection.commit() == None):
         # With Ephemeral RAM connections & testing, deleting the table may be ill-advised
-        s = "Table \"%s\" merged from %s to %s" % (table_name, origVcrFile, newVcrFile)
+        s = "[INFO] Test results  : merged from %s to %s" % (newVcrFile, outputVcrFile)
         print(s) # Consider logging.info()
         
     return None
 
-def run(origVcrFile, newVcrFile, verbose):
+def run(origVcrFile, newVcrFile, outputVcrFile, verbose, keep):
 
     try:
         os.makedirs("newVcr")
@@ -65,7 +65,7 @@ def run(origVcrFile, newVcrFile, verbose):
     except:
         pass
     
-    tempNewVcrFile = os.path.join("newVcr",os.path.basename(newVcrFile))
+    tempNewVcrFile = os.path.join("newVcr",newVcrFile)
     tempOrigVcrFile = os.path.join("origVcr",os.path.basename(origVcrFile))
     
     shutil.copyfile(newVcrFile, tempNewVcrFile)
@@ -98,7 +98,7 @@ def run(origVcrFile, newVcrFile, verbose):
     new_cursor = new_db.cursor()
     orig_cursor = orig_db.cursor()
 
-    mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, new_cursor, orig_cursor, "result", False, verbose)
+    mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, outputVcrFile, new_cursor, orig_cursor, "result", False, verbose)
     
     # Close cursors before closing database connections to release file handles
     new_cursor.close()
@@ -107,29 +107,33 @@ def run(origVcrFile, newVcrFile, verbose):
     new_db.close()
     orig_db.close()
     
-    shutil.copyfile(newCoverDbName, origCoverDbName)
+    # update cover dbx
+    import update_cover_db_project_files 
+    update_cover_db_project_files.run(origCoverDbName, newCoverDbName, apply=True, verbose = verbose)
 
-    os.remove(newVcrFile)
-    os.remove(origVcrFile)
+    s = "[INFO] Cover database: merged from %s to %s" % (newVcrFile, outputVcrFile)
+    print(s) # Consider logging.info()
 
-    shutil.make_archive(newVcrFile, 'zip', "origVcr")
-    shutil.copyfile(newVcrFile+".zip", newVcrFile)
-    
-    os.remove(newVcrFile+".zip")
+    shutil.make_archive(outputVcrFile, 'zip', "origVcr")
+    shutil.copyfile(outputVcrFile+".zip", outputVcrFile)
+    os.remove(outputVcrFile+".zip")
     shutil.rmtree("newVcr")
     shutil.rmtree("origVcr")
     
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-o', '--orig', action='store', type=str,  help='Original Result Filename', dest="origVcrFile")
-    parser.add_argument('-n', '--new',  action='store', type=str,  help='New Result Filename', dest="newVcrFile")
+    parser.add_argument('--orig', action='store', type=str,  help='Original Result Filename', dest="origVcrFile")
+    parser.add_argument('--new',  action='store', type=str,  help='New Result Filename', dest="newVcrFile")
+    parser.add_argument('--out',  action='store', type=str,  help='Output .vcr file name', dest="outputVcrFile", default="merged.vcr")
+    parser.add_argument('--keep', action='store_true', help='Keep the original .vcr files',  default = False)
+    
     parser.add_argument('-v', '--verbose',  action="store_true",  help='Verbose output', dest="verbose", default=False)
 
     args = parser.parse_args()
     
     if os.path.isfile(args.newVcrFile):
         if os.path.isfile(args.origVcrFile):
-            run(args.origVcrFile, args.newVcrFile, args.verbose)
+            run(args.origVcrFile, args.newVcrFile, args.outputVcrFile, args.verbose, args.keep)
             
     

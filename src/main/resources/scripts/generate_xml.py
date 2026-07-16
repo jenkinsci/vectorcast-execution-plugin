@@ -776,6 +776,7 @@ class GenerateManageXml (BaseGenerateXml):
         self.failed_count = 0
         self.passed_count = 0
         self.print_exc = print_exc
+        self.using_cover = True
 
         self.units = []
 
