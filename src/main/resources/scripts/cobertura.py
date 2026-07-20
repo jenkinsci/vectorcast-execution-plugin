@@ -759,9 +759,27 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
     if total_fc > 0:
         FC_rate = float(cov_fc) / float(total_fc)
 
-
-    return total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, vg
-
+    return (
+        total_st,
+        cov_st,
+        total_lines,
+        cov_lines,
+        total_br,
+        cov_br,
+        total_func,
+        cov_func,
+        total_fc,
+        cov_fc,
+        total_mcdc,
+        cov_mcdc,
+        branch_rate,
+        statement_rate,
+        line_rate,
+        func_rate,
+        FC_rate,
+        MCDC_rate,
+        vg,
+    )
 
 def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data", 
         verbose = False, extended = False, source_root = "", covToDisplay="statement"):
@@ -783,13 +801,91 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data",
     if inFile.endswith(".vce"):
         api=UnitTestApi(inFile)
         cdb = api.environment.get_coverdb_api()
-        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoberturaResults(packages, cdb, verbose=verbose, extended=extended, source_root = source_root)
+        (
+            total_st,
+            cov_st,
+            total_lines,
+            cov_lines,
+            total_br,
+            cov_br,
+            total_func,
+            cov_func,
+            total_fc,
+            cov_fc,
+            total_mcdc,
+            cov_mcdc,
+            branch_rate,
+            statement_rate,
+            line_rate,
+            func_rate,
+            FC_rate,
+            MCDC_rate,
+            complexity,
+        ) = runCoberturaResults(
+            packages,
+            cdb,
+            verbose=verbose,
+            extended=extended,
+            source_root=source_root,
+        )            
     elif inFile.endswith(".vcp"):
         api=CoverApi(inFile)
-        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoberturaResults(packages, api, verbose=verbose, extended=extended, source_root = source_root)
+        (
+            total_st,
+            cov_st,
+            total_lines,
+            cov_lines,
+            total_br,
+            cov_br,
+            total_func,
+            cov_func,
+            total_fc,
+            cov_fc,
+            total_mcdc,
+            cov_mcdc,
+            branch_rate,
+            statement_rate,
+            line_rate,
+            func_rate,
+            FC_rate,
+            MCDC_rate,
+            complexity,
+        ) = runCoberturaResults(
+            packages,
+            api,
+            verbose=verbose,
+            extended=extended,
+            source_root=source_root,
+        )    
     else:
-        total_st, cov_st, total_lines, cov_lines, total_br, cov_br, total_func, cov_func, total_fc, cov_fc, total_mcdc, cov_mcdc, branch_rate, statement_rate, line_rate, func_rate, FC_rate, MCDC_rate, complexity  = runCoverageResultsMP(packages, inFile, verbose=verbose, extended=extended, source_root = source_root)
-
+        (
+            total_st,
+            cov_st,
+            total_lines,
+            cov_lines,
+            total_br,
+            cov_br,
+            total_func,
+            cov_func,
+            total_fc,
+            cov_fc,
+            total_mcdc,
+            cov_mcdc,
+            branch_rate,
+            statement_rate,
+            line_rate,
+            func_rate,
+            FC_rate,
+            MCDC_rate,
+            complexity,
+        ) = runCoverageResultsMP(
+            packages,
+            inFile,
+            verbose=verbose,
+            extended=extended,
+            source_root=source_root,
+        )
+        
     if line_rate        != -1.0: coverages.attrib['line-rate']        = str(line_rate)
     if statement_rate   != -1.0: coverages.attrib['statement-rate']   = str(statement_rate)
     if branch_rate      != -1.0: coverages.attrib['branch-rate']      = str(branch_rate)
