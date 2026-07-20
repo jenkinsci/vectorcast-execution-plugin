@@ -108,9 +108,13 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
         except:
             prj_dir = os.getcwd().replace("\\","/") + "/"
 
-    fname = coverAPI.display_name
+    if prj_dir.endswith("//"):
+        prj_dir = prj_dir[:-1]
+        
+    fname = coverAPI.display_name.replace("\\","/")
     fpath = coverAPI._relative_path.replace("\\","/")
-
+    repoFilePath = coverAPI.display_path.replace("\\","/").replace(prj_dir,"")
+    
     branch_totals = float(coverAPI.metrics.branches + coverAPI.metrics.mcdc_branches)
     branch_covered = float(
         coverAPI.metrics.max_covered_branches +
@@ -132,8 +136,9 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
     file = None
 
     if verbose:
-        print ("   fname   = " + fname)
-        print ("   fpath   = " + fpath)
+        print ("   fname          = " + fname)
+        print ("   fpath          = " + fpath)
+        print ("   repoFilePath   = " + repoFilePath)
 
     for element in testXml.iter():
         if element.tag == "class" and element.attrib['filename'] == fpath:
@@ -147,8 +152,8 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
         if ".h" in fname:
             fname = fname.split(".h")[0]
         file.attrib['name'] = fname.replace(".","_")
-        file.attrib['filename'] = fpath #os.path.abspath(fpath).replace("\\","/")
-
+        file.attrib['filename'] = repoFilePath # fpath #os.path.abspath(fpath).replace("\\","/")
+        
         if coverAPI.metrics.statements > 0:
             file.attrib['line-rate'] = str(statement_pct)
 
@@ -513,7 +518,8 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
             fpath = fpath.replace("\\","/")
             pass
 
-        # print("*", file.name, file.display_name, fpath)
+        repoFilePath = os.path.join(fpath.rsplit("/",1)[0], file.name).replace("\\","/")
+        fpath = repoFilePath;
 
         fileDict[fpath] = file
 

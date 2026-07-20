@@ -57,13 +57,13 @@ def mergeNewResultsIntoOrigDb(origVcrFile, newVcrFile, outputVcrFile, cursor_new
         
     return None
 
-def run(origVcrFile, newVcrFile, outputVcrFile, verbose, keep):
+def run(origVcrFile, newVcrFile, outputVcrFile, verbose):
 
     try:
         os.makedirs("newVcr")
         os.makedirs("origVcr")
-    except:
-        pass
+    except Exception as e:
+        print(e)
     
     tempNewVcrFile = os.path.join("newVcr",newVcrFile)
     tempOrigVcrFile = os.path.join("origVcr",os.path.basename(origVcrFile))
@@ -126,14 +126,13 @@ if __name__ == '__main__':
     parser.add_argument('--orig', action='store', type=str,  help='Original Result Filename', dest="origVcrFile")
     parser.add_argument('--new',  action='store', type=str,  help='New Result Filename', dest="newVcrFile")
     parser.add_argument('--out',  action='store', type=str,  help='Output .vcr file name', dest="outputVcrFile", default="merged.vcr")
-    parser.add_argument('--keep', action='store_true', help='Keep the original .vcr files',  default = False)
-    
+
     parser.add_argument('-v', '--verbose',  action="store_true",  help='Verbose output', dest="verbose", default=False)
 
     args = parser.parse_args()
     
     if os.path.isfile(args.newVcrFile):
         if os.path.isfile(args.origVcrFile):
-            run(args.origVcrFile, args.newVcrFile, args.outputVcrFile, args.verbose, args.keep)
+            run(args.origVcrFile, args.newVcrFile, args.outputVcrFile, args.verbose)
             
     

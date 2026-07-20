@@ -10,7 +10,8 @@ Workflow:
   3. For each changed path, locate project_files rows in R2.
   4. Match each R2 project to R1 by normalized projects.path.
   5. Match the source file in R1 by normalized source_files.path.
-  6. Copy only project_files.timestamp and project_files.build_md5sum.
+  6. Copy project_files.timestamp and project_files.build_md5sum.
+  7. Copy source_files.checksum from R2 to the matching R1 source row.
 
 Numeric IDs are never assumed to match between databases.
 
@@ -53,6 +54,15 @@ class ProjectFileMetadata:
     source_file_id: int
     timestamp: int | None
     build_md5sum: str | None
+
+
+@dataclass(frozen=True)
+class SourceChecksumUpdate:
+    source_path: str
+    r1_source_file_id: int
+    r2_source_file_id: int
+    old_checksum: int | None
+    new_checksum: int | None
 
 
 @dataclass(frozen=True)
@@ -246,6 +256,7 @@ def plan_updates(
     case_sensitive: bool,
 ) -> tuple[
     list[PlannedUpdate],
+    list[SourceChecksumUpdate],
     list[str],
     list[str],
     list[str],
@@ -257,6 +268,7 @@ def plan_updates(
     r2_sources = load_source_files(
         r2, path_column=path_column, case_sensitive=case_sensitive
     )
+    
     r1_projects = load_projects_by_path(r1, case_sensitive=case_sensitive)
 
     duplicate_source_paths: list[str] = []
@@ -280,9 +292,13 @@ def plan_updates(
     changed_paths: list[str] = []
     skipped: list[str] = []
     plans: list[PlannedUpdate] = []
+    checksum_updates: list[SourceChecksumUpdate] = []
 
     common_keys = sorted(set(r1_sources) & set(r2_sources))
     for key in common_keys:
+        if r1_sources[key][0].checksum != r2_sources[key][0].checksum:
+            print(f"\n{key:<20} {r1_sources[key][0].checksum} != {r2_sources[key][0].checksum}")
+            
         if checksum_set(r1_sources[key]) == checksum_set(r2_sources[key]):
             continue
 
@@ -297,6 +313,16 @@ def plan_updates(
 
         r1_source = r1_sources[key][0]
         r2_source = r2_sources[key][0]
+
+        checksum_updates.append(
+            SourceChecksumUpdate(
+                source_path=r1_source.path,
+                r1_source_file_id=r1_source.id,
+                r2_source_file_id=r2_source.id,
+                old_checksum=r1_source.checksum,
+                new_checksum=r2_source.checksum,
+            )
+        )
 
         for r2_pf in load_project_files_for_source(r2, r2_source.id):
             project_key = normalize_path(
@@ -367,7 +393,14 @@ def plan_updates(
         f"R1 duplicate project path: {path}" for path in duplicate_project_paths
     )
 
-    return plans, changed_paths, skipped, only_r1, only_r2 + warnings
+    return (
+        plans,
+        checksum_updates,
+        changed_paths,
+        skipped,
+        only_r1,
+        only_r2 + warnings,
+    )
 
 
 def create_backup(database: Path, requested_path: Path | None) -> Path:
@@ -384,48 +417,87 @@ def create_backup(database: Path, requested_path: Path | None) -> Path:
     return backup
 
 
-def apply_updates(database: Path, plans: list[PlannedUpdate]) -> int:
-    updated = 0
+def apply_updates(
+    database: Path,
+    plans: list[PlannedUpdate],
+    checksum_updates: list[SourceChecksumUpdate],
+) -> tuple[int, int]:
+    project_files_updated = 0
+    source_files_updated = 0
 
     with closing(sqlite3.connect(database)) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
         connection.execute("BEGIN IMMEDIATE")
 
-        for plan in plans:
-            cursor = connection.execute(
-                """
-                UPDATE project_files
-                SET timestamp = ?,
-                    build_md5sum = ?
-                WHERE id = ?
-                  AND (
-                        timestamp IS NOT ?
-                     OR build_md5sum IS NOT ?
-                  )
-                """,
-                (
-                    plan.new_timestamp,
-                    plan.new_build_md5sum,
-                    plan.r1_project_file_id,
-                    plan.new_timestamp,
-                    plan.new_build_md5sum,
-                ),
-            )
-
-            if cursor.rowcount != 1:
-                raise RuntimeError(
-                    "Expected to update exactly one project_files row, but "
-                    f"updated {cursor.rowcount} for id={plan.r1_project_file_id}"
+        try:
+            # Update each changed source_files row exactly once.
+            for checksum_update in checksum_updates:
+                cursor = connection.execute(
+                    """
+                    UPDATE source_files
+                    SET checksum = ?
+                    WHERE id = ?
+                      AND checksum IS NOT ?
+                    """,
+                    (
+                        checksum_update.new_checksum,
+                        checksum_update.r1_source_file_id,
+                        checksum_update.new_checksum,
+                    ),
                 )
-            updated += 1
 
-        integrity = connection.execute("PRAGMA integrity_check").fetchone()[0]
-        if integrity != "ok":
-            raise RuntimeError(f"SQLite integrity check failed: {integrity}")
+                if cursor.rowcount != 1:
+                    raise RuntimeError(
+                        "Expected to update exactly one source_files row, but "
+                        f"updated {cursor.rowcount} for "
+                        f"id={checksum_update.r1_source_file_id}"
+                    )
+                source_files_updated += 1
 
-        connection.commit()
+            for plan in plans:
+                cursor = connection.execute(
+                    """
+                    UPDATE project_files
+                    SET timestamp = ?,
+                        build_md5sum = ?
+                    WHERE id = ?
+                      AND (
+                            timestamp IS NOT ?
+                         OR build_md5sum IS NOT ?
+                      )
+                    """,
+                    (
+                        plan.new_timestamp,
+                        plan.new_build_md5sum,
+                        plan.r1_project_file_id,
+                        plan.new_timestamp,
+                        plan.new_build_md5sum,
+                    ),
+                )
 
-    return updated
+                if cursor.rowcount != 1:
+                    raise RuntimeError(
+                        "Expected to update exactly one project_files row, but "
+                        f"updated {cursor.rowcount} for "
+                        f"id={plan.r1_project_file_id}"
+                    )
+                project_files_updated += 1
+
+            integrity = connection.execute(
+                "PRAGMA integrity_check"
+            ).fetchone()[0]
+            if integrity != "ok":
+                raise RuntimeError(
+                    f"SQLite integrity check failed: {integrity}"
+                )
+
+            connection.commit()
+
+        except Exception:
+            connection.rollback()
+            raise
+
+    return project_files_updated, source_files_updated
 
 
 def print_report(
@@ -435,6 +507,7 @@ def print_report(
     path_column: str,
     case_sensitive: bool,
     plans: list[PlannedUpdate],
+    checksum_updates: list[SourceChecksumUpdate],
     changed_paths: list[str],
     skipped: list[str],
     only_r1: list[str],
@@ -448,7 +521,8 @@ def print_report(
     print(f"Mode:                       {'APPLY' if applying else 'DRY RUN'}")
     print()
     print(f"Changed source paths:       {len(changed_paths)}")
-    print(f"Planned row updates:        {len(plans)}")
+    print(f"Planned project updates:    {len(plans)}")
+    print(f"Planned checksum updates:   {len(checksum_updates)}")
     print(f"Skipped R2 project rows:    {len(skipped)}")
     print(f"Only in R1:                 {len(only_r1)}")
     print(f"Other warnings:             {len(other_warnings)}")
@@ -457,6 +531,19 @@ def print_report(
         print("\nCHANGED SOURCE CHECKSUMS")
         for path in changed_paths:
             print(f"  {path}")
+
+    if checksum_updates:
+        print("\nSOURCE_FILES CHECKSUM UPDATES")
+        for update in checksum_updates:
+            print(f"  Source: {update.source_path}")
+            print(
+                f"    source_file_id: R2={update.r2_source_file_id} "
+                f"-> R1={update.r1_source_file_id}"
+            )
+            print(
+                f"    checksum:       {update.old_checksum} "
+                f"-> {update.new_checksum}"
+            )
 
     if plans:
         print("\nPROJECT_FILES UPDATES")
@@ -502,8 +589,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Compare source_files checksums by path and copy matching "
-            "project_files.timestamp/build_md5sum values from database2 "
-            "into database1."
+            "project_files.timestamp/build_md5sum and source_files.checksum "
+            "values from database2 into database1."
         )
     )
     parser.add_argument(
@@ -519,8 +606,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--path-column",
         choices=("path", "display_path", "relative_path"),
-        default="path",
-        help="source_files column used to match rows (default: path)",
+        default="relative_path",
+        help="source_files column used to match rows (default: relative_path)",
     )
     parser.add_argument(
         "--case-sensitive",
@@ -551,6 +638,7 @@ def parse_args() -> argparse.Namespace:
     )
 
     args = parser.parse_args()
+    
     if args.backup is not None and args.no_backup:
         parser.error("--backup and --no-backup cannot be used together")
     if args.backup is not None and not args.apply:
@@ -559,7 +647,9 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-def run (database1, database2, apply, path_column = 'path', case_sensitive = False,  no_backup = True, backup = None, verbose = False):
+def run (database1, database2, apply, case_sensitive = False,  no_backup = True, backup = None, verbose = False):
+    
+    path_column = 'relative_path'
     
     from pathlib import Path
     
@@ -582,10 +672,11 @@ def run (database1, database2, apply, path_column = 'path', case_sensitive = Fal
         with closing(connect_read_only(db1)) as r1, \
              closing(connect_read_only(db2)) as r2:
                  
-            validate_schema(r1, path_column)
-            validate_schema(r2, path_column)
+            validate_schema(r1, 'relative_path')
+            validate_schema(r2, 'relative_path')
             (
                 plans,
+                checksum_updates,
                 changed_paths,
                 skipped,
                 only_r1,
@@ -593,7 +684,7 @@ def run (database1, database2, apply, path_column = 'path', case_sensitive = Fal
             ) = plan_updates(
                 r1,
                 r2,
-                path_column=path_column,
+                path_column='relative_path',
                 case_sensitive=case_sensitive,
             )
 
@@ -601,9 +692,10 @@ def run (database1, database2, apply, path_column = 'path', case_sensitive = Fal
             print_report(
                 db1,
                 db2,
-                path_column=path_column,
+                path_column='relative_path',
                 case_sensitive=case_sensitive,
                 plans=plans,
+                checksum_updates=checksum_updates,
                 changed_paths=changed_paths,
                 skipped=skipped,
                 only_r1=only_r1,
@@ -618,14 +710,17 @@ def run (database1, database2, apply, path_column = 'path', case_sensitive = Fal
                 )
             return 1 if (changed_paths or skipped or only_r1 or other_warnings) else 0
 
-        if not plans:
-            print("\nNo project_files rows require updating.")
+        if not plans and not checksum_updates:
+            print("\nNo source_files or project_files rows require updating.")
             return 1 if (skipped or only_r1 or other_warnings) else 0
 
-        updated = apply_updates(db1, plans)
-        
+        project_count, checksum_count = apply_updates(
+            db1, plans, checksum_updates
+        )
+
         if verbose:
-            print(f"Updated {updated} project_files row(s) in {db1}")
+            print(f"Updated {checksum_count} source_files checksum row(s) in {db1}")
+            print(f"Updated {project_count} project_files row(s) in {db1}")
 
         return 1 if (skipped or only_r1 or other_warnings) else 0
 
@@ -636,8 +731,7 @@ def run (database1, database2, apply, path_column = 'path', case_sensitive = Fal
 def main() -> int:
     args = parse_args()
     run(args.database1, args.database2, args.apply,
-        args.path_column, args.case_sensitive, 
-        args.no_backup, args.backup)
+        args.case_sensitive, args.no_backup, args.backup)
     
 if __name__ == "__main__":
     raise SystemExit(main())
