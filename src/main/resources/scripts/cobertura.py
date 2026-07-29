@@ -49,6 +49,8 @@ try:
     from safe_open import open
 except:
     pass
+    
+from pathlib import PureWindowsPath
 
 import shutil
 
@@ -113,7 +115,14 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
         
     fname = coverAPI.display_name.replace("\\","/")
     fpath = coverAPI._relative_path.replace("\\","/")
-    repoFilePath = coverAPI.display_path.replace("\\","/").replace(prj_dir,"")
+    tmpRoot = PureWindowsPath(prj_dir)
+    tmpPath = PureWindowsPath(coverAPI.display_path.replace("\\","/"))
+    try:
+        repoFilePath = tmpPath.relative_to(tmpRoot).as_posix()
+    except Exception as e:
+        repoFilePath = ""
+        print(e)
+        pass
     
     branch_totals = float(coverAPI.metrics.branches + coverAPI.metrics.mcdc_branches)
     branch_covered = float(
@@ -218,7 +227,6 @@ def getBranchMcdcPairFcCoverageElementXML(lines, line, branchPercent = None, mcd
     lineno = line.line_number
     covEle = None
     condition = None
-    #print(etree.tostring(lines,pretty_print=True).decode())
     for element in lines.iter():
         if element.tag == "line" and element.attrib['number'] == str(lineno):
             covEle = element
@@ -237,8 +245,7 @@ def getBranchMcdcPairFcCoverageElementXML(lines, line, branchPercent = None, mcd
                     covEle.attrib['mcdcpair-coverage'] = mcdcPercent
                 if functionCallPercent:
                     covEle.attrib['functioncall-coverage'] = functionCallPercent
-
-
+            
     if covEle == None:
         covEle = etree.SubElement(lines, "line")
         covEle.attrib['number'] = str(lineno)
@@ -517,9 +524,6 @@ def runCoberturaResults(packages, api, verbose = False, extended = False, source
         except:
             fpath = fpath.replace("\\","/")
             pass
-
-        repoFilePath = os.path.join(fpath.rsplit("/",1)[0], file.name).replace("\\","/")
-        fpath = repoFilePath;
 
         fileDict[fpath] = file
 

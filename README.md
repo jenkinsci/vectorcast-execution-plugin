@@ -46,7 +46,8 @@ This plugin allows the user to create Single and Pipeline Jobs to build and exec
     * [Passing Test Case](#passing-test-case)
     * [Failing Test Case](#failing-test-case)
   * [Known Issues](#known-issues)
-    * [VectorCAST Reports and Jenkins Content Security](#vectorcast-reports-and-jenkins-content-security-)
+    * [VectorCAST TU Mode and Cobertura Extended Coverage Format](#tu-mode-and-cobertura-extended-coverage-format)
+    * [VectorCAST Reports and Jenkins Content Security](#vectorcast-reports-and-jenkins-content-security)
     * [JUnit publisher failing environment with no test cases](#junit-publisher-failing-environment-with-no-test-cases)
     * [Potential loss of requirements information](#potential-loss-of-requirements-information)
     * [Test and code coverage reporting with Imported Results](#test-and-code-coverage-reporting-with-imported-results)
@@ -349,6 +350,17 @@ By selecting individual cases, you can view the execution reports, providing ins
 
 ## Known Issues
 
+### ⚠️ TU Mode and Cobertura Extended Coverage Format
+Using translation mode when creating cobertura extended coverage formatted data, MCDC Pair data will be missing. 
+
+**Cause:**  
+VectorCAST's DataAPI does not break down MCDC Pair coverage by line
+
+**Fix:**
+Change the VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE to TRUE before creating cobertura extended format.
+
+    `manage --project Project --config VCAST_COVERAGE_SOURCE_FILE_PERSPECTIVE=TRUE`
+
 ### 🔥 Jenkins 2.535 “Form is larger than max length 200000”
 
 **Cause:**  
@@ -376,7 +388,7 @@ Old Jenkins flags `hudson.util.MultipartFormDataParser.MAX_FORM_SIZE` no longer 
 ### ⚠️ Imported Results with Cobertura and LCOV output
 New output formats were added, extended cobertura format output for use with Jenkins Coverage Plugin and LCOV output support.  These reporting scripts do not currently support generating coverage metrics based off of imported results.
 
-### ⚠️ VectorCAST Reports and Jenkins Content Security 
+### ⚠️ VectorCAST Reports and Jenkins Content Security
 
 VectorCAST HTML reports for metrics were updated to use cascading style sheets (CSS) in the 2019 release and 2020 for top level project metrics. This was done to offer users greater flexibility in displaying metrics. To maintain single file HTML format, VectorCAST Reports used inline CSS. Inline CSS was disallowed under Jenkins more restrictive CSP.
 
