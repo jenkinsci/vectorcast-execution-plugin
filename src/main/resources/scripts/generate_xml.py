@@ -671,7 +671,6 @@ class BaseGenerateXml(object):
                 self.grand_total_total_basis_path += total
                 self.grand_total_cov_basis_path += cov
 
-
         self.coverage = self.grand_total_coverage(overallCoverageTypes)
         self.num_units = len(self.our_units)
 
@@ -776,7 +775,7 @@ class GenerateManageXml (BaseGenerateXml):
         self.failed_count = 0
         self.passed_count = 0
         self.print_exc = print_exc
-        self.using_cover = True
+        self.using_cover = False
 
         self.units = []
 
