@@ -120,6 +120,28 @@ def pluginCreateSummary(inIcon, inText) {
 }
 
 // ===============================================================
+def pprint(obj) {
+    if (obj instanceof Map) {
+        obj.each { key, value ->
+            println "${key}: ${value}"
+        }
+    }
+    else if (obj instanceof Collection) {
+        obj.eachWithIndex { value, index ->
+            println "${index}: ${value}"
+        }
+    }
+    else if (obj?.getClass()?.isArray()) {
+        obj.eachWithIndex { value, index ->
+            println "${index}: ${value}"
+        }
+    }
+    else {
+        println obj
+    }
+}
+
+// ===============================================================
 def makeStepFromSpec(VC, spec) {
     return {
         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
@@ -250,6 +272,8 @@ pipeline {
             steps {
                 script {
 
+                    pprint(VC)
+                    
                     if (currentBuild.description == null) {
                         currentBuild.description = ""
                     }
