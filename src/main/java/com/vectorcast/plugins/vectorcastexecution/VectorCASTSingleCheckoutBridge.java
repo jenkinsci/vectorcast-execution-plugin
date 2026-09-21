@@ -3,6 +3,7 @@ package com.vectorcast.plugins.vectorcastexecution;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 import java.io.Serial;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 /**
  * Pipeline global bridge for {@code VectorCASTSingleCheckout}.
@@ -37,6 +38,7 @@ public class VectorCASTSingleCheckoutBridge extends VectorCASTGroovyBridge {
      * @param vc - global VectorCAST settings from Jenkinsfile
      * @return if the scripts were updated for single checkout
      */
+    @Whitelisted
     public boolean updateForSingleCheckout(final Object vc) {
         Object r = getDelegate().invokeMethod("updateForSingleCheckout",
                 new Object[] {vc }

@@ -4,6 +4,7 @@ import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 import java.io.Serial;
 import java.util.List;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 /**
  * Pipeline global bridge for {@code VectorCASTUtils}.
@@ -37,6 +38,7 @@ public class VectorCASTUtilsBridge extends VectorCASTGroovyBridge {
      * @param name  - name to be corrected
      * @return the fixed up name
      */
+    @Whitelisted
     public String fixUpName(final String name) {
          Object r = getDelegate().invokeMethod("fixUpName", name);
          return (r != null) ? r.toString() : "";
@@ -47,6 +49,7 @@ public class VectorCASTUtilsBridge extends VectorCASTGroovyBridge {
      * @param inputMpName - default path VCproject name
      * @return just the manage project name
      */
+    @Whitelisted
     public String getMpName(final String inputMpName) {
         Object r = getDelegate().invokeMethod("getMpName", inputMpName);
         return (r != null) ? r.toString() : "";
@@ -57,6 +60,7 @@ public class VectorCASTUtilsBridge extends VectorCASTGroovyBridge {
      * @param getJobsLog String returned from getjobs.py --type
      * @return List of jobs to create/run
      */
+    @Whitelisted
     public List<?> getEnvironmentInfo(final String getJobsLog) {
 
         Object r = getDelegate().invokeMethod("getEnvironmentInfo", getJobsLog);

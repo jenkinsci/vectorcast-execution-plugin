@@ -39,9 +39,6 @@
         <p>
           Link to job: <a href="${rootURL}/${createdItem.url}">${createdItem.displayName}</a>
         </p>
-        <p>
-            The job needs to have its pipeline script approved: <a href="${rootURL}/scriptApproval">Open Script Approval</a>
-        </p>
       </j:if>
     </l:main-panel>
   </l:layout>

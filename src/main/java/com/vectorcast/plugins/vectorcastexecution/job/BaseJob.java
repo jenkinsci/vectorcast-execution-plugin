@@ -23,8 +23,6 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
-import com.vectorcast.plugins.vectorcastcoverage.VectorCASTHealthReportThresholds;
-import com.vectorcast.plugins.vectorcastcoverage.VectorCASTPublisher;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
 import hudson.model.Descriptor;
 import hudson.model.Project;
@@ -74,17 +72,6 @@ public abstract class BaseJob {
     /** Coverage Delta threshold. */
     private static final float COVERAGE_THRESHOLD = -0.001f;
 
-    /** VectorCAST Coverage plugin selection. */
-    private static final long USE_VCC_PLUGIN = 2;
-
-    /** Zero percent indicator. */
-    private static final int ZERO_PERCENT = 0;
-    /** Seventy percent indicator. */
-    private static  final int SEVENTY_PERCENT = 70;
-    /** Eighty percent indicator. */
-    private static  final int EIGHTY_PERCENT = 80;
-    /** 100% indicator. */
-    private static  final int ONE_HUNDREAD_PERCENT = 100;
     /** Maximum string length. */
     private static  final int MAX_STRING_LEN = 1000;
     /** Default wait time. */
@@ -136,9 +123,6 @@ public abstract class BaseJob {
 
     /** Allow RGW3 test to be executed and exported. */
     private boolean useRGW3;
-
-    /** Use coveagePlugin. */
-    private boolean useCoveragePlugin;
 
     /** Use imported results. */
     private boolean useImportedResults = false;
@@ -208,14 +192,7 @@ public abstract class BaseJob {
             );
         }
 
-        if (!manageProjectName.isEmpty()) {
-            // Force unix style path to avoid problems later
-            manageProjectName = manageProjectName.replace('\\', '/');
-            manageProjectName = manageProjectName.trim();
-            if (!manageProjectName.toLowerCase().endsWith(".vcm")) {
-                manageProjectName += ".vcm";
-            }
-        }
+        manageProjectName = normalizeManageProjectName(manageProjectName);
         baseName = FilenameUtils.getBaseName(manageProjectName);
 
         environmentSetupWin = json.optString("environmentSetupWin");
@@ -227,7 +204,7 @@ public abstract class BaseJob {
         environmentTeardownUnix = json.optString("environmentTeardownUnix");
 
         optionUseReporting = json.optBoolean("optionUseReporting", true);
-        String errLevel = json.optString("optionErrorLevel", "unstable");
+        String errLevel = json.optString("optionErrorLevel", "unstable").trim();
         if (errLevel.equals("nothing")) {
             optionErrorLevel = 0;
         } else if (errLevel.equals("unstable")) {
@@ -236,7 +213,8 @@ public abstract class BaseJob {
             optionErrorLevel = 2;
         }
 
-        optionHtmlBuildDesc = json.optString("optionHtmlBuildDesc", "HTML");
+        optionHtmlBuildDesc = json.optString("optionHtmlBuildDesc", "HTML")
+            .trim();
         optionExecutionReport = json.optBoolean("optionExecutionReport", true);
         optionClean = json.optBoolean("optionClean", false);
 
@@ -246,11 +224,10 @@ public abstract class BaseJob {
         jobName = json.optString("jobName", null);
 
         if (jobName != null) {
-            // Remove all non-alphanumeric characters from the Jenkins Job name
-            jobName = jobName.replaceAll("[^a-zA-Z0-9_]", "_");
+            jobName = normalizeJobName(jobName);
         }
 
-        nodeLabel = json.optString("nodeLabel", "");
+        nodeLabel = json.optString("nodeLabel", "").trim();
 
         useCILicenses  = json.optBoolean("useCiLicense", false);
         useStrictTestcaseImport  = json
@@ -258,23 +235,6 @@ public abstract class BaseJob {
         useRGW3  = json.optBoolean("useRGW3", false);
         useImportedResults  = json.optBoolean("useImportedResults", false);
 
-
-        /* since Coverage is a radio button, we need to unpack it */
-        JSONObject jsonCovPlugin = json.optJSONObject("coverageDisplayOption");
-
-        /* If there's something specified, check which one to use */
-        if (jsonCovPlugin != null) {
-            final long whichPlugin =
-                jsonCovPlugin.optLong("value", USE_VCC_PLUGIN);
-            if (whichPlugin == USE_VCC_PLUGIN) {
-                useCoveragePlugin = false;
-            } else {
-                useCoveragePlugin = true;
-            }
-        } else {
-            /* If there's nothing specified, use VCC */
-            useCoveragePlugin = false;
-        }
 
         externalResultsFilename = "";
 
@@ -292,7 +252,7 @@ public abstract class BaseJob {
                     useLocalImportedResults = false;
                     useExternalImportedResults = true;
                     externalResultsFilename = jsonImpRes
-                        .optString("externalResultsFilename", "");
+                        .optString("externalResultsFilename", "").trim();
                     externalResultsFilename =
                         externalResultsFilename.replace('\\', '/');
                     if (externalResultsFilename.length() == 0) {
@@ -306,7 +266,7 @@ public abstract class BaseJob {
 
         /* Additional Tools */
         pclpCommand = json.optString("pclpCommand", "").replace('\\', '/');
-        pclpResultsPattern = json.optString("pclpResultsPattern", "");
+        pclpResultsPattern = json.optString("pclpResultsPattern", "").trim();
         squoreCommand = json.optString("squoreCommand", "").replace('\\', '/');
 
     }
@@ -423,13 +383,6 @@ public abstract class BaseJob {
      */
     protected boolean getUseRGW3() {
         return useRGW3;
-    }
-    /**
-     * Get option to use coverage plugin or vectorcast coverage plugin.
-     * @return true use coverage plugin or vectorcast coverage plugin
-     */
-    protected boolean getUseCoveragePlugin() {
-        return useCoveragePlugin;
     }
     /**
      * Get option to Use imported results.
@@ -789,26 +742,7 @@ public abstract class BaseJob {
         }
     }
     /**
-     * Add VectorCAST coverage reporting step.
-     * @param project project to add step to
-     */
-    protected void addVCCoverage(final Project<?, ?> project) {
-        VectorCASTHealthReportThresholds healthReports =
-                new VectorCASTHealthReportThresholds(
-                    ZERO_PERCENT, ONE_HUNDREAD_PERCENT,
-                    ZERO_PERCENT, SEVENTY_PERCENT,
-                    ZERO_PERCENT, EIGHTY_PERCENT,
-                    ZERO_PERCENT, EIGHTY_PERCENT,
-                    ZERO_PERCENT, EIGHTY_PERCENT,
-                    ZERO_PERCENT, EIGHTY_PERCENT);
-        VectorCASTPublisher publisher = new VectorCASTPublisher();
-        publisher.setIncludes("**/coverage_results_*.xml");
-        publisher.setHealthReports(healthReports);
-        publisher.setUseCoverageHistory(useCoverageHistory);
-        project.getPublishersList().add(publisher);
-    }
-    /**
-     * Add Jenkins coverage reporting step.
+     * Add Jenkins Coverage reporting and optional history quality gates.
      * @param project project to add step to
      */
     protected void addReferenceBuild(final Project<?, ?> project) {
@@ -862,6 +796,19 @@ public abstract class BaseJob {
     }
 
     /**
+     * Adds the reporting publishers used by every newly generated Freestyle
+     * job. Jenkins Coverage is the single supported coverage publisher.
+     *
+     * @param project project to configure
+     */
+    protected void addReportingPublishers(final Project<?, ?> project) {
+        addPCLintPlus(project);
+        addJunit(project);
+        addReferenceBuild(project);
+        addJenkinsCoverage(project);
+    }
+
+    /**
      * Call to get baseline windows single job file.
      * @return URL for baseline file
      */
@@ -885,6 +832,42 @@ public abstract class BaseJob {
     protected URL getBaselinePostBuildGroovyScript() {
         // GOOD: The call is always made on an object of the same type.
         return BaseJob.class.getResource("/scripts/baselinePostBuild.groovy");
+    }
+
+    /**
+     * Normalize a user-supplied Jenkins item name.
+     *
+     * @param input name supplied by the user
+     * @return trimmed name using only letters, digits, and underscores
+     */
+    protected static String normalizeJobName(final String input) {
+        return input.trim().replaceAll("[^a-zA-Z0-9_]", "_");
+    }
+
+    /**
+     * Normalizes a VectorCAST manage-project path supplied by a job form.
+     *
+     * @param input path supplied by the user
+     * @return normalized path with a .vcm suffix when present
+     */
+    protected static String normalizeManageProjectName(final String input) {
+        if (input.isEmpty()) {
+            return input;
+        }
+        String normalized = input.replace('\\', '/').trim();
+        return normalized.toLowerCase().endsWith(".vcm")
+            ? normalized : normalized + ".vcm";
+    }
+
+    /**
+     * Identifies project paths that cannot be used with an SCM checkout.
+     *
+     * @param path normalized manage-project path
+     * @return true when the path is local, UNC, or Unix absolute
+     */
+    protected static boolean isAbsoluteProjectPath(final String path) {
+        return path.startsWith("//") || path.startsWith("/")
+            || path.matches("[a-zA-Z]:.*");
     }
     /**
      * Call to get baseline config.xml with parameters for pipeline job .
@@ -926,18 +909,18 @@ public abstract class BaseJob {
     public void setFolder(final Folder inputFolder) {
         folder = inputFolder;
     }
-    
+
     /**
      * Check If Project Exists.
      * @param inProjectName  project name looking to get created
      * @throws IOException exception
      * @throws JobAlreadyExistsException exception
      */
-    protected Boolean checkIfProjectExists(String inProjectName) 
+    protected Boolean checkIfProjectExists(String inProjectName)
         throws IOException, JobAlreadyExistsException {
-        
+
         String fullProjectName = "";
-        
+
         if (getFolder() == null) {
             fullProjectName = inProjectName;
         } else {
@@ -947,7 +930,7 @@ public abstract class BaseJob {
         for (String name : getInstance().getJobNames()) {
             Logger.getLogger(BaseJob.class.getName()).log(Level.INFO,
                 "Checking " + name + " for " + fullProjectName);
-                
+
             if (name.equals(fullProjectName)) {
                 Logger.getLogger(BaseJob.class.getName()).log(Level.INFO,
                     "Job Already Exists Exception: " + fullProjectName);
@@ -956,5 +939,5 @@ public abstract class BaseJob {
         }
         return false;
     }
-    
+
 }

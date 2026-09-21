@@ -15,8 +15,8 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.555.x</artifactId>
-                <version>6418.vf54872a_65165</version>
+                <artifactId>bom-2.568.x</artifactId>
+                <version>7020.vf38cb_40380d1</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -28,7 +28,7 @@
             <dependency>
               <groupId>org.apache.logging.log4j</groupId>
               <artifactId>log4j-api</artifactId>
-              <version>2.25.4</version>
+              <version>2.26.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -47,7 +47,7 @@
         <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <findbugs.failOnError>false</findbugs.failOnError>
-        <jenkins.version>2.555.3</jenkins.version>
+        <jenkins.version>2.568.3</jenkins.version>
         <changelist>-SNAPSHOT</changelist>
         <lintCompilerArgs>-Xlint:-options</lintCompilerArgs>
         <ban-junit4-imports.skip>false</ban-junit4-imports.skip>   
@@ -102,11 +102,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Your coverage plugin -->
+        <!-- Required to exercise Jenkins' real SCM descriptor form binding. -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>vectorcast-coverage</artifactId>
-            <version>0.24-SNAPSHOT</version>
+            <artifactId>git</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- Jenkins plugins - versions provided by BOM -->
@@ -136,6 +136,10 @@
         <dependency>
             <groupId>org.jvnet.hudson.plugins</groupId>
             <artifactId>groovy-postbuild</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>badge</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
@@ -312,22 +316,23 @@
                   @{jacocoArgLine}
                   @{jenkins.addOpens}
                   @{jenkins.insaneHook}
+                  -Djdk.net.URLClassPath.disableClassPathURLCheck=true
                   --enable-native-access=ALL-UNNAMED
                   --add-opens java.base/java.lang=ALL-UNNAMED
                   --add-opens java.base/java.util=ALL-UNNAMED
                 </argLine>
                 <excludeJUnit5Engines>junit-vintage</excludeJUnit5Engines>
-                <forkCount>1C</forkCount> <!-- 1 JVM per CPU core -->
+                <!-- Jenkins harness controllers are heavyweight and contend
+                     for ports, test homes, and the local Maven repository. -->
+                <forkCount>1</forkCount>
                 <reuseForks>true</reuseForks>
-                <perCoreThreadCount>true</perCoreThreadCount>
-                <useUnlimitedThreads>true</useUnlimitedThreads>
               </configuration>
             </plugin>
 
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
-                <version>3.1829.v1595655f4b_49</version>
+                <version>3.1838.va_13472137a_6a_</version>
                 <extensions>true</extensions>
             </plugin>
 

@@ -4,6 +4,7 @@ import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 import java.io.Serial;
 import java.util.Map;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 /**
  * Pipeline global bridge for {@code VectorCASTLogs}.
@@ -38,6 +39,7 @@ public class VectorCASTLogsBridge extends VectorCASTGroovyBridge {
      * @param inputs for generating the checks
      * @return object commands and results
      */
+    @Whitelisted
     public Object checkBuildLogPlan(final Object vc, final Map<?, ?> inputs) {
         return getDelegate().invokeMethod(
                 "checkBuildLogPlan",

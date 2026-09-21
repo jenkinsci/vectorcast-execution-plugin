@@ -30,25 +30,7 @@
                 <h1>${%VCJob.Control.Title}</h1>
                 <p>${%VCJob.Control.Description}</p>
                 <f:section title="${%VCJob.Control.Project}">
-                    <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}" help="/plugin/vectorcast-execution/help-projectPath.html">
-                        <f:textbox name="manageProjectName" size="50" required="true"/>
-                    </f:entry>
-
-                    <f:form descriptor="${descriptor}">
-                        <f:entry title="${%VCJob.JobOptions.nodeLabel.title}"
-                                 description="${%VCJob.JobOptions.nodeLabel.description}"
-                                 help="/plugin/vectorcast-execution/help-jobOptNodeLabel.html">
-
-                            <input name="nodeLabel"
-                                   type="text"
-                                   class="jenkins-input auto-complete"
-                                   autocomplete="off"
-                                   autocompletedelimchar=" "
-                                   placeholder=""
-                                   value="${instance.nodeLabel}"
-                                   autocompleteurl="${rootURL}/descriptorByName/com.vectorcast.plugins.vectorcastexecution.VectorCASTJobPipeline/autoCompleteNodeLabel" />
-                        </f:entry>
-                    </f:form>
+                    <vc:projectAndNode autocompleteUrl="${rootURL}/descriptorByName/com.vectorcast.plugins.vectorcastexecution.VectorCASTJobPipeline/autoCompleteNodeLabel"/>
 
                     <f:entry title="${%VCJob.Options.useCBT.title}" description="${%VCJob.Options.useCBT.description}" help="/plugin/vectorcast-execution/help-optuseCBT.html">
                         <f:checkbox name="useCBT" checked="${instance.useCBT}" default="true"/>
@@ -57,7 +39,6 @@
                         <f:checkbox name="useParameters" checked="${instance.useParameters}" default="false"/>
                     </f:entry>
                 </f:section>
-                <vc:coverageDisplay/>
                 <vc:retry/>
                 <vc:jobOptionsPipeline/>
                 <vc:pipelineScripts/>

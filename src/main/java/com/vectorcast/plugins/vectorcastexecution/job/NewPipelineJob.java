@@ -120,7 +120,7 @@ public class NewPipelineJob extends BaseJob {
 
         JSONObject json = request.getSubmittedForm();
 
-        sharedArtifactDirectory = json.optString("sharedArtifactDir", "");
+        sharedArtifactDirectory = json.optString("sharedArtifactDir", "").trim();
         pipelineSCM = json.optString("scmSnippet", "").trim();
 
         singleCheckout = json.optBoolean("singleCheckout", false);
@@ -142,21 +142,7 @@ public class NewPipelineJob extends BaseJob {
            the copy_build_dir.py ability to make LIS files relative path
         */
         String mpName = getManageProjectName();
-        boolean absPath = false;
-
-        if (mpName.startsWith("\\\\")) {
-            absPath = true;
-        }
-        if (mpName.startsWith("/")) {
-            absPath = true;
-        }
-        if (mpName.matches("[a-zA-Z]:.*")) {
-            absPath = true;
-        }
-
-        if (!mpName.toLowerCase().endsWith(".vcm")) {
-            mpName += ".vcm";
-        }
+        boolean absPath = isAbsoluteProjectPath(mpName);
 
         if (!pipelineSCM.isEmpty() && absPath) {
             throw new ScmConflictException(pipelineSCM, mpName);
@@ -562,7 +548,7 @@ public class NewPipelineJob extends BaseJob {
                 singleCheckout,
                 vcUseCi,
                 incremental,
-                getUseCoveragePlugin(),
+                true,
                 VcastUtils.getVersion().orElse("Unknown"),
                 getPclpCommand().length() != 0,
                 getPclpCommand(),

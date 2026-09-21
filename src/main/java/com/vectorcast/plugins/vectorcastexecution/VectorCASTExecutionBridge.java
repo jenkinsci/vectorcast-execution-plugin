@@ -3,6 +3,7 @@ package com.vectorcast.plugins.vectorcastexecution;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 import java.io.Serial;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 /**
  * Pipeline global bridge for {@code VectorCASTExecution}.
@@ -37,6 +38,7 @@ public class VectorCASTExecutionBridge extends VectorCASTGroovyBridge {
      * @param commands to be executed
      * @return - a list of the run commands
      */
+    @Whitelisted
     public Object getRunCommands(final Object vc, final String commands) {
         return getDelegate().invokeMethod("getRunCommands",
                 new Object[] {vc, commands});
@@ -46,6 +48,7 @@ public class VectorCASTExecutionBridge extends VectorCASTGroovyBridge {
      * @param vc global VectorCAST settings from Jenkinsfile
      * @return - a list of the run commands
      */
+    @Whitelisted
     public Object getSetupManageProject(final Object vc) {
         return getDelegate().invokeMethod("getSetupManageProject", vc);
     }
@@ -56,6 +59,7 @@ public class VectorCASTExecutionBridge extends VectorCASTGroovyBridge {
      * @param inputString - line specifying environment
      * @return - a list of the run commands
      */
+    @Whitelisted
     public Object buildStepSpec(final Object vc, final String inputString) {
         return getDelegate().invokeMethod("buildStepSpec",
             new Object[] {vc, inputString }

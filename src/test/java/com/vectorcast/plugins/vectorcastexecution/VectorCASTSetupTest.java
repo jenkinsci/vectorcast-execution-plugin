@@ -13,32 +13,37 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 public class VectorCASTSetupTest {
 
     @Test
-    public void copiesScriptsIntoWorkspace_andPrintsVersion(JenkinsRule rule) throws Exception {
+    public void copiesScriptsIntoWorkspacePrintsVersionAndRoundTripsConfig(
+            JenkinsRule rule) throws Exception {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(new VectorCASTSetup());
 
-        var b = rule.buildAndAssertSuccess(p);
-
         FilePath ws = rule.jenkins.getWorkspaceFor(p);
         assertNotNull(ws);
+        ws.child("xml_data").mkdirs();
+        FilePath staleXml = ws.child("xml_data/stale-result.xml");
+        staleXml.write("<stale/>", "UTF-8");
+
+        var b = rule.buildAndAssertSuccess(p);
+
         // script root was created
         assertTrue(ws.child("vc_scripts").exists(), "vc_scripts dir should exist");
         // our test resource was copied
         assertTrue(ws.child("vc_scripts/baseJenkinsfile.groovy").exists(), "baseJenkinsfile.groovy should be copied");
+        assertFalse(staleXml.exists(), "stale XML results should be removed");
 
         // version line is printed (dont assert the exact version string)
         rule.assertLogContains("[VectorCAST Execution Version]:", b);
-    }
 
-    @Test
-    public void configRoundTrip_preservesDefaults(JenkinsRule rule) throws Exception {
-        FreeStyleProject p = rule.createFreeStyleProject();
+        FreeStyleProject roundTripProject = rule.createFreeStyleProject();
         VectorCASTSetup before = new VectorCASTSetup();
-        p.getBuildersList().add(before);
+        roundTripProject.getBuildersList().add(before);
+        assertTrue(before.getDescriptor().isApplicable(FreeStyleProject.class));
 
-        rule.configRoundtrip(p);
+        rule.configRoundtrip(roundTripProject);
 
-        VectorCASTSetup after = p.getBuildersList().get(VectorCASTSetup.class);
+        VectorCASTSetup after = roundTripProject.getBuildersList()
+            .get(VectorCASTSetup.class);
         rule.assertEqualDataBoundBeans(before, after);
     }
 }

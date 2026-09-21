@@ -27,6 +27,7 @@ import com.cloudbees.hudson.plugins.folder.Folder;
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
+import com.vectorcast.plugins.vectorcastexecution.VectorCASTPostBuildPublisher;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
@@ -38,9 +39,6 @@ import jenkins.model.Jenkins;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
-import hudson.model.Descriptor.FormException;
-import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -218,11 +216,7 @@ public class NewSingleJob extends BaseJob {
       addEnvVars += "VCAST_USE_IMPORTED_RESULTS=0\n";
     }
 
-    if (getUseCoveragePlugin()) {
-      addEnvVars += "VCAST_USE_COVERAGE_PLUGIN=1\n";
-    } else {
-      addEnvVars += "VCAST_USE_COVERAGE_PLUGIN=0\n";
-    }
+    addEnvVars += "VCAST_USE_COVERAGE_PLUGIN=1\n";
     return addEnvVars;
   }
 
@@ -265,11 +259,7 @@ public class NewSingleJob extends BaseJob {
       addEnvVars += "set VCAST_USE_IMPORTED_RESULTS=FALSE\n";
     }
 
-    if (getUseCoveragePlugin()) {
-      addEnvVars += "set VCAST_USE_COVERAGE_PLUGIN=TRUE\n";
-    } else {
-      addEnvVars += "set VCAST_USE_COVERAGE_PLUGIN=FALSE\n";
-    }
+    addEnvVars += "set VCAST_USE_COVERAGE_PLUGIN=TRUE\n";
 
     return addEnvVars;
   }
@@ -313,54 +303,10 @@ public class NewSingleJob extends BaseJob {
       );
     }
   }
-  /**
-   * Add groovy script step to job.
-   */
-  private void addGroovyScriptSingleJob() throws IOException {
-
-    InputStream in = null;
-
-    String script = "";
-
-    try {
-        in = getBaselinePostBuildGroovyScript().openStream();
-        script += IOUtils.toString(in, "UTF-8");
-    } catch (IOException ex) {
-        Logger.getLogger(NewSingleJob.class.getName())
-            .log(Level.INFO, null, ex);
-        script += "Missing baseline single job script for windows";
-    } finally {
-        if (in != null) {
-            in.close();
-        }
-    }
-
-    script = script.replace("@PROJECT_BASE@", getBaseName());
-
-    SecureGroovyScript secureScript = null;
-
-    try {
-      secureScript =
-          new SecureGroovyScript(
-              script,
-              false, /*sandbox*/
-              null /*classpath*/
-          );
-    } catch (FormException ex) {
-      Logger.getLogger(NewSingleJob.class.getName()).
-        log(Level.INFO, null, ex);
-    }
-    GroovyPostbuildRecorder groovy =
-        new GroovyPostbuildRecorder(
-            secureScript,
-            getOptionErrorLevel(), /*behaviour*/
-            false  /*matrix parent*/
-        );
-    if (!getTopProject().getPublishersList().add(groovy)) {
-      throw new UnsupportedOperationException(
-        "Failed to add GroovyPostbuildRecorder to Publishers List"
-      );
-    }
+  /** Add the native post-build result publisher to the job. */
+  private void addPostBuildResultPublisher() {
+    getTopProject().getPublishersList().add(
+        new VectorCASTPostBuildPublisher(getBaseName()));
   }
   /**
    * Create project.
@@ -381,13 +327,16 @@ public class NewSingleJob extends BaseJob {
     if (getJobName() != null && !getJobName().isEmpty()) {
       projectName = getJobName();
     }
-    
+
+    // Remove all non-alphanumeric characters from the Jenkins Job name
+    projectName = normalizeJobName(projectName);
+
+    setProjectName(projectName);
+
     if (checkIfProjectExists(projectName)) {
         return null;
     }
     
-    setProjectName(projectName);
-
     ItemGroup<?> parent = (getFolder() != null)
             ? getFolder() : getInstance();
 
@@ -431,7 +380,6 @@ public class NewSingleJob extends BaseJob {
    * Add build steps.
    * @throws IOException exception
    * @throws ServletException exception
-   * @throws hudson.model.Descriptor.FormException exception
    */
   @Override
   @RequirePOST
@@ -451,16 +399,9 @@ public class NewSingleJob extends BaseJob {
 
     // Post-build actions - only is using reporting
     if (getOptionUseReporting()) {
-      addPCLintPlus(getTopProject());
-      addJunit(getTopProject());
-      if (getUseCoveragePlugin()) {
-        addReferenceBuild(getTopProject());
-        addJenkinsCoverage(getTopProject());
-      } else {
-        addVCCoverage(getTopProject());
-      }
+      addReportingPublishers(getTopProject());
     }
-    addGroovyScriptSingleJob();
+    addPostBuildResultPublisher();
 
     getTopProject().save();
   }

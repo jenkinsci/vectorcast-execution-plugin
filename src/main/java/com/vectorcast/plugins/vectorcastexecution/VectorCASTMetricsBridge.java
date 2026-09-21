@@ -4,6 +4,7 @@ import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 import java.io.Serial;
 import java.util.List;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 /**
  * Pipeline global bridge for {@code VectorCASTMetrics}.
@@ -38,6 +39,7 @@ public class VectorCASTMetricsBridge extends VectorCASTGroovyBridge {
      * @param envDesc string to describe the env
      * @return list of commands to run
      */
+    @Whitelisted
     public Object getMetricsEnvCmds(final Object vc, final String envDesc) {
         return getDelegate().invokeMethod("getMetricsEnvCmds",
             new Object[] {vc, envDesc }
@@ -51,6 +53,7 @@ public class VectorCASTMetricsBridge extends VectorCASTGroovyBridge {
      *                           report generation
      * @return list of commands to run
      */
+    @Whitelisted
     public Object getMetricsCmds(final Object vc,
                                  final List<?> extraResultOptions) {
         return getDelegate().invokeMethod(

@@ -1,0 +1,117 @@
+"command": "/opt/Xilinx/Vitis/2024.1/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-g++
+-DAPP_MAX_NUM_SEQUENCES=4
+-DAPP_MAX_STEPS_PER_SEQUENCE=8
+-DAXI_BLINK_SLEEP_TIME=2500
+-DMD5_INFO_LEVEL=4
+-DNX_INCLUDE_USER_DEFINE_FILE
+-DOS_THREADX
+-DPS_BLINK_SLEEP_TIME=250
+-DTX_INCLUDE_USER_DEFINE_FILE
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/SystemService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/apps/7436076
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/utils
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/utils/paramparser
+-I/home/fwuser/git/pp_cpf_platform_everest/src/apps/include
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/FrequencyService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/ECatStackService/handlers/beol
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/hal/config
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/hal/devices
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/hal/devices/common
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/hal/devices/storage
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/hal/devices/dcsupply
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/hal/devices/transport
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/osal
+-I/home/fwuser/git/pp_cpf_platform_everest/src/os/THREADX
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/external/bsp/bsplibs/ev2_zynq_ps7/ps7_cortexa9_0/a9_standalone/bsp/ps7_cortexa9_0/include
+-I/home/fwuser/git/pp_cpf_platform_everest/src/apps/include/Core0
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/Service
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/Service/Events
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/Service/../../product/EVEREST/bluecoat
+-I/{PROJECT_SOURCE_DIR}/../CanBusService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/product/EVEREST
+-I/home/fwuser/git/pp_cpf_platform_everest/src/product/EVEREST/common
+-I/home/fwuser/git/pp_cpf_platform_everest/src/product/EVEREST/mock
+-I/home/fwuser/git/pp_cpf_platform_everest/src/product/EVEREST/bluecoat
+-I/home/fwuser/git/pp_cpf_platform_everest/src/product/EVEREST/zynq7000
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/libs/YamlParse/src
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/rapidyaml-src/samples/singleheaderlib/../../src_singleheader
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/auto_ip
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/BSD
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/dhcp
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/dns
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/ftp
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/http
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/pop3
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/ppp
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/pppoe
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/smtp
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/snmp
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/sntp
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/telnet
+-I/home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/addons/tftp
+-I/home/fwuser/git/pp_cpf_platform_everest/src/product/EVEREST/7436076_bluecoat
+-I/home/fwuser/git/pp_cpf_platform_everest/pp_rf_everest_b_gen_pwr_fpga/documents/driver
+-I/home/fwuser/git/pp_cpf_platform_everest/pp_rf_everest_b_gen_cpu_fpga/documents/driver
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/SequenceService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/SequenceService/DiagnosticsSupport
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/SequenceService/DiagnosticsSupport/Modes
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/SequenceService/../SystemService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/FaultService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/FaultService/../SystemService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/StorageService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/EngineService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/ArcService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/DiagnosticsService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/FlashService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/FlashService/targets
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/MeasureService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/TabfileService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/TabfileService/tabfiles
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/TabfileService/../FlashService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/MonitorService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/DCControlservice
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/DCControlService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/CanBusService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/CanBusService/unittests
+-I/home/fwuser/git/pp_cpf_platform_everest/src/services/DeviceNetService
+-I/home/fwuser/git/pp_cpf_platform_everest/src/core/libs/CableDisconnect
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/core/libs/Calibration/src
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/core/libs/Parameters
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/core/hal
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/core/hal/devices/generator
+-isystem /home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/md5-src/src
+-isystem /home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/miniz-src/src
+-isystem /home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/threadx-src/ports/cortex_a9/gnu/inc
+-isystem /home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/threadx-src/common/inc
+-isystem /home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/threadx-build/custom_inc
+-isystem /home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/ports/cortex_a9/gnu/inc
+-isystem /home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/common/inc
+-isystem /home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-build/custom_inc
+-isystem /home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/../filex/common/inc
+-isystem /home/fwuser/git/pp_cpf_platform_everest/_build-release/_deps/netx-src/../filex/ports/generic/inc
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/core/libs/FrequencyTuning
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/core/libs/FrequencyTuning/FrequencyTuning8Parity
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/core/libs/FrequencyTuning/FrequencyTuningMock
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/core/libs/Diagnostics
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/core/libs/Diagnostics/DiagnosticModes
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/core/libs/Diagnostics/DiagnosticPayloads
+-isystem /home/fwuser/git/pp_cpf_platform_everest/src/services/ECatStackService
+-isystem /home/fwuser/git/pp_cpf_platform_everest/external/ECatApp/XML_Parser/src
+-isystem /home/fwuser/git/pp_cpf_platform_everest/external/ECatApp/XML_Parser/libxsde
+-isystem /home/fwuser/git/pp_cpf_platform_everest/external/ECatApp/src
+-mcpu=cortex-a9
+-mfpu=vfpv3
+-mfloat-abi=hard
+-fmessage-length=0 
+-fdata-sections
+-ffunction-sections
+-fno-rtti
+-fno-exceptions
+-mlong-calls
+-O3
+-std=c++20
+-o src/services/SystemService/CMakeFiles/SystemService.dir/SystemServiceImpl.cpp.obj
+-c /home/fwuser/git/pp_cpf_platform_everest/src/services/SystemService/SystemServiceImpl.cpp",
+ 

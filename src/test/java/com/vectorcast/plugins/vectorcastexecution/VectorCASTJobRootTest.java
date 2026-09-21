@@ -1,5 +1,6 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import org.htmlunit.html.HtmlPage;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -15,18 +16,21 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 public class VectorCASTJobRootTest {
 
     @Test
-    public void loadsAsExtension_andHasUrl(JenkinsRule rule) {
+    public void loadsAsExtensionAndRendersIndexJelly(JenkinsRule rule)
+            throws Exception {
         var list = rule.jenkins.getExtensionList(VectorCASTJobRoot.class);
         assertThat("extension should load", list, is(not(empty())));
         VectorCASTJobRoot action = list.get(0);
         assertThat(action.getUrlName(), is("VectorCAST"));
         assertThat(action.getDisplayName(), is("VectorCAST"));
         assertThat(action.getIconFileName(), is("/plugin/vectorcast-execution/icons/vector_favicon_bw.png"));
-        action.getDynamic("VectorCAST");
-    }
+        assertNull(action.getDynamic("VectorCAST"));
+        assertInstanceOf(VectorCASTJobSingle.class, action.getDynamic("single-job"));
+        assertInstanceOf(VectorCASTJobPipeline.class, action.getDynamic("pipeline-job"));
+        assertNull(action.getFolder());
+        Folder folder = rule.jenkins.createProject(Folder.class, "root-action-folder");
+        assertSame(folder, new VectorCASTJobRoot(folder).getFolder());
 
-    @Test
-    public void rendersIndexJelly(JenkinsRule rule) throws Exception {
         var wc = rule.createWebClient();
         HtmlPage page = wc.goTo("VectorCAST");           // same as "/my-action/"
         assertThat(page.getTitleText(), containsString("VectorCAST"));

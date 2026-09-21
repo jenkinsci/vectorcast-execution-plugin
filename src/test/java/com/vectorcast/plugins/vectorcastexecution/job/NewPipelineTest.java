@@ -32,18 +32,32 @@ public class NewPipelineTest {
     final long USE_EXTERNAL_IMPORTED_RESULTS = 2;
     final String EXTERNAL_RESULT_FILENAME = "archivedResults/project.vcr";
 
-    /** Jenkins Coverage plugin selection. */
-    private static final long USE_COVERAGE_PLUGIN = 1;
-
-    /** VectorCAST Coverage plugin selection. */
-    private static final long USE_VCC_PLUGIN = 2;
-
     private static final String PROJECTNAME = "project_vcast_pipeline";
 
     private static final String FOLDERNAME = "test_pipeline_folder";
     private NewPipelineJob setupTestBasic(JSONObject jsonForm, JenkinsRule rule) throws ServletException, IOException,
             ExternalResultsFileException, FormException, JobAlreadyExistsException,
             InvalidProjectFileException, Exception {
+        return setupTestBasic(jsonForm, rule, FOLDERNAME);
+    }
+
+    private NewPipelineJob setupTestBasic(final JSONObject jsonForm,
+                                      final JenkinsRule rule, final String folderName)
+        throws ServletException, IOException, ExternalResultsFileException,
+        FormException, JobAlreadyExistsException,
+        InvalidProjectFileException, Exception {
+            return setupTestBasic(jsonForm, rule, folderName, PROJECTNAME);
+        }
+
+    private NewPipelineJob setupTestBasic(final JSONObject jsonForm,
+                                          final JenkinsRule rule,
+                                          final String folderName,
+                                          final String projectName)
+            throws ServletException, IOException, ExternalResultsFileException,
+            FormException, JobAlreadyExistsException,
+            InvalidProjectFileException, Exception {
+
+
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         MockAuthorizationStrategy mockStrategy = new MockAuthorizationStrategy();
         mockStrategy.grant(Jenkins.READ).everywhere().to("devel");
@@ -57,14 +71,14 @@ public class NewPipelineTest {
 
         when(request.getSubmittedForm()).thenReturn(jsonForm);
 
-        Folder folder = rule.jenkins.createProject(Folder.class, FOLDERNAME);
+        Folder folder = rule.jenkins.createProject(Folder.class, folderName);
 
         NewPipelineJob job = new NewPipelineJob(request, response, folder);
 
         assertEquals("project", job.getBaseName());
         job.create();
-        assertEquals(PROJECTNAME, job.getProjectName());
-        assertEquals(FOLDERNAME, job.getFolder().getName());
+        assertEquals(projectName, job.getProjectName());
+        assertEquals(folderName, job.getFolder().getName());
 
         // Pipeline Jobs have no "topProject"
         assertNull(job.getTopProject());
@@ -115,12 +129,11 @@ public class NewPipelineTest {
     public void testDefaults(JenkinsRule rule) throws Exception {
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
-        jsonForm.put("nodeLabel","Test_Node");
+        jsonForm.put("nodeLabel","  Test_Node   ");
 
         NewPipelineJob job = setupTestBasic(jsonForm, rule);
 
         assertEquals(true, job.getUseStrictTestcaseImport());
-        assertEquals(false, job.getUseCoveragePlugin());
         assertEquals(false, job.getUseCILicenses());
         assertEquals(true, job.getUseCBT());
         assertEquals(false, job.getSingleCheckout());
@@ -141,17 +154,13 @@ public class NewPipelineTest {
 
         JSONObject jsonForm = new JSONObject();
 
-        JSONObject jsonCovDisplay  = new JSONObject();
-        jsonCovDisplay.put("value", USE_COVERAGE_PLUGIN);
-
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
-        jsonForm.put("coverageDisplayOption", jsonCovDisplay);  // VectorCAST Coverage Plugin
         jsonForm.put("useCoverageHistory", true);
         jsonForm.put("pclpCommand","call lint_my_code.bat");
         jsonForm.put("pclpResultsPattern","lint_results.xml");
         jsonForm.put("squoreCommand","hello squore test world");
-        
+
         NewPipelineJob job = setupTestBasic(jsonForm, rule);
         checkAdditionalTools(job,
                 "hello squore test world",
@@ -160,38 +169,18 @@ public class NewPipelineTest {
     }
 
     @Test
-    public void testCoveragePlugin(JenkinsRule rule) throws Exception {
-
-        JSONObject jsonForm = new JSONObject();
-
-        JSONObject jsonCovDisplay  = new JSONObject();
-        jsonCovDisplay.put("value", USE_COVERAGE_PLUGIN);
-
-        jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
-        jsonForm.put("coverageDisplayOption", jsonCovDisplay);  // Jenkins Coverage Plugin
-
-        NewPipelineJob job = setupTestBasic(jsonForm, rule);
-
-        assertEquals(true, job.getUseCoveragePlugin());
-    }
-
-    @Test
     public void testOptions(JenkinsRule rule) throws Exception {
         JSONObject jsonForm = new JSONObject();
 
-        JSONObject jsonCovDisplay  = new JSONObject();
-        jsonCovDisplay.put("value", USE_VCC_PLUGIN);
-
         jsonForm.put("manageProjectName", "project.vcm");
         jsonForm.put("optionClean", true);
-        jsonForm.put("nodeLabel","Test_Node");
+        jsonForm.put("nodeLabel","  Test_Node   ");
         jsonForm.put("sharedArtifactDir","/home/jenkins/sharedArtifactDir");
         jsonForm.put("scmSnippet","git 'http://git.com'");
         jsonForm.put("environmentSetup","call setup.bat");
         jsonForm.put("executePreamble","wr_env.bat");
         jsonForm.put("environmentTeardown","close ports");
         jsonForm.put("postSCMCheckoutCommands","chmod a+wr -R *");
-        jsonForm.put("coverageDisplayOption",jsonCovDisplay);
         jsonForm.put("maxParallel",10);
 
         NewPipelineJob job = setupTestBasic(jsonForm, rule);
@@ -202,8 +191,8 @@ public class NewPipelineTest {
         assertEquals(false, job.getSingleCheckout());
         assertEquals(false, job.getUseParameters());
         assertEquals(false, job.getUseRGW3());
-        assertEquals(false, job.getUseCoveragePlugin());
         assertEquals(false, job.getUseCoverageHistory());
+        assertEquals("Test_Node", job.getNodeLabel());
         assertNotEquals(-1, job.getSharedArtifactDir().indexOf("/home/jenkins/sharedArtifactDir"));
         assertEquals("call setup.bat", job.getEnvironmentSetup());
         assertEquals("wr_env.bat", job.getExecutePreamble());
@@ -211,8 +200,6 @@ public class NewPipelineTest {
         assertEquals("chmod a+wr -R *", job.getPostSCMCheckoutCommands());
         assertEquals("git 'http://git.com'", job.getPipelineSCM());
         assertEquals(10, job.getMaxParallel().longValue());
-        assertEquals(false, job.getUseCoveragePlugin());
-
     }
 
     @Test
@@ -248,18 +235,137 @@ public class NewPipelineTest {
         checkImportedResults(job, USE_EXTERNAL_IMPORTED_RESULTS, true, EXTERNAL_RESULT_FILENAME);
     }
 
-    
-    /* TODO: Use Parameters */
-    /* TODO: Specify Job name */
-    /* TODO: Multiple jobs with same name */
-    /* TODO: MPname without .vcm */
-    /* TODO: MPname on network driver abs path \\ */
-    /* TODO: MPname on windows abs path */
-    /* TODO: MPname on abs path and some SCM */
-    /* TODO: use CBT */
-    /* TODO: use CI license */
-    /* TODO: env sections and post checkout set to "" */
-    
-    
-}
+    @Test
+    public void parameterizedPipelineUsesNamedJobAndOptionalFlags(
+            JenkinsRule rule) throws Exception {
+        JSONObject form = new JSONObject();
+        form.put("manageProjectName", "  project  ");
+        form.put("jobName", "  nightly_pipeline  ");
+        form.put("nodeLabel", "  linux-agent  ");
+        form.put("sharedArtifactDir", "  C:\\shared\\artifacts  ");
+        form.put("scmSnippet", "  git 'https://example.invalid/project.git'  ");
+        form.put("useParameters", true);
+        form.put("useCBT", false);
+        form.put("useCiLicense", true);
+        form.put("environmentSetup", "");
+        form.put("executePreamble", "");
+        form.put("environmentTeardown", "");
+        form.put("postSCMCheckoutCommands", "");
 
+        NewPipelineJob job = setupTestBasic(form, rule,
+            "parameterized-pipeline", "nightly_pipeline");
+
+        assertEquals("project.vcm", job.getManageProjectName());
+        assertEquals("nightly_pipeline", job.getProjectName());
+        assertEquals("linux-agent", job.getNodeLabel());
+        assertEquals("--workspace=C:/shared/artifacts",
+            job.getSharedArtifactDir());
+        assertEquals("git 'https://example.invalid/project.git'",
+            job.getPipelineSCM());
+        assertTrue(job.getUseParameters());
+        assertFalse(job.getUseCBT());
+        assertTrue(job.getUseCILicenses());
+        assertEquals("", job.getEnvironmentSetup());
+        assertEquals("", job.getExecutePreamble());
+        assertEquals("", job.getEnvironmentTeardown());
+        assertEquals("", job.getPostSCMCheckoutCommands());
+
+        hudson.model.AbstractItem created = assertInstanceOf(
+            hudson.model.AbstractItem.class,
+            job.getFolder().getItem(job.getProjectName()));
+        assertTrue(created.getConfigFile().asString()
+            .contains("hudson.model.StringParameterDefinition"));
+    }
+
+    @Test
+    public void duplicatePipelineNameIsRejected(JenkinsRule rule)
+            throws Exception {
+        JSONObject form = new JSONObject();
+        form.put("manageProjectName", "project.vcm");
+        NewPipelineJob existing = setupTestBasic(form, rule,
+            "duplicate-pipeline");
+
+        StaplerRequest request = Mockito.mock(StaplerRequest.class);
+        StaplerResponse response = Mockito.mock(StaplerResponse.class);
+        when(request.getSubmittedForm()).thenReturn(form);
+        NewPipelineJob duplicate = new NewPipelineJob(request, response,
+            existing.getFolder());
+
+        assertThrows(JobAlreadyExistsException.class, duplicate::createProject);
+    }
+
+    @Test
+    public void normalizesAbsolutePathsWithoutScmAndRejectsThemWithScm(
+            JenkinsRule rule) throws Exception {
+        StaplerResponse response = Mockito.mock(StaplerResponse.class);
+
+        JSONObject windows = new JSONObject();
+        windows.put("manageProjectName", "  C:\\work\\project  ");
+        StaplerRequest windowsRequest = Mockito.mock(StaplerRequest.class);
+        when(windowsRequest.getSubmittedForm()).thenReturn(windows);
+        NewPipelineJob windowsJob = new NewPipelineJob(windowsRequest, response,
+            rule.jenkins.createProject(Folder.class, "windows-pipeline"));
+        assertEquals("C:/work/project.vcm", windowsJob.getManageProjectName());
+
+        JSONObject unc = new JSONObject();
+        unc.put("manageProjectName", "\\\\server\\share\\project.vcm");
+        StaplerRequest uncRequest = Mockito.mock(StaplerRequest.class);
+        when(uncRequest.getSubmittedForm()).thenReturn(unc);
+        NewPipelineJob uncJob = new NewPipelineJob(uncRequest, response,
+            rule.jenkins.createProject(Folder.class, "unc-pipeline"));
+        assertEquals("//server/share/project.vcm", uncJob.getManageProjectName());
+
+        JSONObject conflicting = new JSONObject();
+        conflicting.put("manageProjectName", "C:\\work\\project.vcm");
+        conflicting.put("scmSnippet", "git 'https://example.invalid/project.git'");
+        StaplerRequest conflictRequest = Mockito.mock(StaplerRequest.class);
+        when(conflictRequest.getSubmittedForm()).thenReturn(conflicting);
+        assertThrows(ScmConflictException.class,
+            () -> new NewPipelineJob(conflictRequest, response,
+                rule.jenkins.createProject(Folder.class, "scm-conflict")));
+    }
+
+    @Test
+    public void externalImportWithoutFilenameIsRejected(JenkinsRule rule)
+            throws Exception {
+        JSONObject importedResults = new JSONObject();
+        importedResults.put("value", USE_EXTERNAL_IMPORTED_RESULTS);
+        importedResults.put("externalResultsFilename", "   ");
+        JSONObject form = new JSONObject();
+        form.put("manageProjectName", "project.vcm");
+        form.put("useImportedResults", true);
+        form.put("importedResults", importedResults);
+        StaplerRequest request = Mockito.mock(StaplerRequest.class);
+        StaplerResponse response = Mockito.mock(StaplerResponse.class);
+        when(request.getSubmittedForm()).thenReturn(form);
+
+        assertThrows(ExternalResultsFileException.class,
+            () -> new NewPipelineJob(request, response,
+                rule.jenkins.createProject(Folder.class, "blank-external")));
+    }
+
+    @Test
+    public void preservesWhitespaceInPipelineScriptBodies(JenkinsRule rule)
+            throws Exception {
+        JSONObject form = new JSONObject();
+        form.put("manageProjectName", "project.vcm");
+        form.put("environmentSetup", "  source setup.sh  ");
+        form.put("executePreamble", "  ./preamble.sh  ");
+        form.put("environmentTeardown", "  ./teardown.sh  ");
+        form.put("postSCMCheckoutCommands", "  git submodule update  ");
+        StaplerRequest request = Mockito.mock(StaplerRequest.class);
+        StaplerResponse response = Mockito.mock(StaplerResponse.class);
+        when(request.getSubmittedForm()).thenReturn(form);
+
+        NewPipelineJob job = new NewPipelineJob(request, response,
+            rule.jenkins.createProject(Folder.class, "script-whitespace"));
+
+        assertEquals("  source setup.sh  ", job.getEnvironmentSetup());
+        assertEquals("  ./preamble.sh  ", job.getExecutePreamble());
+        assertEquals("  ./teardown.sh  ", job.getEnvironmentTeardown());
+        assertEquals("  git submodule update  ",
+            job.getPostSCMCheckoutCommands());
+    }
+
+
+}

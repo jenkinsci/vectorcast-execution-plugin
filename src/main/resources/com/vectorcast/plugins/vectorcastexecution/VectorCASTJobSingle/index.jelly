@@ -37,29 +37,8 @@
         <h1>${%VCJob.Control.Title}</h1>
         <p>${%VCJob.Control.Description}</p>
         <f:section title="${%VCJob.Control.Project}">
-          <f:entry title="${%VCJob.Control.Project.path.title}" description="${%VCJob.Control.Project.path.description}"
-                   help="/plugin/vectorcast-execution/help-projectPath.html">
-            <f:textbox name="manageProjectName" size="50" required="true" />
-          </f:entry>
-
-                    <f:form descriptor="${descriptor}">
-                        <f:entry title="${%VCJob.JobOptions.nodeLabel.title}"
-                                 description="${%VCJob.JobOptions.nodeLabel.description}"
-                                 help="/plugin/vectorcast-execution/help-jobOptNodeLabel.html">
-
-                            <input name="nodeLabel"
-                                   type="text"
-                                   class="jenkins-input auto-complete"
-                                   autocomplete="off"
-                                   autocompletedelimchar=" "
-                                   placeholder=""
-                                   value="${instance.nodeLabel}"
-                                   autocompleteurl="${rootURL}/descriptorByName/com.vectorcast.plugins.vectorcastexecution.VectorCASTJobSingle/autoCompleteNodeLabel" />
-                        </f:entry>
-                    </f:form>
-          
+          <vc:projectAndNode autocompleteUrl="${rootURL}/descriptorByName/com.vectorcast.plugins.vectorcastexecution.VectorCASTJobSingle/autoCompleteNodeLabel"/>
         </f:section>
-        <vc:coverageDisplay/>
         <vc:retry></vc:retry>
         <vc:jobOptionsNoDefault></vc:jobOptionsNoDefault>
         <vc:scripts></vc:scripts>
