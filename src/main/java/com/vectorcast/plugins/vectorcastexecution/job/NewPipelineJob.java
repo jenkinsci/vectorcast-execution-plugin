@@ -117,36 +117,29 @@ public class NewPipelineJob extends BaseJob {
             ScmConflictException, ExternalResultsFileException,
             BadOptionComboException {
         this(request, response, inputFolder,
-            JobFormData.from(request.getSubmittedForm()));
+            JobCreationRequest.parse(request.getSubmittedForm()));
     }
 
-    /** Creates a Pipeline job from form data already parsed by the action. */
+    /** Creates a Pipeline job from values already parsed by the action. */
     public NewPipelineJob(
             final StaplerRequest request,
             final StaplerResponse response,
             final Folder inputFolder,
-            final JobFormData form)
+            final JobCreationRequest options)
             throws ServletException, IOException,
             ScmConflictException, ExternalResultsFileException,
             BadOptionComboException {
-        super(request, response, inputFolder, form);
+        super(request, response, inputFolder, options);
 
-        sharedArtifactDirectory = form.text("sharedArtifactDir", "").trim();
-        pipelineSCM = form.text("scmSnippet", "").trim();
-
-        singleCheckout = form.flag("singleCheckout", false);
-
-        // remove the win/linux options since there's no platform any more
-        environmentSetup = form.text("environmentSetup", null);
-        executePreamble = form.text("executePreamble", null);
-        environmentTeardown = form.text("environmentTeardown", null);
-        postSCMCheckoutCommands = form.text("postSCMCheckoutCommands", null);
-        useCBT  = form.flag("useCBT", true);
-        useParameters  = form.flag("useParameters", false);
-        if (!sharedArtifactDirectory.isEmpty()) {
-            sharedArtifactDirectory = "--workspace="
-                + sharedArtifactDirectory.replace("\\", "/");
-        }
+        sharedArtifactDirectory = options.sharedArtifactDirectory();
+        pipelineSCM = options.pipelineSCM();
+        singleCheckout = options.singleCheckout();
+        environmentSetup = options.environmentSetup();
+        executePreamble = options.executePreamble();
+        environmentTeardown = options.environmentTeardown();
+        postSCMCheckoutCommands = options.postSCMCheckoutCommands();
+        useCBT = options.useCBT();
+        useParameters = options.useParameters();
 
         /* Absolute path and SCM checkout of manage project conflicts with
            the copy_build_dir.py ability to make LIS files relative path
@@ -380,23 +373,6 @@ public class NewPipelineJob extends BaseJob {
     }
 
     /**
-     * Format the multiline to either be the multiline or empty "".
-     *
-     * @param sInVar input string
-     * @return String correct path.
-     */
-    private String getMultiLineString(final String sInVar) {
-        String retStr = "";
-
-        if (sInVar == null || sInVar.trim().isEmpty()) {
-            retStr = "\"\"";
-        } else {
-            retStr = "'''" + sInVar + "'''";
-        }
-
-        return retStr;
-    }
-    /**
      * Generates the <script> portion of the config.xml
      * which defines the pipeline for this pipeline job.
      *
@@ -427,88 +403,17 @@ public class NewPipelineJob extends BaseJob {
                 && (!postSCMCheckoutCommands.isEmpty())) {
             postCheckoutCmds = correctPath(postSCMCheckoutCommands);
         }
-        String incremental = "\"\"";
-        if (useCBT) {
-            incremental = "\"--incremental\"";
-        }
-
-        String vcUseCi = "\"\"";
-
-        if (getUseCILicenses()) {
-            vcUseCi = "\"--ci\"";
-        }
-
-        String topOfJenkinsfile =
-            "// ===========================================================%n" +
-            "//%n" +
-            "// Auto-generated script by VectorCAST Execution Plug-in%n" +
-            "// based on the information provided when creating the%n" +
-            "//%n" +
-            "//     VectorCAST > Pipeline job%n" +
-            "//%n" +
-            "// ===========================================================%n" +
-            "%n" +
-            "def VC_Manage_Project = '%s'%n" +
-            "def VC_EnvSetup = %s%n" +
-            "def VC_Build_Preamble = \"%s\"%n" +
-            "def VC_EnvTeardown = %s%n" +
-            "def scmStep () { %s }%n" +
-            "def VC_usingSCM = %s%n" +
-            "def VC_postScmStepsCmds = %s%n" +
-            "def VC_sharedArtifactDirectory = \"%s\"%n" +
-            "def VC_Agent_Label = '%s'%n" +
-            "def VC_waitTime = '%s'%n" +
-            "def VC_waitLoops = '%s'%n" +
-            "def VC_maxParallel = %d%n" +
-            "def VC_useOneCheckoutDir = %s%n" +
-            "def VC_useCILicense = %s%n" +
-            "def VC_useCBT = %s%n" +
-            "def VC_useCoveragePlugin = %s%n" +
-            "def VC_createdWithVersion = '%s'%n" +
-            "def VC_usePCLintPlus = %s%n" +
-            "def VC_pclpCommand = '%s'%n" +
-            "def VC_pclpResultsPattern = '%s'%n" +
-            "def VC_useSquore = %s%n" +
-            "def VC_squoreCommand = %s%n" +
-            "def VC_useCoverageHistory = %s%n" +
-            "def VC_useStrictImport = %s%n" +
-            "def VC_useRGW3 = %s%n" +
-            "def VC_useImportedResults = %s%n" +
-            "def VC_useLocalImportedResults = %s%n" +
-            "def VC_useExternalImportedResults = %s%n" +
-            "def VC_externalResultsFilename = \"%s\"%n";
-
-            topOfJenkinsfile = topOfJenkinsfile.formatted(
-                getManageProjectName(),
-                getMultiLineString(setup),
-                preamble,
-                getMultiLineString(teardown),
-                pipelineSCM,
-                pipelineSCM.length() != 0,
-                getMultiLineString(postCheckoutCmds),
-                sharedArtifactDirectory,
-                getNodeLabel(),
-                getWaitTime(),
-                getWaitLoops(),
-                getMaxParallel(),
-                singleCheckout,
-                vcUseCi,
-                incremental,
-                true,
-                VcastUtils.getVersion().orElse("Unknown"),
-                getPclpCommand().length() != 0,
-                getPclpCommand(),
-                getPclpResultsPattern(),
-                getSquoreCommand().length() != 0,
-                getMultiLineString(getSquoreCommand()),
-                getUseCoverageHistory(),
-                getUseStrictTestcaseImport(),
-                getUseRGW3(),
-                getUseImportedResults(),
-                getUseLocalImportedResults(),
-                getUseExternalImportedResults(),
-                getExternalResultsFilename()
-            );
+        PipelineJobConfiguration configuration = new PipelineJobConfiguration(
+            getManageProjectName(), setup, preamble, teardown, pipelineSCM,
+            postCheckoutCmds, sharedArtifactDirectory, getNodeLabel(),
+            getWaitTime(), getWaitLoops(), getMaxParallel(), singleCheckout,
+            getUseCILicenses(), useCBT,
+            VcastUtils.getVersion().orElse("Unknown"), getPclpCommand(),
+            getPclpResultsPattern(), getSquoreCommand(),
+            getUseCoverageHistory(), getUseStrictTestcaseImport(), getUseRGW3(),
+            getUseImportedResults(), getUseLocalImportedResults(),
+            getUseExternalImportedResults(), getExternalResultsFilename());
+        String topOfJenkinsfile = PipelineScriptRenderer.render(configuration);
 
         String baseJenkinsfile = "";
 
@@ -518,8 +423,8 @@ public class NewPipelineJob extends BaseJob {
             in = getBaselinePipelineGroovy().openStream();
             baseJenkinsfile = IOUtils.toString(in, "UTF-8");
         } catch (IOException ex) {
-            Logger.getLogger(NewSingleJob.class.getName())
-                .log(Level.INFO, null, ex);
+            LOGGER.log(Level.WARNING,
+                "Unable to load the Pipeline script body", ex);
         } finally {
             if (in != null) {
                 in.close();
@@ -531,7 +436,7 @@ public class NewPipelineJob extends BaseJob {
                 + " check the Jenkins System Logs***\n\n";
         }
 
-        return  topOfJenkinsfile + baseJenkinsfile;
+        return topOfJenkinsfile + baseJenkinsfile;
     }
 
 

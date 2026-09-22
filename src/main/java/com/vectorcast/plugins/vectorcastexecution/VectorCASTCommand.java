@@ -47,6 +47,9 @@ import java.util.logging.Logger;
  * and the build step will test and run the correct command.
  */
 public class VectorCASTCommand extends Builder implements SimpleBuildStep {
+    /** Logger for VectorCAST command execution. */
+    private static final Logger LOGGER = Logger.getLogger(
+        VectorCASTCommand.class.getName());
 
     /** windows environment setup command. */
     private final String winCommand;
@@ -106,8 +109,9 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
                     build.setResult(Result.FAILURE);
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(VectorCASTCommand.class.getName())
-                    .log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE,
+                    "Interrupted while executing the Windows VectorCAST command",
+                    ex);
                 build.setResult(Result.FAILURE);
             }
         }
@@ -126,8 +130,9 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
                     build.setResult(Result.FAILURE);
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(VectorCASTCommand.class.getName()).
-                    log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE,
+                    "Interrupted while executing the Unix VectorCAST command",
+                    ex);
                 build.setResult(Result.FAILURE);
             }
         }

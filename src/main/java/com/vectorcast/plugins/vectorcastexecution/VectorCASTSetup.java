@@ -52,6 +52,9 @@ import hudson.EnvVars;
  * VectorCAST setup build action.
  */
 public class VectorCASTSetup extends Builder implements SimpleBuildStep {
+    /** Logger for setup diagnostics. */
+    private static final Logger LOGGER = Logger.getLogger(
+        VectorCASTSetup.class.getName());
     /** script directory. */
     private static final String SCRIPT_DIR = "/scripts/";
 
@@ -170,9 +173,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 String msg = " "
                     + "VectorCAST - overriding vc_scripts. Copying from '"
                     + path + "'";
-                Logger.
-                    getLogger(
-                        VectorCASTSetup.class.getName()).log(Level.ALL, msg);
+                LOGGER.log(Level.INFO, msg);
             } else {
                 path = VectorCASTSetup.class.getProtectionDomain().
                     getCodeSource().getLocation().getPath();
@@ -228,9 +229,9 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                                     getResourceAsStream("/" + entryName)) {
                                     dest.copyFrom(is);
                                 } catch (IOException ex) {
-                                    Logger.getLogger(VectorCASTSetup.class
-                                        .getName())
-                                        .log(Level.INFO, null, ex);
+                                    LOGGER.log(Level.WARNING,
+                                        "Unable to copy packaged script: "
+                                        + entryName, ex);
                                 }
                             }
                         }
@@ -242,11 +243,12 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 processDir(scriptDir, "./", destScriptDir, directDir);
             }
         } catch (IOException ex) {
-            Logger.getLogger(VectorCASTSetup.class.getName()).
-                log(Level.INFO, null, ex);
+            LOGGER.log(Level.SEVERE,
+                "Unable to prepare VectorCAST workspace scripts", ex);
         } catch (InterruptedException ex) {
-            Logger.getLogger(VectorCASTSetup.class.getName()).
-                log(Level.INFO, null, ex);
+            Thread.currentThread().interrupt();
+            LOGGER.log(Level.WARNING,
+                "Interrupted while preparing VectorCAST workspace scripts", ex);
         } finally {
             if (jFile != null) {
                 try {

@@ -29,7 +29,7 @@ import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.BadOptionComboException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
-import com.vectorcast.plugins.vectorcastexecution.job.JobFormData;
+import com.vectorcast.plugins.vectorcastexecution.job.JobCreationRequest;
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -54,6 +54,9 @@ import jenkins.model.Jenkins;
  */
 @Extension
 public class VectorCASTJobSingle extends JobBase {
+    /** Logger for Single-job form actions. */
+    private static final Logger LOGGER = Logger.getLogger(
+        VectorCASTJobSingle.class.getName());
     /** Job already exists exception. */
     private JobAlreadyExistsException exception;
     /** Project name. */
@@ -134,7 +137,7 @@ public class VectorCASTJobSingle extends JobBase {
 
             // Create single-job
             NewSingleJob job = new NewSingleJob(request, response, currFolder,
-                JobFormData.from(request.getSubmittedForm()));
+                JobCreationRequest.parse(request.getSubmittedForm()));
 
 
             job.create();
@@ -157,8 +160,9 @@ public class VectorCASTJobSingle extends JobBase {
             return new HttpRedirect("exists");
         } catch (InvalidProjectFileException ex) {
             // Can't happen for the single job
-            Logger.getLogger(VectorCASTJobSingle.class.getName())
-                .log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE,
+                "Unexpected invalid project file while creating a Single job",
+                ex);
             return new HttpRedirect("exists");
         } catch (ExternalResultsFileException ex) {
             return new HttpRedirect("extresblank");

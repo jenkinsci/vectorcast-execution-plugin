@@ -27,9 +27,7 @@ import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.plugins.ws_cleanup.PreBuildCleanup;
-import hudson.scm.NullSCM;
 import hudson.scm.SCM;
-import hudson.scm.SCMS;
 import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.plugins.copyartifact.StatusBuildSelector;
 import hudson.tasks.ArtifactArchiver;
@@ -73,13 +71,6 @@ public abstract class BaseJob {
         .getName());
     /** Coverage Delta threshold. */
     private static final float COVERAGE_THRESHOLD = -0.001f;
-
-    /** Maximum string length. */
-    private static  final int MAX_STRING_LEN = 1000;
-    /** Default wait time. */
-    private static  final int DEFAULT_WAIT_TIME = 30;
-    /** Default number of wait loops. */
-    private static  final int DEFAULT_WAIT_LOOP = 1;
 
     /** Project name. */
     private String projectName;
@@ -176,7 +167,7 @@ public abstract class BaseJob {
      */
     protected BaseJob(final StaplerRequest req,
             final StaplerResponse resp, final Folder inputFolder,
-            final JobFormData form)
+            final JobCreationRequest options)
             throws ServletException, IOException,
             ExternalResultsFileException, IllegalArgumentException,
             BadOptionComboException {
@@ -186,99 +177,51 @@ public abstract class BaseJob {
         response = resp;
         folder = inputFolder;
 
-        manageProjectName = form.text("manageProjectName", "");
-        if (manageProjectName.length() > MAX_STRING_LEN) {
-            throw new IllegalArgumentException(
-                "manageProjectName too long > 1000"
-            );
-        }
-
-        manageProjectName = normalizeManageProjectName(manageProjectName);
+        manageProjectName = options.manageProjectName();
         baseName = FilenameUtils.getBaseName(manageProjectName);
 
-        environmentSetupWin = form.text("environmentSetupWin", "");
-        executePreambleWin = form.text("executePreambleWin", "");
-        environmentTeardownWin = form.text("environmentTeardownWin", "");
-
-        environmentSetupUnix = form.text("environmentSetupUnix", "");
-        executePreambleUnix = form.text("executePreambleUnix", "");
-        environmentTeardownUnix = form.text("environmentTeardownUnix", "");
-
-        optionUseReporting = form.flag("optionUseReporting", true);
-        String errLevel = form.text("optionErrorLevel", "unstable").trim();
-        if (errLevel.equals("nothing")) {
-            optionErrorLevel = 0;
-        } else if (errLevel.equals("unstable")) {
-            optionErrorLevel = 1;
-        } else if (errLevel.equals("failure")) {
-            optionErrorLevel = 2;
-        }
-
-        optionHtmlBuildDesc = form.text("optionHtmlBuildDesc", "HTML")
-            .trim();
-        optionExecutionReport = form.flag("optionExecutionReport", true);
-        optionClean = form.flag("optionClean", false);
-
-        waitTime = form.number("waitTime", DEFAULT_WAIT_TIME);
-        waitLoops = form.number("waitLoops", DEFAULT_WAIT_LOOP);
-
-        jobName = form.text("jobName", null);
-
-        if (jobName != null) {
-            jobName = normalizeJobName(jobName);
-        }
-
-        nodeLabel = form.text("nodeLabel", "").trim();
-
-        useCILicenses  = form.flag("useCiLicense", false);
-        useStrictTestcaseImport  = form.flag("useStrictTestcaseImport", true);
-        useRGW3  = form.flag("useRGW3", false);
-        useImportedResults  = form.flag("useImportedResults", false);
-
-
-        externalResultsFilename = "";
-
-        if (useImportedResults) {
-            JobFormData importedResults = form.section("importedResults");
-            final long intExt = importedResults.number("value", 0);
-
-            if (intExt == 1) {
-                useLocalImportedResults = true;
-                useExternalImportedResults = false;
-                externalResultsFilename = "";
-            } else if (intExt == 2) {
-                useLocalImportedResults = false;
-                useExternalImportedResults = true;
-                externalResultsFilename = importedResults
-                    .text("externalResultsFilename", "").trim();
-                externalResultsFilename =
-                    externalResultsFilename.replace('\\', '/');
-                if (externalResultsFilename.length() == 0) {
-                    throw new ExternalResultsFileException();
-                }
-            }
-        }
-        useCoverageHistory = form.flag("useCoverageHistory", false);
-        maxParallel = form.number("maxParallel", 0);
-
-        /* Additional Tools */
-        pclpCommand = form.text("pclpCommand", "").replace('\\', '/');
-        pclpResultsPattern = form.text("pclpResultsPattern", "").trim();
-        squoreCommand = form.text("squoreCommand", "").replace('\\', '/');
+        environmentSetupWin = options.environmentSetupWin();
+        executePreambleWin = options.executePreambleWin();
+        environmentTeardownWin = options.environmentTeardownWin();
+        environmentSetupUnix = options.environmentSetupUnix();
+        executePreambleUnix = options.executePreambleUnix();
+        environmentTeardownUnix = options.environmentTeardownUnix();
+        optionUseReporting = options.optionUseReporting();
+        optionErrorLevel = options.optionErrorLevel();
+        optionHtmlBuildDesc = options.optionHtmlBuildDesc();
+        optionExecutionReport = options.optionExecutionReport();
+        optionClean = options.optionClean();
+        waitTime = options.waitTime();
+        waitLoops = options.waitLoops();
+        jobName = options.jobName();
+        nodeLabel = options.nodeLabel();
+        useCILicenses = options.useCiLicenses();
+        useStrictTestcaseImport = options.useStrictTestcaseImport();
+        useRGW3 = options.useRGW3();
+        useImportedResults = options.useImportedResults();
+        useLocalImportedResults = options.useLocalImportedResults();
+        useExternalImportedResults = options.useExternalImportedResults();
+        externalResultsFilename = options.externalResultsFilename();
+        useCoverageHistory = options.useCoverageHistory();
+        maxParallel = options.maxParallel();
+        pclpCommand = options.pclpCommand();
+        pclpResultsPattern = options.pclpResultsPattern();
+        squoreCommand = options.squoreCommand();
 
     }
 
     /**
      * Compatibility constructor for existing subclasses and tests.
      * New action code should parse the request once and use the overload that
-     * accepts {@link JobFormData}.
+     * accepts {@link JobCreationRequest}.
      */
     protected BaseJob(final StaplerRequest req,
             final StaplerResponse resp, final Folder inputFolder)
             throws ServletException, IOException,
             ExternalResultsFileException, IllegalArgumentException,
             BadOptionComboException {
-        this(req, resp, inputFolder, JobFormData.from(req.getSubmittedForm()));
+        this(req, resp, inputFolder,
+            JobCreationRequest.parse(req.getSubmittedForm()));
     }
 
     /**
@@ -622,16 +565,8 @@ public abstract class BaseJob {
         }
 
         // Read the SCM setup
-        scm = SCMS.parseSCM(request, topProject);
-        if (scm == null) {
-            scm = new NullSCM();
-        }
-        if (scm instanceof NullSCM) {
-            usingScm = false;
-        } else {
-            usingScm = true;
-        }
-        topProject.setScm(scm);
+        scm = JenkinsScmConfigurer.configure(request, topProject);
+        usingScm = !(scm instanceof hudson.scm.NullSCM);
 
         addDelWSBeforeBuild(topProject);
 
@@ -842,7 +777,7 @@ public abstract class BaseJob {
      * @return trimmed name using only letters, digits, and underscores
      */
     protected static String normalizeJobName(final String input) {
-        return input.trim().replaceAll("[^a-zA-Z0-9_]", "_");
+        return JobCreationRequest.normalizeJobName(input);
     }
 
     /**
@@ -852,12 +787,7 @@ public abstract class BaseJob {
      * @return normalized path with a .vcm suffix when present
      */
     protected static String normalizeManageProjectName(final String input) {
-        if (input.isEmpty()) {
-            return input;
-        }
-        String normalized = input.replace('\\', '/').trim();
-        return normalized.toLowerCase().endsWith(".vcm")
-            ? normalized : normalized + ".vcm";
+        return JobCreationRequest.normalizeManageProjectName(input);
     }
 
     /**

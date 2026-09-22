@@ -147,6 +147,13 @@ public class NewPipelineTest {
         assertNull(job.getPostSCMCheckoutCommands());
         assertEquals("", job.getPipelineSCM());
         assertEquals(0, job.getMaxParallel().longValue());
+        String generatedConfig = ((hudson.model.AbstractItem) job.getFolder()
+            .getItem(job.getProjectName())).getConfigFile().asString();
+        assertTrue(generatedConfig.contains(
+            "def VC_Manage_Project = '/home/jenkins/vcast/project.vcm'"));
+        assertTrue(generatedConfig.contains("def VC_usingSCM = false"));
+        assertTrue(generatedConfig.contains("def VC_useCBT = \"--incremental\""));
+        assertTrue(generatedConfig.contains("def VC_useStrictImport = true"));
     }
 
     @Test
@@ -200,6 +207,13 @@ public class NewPipelineTest {
         assertEquals("chmod a+wr -R *", job.getPostSCMCheckoutCommands());
         assertEquals("git 'http://git.com'", job.getPipelineSCM());
         assertEquals(10, job.getMaxParallel().longValue());
+        String generatedConfig = ((hudson.model.AbstractItem) job.getFolder()
+            .getItem(job.getProjectName())).getConfigFile().asString();
+        assertTrue(generatedConfig.contains(
+            "def scmStep () { git 'http://git.com' }"));
+        assertTrue(generatedConfig.contains("def VC_usingSCM = true"));
+        assertTrue(generatedConfig.contains(
+            "def VC_sharedArtifactDirectory = \"--workspace=/home/jenkins/sharedArtifactDir\""));
     }
 
     @Test
@@ -216,6 +230,11 @@ public class NewPipelineTest {
         NewPipelineJob job = setupTestBasic(jsonForm, rule);
 
         checkImportedResults(job, USE_LOCAL_IMPORTED_RESULTS, false, "");
+        String generatedConfig = ((hudson.model.AbstractItem) job.getFolder()
+            .getItem(job.getProjectName())).getConfigFile().asString();
+        assertTrue(generatedConfig.contains("def VC_useImportedResults = true"));
+        assertTrue(generatedConfig.contains("def VC_useLocalImportedResults = true"));
+        assertTrue(generatedConfig.contains("def VC_useExternalImportedResults = false"));
     }
 
     @Test
@@ -233,6 +252,13 @@ public class NewPipelineTest {
         NewPipelineJob job = setupTestBasic(jsonForm, rule);
 
         checkImportedResults(job, USE_EXTERNAL_IMPORTED_RESULTS, true, EXTERNAL_RESULT_FILENAME);
+        String generatedConfig = ((hudson.model.AbstractItem) job.getFolder()
+            .getItem(job.getProjectName())).getConfigFile().asString();
+        assertTrue(generatedConfig.contains("def VC_useImportedResults = true"));
+        assertTrue(generatedConfig.contains("def VC_useLocalImportedResults = false"));
+        assertTrue(generatedConfig.contains("def VC_useExternalImportedResults = true"));
+        assertTrue(generatedConfig.contains(
+            "def VC_externalResultsFilename = \"archivedResults/project.vcr\""));
     }
 
     @Test
@@ -273,8 +299,16 @@ public class NewPipelineTest {
         hudson.model.AbstractItem created = assertInstanceOf(
             hudson.model.AbstractItem.class,
             job.getFolder().getItem(job.getProjectName()));
-        assertTrue(created.getConfigFile().asString()
+        String generatedConfig = created.getConfigFile().asString();
+        assertTrue(generatedConfig
             .contains("hudson.model.StringParameterDefinition"));
+        assertTrue(generatedConfig
+            .contains("def VC_Manage_Project = 'project.vcm'"));
+        assertTrue(generatedConfig.contains("def VC_useCBT = \"\""));
+        assertTrue(generatedConfig
+            .contains("def VC_useCILicense = \"--ci\""));
+        assertTrue(generatedConfig.contains(
+            "def scmStep () { git 'https://example.invalid/project.git' }"));
     }
 
     @Test

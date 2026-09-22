@@ -8,11 +8,11 @@ package com.vectorcast.plugins.vectorcastexecution.job;
 import net.sf.json.JSONObject;
 
 /**
- * Immutable boundary around data submitted by a job-creation form.
+ * Transient accessor for data submitted by a job-creation form.
  *
  * <p>This keeps Stapler and Jenkins request handling in the action layer.
- * Job construction receives this typed access point instead of reading a
- * {@code StaplerRequest} directly.</p>
+ * {@link JobCreationRequest} copies normalized values out of this object
+ * before job construction.</p>
  */
 public final class JobFormData {
     private final JSONObject values;

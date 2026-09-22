@@ -71,19 +71,19 @@ public class NewSingleJob extends BaseJob {
         throws ServletException, IOException, ExternalResultsFileException,
         BadOptionComboException {
     this(request, response, folder,
-        JobFormData.from(request.getSubmittedForm()));
+        JobCreationRequest.parse(request.getSubmittedForm()));
   }
 
   /**
-   * Creates a Freestyle job from form data already parsed by the action.
+   * Creates a Freestyle job from values already parsed by the action.
    */
   public NewSingleJob(final StaplerRequest request,
         final StaplerResponse response, final Folder folder,
-        final JobFormData form)
+        final JobCreationRequest options)
         throws ServletException, IOException, ExternalResultsFileException,
         BadOptionComboException {
-    super(request, response, folder, form);
-    useCBT = form.flag("useCBT", true);
+    super(request, response, folder, options);
+    useCBT = options.useCBT();
   }
   /**
    * Gets the configruation for Windows.

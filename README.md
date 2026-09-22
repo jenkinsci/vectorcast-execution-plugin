@@ -4,14 +4,13 @@
 
 # Summary
 
-This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Test results are display with the [Jenkins JUnit Plugin](https://plugins.jenkins.io/junit/) and code coverage is displayed using either
-- [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage)
-- [Legacy VectorCAST Coverage Plugin](https://wiki.jenkins.io/display/JENKINS/VectorCAST+Coverage+Plugin).
+This plugin allows the user to create Single and Pipeline Jobs to build and execute [VectorCAST](http://vector.com/vectorcast) Projects. Test results are displayed with the [Jenkins JUnit Plugin](https://plugins.jenkins.io/junit/) and code coverage is displayed using the [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage).
+
+For upgrading older Freestyle jobs that used Groovy Postbuild, see
+[Groovy Postbuild migration](docs/GROOVY_POSTBUILD_MIGRATION.md).
 
 ### Jenkins Version Information:
-- Development completed on Jenkins LTS 2.492.3 and Java 21
-- Validated against Jenkins LTS 2.504.2
-- Validated against Jenkins 2.513
+- Development baseline: Jenkins LTS 2.568.3 and Java 21
 
 # Table of Contents
 

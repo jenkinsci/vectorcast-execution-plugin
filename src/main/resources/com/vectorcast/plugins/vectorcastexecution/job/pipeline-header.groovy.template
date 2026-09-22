@@ -1,0 +1,38 @@
+// ===========================================================
+//
+// Auto-generated script by VectorCAST Execution Plug-in
+// based on the information provided when creating the
+//
+//     VectorCAST > Pipeline job
+//
+// ===========================================================
+
+def VC_Manage_Project = {{manageProject}}
+def VC_EnvSetup = {{environmentSetup}}
+def VC_Build_Preamble = {{buildPreamble}}
+def VC_EnvTeardown = {{environmentTeardown}}
+def scmStep () { {{scmStep}} }
+def VC_usingSCM = {{usingScm}}
+def VC_postScmStepsCmds = {{postScmCheckout}}
+def VC_sharedArtifactDirectory = {{sharedArtifactDirectory}}
+def VC_Agent_Label = {{agentLabel}}
+def VC_waitTime = {{waitTime}}
+def VC_waitLoops = {{waitLoops}}
+def VC_maxParallel = {{maxParallel}}
+def VC_useOneCheckoutDir = {{singleCheckout}}
+def VC_useCILicense = {{ciLicense}}
+def VC_useCBT = {{cbt}}
+def VC_useCoveragePlugin = true
+def VC_createdWithVersion = {{pluginVersion}}
+def VC_usePCLintPlus = {{pclpEnabled}}
+def VC_pclpCommand = {{pclpCommand}}
+def VC_pclpResultsPattern = {{pclpResultsPattern}}
+def VC_useSquore = {{squoreEnabled}}
+def VC_squoreCommand = {{squoreCommand}}
+def VC_useCoverageHistory = {{coverageHistory}}
+def VC_useStrictImport = {{strictImport}}
+def VC_useRGW3 = {{rgw3}}
+def VC_useImportedResults = {{importedResults}}
+def VC_useLocalImportedResults = {{localImportedResults}}
+def VC_useExternalImportedResults = {{externalImportedResults}}
+def VC_externalResultsFilename = {{externalResultsFilename}}

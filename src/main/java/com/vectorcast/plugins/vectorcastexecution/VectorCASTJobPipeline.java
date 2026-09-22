@@ -29,7 +29,7 @@ import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.ScmConflictException;
 import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewPipelineJob;
-import com.vectorcast.plugins.vectorcastexecution.job.JobFormData;
+import com.vectorcast.plugins.vectorcastexecution.job.JobCreationRequest;
 import com.vectorcast.plugins.vectorcastexecution.job.BadOptionComboException;
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
@@ -60,6 +60,9 @@ import hudson.model.TopLevelItem;
  */
 @Extension
 public class VectorCASTJobPipeline extends JobBase {
+    /** Logger for Pipeline-job form actions. */
+    private static final Logger LOGGER = Logger.getLogger(
+        VectorCASTJobPipeline.class.getName());
     /** Job exists exception. */
     private JobAlreadyExistsException exception;
 
@@ -182,20 +185,17 @@ public class VectorCASTJobPipeline extends JobBase {
 
             // Create Pipeline job
             job = new NewPipelineJob(request, response, currFolder,
-                JobFormData.from(request.getSubmittedForm()));
+                JobCreationRequest.parse(request.getSubmittedForm()));
 
-            Logger.getLogger("VCJobPipeline").info(
-                "doCreate: creating pipeline job in folder="
-                + (currFolder == null ? "ROOT" : currFolder.getFullName())
-            );
+            LOGGER.log(Level.INFO, "Creating Pipeline job in folder: {0}",
+                currFolder == null ? "ROOT" : currFolder.getFullName());
 
             job.create();
 
             String projectName = job.getProjectName();
 
-            Logger.getLogger(VectorCASTJobPipeline.class.getName())
-                    .log(Level.INFO, "Pipeline Project Name: " + projectName,
-                    "Pipeline Project Name: " + projectName);
+            LOGGER.log(Level.INFO, "Pipeline project created: {0}",
+                projectName);
 
             TopLevelItem createdItem =
                     (currFolder != null) ? currFolder.getItem(projectName)
