@@ -443,6 +443,7 @@ public class NewSingleJobTest {
         jsonForm.put("optionHtmlBuildDesc", "Text");
         jsonForm.put("optionExecutionReport", false);
         jsonForm.put("optionClean", false);
+        jsonForm.put("useCBT", false);
         jsonForm.put("waitTime", 30);
         jsonForm.put("waitLoops", 7);
         jsonForm.put("maxParallel", 8);
@@ -471,11 +472,13 @@ public class NewSingleJobTest {
         assertTrue(command.getWinCommand().contains("VCAST_WAIT_TIME=30"));
         assertTrue(command.getWinCommand().contains("VCAST_rptFmt=TEXT"));
         assertTrue(command.getWinCommand().contains("--dont-gen-exec-rpt"));
+        assertTrue(command.getWinCommand().contains("VCAST_USE_CBT=\n"));
         assertTrue(command.getUnixCommand().contains("source setup-unix.sh"));
         assertTrue(command.getUnixCommand().contains("VCAST_WAIT_LOOPS=7"));
         assertTrue(command.getUnixCommand().contains("VCAST_USE_CI_LICENSES=1"));
         assertTrue(command.getUnixCommand().contains("VCAST_USE_STRICT_IMPORT=0"));
         assertTrue(command.getUnixCommand().contains("VCAST_USE_RGW3=1"));
+        assertTrue(command.getUnixCommand().contains("VCAST_USE_CBT=\n"));
     }
 
     @Test

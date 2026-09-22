@@ -51,6 +51,11 @@ import java.util.logging.Level;
  * Create a new single job.
  */
 public class NewSingleJob extends BaseJob {
+  /** Logger for Freestyle job creation. */
+  private static final Logger LOGGER = Logger.getLogger(
+      NewSingleJob.class.getName());
+  /** Whether to run VectorCAST Change Based Testing. */
+  private final boolean useCBT;
   /**
    * Constructor.
    * @param request request object
@@ -65,7 +70,20 @@ public class NewSingleJob extends BaseJob {
         final StaplerResponse response, final Folder folder)
         throws ServletException, IOException, ExternalResultsFileException,
         BadOptionComboException {
-    super(request, response, folder);
+    this(request, response, folder,
+        JobFormData.from(request.getSubmittedForm()));
+  }
+
+  /**
+   * Creates a Freestyle job from form data already parsed by the action.
+   */
+  public NewSingleJob(final StaplerRequest request,
+        final StaplerResponse response, final Folder folder,
+        final JobFormData form)
+        throws ServletException, IOException, ExternalResultsFileException,
+        BadOptionComboException {
+    super(request, response, folder, form);
+    useCBT = form.flag("useCBT", true);
   }
   /**
    * Gets the configruation for Windows.
@@ -97,7 +115,7 @@ public class NewSingleJob extends BaseJob {
       + "set VCAST_rptFmt=" + rptFmt + "\n"
       + "set VCAST_HTML_OR_TEXT=" + htmlOrText + "\n"
       + "set VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
-      + "set VCAST_USE_CBT=--incremental"
+      + "set VCAST_USE_CBT=" + getUseCBTOption()
       + "\n\n";
 
     InputStream in = null;
@@ -106,8 +124,8 @@ public class NewSingleJob extends BaseJob {
         in = getBaselineWindowsSingleFile().openStream();
         win += IOUtils.toString(in, "UTF-8");
     } catch (IOException ex) {
-        Logger.getLogger(NewSingleJob.class.getName())
-            .log(Level.INFO, null, ex);
+        LOGGER.log(Level.WARNING,
+            "Unable to load the Windows command template", ex);
         win += "Missing baseline single job script for Windows";
     } finally {
         if (in != null) {
@@ -152,7 +170,7 @@ public class NewSingleJob extends BaseJob {
       + "VCAST_rptFmt=" + rptFmt + "\n"
       + "VCAST_HTML_OR_TEXT=" + htmlOrText + "\n"
       + "VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
-      + "VCAST_USE_CBT=--incremental"
+      + "VCAST_USE_CBT=" + getUseCBTOption()
       + "\n\n";
 
     InputStream in = null;
@@ -161,8 +179,8 @@ public class NewSingleJob extends BaseJob {
         in = getBaselineLinuxSingleFile().openStream();
         unix += IOUtils.toString(in, "UTF-8");
     } catch (IOException ex) {
-        Logger.getLogger(NewSingleJob.class.getName()).
-            log(Level.INFO, null, ex);
+        LOGGER.log(Level.WARNING,
+            "Unable to load the Unix command template", ex);
         unix += "Missing baseline single job script for Linux";
     } finally {
         if (in != null) {
@@ -308,6 +326,11 @@ public class NewSingleJob extends BaseJob {
     getTopProject().getPublishersList().add(
         new VectorCASTPostBuildPublisher(getBaseName()));
   }
+
+  /** Returns the command-line value consumed by the packaged scripts. */
+  protected String getUseCBTOption() {
+    return useCBT ? "--incremental" : "";
+  }
   /**
    * Create project.
    * @return project
@@ -345,17 +368,14 @@ public class NewSingleJob extends BaseJob {
     if (parent instanceof Folder) {
         Folder currFolder = (Folder) parent;
 
-        Logger.getLogger(NewSingleJob.class.getName()).log(Level.INFO,
-            "Parent is a folder: " + currFolder.getFullName() 
-        );
+        LOGGER.log(Level.INFO, "Creating job in folder: {0}",
+            currFolder.getFullName());
             
         project = currFolder.createProject(
             FreeStyleProject.class, projectName
         );
     } else if (parent instanceof Jenkins) {
-        Logger.getLogger(NewSingleJob.class.getName()).log(Level.INFO,
-            "Parent is a Jernkins root folder" 
-        );
+        LOGGER.info("Creating job in the Jenkins root");
         project = Jenkins.get().createProject(
             FreeStyleProject.class, projectName
         );

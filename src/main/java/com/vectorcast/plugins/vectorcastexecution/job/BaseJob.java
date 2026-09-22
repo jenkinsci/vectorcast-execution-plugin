@@ -36,7 +36,6 @@ import hudson.tasks.ArtifactArchiver;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
 import org.apache.commons.io.FilenameUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -69,6 +68,9 @@ import java.util.logging.Level;
  * Base job management - create/delete/update.
  */
 public abstract class BaseJob {
+    /** Logger for common job creation behavior. */
+    private static final Logger LOGGER = Logger.getLogger(BaseJob.class
+        .getName());
     /** Coverage Delta threshold. */
     private static final float COVERAGE_THRESHOLD = -0.001f;
 
@@ -173,7 +175,8 @@ public abstract class BaseJob {
      * @throws BadOptionComboException exception
      */
     protected BaseJob(final StaplerRequest req,
-            final StaplerResponse resp, final Folder inputFolder)
+            final StaplerResponse resp, final Folder inputFolder,
+            final JobFormData form)
             throws ServletException, IOException,
             ExternalResultsFileException, IllegalArgumentException,
             BadOptionComboException {
@@ -181,11 +184,9 @@ public abstract class BaseJob {
         instance = Jenkins.get();
         request = req;
         response = resp;
-        JSONObject json = request.getSubmittedForm();
-
         folder = inputFolder;
 
-        manageProjectName = json.optString("manageProjectName");
+        manageProjectName = form.text("manageProjectName", "");
         if (manageProjectName.length() > MAX_STRING_LEN) {
             throw new IllegalArgumentException(
                 "manageProjectName too long > 1000"
@@ -195,16 +196,16 @@ public abstract class BaseJob {
         manageProjectName = normalizeManageProjectName(manageProjectName);
         baseName = FilenameUtils.getBaseName(manageProjectName);
 
-        environmentSetupWin = json.optString("environmentSetupWin");
-        executePreambleWin = json.optString("executePreambleWin");
-        environmentTeardownWin = json.optString("environmentTeardownWin");
+        environmentSetupWin = form.text("environmentSetupWin", "");
+        executePreambleWin = form.text("executePreambleWin", "");
+        environmentTeardownWin = form.text("environmentTeardownWin", "");
 
-        environmentSetupUnix = json.optString("environmentSetupUnix");
-        executePreambleUnix = json.optString("executePreambleUnix");
-        environmentTeardownUnix = json.optString("environmentTeardownUnix");
+        environmentSetupUnix = form.text("environmentSetupUnix", "");
+        executePreambleUnix = form.text("executePreambleUnix", "");
+        environmentTeardownUnix = form.text("environmentTeardownUnix", "");
 
-        optionUseReporting = json.optBoolean("optionUseReporting", true);
-        String errLevel = json.optString("optionErrorLevel", "unstable").trim();
+        optionUseReporting = form.flag("optionUseReporting", true);
+        String errLevel = form.text("optionErrorLevel", "unstable").trim();
         if (errLevel.equals("nothing")) {
             optionErrorLevel = 0;
         } else if (errLevel.equals("unstable")) {
@@ -213,62 +214,71 @@ public abstract class BaseJob {
             optionErrorLevel = 2;
         }
 
-        optionHtmlBuildDesc = json.optString("optionHtmlBuildDesc", "HTML")
+        optionHtmlBuildDesc = form.text("optionHtmlBuildDesc", "HTML")
             .trim();
-        optionExecutionReport = json.optBoolean("optionExecutionReport", true);
-        optionClean = json.optBoolean("optionClean", false);
+        optionExecutionReport = form.flag("optionExecutionReport", true);
+        optionClean = form.flag("optionClean", false);
 
-        waitTime = json.optLong("waitTime", DEFAULT_WAIT_TIME);
-        waitLoops = json.optLong("waitLoops", DEFAULT_WAIT_LOOP);
+        waitTime = form.number("waitTime", DEFAULT_WAIT_TIME);
+        waitLoops = form.number("waitLoops", DEFAULT_WAIT_LOOP);
 
-        jobName = json.optString("jobName", null);
+        jobName = form.text("jobName", null);
 
         if (jobName != null) {
             jobName = normalizeJobName(jobName);
         }
 
-        nodeLabel = json.optString("nodeLabel", "").trim();
+        nodeLabel = form.text("nodeLabel", "").trim();
 
-        useCILicenses  = json.optBoolean("useCiLicense", false);
-        useStrictTestcaseImport  = json
-            .optBoolean("useStrictTestcaseImport", true);
-        useRGW3  = json.optBoolean("useRGW3", false);
-        useImportedResults  = json.optBoolean("useImportedResults", false);
+        useCILicenses  = form.flag("useCiLicense", false);
+        useStrictTestcaseImport  = form.flag("useStrictTestcaseImport", true);
+        useRGW3  = form.flag("useRGW3", false);
+        useImportedResults  = form.flag("useImportedResults", false);
 
 
         externalResultsFilename = "";
 
         if (useImportedResults) {
-            JSONObject jsonImpRes = json.optJSONObject("importedResults");
+            JobFormData importedResults = form.section("importedResults");
+            final long intExt = importedResults.number("value", 0);
 
-            if (jsonImpRes != null) {
-                final long intExt = jsonImpRes.optLong("value", 0);
-
-                if (intExt == 1) {
-                    useLocalImportedResults = true;
-                    useExternalImportedResults = false;
-                    externalResultsFilename = "";
-                } else if (intExt == 2) {
-                    useLocalImportedResults = false;
-                    useExternalImportedResults = true;
-                    externalResultsFilename = jsonImpRes
-                        .optString("externalResultsFilename", "").trim();
-                    externalResultsFilename =
-                        externalResultsFilename.replace('\\', '/');
-                    if (externalResultsFilename.length() == 0) {
-                        throw new ExternalResultsFileException();
-                    }
+            if (intExt == 1) {
+                useLocalImportedResults = true;
+                useExternalImportedResults = false;
+                externalResultsFilename = "";
+            } else if (intExt == 2) {
+                useLocalImportedResults = false;
+                useExternalImportedResults = true;
+                externalResultsFilename = importedResults
+                    .text("externalResultsFilename", "").trim();
+                externalResultsFilename =
+                    externalResultsFilename.replace('\\', '/');
+                if (externalResultsFilename.length() == 0) {
+                    throw new ExternalResultsFileException();
                 }
             }
         }
-        useCoverageHistory = json.optBoolean("useCoverageHistory", false);
-        maxParallel = json.optLong("maxParallel", 0);
+        useCoverageHistory = form.flag("useCoverageHistory", false);
+        maxParallel = form.number("maxParallel", 0);
 
         /* Additional Tools */
-        pclpCommand = json.optString("pclpCommand", "").replace('\\', '/');
-        pclpResultsPattern = json.optString("pclpResultsPattern", "").trim();
-        squoreCommand = json.optString("squoreCommand", "").replace('\\', '/');
+        pclpCommand = form.text("pclpCommand", "").replace('\\', '/');
+        pclpResultsPattern = form.text("pclpResultsPattern", "").trim();
+        squoreCommand = form.text("squoreCommand", "").replace('\\', '/');
 
+    }
+
+    /**
+     * Compatibility constructor for existing subclasses and tests.
+     * New action code should parse the request once and use the overload that
+     * accepts {@link JobFormData}.
+     */
+    protected BaseJob(final StaplerRequest req,
+            final StaplerResponse resp, final Folder inputFolder)
+            throws ServletException, IOException,
+            ExternalResultsFileException, IllegalArgumentException,
+            BadOptionComboException {
+        this(req, resp, inputFolder, JobFormData.from(req.getSubmittedForm()));
     }
 
     /**
@@ -826,15 +836,6 @@ public abstract class BaseJob {
         return BaseJob.class.getResource("/scripts/baselineSingleJobLinux.txt");
     }
     /**
-     * Call to get baseline post-build groovy job file.
-     * @return URL for baseline file
-     */
-    protected URL getBaselinePostBuildGroovyScript() {
-        // GOOD: The call is always made on an object of the same type.
-        return BaseJob.class.getResource("/scripts/baselinePostBuild.groovy");
-    }
-
-    /**
      * Normalize a user-supplied Jenkins item name.
      *
      * @param input name supplied by the user
@@ -928,12 +929,12 @@ public abstract class BaseJob {
         }
 
         for (String name : getInstance().getJobNames()) {
-            Logger.getLogger(BaseJob.class.getName()).log(Level.INFO,
-                "Checking " + name + " for " + fullProjectName);
+            LOGGER.log(Level.FINE, "Checking {0} for {1}",
+                new Object[]{name, fullProjectName});
 
             if (name.equals(fullProjectName)) {
-                Logger.getLogger(BaseJob.class.getName()).log(Level.INFO,
-                    "Job Already Exists Exception: " + fullProjectName);
+                LOGGER.log(Level.INFO, "Job already exists: {0}",
+                    fullProjectName);
                 throw new JobAlreadyExistsException(fullProjectName);
             }
         }

@@ -29,6 +29,7 @@ import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.BadOptionComboException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
+import com.vectorcast.plugins.vectorcastexecution.job.JobFormData;
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -132,7 +133,8 @@ public class VectorCASTJobSingle extends JobBase {
             Folder currFolder = getFolder();
 
             // Create single-job
-            NewSingleJob job = new NewSingleJob(request, response, currFolder);
+            NewSingleJob job = new NewSingleJob(request, response, currFolder,
+                JobFormData.from(request.getSubmittedForm()));
 
 
             job.create();

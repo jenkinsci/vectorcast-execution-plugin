@@ -134,10 +134,6 @@
             <artifactId>coverage</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jvnet.hudson.plugins</groupId>
-            <artifactId>groovy-postbuild</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>badge</artifactId>
         </dependency>

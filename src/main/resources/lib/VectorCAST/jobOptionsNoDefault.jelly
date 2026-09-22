@@ -37,6 +37,7 @@
             help="/plugin/vectorcast-execution/help-jobOptions.html">
             
             <vc:jobOptionsCommon/>
+            <vc:changeBasedTesting/>
         </f:optionalBlock>
     </f:section>
 </j:jelly>

@@ -32,9 +32,7 @@
                 <f:section title="${%VCJob.Control.Project}">
                     <vc:projectAndNode autocompleteUrl="${rootURL}/descriptorByName/com.vectorcast.plugins.vectorcastexecution.VectorCASTJobPipeline/autoCompleteNodeLabel"/>
 
-                    <f:entry title="${%VCJob.Options.useCBT.title}" description="${%VCJob.Options.useCBT.description}" help="/plugin/vectorcast-execution/help-optuseCBT.html">
-                        <f:checkbox name="useCBT" checked="${instance.useCBT}" default="true"/>
-                    </f:entry>
+                    <vc:changeBasedTesting/>
                     <f:entry title="${%VCJob.Options.useParameters.title}" description="${%VCJob.Options.useParameters.description}" help="/plugin/vectorcast-execution/help-optuseParameters.html">
                         <f:checkbox name="useParameters" checked="${instance.useParameters}" default="false"/>
                     </f:entry>

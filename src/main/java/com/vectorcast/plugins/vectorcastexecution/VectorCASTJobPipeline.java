@@ -29,6 +29,7 @@ import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
 import com.vectorcast.plugins.vectorcastexecution.job.ScmConflictException;
 import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.NewPipelineJob;
+import com.vectorcast.plugins.vectorcastexecution.job.JobFormData;
 import com.vectorcast.plugins.vectorcastexecution.job.BadOptionComboException;
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
@@ -180,7 +181,8 @@ public class VectorCASTJobPipeline extends JobBase {
             Folder currFolder = getFolder();
 
             // Create Pipeline job
-            job = new NewPipelineJob(request, response, currFolder);
+            job = new NewPipelineJob(request, response, currFolder,
+                JobFormData.from(request.getSubmittedForm()));
 
             Logger.getLogger("VCJobPipeline").info(
                 "doCreate: creating pipeline job in folder="

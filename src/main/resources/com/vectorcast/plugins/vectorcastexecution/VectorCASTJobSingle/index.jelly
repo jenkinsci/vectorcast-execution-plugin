@@ -43,7 +43,6 @@
         <vc:jobOptionsNoDefault></vc:jobOptionsNoDefault>
         <vc:scripts></vc:scripts>
         <vc:additionalTools></vc:additionalTools>
-        <vc:options></vc:options>
         <vc:scm></vc:scm>
         <f:section>
           <f:block>

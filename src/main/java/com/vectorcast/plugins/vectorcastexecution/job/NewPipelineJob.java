@@ -30,15 +30,15 @@ import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 import hudson.model.Descriptor;
 import hudson.model.ItemGroup;
 import hudson.model.Project;
-import net.sf.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.IOUtils;
 
@@ -47,8 +47,10 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -59,12 +61,6 @@ import java.util.logging.Level;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.UncheckedIOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
-
-import java.nio.file.StandardCopyOption;
 
 import org.kohsuke.stapler.verb.POST;
 import hudson.model.Item;
@@ -77,6 +73,10 @@ import com.cloudbees.hudson.plugins.folder.Folder;
  * Create a new single job.
  */
 public class NewPipelineJob extends BaseJob {
+
+    /** Logger for Pipeline job creation. */
+    private static final Logger LOGGER = Logger.getLogger(
+        NewPipelineJob.class.getName());
 
     /** shared artifact directory. */
     private String sharedArtifactDirectory;
@@ -116,23 +116,33 @@ public class NewPipelineJob extends BaseJob {
             throws ServletException, IOException,
             ScmConflictException, ExternalResultsFileException,
             BadOptionComboException {
-        super(request, response, inputFolder);
+        this(request, response, inputFolder,
+            JobFormData.from(request.getSubmittedForm()));
+    }
 
-        JSONObject json = request.getSubmittedForm();
+    /** Creates a Pipeline job from form data already parsed by the action. */
+    public NewPipelineJob(
+            final StaplerRequest request,
+            final StaplerResponse response,
+            final Folder inputFolder,
+            final JobFormData form)
+            throws ServletException, IOException,
+            ScmConflictException, ExternalResultsFileException,
+            BadOptionComboException {
+        super(request, response, inputFolder, form);
 
-        sharedArtifactDirectory = json.optString("sharedArtifactDir", "").trim();
-        pipelineSCM = json.optString("scmSnippet", "").trim();
+        sharedArtifactDirectory = form.text("sharedArtifactDir", "").trim();
+        pipelineSCM = form.text("scmSnippet", "").trim();
 
-        singleCheckout = json.optBoolean("singleCheckout", false);
+        singleCheckout = form.flag("singleCheckout", false);
 
         // remove the win/linux options since there's no platform any more
-        environmentSetup = json.optString("environmentSetup", null);
-        executePreamble = json.optString("executePreamble", null);
-        environmentTeardown = json.optString("environmentTeardown", null);
-        postSCMCheckoutCommands =
-            json.optString("postSCMCheckoutCommands", null);
-        useCBT  = json.optBoolean("useCBT", true);
-        useParameters  = json.optBoolean("useParameters", false);
+        environmentSetup = form.text("environmentSetup", null);
+        executePreamble = form.text("executePreamble", null);
+        environmentTeardown = form.text("environmentTeardown", null);
+        postSCMCheckoutCommands = form.text("postSCMCheckoutCommands", null);
+        useCBT  = form.flag("useCBT", true);
+        useParameters  = form.flag("useParameters", false);
         if (!sharedArtifactDirectory.isEmpty()) {
             sharedArtifactDirectory = "--workspace="
                 + sharedArtifactDirectory.replace("\\", "/");
@@ -175,15 +185,13 @@ public class NewPipelineJob extends BaseJob {
             projectName = getBaseName() + ".vcast.pipeline";
         }
 
-        // Remove all non-alphanumeric characters from the Jenkins Job name
-        projectName = projectName.replaceAll("[^a-zA-Z0-9_]", "_");
+        projectName = normalizeJobName(projectName);
 
         setProjectName(projectName);
 
         checkIfProjectExists(projectName);
 
-        Logger.getLogger(NewPipelineJob.class.getName()).log(Level.INFO,
-                "Pipeline Project Name: " + projectName);
+        LOGGER.log(Level.INFO, "Pipeline Project Name: {0}", projectName);
 
         return null;
     }
@@ -200,16 +208,12 @@ public class NewPipelineJob extends BaseJob {
     public void doCreate()
             throws IOException, ServletException, Descriptor.FormException {
 
-        // Get config.xml resource from jar and write it to temp
-        File configFile = writeConfigFileWithFiles();
-
-        try {
-            String configPath = configFile.getAbsolutePath();
-
+        try (InputStream template = getPipelineConfigTemplate();
+                ByteArrayOutputStream generatedXml = new ByteArrayOutputStream()) {
             DocumentBuilderFactory factory =
                     DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(configPath);
+            Document document = builder.parse(template);
 
             // Insert generated script
             Node scriptNode = document.getElementsByTagName("script").item(0);
@@ -219,43 +223,37 @@ public class NewPipelineJob extends BaseJob {
             Transformer transformer = tf.newTransformer();
             transformer.transform(
                     new DOMSource(document),
-                    new StreamResult(configFile)
+                    new StreamResult(generatedXml)
             );
-
-            // Now create the job **in the correct parent**
-            InputStream xmlInput = new FileInputStream(configFile);
 
             ItemGroup<?> parent = (getFolder() != null)
                     ? getFolder() : getInstance();
 
-            Logger.getLogger("NewPipelineJob")
-                .info("Creating job '" + getProjectName()
-                + "' in parent: " + parent.getFullName());
+            LOGGER.log(Level.INFO, "Creating job {0} in parent {1}",
+                new Object[]{getProjectName(), parent.getFullName()});
 
-            if (parent instanceof Folder) {
-                Folder currFolder = (Folder) parent;
+            try (InputStream xmlInput = new ByteArrayInputStream(
+                    generatedXml.toByteArray())) {
+                if (parent instanceof Folder) {
+                    Folder currFolder = (Folder) parent;
 
-                currFolder.createProjectFromXML(getProjectName(), xmlInput);
+                    currFolder.createProjectFromXML(getProjectName(), xmlInput);
 
-            } else if (parent instanceof Jenkins) {
-                Jenkins.get().createProjectFromXML(getProjectName(), xmlInput);
-            } else {
-                throw new IllegalStateException(
-                    "Cannot create project in parent of type: "
-                    + parent.getClass().getName()
-                );
+                } else if (parent instanceof Jenkins) {
+                    Jenkins.get().createProjectFromXML(getProjectName(), xmlInput);
+                } else {
+                    throw new IllegalStateException(
+                        "Cannot create project in parent of type: "
+                        + parent.getClass().getName()
+                    );
+                }
             }
 
-            xmlInput.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error creating pipeline job", e);
-        }
-
-        if (!configFile.delete()) {
-            throw new IOException("Unable to delete: "
-                + configFile.getAbsolutePath());
+        } catch (ParserConfigurationException | SAXException
+                | TransformerException ex) {
+            LOGGER.log(Level.SEVERE, "Unable to construct Pipeline job XML",
+                ex);
+            throw new IOException("Unable to construct Pipeline job XML", ex);
         }
     }
 
@@ -294,62 +292,10 @@ public class NewPipelineJob extends BaseJob {
         doCreate();
     }
 
-    /**
-     * Creates a named temp file.
-     *
-     * @return File - temporary file
-     * @throws UncheckedIOException
-     */
-    private static Path createNamedTempFile() throws UncheckedIOException {
-        try {
-            Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
-            Path tempFile = tempDir.resolve("config_temp.xml");
-
-            if (!Files.exists(tempFile)) {
-                Files.createFile(tempFile);
-            }
-
-            return tempFile.toAbsolutePath();
-        } catch (IOException e) {
-            throw new UncheckedIOException("Named temp file create failed", e);
-        }
-    }
-
-
-    /**
-     * Retrieves config.xml from the jar and writes it to the systems temp.
-     * directory.
-     *
-     * @return File - temporary file
-     * @throws UncheckedIOException
-     */
-    private File writeConfigFileWithFiles() throws IOException {
-
-        InputStream in;
-        Path configFile;
-
-        if (useParameters) {
-            in = getPipelineConfigParametersXML().openStream();
-        } else {
-            in = getPipelineConfigXML().openStream();
-        }
-
-        configFile = createNamedTempFile();
-
-        try {
-            Files.copy(in, configFile, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            Logger.getLogger(NewPipelineJob.class.getName())
-                .log(Level.INFO, null, ex);
-        } catch (UnsupportedOperationException ex) {
-            Logger.getLogger(NewPipelineJob.class.getName())
-                .log(Level.INFO, null, ex);
-        } catch (SecurityException ex) {
-            Logger.getLogger(NewPipelineJob.class.getName())
-                .log(Level.INFO, null, ex);
-        }
-
-        return configFile.toFile();
+    /** Returns the packaged Pipeline XML template for the selected job type. */
+    private InputStream getPipelineConfigTemplate() throws IOException {
+        return (useParameters ? getPipelineConfigParametersXML()
+            : getPipelineConfigXML()).openStream();
     }
 
     /**

@@ -42,9 +42,10 @@ class JobCreationUiTest {
                     "environmentSetupWin", "executePreambleWin",
                     "environmentTeardownWin", "environmentSetupUnix",
                     "executePreambleUnix", "environmentTeardownUnix",
-                    "optionClean", "optionUseReporting", "optionErrorLevel",
-                    "optionHtmlBuildDesc", "optionExecutionReport", "scm"),
-                    List.of("useCBT", "useParameters", "sharedArtifactDir",
+                    "useCBT", "scm"),
+                    List.of("optionClean", "optionUseReporting",
+                        "optionErrorLevel", "optionHtmlBuildDesc",
+                        "optionExecutionReport", "useParameters", "sharedArtifactDir",
                         "maxParallel", "environmentSetup", "scmSnippet",
                         "postSCMCheckoutCommands"), VectorCASTJobSingle.class),
                 new FormContract("pipeline-job", List.of(
