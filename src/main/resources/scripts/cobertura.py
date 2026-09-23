@@ -45,10 +45,6 @@ import sys, os
 from collections import defaultdict
 from pprint import pprint
 import argparse
-try:
-    from safe_open import open
-except:
-    pass
     
 from pathlib import PureWindowsPath
 

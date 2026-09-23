@@ -1,11 +1,11 @@
 version: 2
 updates:
-  # Maven Dependencies for Jenkins Plugin - Target
+  # Maven dependency updates for the current development branch.
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "tms_080"
+    target-branch: "tms_081"
     open-pull-requests-limit: 10
     commit-message:
       prefix: ""
@@ -20,7 +20,7 @@ updates:
         versions:
           - ">= 3.0.0"
 
-         # Defer JUnit changes until v0.80 (tms_080)
+      # JUnit updates remain paused pending a separate compatibility audit.
       - dependency-name: "org.junit.jupiter:*"
       - dependency-name: "org.junit.platform:*"
       - dependency-name: "org.junit.vintage:*"

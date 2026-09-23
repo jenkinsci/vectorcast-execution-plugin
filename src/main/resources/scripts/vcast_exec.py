@@ -44,11 +44,6 @@ if sys.version_info[0] < 3:
     python_path_updates = os.path.join(os.environ['VECTORCAST_DIR'], "DATA", "python")
     sys.path.append(python_path_updates)
 
-try:
-    import parallel_build_execute
-except:
-    import prevcast_parallel_build_execute as parallel_build_execute
-
 from vcast_utils import checkVectorCASTVersion, dump, getVectorCASTEncoding
 from check_build_log import check_build_log
 
@@ -410,7 +405,8 @@ class VectorCASTExecute(object):
                 no_full_report = False,
                 use_ci = self.ci,
                 xml_data_dir = self.xml_data_dir,
-                useStartLine = self.useStartLine)
+                useStartLine = self.useStartLine,
+                generate_coverage = not (self.cobertura or self.cobertura_extended))
 
         # calculate the failed percentage
         if (self.failed_count + self.passed_count > 0):
@@ -438,14 +434,14 @@ class VectorCASTExecute(object):
         if not checkVectorCASTVersion(21):
             print("Cannot create Cobertura metrics. Please upgrade VectorCAST")
         else:
-
-            if self.cobertura_extended:
+            extended = self.cobertura_extended or self.ciTool is CITool.JENKINS
+            if extended:
                 print("Creating Extended Cobertura Metrics")
             else:
                 print("Creating Cobertura Metrics")
 
             cobertura.generateCoverageResults(self.FullMP, self.azure, self.xml_data_dir, verbose = self.verbose,
-                extended=self.cobertura_extended, source_root = self.source_root,
+                extended=extended, source_root = self.source_root,
                 covToDisplay = self.covToDisplay)
 
     def runSonarQubeMetrics(self):
@@ -592,7 +588,14 @@ class VectorCASTExecute(object):
             # setup project for parallel execution
             self.manageWait.exec_manage_command ("--config VCAST_DEPENDENCY_CACHE_DIR=./vcqik")
 
-            # should work for pre-vcast parallel_build_execute or vcast parallel_build_execute
+            # VectorCAST 24 provides this helper; newer releases use manage --jobs.
+            try:
+                import parallel_build_execute
+            except ImportError as exc:
+                raise RuntimeError(
+                    "VectorCAST's parallel_build_execute module is required "
+                    "for parallel jobs before VectorCAST 25") from exc
+
             pstr = "--project " + self.FullMP
             jstr = "--jobs="+str(self.jobs)
             cstr = "" if (self.compiler == None) else "--compiler="+self.compiler

@@ -25,7 +25,6 @@ For upgrading older Freestyle jobs that used Groovy Postbuild, see
     * [Coverage Display Selection](#coverage-display-selection)
       * [Information about Jenkins Coverage Plugin](#information-about-jenkins-coverage-plugin)
       * [Advanced Settings for Jenkins Coverage Plugin](#advanced-settings-for-jenkins-coverage-plugin)
-      * [Information about legacy VectorCAST Coverage Plugin](#information-about-legacy-vectorcast-coverage-plugin)
     * [Job Creation Options](#job-creation-options)
       * [Job Name](#job-name-)
       * [Shared Artifact Directory](#shared-artifact-directory)
@@ -204,9 +203,7 @@ For Pipeline Jobs, the plugin processes the build log to determine which tests h
 
 ### Coverage Display Selection
 
-The VectorCAST Execution Plugin is transitioning from using the legacy VectorCAST Coverage Plugin to the Jenkins Coverage Plugin.  Until that transition is complete, the use is offered a choice to decide which coverage display to use.
-
-<img src="docs/images/coverage_display_config.png" width="300" height="137" />
+Report generation writes Cobertura XML to `xml_data/cobertura/coverage_results_*.xml`. Generated Jenkins jobs request the extended Cobertura format so the Jenkins Coverage Plugin can display VectorCAST's additional metrics. Outside Jenkins, the standard Cobertura format is used unless `generate-results.py --extended` is specified. The older VectorCAST-format file in `xml_data/coverage_results_*.xml` is no longer generated. The standalone JUnit script is now `generate_junit.py` (formerly `generate_xml.py`).
 
 #### Information about Jenkins Coverage Plugin
 The [Jenkins Coverage Plugin](https://plugins.jenkins.io/coverage) publishes a report of the code and mutation coverage in your build, so you can navigate to a summary report from the main build page. Additionally, the plugin gathers several metrics (lines of code, cyclomatic complexity, number of tests per class) and visualizes these results along with the coverage information.
@@ -231,24 +228,8 @@ To access the advanced settings:
 Settings to process VectorCAST Coverage Results:
     - Sample Step: recordCoverage: Record code coverage results
     - Code Coverage Tool > Coverage Parser: VectorCAST Coverage Results
-    - Code Coverage Tool > Report File Pattern: xml_data/cobertura/coverage_results*.html
+    - Code Coverage Tool > Report File Pattern: xml_data/cobertura/coverage_results*.xml
 - Single Job - The setup for the Single Job will be one of the post-build steps.
-
-#### Information about legacy VectorCAST Coverage Plugin
-The  [Legacy VectorCAST Coverage Plugin](https://plugins.jenkins.io/vectorcast-coverage/) Processes code coverage metrics from for VectorCAST Projects
-This legacy plugin allows you to capture code coverage reports from VectorCAST Projects. Jenkins will generate the trend report of coverage. This plugin is used automatically with the VectorCAST Execution Plugin
-Coverage information from tests runs that has been converted to XML files is read and displayed by this plugin. 
-
-It shows coverage trends and allows drilling down to more detailed coverage information:
-
-- Tree charts that show the distribution of the metrics by type (line, branch, MC/DC Pairs, Function Coverage, etc.)
-- Tabular listing of all environments/files with their coverage and complexity
-- Trend charts of the coverage over time
-
-:warning: Legacy Plugin Info
-This is a legacy plugin and will have no further development beyond bug fixes and security updates
-
-<img src="docs/images/vcc_cov_report.png" width="700" />
 
 ### Job Creation Options
 

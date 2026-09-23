@@ -1,6 +1,3 @@
-def COVERAGE_REPO = 'https://github.com/jenkinsci/vectorcast-coverage-plugin.git'
-def COVERAGE_BRANCH = 'tms_023'
-
 def configurations = [
     [platform: 'linux',   jdk: '21'],
     [platform: 'windows', jdk: '21'],
@@ -29,30 +26,6 @@ for (cfg in configurations) {
 
                 def m2repo = "${pwd(tmp: true)}/m2repo"
 
-                stage("Build vectorcast-coverage dependency (${stageName})") {
-                    dir('vectorcast-coverage-plugin') {
-                        if (isUnix()) {
-                            sh """
-                                git clone '${COVERAGE_REPO}' .
-                                git checkout '${COVERAGE_BRANCH}'
-                                mvn -B -ntp -U \\
-                                    -Dmaven.repo.local='${m2repo}' \\
-                                    -DskipTests \\
-                                    clean install
-                            """
-                        } else {
-                            bat """
-                                git clone "${COVERAGE_REPO}" .
-                                git checkout "${COVERAGE_BRANCH}"
-                                mvn -B -ntp -U ^
-                                    -Dmaven.repo.local="${m2repo}" ^
-                                    -DskipTests ^
-                                    clean install
-                            """
-                        }
-                    }
-                }
-
                 stage("Build vectorcast-execution (${stageName})") {
                     if (isUnix()) {
                         sh """
@@ -63,7 +36,7 @@ for (cfg in configurations) {
                                 -Dcheckstyle.failOnViolation=false \\
                                 -Dcheckstyle.failsOnError=false \\
                                 -Dpmd.failOnViolation=false \\
-                                -Penable-jacoco \\
+                                -Pjacoco \\
                                 clean install
                         """
                     } else {
@@ -75,6 +48,7 @@ for (cfg in configurations) {
                                 -Dcheckstyle.failOnViolation=false ^
                                 -Dcheckstyle.failsOnError=false ^
                                 -Dpmd.failOnViolation=false ^
+                                -Pjacoco ^
                                 clean install
                         """
                     }

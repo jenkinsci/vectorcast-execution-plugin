@@ -27,19 +27,8 @@ from __future__ import print_function
 
 import sys, os, locale
 
-import sys, os
-# adding path
-if sys.version_info[0] < 3:
-    python_path_updates = os.path.join(os.path.dirname(os.path.abspath(__file__)),'vpython-addons')
-    sys.path.append(python_path_updates)
-
 from bs4 import BeautifulSoup
-try:
-    from safe_open import open
-except:
-    pass
-
-import tee_print
+from runtime_logging import get_logger
 from vcast_utils import getVectorCASTEncoding
     
 def fixup_2020_soup(main_soup):
@@ -104,8 +93,7 @@ def fixup_2020_soup(main_soup):
                 try:
                     style += class2style[item]
                 except:
-                    with tee_print.TeePrint() as teePrint:
-                        teePrint.teePrint ("unhandled class " + item)
+                    get_logger().info("unhandled class " + item)
         except:
             pass
 

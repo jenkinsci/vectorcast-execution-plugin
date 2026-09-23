@@ -1,0 +1,21 @@
+name: Python checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Check Python syntax
+        run: python -m compileall -q src/main/resources/scripts src/test/python
+      # The full Python suite needs VectorCAST's vpython and DataAPI; hosted runners
+      # can run the serializer tests without that proprietary runtime.
+      - name: Test JUnit XML serialization
+        run: python -m unittest discover -s src/test/python -p 'test_report_xml_writer.py' -v

@@ -392,30 +392,6 @@ pipeline {
                             } else {
                                 recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
                             }
-                        } else {
-                            def currResult = ""
-                            if (VC.useCoverHist) {
-                                currResult = currentBuild.result
-                            }
-
-                            // Send reports to the VectorCAST Coverage Plugin
-                            step([$class: 'VectorCASTPublisher',
-                                  includes: 'xml_data/coverage_results*.xml',
-                                  useThreshold: VC.useThreshold,
-                                  healthyTarget:   VC.healthyTarget,
-                                  useCoverageHistory: VC.useCoverHist,
-                                  maxHistory : 20])
-
-                            if (VC.useCoverHist) {
-                                if ((currResult != currentBuild.result) && (currentBuild.result == 'FAILURE')) {
-                                    pluginCreateSummary("icon-error icon-xlg", "Code Coverage Decreased")
-                                    currentBuild.description += "Code coverage decreased.  See console log for details\n"
-                                    addBadge(
-                                            icon: "icon-error icon-xlg",
-                                            text: "Code Coverage Decreased"
-                                    )
-                                }
-                            }
                         }
                     }
 

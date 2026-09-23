@@ -34,10 +34,6 @@ import os
 
 from pprint import pprint
 
-try:
-    from safe_open import open
-except:
-    pass
 
 from vcast_utils import getVectorCASTEncoding
     

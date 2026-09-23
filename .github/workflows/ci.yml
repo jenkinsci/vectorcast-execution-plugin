@@ -29,14 +29,8 @@ jobs:
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5
         with:
-          maven-version: 3.9.6
+          maven-version: 3.9.9
       - name: Build with Maven
         env:
           BROWSER: chrome-container
-        run: |
-          git clone https://github.com/jenkinsci/vectorcast-coverage-plugin.git
-          pushd vectorcast-coverage-plugin
-          git checkout tms_023
-          mvn -B -ntp -DskipTests clean install
-          popd
-          mvn -V --color always -ntp clean verify --file pom.xml -Djenkins.test.timeout=5000 -Dgpg.skip
+        run: mvn -B -ntp clean verify --file pom.xml -Djenkins.test.timeout=5000 -Dgpg.skip

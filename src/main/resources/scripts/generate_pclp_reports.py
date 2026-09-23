@@ -38,11 +38,6 @@ from vcast_utils import checkVectorCASTVersion, getVectorCASTEncoding
     
 encFmt = getVectorCASTEncoding()
 
-try:
-    from safe_open import open
-except:
-    pass
-
 from global_state import globalState
 
 # PC-lint Plus message representation and parsing

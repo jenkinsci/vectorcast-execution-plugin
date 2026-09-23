@@ -135,7 +135,7 @@ class VectorCASTMetricsImpl {
 
         // run the metrics at the end
         cmds += """
-            _VECTORCAST_DIR/vpython  "${script.env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC.mpName} --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --junit ${extraOptStr} --buildlog unstashed_build.log"
+            _VECTORCAST_DIR/vpython  "${script.env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC.mpName} --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --junit --extended ${extraOptStr} --buildlog unstashed_build.log"
             _VECTORCAST_DIR/vpython  "${script.env.WORKSPACE}"/vc_scripts/parallel_full_reports.py  ${VC.mpName} --jobs max
         """
 
@@ -144,10 +144,6 @@ class VectorCASTMetricsImpl {
                 _VECTORCAST_DIR/vpython  "${script.env.WORKSPACE}"/vc_scripts/patch_rgw_directory.py  ${VC.mpName}
                 _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}"  ${VC.useCI} --clicast-args rgw export" 
             """
-        }
-
-        if (VC.useCoverPlgin) {
-            cmds += "_VECTORCAST_DIR/vpython  \"${script.env.WORKSPACE}\"/vc_scripts/cobertura.py --extended ${VC.mpName}\n"
         }
 
         cmds += """

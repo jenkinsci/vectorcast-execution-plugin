@@ -5,15 +5,24 @@ import os
 
 archive_name = "reports_archive.tar"
 
+def report_files():
+    return (glob.glob("management/*.html")
+            + glob.glob("xml_data/*.xml")
+            + glob.glob("xml_data/cobertura/*.xml")
+            + glob.glob("xml_data/cobertura/*.dtd"))
+
 def extract(verbose = False):
 
     if os.path.exists(archive_name):
         with tarfile.open(archive_name, mode='r') as tf:
-            new_reports = glob.glob("management/*.html")+glob.glob("xml_data/*.xml")      
+            new_reports = report_files()
             for idx in range(len(new_reports)):
                 new_reports[idx] = new_reports[idx].replace("\\","/")
                 
             for f in tf.getmembers():
+                if (f.name.startswith("xml_data/coverage_results_")
+                        and f.name.endswith(".xml")):
+                    continue
                 if f.name not in new_reports:
                     if verbose:
                         print("extracting old report " + f.name)
@@ -33,7 +42,7 @@ def archive(verbose = False):
         os.remove(archive_name)
         
     with tarfile.open(archive_name, mode='w') as tf:
-        for f in glob.glob("management/*.html")+glob.glob("xml_data/*.xml"):
+        for f in report_files():
             if verbose:
                 print ("archiving " + f)
             tf.add(f)

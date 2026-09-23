@@ -29,7 +29,6 @@ import sys
 import hashlib
 from datetime import datetime
 
-from safe_open import open
 from vcast_utils import getVectorCASTEncoding
 
 compoundTestIndex = 0

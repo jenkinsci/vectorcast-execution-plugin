@@ -43,10 +43,6 @@ import subprocess
 import argparse
 
 from vcast_utils import dump, checkVectorCASTVersion, getVectorCASTEncoding
-try:
-    from safe_open import open
-except:
-    pass
     
 try:
     import math

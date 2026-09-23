@@ -38,10 +38,6 @@ try:
 except ImportError:
         from queue import Queue, Empty  # python 3.x
 
-try:
-    from safe_open import open
-except:
-    pass
 
 from vcast_utils import getVectorCASTEncoding
 
