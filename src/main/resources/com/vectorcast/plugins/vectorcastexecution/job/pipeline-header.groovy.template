@@ -22,7 +22,6 @@ def VC_maxParallel = {{maxParallel}}
 def VC_useOneCheckoutDir = {{singleCheckout}}
 def VC_useCILicense = {{ciLicense}}
 def VC_useCBT = {{cbt}}
-def VC_useCoveragePlugin = true
 def VC_createdWithVersion = {{pluginVersion}}
 def VC_usePCLintPlus = {{pclpEnabled}}
 def VC_pclpCommand = {{pclpCommand}}

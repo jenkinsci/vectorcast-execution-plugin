@@ -24,6 +24,7 @@ class PipelineScriptRendererTest {
         assertTrue(header.contains("def VC_useCBT = \"\""));
         assertTrue(header.contains("def VC_useCILicense = \"--ci\""));
         assertTrue(header.contains("def scmStep () { git 'https://example.invalid' }"));
+        assertFalse(header.contains("VC_useCoveragePlugin"));
         assertFalse(header.contains("{{"));
     }
 }

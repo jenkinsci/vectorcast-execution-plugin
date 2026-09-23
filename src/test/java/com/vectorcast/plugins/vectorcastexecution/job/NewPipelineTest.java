@@ -212,6 +212,11 @@ public class NewPipelineTest {
         assertTrue(generatedConfig.contains(
             "def scmStep () { git 'http://git.com' }"));
         assertTrue(generatedConfig.contains("def VC_usingSCM = true"));
+        assertTrue(generatedConfig.contains("recordCoverage tools:"));
+        assertFalse(generatedConfig.contains("VC_useCoveragePlugin"));
+        assertFalse(generatedConfig.contains("VC_Healthy_Target"));
+        assertFalse(generatedConfig.contains("VC_Use_Threshold"));
+        assertFalse(generatedConfig.contains("useCoverPlgin:"));
         assertTrue(generatedConfig.contains(
             "def VC_sharedArtifactDirectory = \"--workspace=/home/jenkins/sharedArtifactDir\""));
     }

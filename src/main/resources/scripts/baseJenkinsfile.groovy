@@ -4,12 +4,6 @@
 //
 // ===============================================================
 
-// Code Coverage threshold numbers
-def VC_Healthy_Target = [ maxStatement: 100, maxBranch: 100, maxFunctionCall: 100, maxFunction: 100, maxMCDC: 100,
-                          minStatement: 20,  minBranch: 20,  minFunctionCall: 20,  minFunction: 20,  minMCDC: 20]
-
-def VC_Use_Threshold = true
-
 def VC_failurePhrases = [
         "No valid edition(s) available",
         "py did not execute correctly",
@@ -62,7 +56,6 @@ def VC = [
     waitLoops:          VC_waitLoops,
     useCI:              VC_useCILicense,
     useCBT:             VC_useCBT,
-    useCoverPlgin:      VC_useCoveragePlugin,
     sharedBldDir:       VC_sharedArtifactDirectory,
     useCoverHist:       VC_useCoverageHistory,
     strictImp:          VC_useStrictImport,
@@ -76,8 +69,6 @@ def VC = [
     pclpRsltPattern:    VC_pclpResultsPattern,
     useSquore:          VC_useSquore,
     squoreCmd:          VC_squoreCommand,
-    healthyTarget:      VC_Healthy_Target,
-    useThreshold:       VC_Use_Threshold,
     failurePhrases:     VC_failurePhrases,
     unstablePhrases:    VC_unstablePhrases,
     createdWithVersion: VC_createdWithVersion,
@@ -384,14 +375,12 @@ pipeline {
 
                         if (failureFlag) throw new Exception ("Error in Commands: " + foundKeywords)
 
-                        if (VC.useCoverPlgin) {
-                            // Send reports to the Jenkins Coverage Plugin
-                            discoverReferenceBuild()
-                            if (VC.useCoverHist) {
-                                recordCoverage qualityGates: [[baseline: 'PROJECT_DELTA', criticality: 'NOTE', metric: 'LINE', threshold: -0.001], [baseline: 'PROJECT_DELTA', criticality: 'FAILURE', metric: 'BRANCH', threshold: -0.001]], tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
-                            } else {
-                                recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
-                            }
+                        // Send reports to the Jenkins Coverage Plugin
+                        discoverReferenceBuild()
+                        if (VC.useCoverHist) {
+                            recordCoverage qualityGates: [[baseline: 'PROJECT_DELTA', criticality: 'NOTE', metric: 'LINE', threshold: -0.001], [baseline: 'PROJECT_DELTA', criticality: 'FAILURE', metric: 'BRANCH', threshold: -0.001]], tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
+                        } else {
+                            recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
                         }
                     }
 
