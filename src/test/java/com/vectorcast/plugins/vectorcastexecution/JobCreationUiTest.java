@@ -44,7 +44,7 @@ class JobCreationUiTest {
                     "executePreambleUnix", "environmentTeardownUnix",
                     "useCBT", "scm"),
                     List.of("optionClean", "optionUseReporting",
-                        "optionErrorLevel", "optionHtmlBuildDesc",
+                        "optionErrorLevel",
                         "optionExecutionReport", "useParameters", "sharedArtifactDir",
                         "maxParallel", "environmentSetup", "scmSnippet",
                         "postSCMCheckoutCommands"), VectorCASTJobSingle.class),

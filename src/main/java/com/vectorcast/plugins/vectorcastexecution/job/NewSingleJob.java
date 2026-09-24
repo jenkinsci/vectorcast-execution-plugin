@@ -88,15 +88,11 @@ public class NewSingleJob extends BaseJob {
   /**
    * Gets the configruation for Windows.
    * @param pluginVersion plugin version of the running plugin while create
-   * @param rptFmt Report Format (HTML/TXT]
-   * @param htmlOrText html or text version of the reports
    * @param noGenExecReport don't generate execution report
    * @return String of configuration for Windows
    */
   private String getWindowsConfig(
         final String pluginVersion,
-        final String rptFmt,
-        final String htmlOrText,
         final String noGenExecReport)
         throws IOException {
 
@@ -112,8 +108,6 @@ public class NewSingleJob extends BaseJob {
       + "set VCAST_WAIT_LOOPS=" + getWaitLoops() + "\n"
       + "set VCAST_OPTION_USE_REPORTING="
       +     (getOptionUseReporting() ? "TRUE" : "FALSE") + "\n"
-      + "set VCAST_rptFmt=" + rptFmt + "\n"
-      + "set VCAST_HTML_OR_TEXT=" + htmlOrText + "\n"
       + "set VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
       + "set VCAST_USE_CBT=" + getUseCBTOption()
       + "\n\n";
@@ -143,15 +137,11 @@ public class NewSingleJob extends BaseJob {
   /**
    * Gets the configruation for Unix.
    * @param pluginVersion plugin version of the running plugin while create
-   * @param rptFmt Report Format (HTML/TXT]
-   * @param htmlOrText html or text version of the reports
    * @param noGenExecReport don't generate execution report
    * @return String of configuration for unix
    */
   private String getUnixConfig(
         final String pluginVersion,
-        final String rptFmt,
-        final String htmlOrText,
         final String noGenExecReport)
         throws IOException {
 
@@ -167,8 +157,6 @@ public class NewSingleJob extends BaseJob {
       + "VCAST_WAIT_LOOPS=" + getWaitLoops() + "\n"
       + "VCAST_OPTION_USE_REPORTING="
       +     (getOptionUseReporting() ? "1" : "0") + "\n"
-      + "VCAST_rptFmt=" + rptFmt + "\n"
-      + "VCAST_HTML_OR_TEXT=" + htmlOrText + "\n"
       + "VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
       + "VCAST_USE_CBT=" + getUseCBTOption()
       + "\n\n";
@@ -287,17 +275,8 @@ public class NewSingleJob extends BaseJob {
    */
   private void addCommandSingleJob() throws IOException {
     String noGenExecReport = "";
-    String htmlOrText = "";
-    String rptFmt = "";
     if (!getOptionExecutionReport()) {
       noGenExecReport = " --dont-gen-exec-rpt";
-    }
-    if (getOptionHTMLBuildDesc().equalsIgnoreCase("HTML")) {
-      htmlOrText = "html";
-      rptFmt = "HTML";
-    } else {
-      htmlOrText = "txt";
-      rptFmt = "TEXT";
     }
 
     String pluginVersion = VcastUtils.getVersion().orElse("Unknown");
@@ -305,14 +284,12 @@ public class NewSingleJob extends BaseJob {
     /*
      *  Windows config portion
      */
-    String win = getWindowsConfig(pluginVersion, rptFmt,
-        htmlOrText, noGenExecReport);
+    String win = getWindowsConfig(pluginVersion, noGenExecReport);
 
     /*
      *  Unix config portion
      */
-    String unix = getUnixConfig(pluginVersion, rptFmt,
-        htmlOrText, noGenExecReport);
+    String unix = getUnixConfig(pluginVersion, noGenExecReport);
 
     VectorCASTCommand command = new VectorCASTCommand(win, unix);
     if (!getTopProject().getBuildersList().add(command)) {

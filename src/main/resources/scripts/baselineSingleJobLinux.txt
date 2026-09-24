@@ -13,7 +13,7 @@ fi
 # --- Default Setup ---
 "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --full-status"
 "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --force --release-locks"
-"$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --config VCAST_CUSTOM_REPORT_FORMAT=${VCAST_HTML_OR_TEXT}"
+"$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
 
 # --- Use Imported Results ---
 if [ "${VCAST_USE_IMPORTED_RESULTS}" -eq 1 ]; then
@@ -39,14 +39,14 @@ $VCAST_EXECUTE_PREAMBLE_LINUX "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts
 
 cp -p command.log complete_build.log
 
-if [ -f "${VCAST_PROJECT_BASENAME}_rebuild.${VCAST_HTML_OR_TEXT}" ]; then
-  cp -p "${VCAST_PROJECT_BASENAME}_rebuild.${VCAST_HTML_OR_TEXT}" "${VCAST_PROJECT_BASENAME}_rebuild.${VCAST_HTML_OR_TEXT}_tmp"
-  "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/fixup_reports.py" "${VCAST_PROJECT_BASENAME}_rebuild.${VCAST_HTML_OR_TEXT}_tmp"
+if [ -f "${VCAST_PROJECT_BASENAME}_rebuild.html" ]; then
+  cp -p "${VCAST_PROJECT_BASENAME}_rebuild.html" "${VCAST_PROJECT_BASENAME}_rebuild.html_tmp"
+  "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/fixup_reports.py" "${VCAST_PROJECT_BASENAME}_rebuild.html_tmp"
 fi
 
 # --- Reporting / Plugins ---
 if [ "${VCAST_OPTION_USE_REPORTING}" -eq 1 ]; then
-  "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --config VCAST_CUSTOM_REPORT_FORMAT=${VCAST_HTML_OR_TEXT}"
+  "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/managewait.py" --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" --command_line="--project \"${VCAST_PROJECT_NAME}\" --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
   "$VECTORCAST_DIR/vpython" "${WORKSPACE}/vc_scripts/generate-results.py" --junit --extended --wait_time "${VCAST_WAIT_TIME}" --wait_loops "${VCAST_WAIT_LOOPS}" "${VCAST_PROJECT_NAME}" --buildlog complete_build.log
 
   if [ "${VCAST_USE_RGW3}" -eq 1 ]; then

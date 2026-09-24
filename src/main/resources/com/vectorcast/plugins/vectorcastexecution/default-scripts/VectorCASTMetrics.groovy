@@ -147,7 +147,7 @@ class VectorCASTMetricsImpl {
         }
 
         cmds += """
-            _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py ${mpName} --rptfmt HTML --verbose
+            _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py ${mpName} --verbose
             _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/full_report_no_toc.py "${VC.mpName}"
             _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}"  ${VC.useCI} --create-report=aggregate   --output=${mpName}_aggregate_report.html"
         """

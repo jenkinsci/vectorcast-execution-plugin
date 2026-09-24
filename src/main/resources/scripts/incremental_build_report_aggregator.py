@@ -23,86 +23,11 @@
 #
 
 import argparse
+import glob
+import logging
 import os
-import sys
 import shutil
-import locale
-import os, shutil, glob, logging
 from bs4 import BeautifulSoup
-
-from vcast_utils import getVectorCASTEncoding
-
-import re
-def parse_text_files(mpName, verbose = False):
-    header = """
---------------------------------------------------------------------------------
-Manage Incremental Rebuild Report
---------------------------------------------------------------------------------
-
-
-
---------------------------------------------------------------------------------
-Environments Affected
---------------------------------------------------------------------------------
-  -------------------------------------------------------------------------------
-  Environment           Rebuild Status              Unaffecte Affected  Total Tes
-                                                    d Tests   Tests     ts
-  -------------------------------------------------------------------------------
-"""
-    encFmt = getVectorCASTEncoding()
-
-    report_file_list = []
-    full_file_list = os.listdir(".")
-    for file in full_file_list:
-        if "_rebuild.txt" in file:
-            report_file_list.append(file)
-
-    rebuild_count = 0
-    rebuild_total = 0
-    preserved_count = 0
-    executed_count = 0
-    total_count = 0
-
-    outStr = ""
-
-    for file in report_file_list:
-        print("processing file: " + file)
-        sepCount = 0
-        with open(file,"rb") as fd:
-            lines = [line.decode(encFmt, "replace") for line in fd.readlines()]
-
-        for line in lines:
-            if re.search ("^  Totals",line):
-                totals = line.replace("(","").replace(")","").split()
-                rebuild_count += int(totals[2])
-                rebuild_total += int(totals[4])
-                preserved_count += int(totals[5])
-                executed_count += int(totals[6])
-                total_count += int(totals[7])
-            if "--------" in line:
-                sepCount += 1
-            elif sepCount == 6:
-                outStr += line
-
-    try:
-        percentage = rebuild_count * 100 //  rebuild_total
-    except:
-        percentage = 0
-
-    totalStr = "\n  -------------------------------------------------------------------------------"
-    template = "\nTotals                  %3d%% (%4d / %4d)          %9d %9d %9d"
-    totalStr += template%(percentage,rebuild_count,rebuild_total,preserved_count,executed_count,total_count)
-
-    with open(mpName + "_rebuild.txt","wb") as fd:
-        data = header + outStr + totalStr
-        fd.write(data.encode(encFmt,"replace"))
-
-    # moving rebuild reports down in to a sub directory
-    if not os.path.exists("rebuild_reports"):
-        os.mkdir("rebuild_reports")
-    for file in report_file_list:
-        if os.path.exists(file):
-          shutil.move(file, "rebuild_reports/"+file)
 
 def parse_html_files(mpName, verbose = False):
     """
@@ -381,13 +306,13 @@ def parse_html_files(mpName, verbose = False):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description="Parse and merge VectorCAST rebuild reports.")
 
     parser.add_argument('ManageProject', default='Project.vcm', help="Name of the VectorCAST Project")
 
-    # --rptfmt can be either HTML or TEXT
-    parser.add_argument('--rptfmt', choices=['HTML', 'TEXT'], default='HTML', help='Output report format: HTML or TEXT (default: HTML)')
+    # Older generated Pipeline jobs still pass --rptfmt HTML.
+    parser.add_argument('--rptfmt', choices=['HTML'], default='HTML',
+                        help=argparse.SUPPRESS)
 
     # --api is deprecated / unused, but still accepted (hidden from help)
     parser.add_argument('--api',help=argparse.SUPPRESS, type=int, default=None)
@@ -397,8 +322,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.rptfmt and "TEXT" in args.rptfmt:
-        parse_text_files(args.ManageProject, args.verbose)
-    else:
-        parse_html_files(args.ManageProject, args.verbose)
+    parse_html_files(args.ManageProject, args.verbose)
 

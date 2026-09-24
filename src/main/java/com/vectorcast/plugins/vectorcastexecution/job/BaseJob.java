@@ -102,8 +102,6 @@ public abstract class BaseJob {
     private boolean optionUseReporting;
     /** What error-level to use. */
     private int optionErrorLevel;
-    /** Use HTML in build description. */
-    private String optionHtmlBuildDesc;
     /** Generate execution report. */
     private boolean optionExecutionReport;
     /** Clean workspace. */
@@ -188,7 +186,6 @@ public abstract class BaseJob {
         environmentTeardownUnix = options.environmentTeardownUnix();
         optionUseReporting = options.optionUseReporting();
         optionErrorLevel = options.optionErrorLevel();
-        optionHtmlBuildDesc = options.optionHtmlBuildDesc();
         optionExecutionReport = options.optionExecutionReport();
         optionClean = options.optionClean();
         waitTime = options.waitTime();
@@ -294,13 +291,6 @@ public abstract class BaseJob {
      */
     protected int getOptionErrorLevel() {
         return optionErrorLevel;
-    }
-    /**
-     * Use HTML Build Description.
-     * @return HTML or TEXT
-     */
-    protected String getOptionHTMLBuildDesc() {
-        return optionHtmlBuildDesc;
     }
     /**
      * Use execution report.

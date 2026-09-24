@@ -440,6 +440,7 @@ public class NewSingleJobTest {
         jsonForm.put("environmentTeardownUnix", "source teardown-unix.sh");
         jsonForm.put("optionUseReporting", false);
         jsonForm.put("optionErrorLevel", "failure");
+        // A stale submitted form value must not restore TEXT reports.
         jsonForm.put("optionHtmlBuildDesc", "Text");
         jsonForm.put("optionExecutionReport", false);
         jsonForm.put("optionClean", false);
@@ -461,7 +462,6 @@ public class NewSingleJobTest {
         assertTrue(job.getTopProject().getBuildWrappersList().isEmpty());
         assertEquals(2, job.getTopProject().getPublishersList().size());
         assertEquals(2, job.getOptionErrorLevel());
-        assertEquals("Text", job.getOptionHTMLBuildDesc());
         assertEquals(30L, job.getWaitTime());
         assertEquals(7L, job.getWaitLoops());
         assertEquals(8L, job.getMaxParallel());
@@ -470,7 +470,11 @@ public class NewSingleJobTest {
             .get(VectorCASTCommand.class);
         assertTrue(command.getWinCommand().contains("call setup-win.bat"));
         assertTrue(command.getWinCommand().contains("VCAST_WAIT_TIME=30"));
-        assertTrue(command.getWinCommand().contains("VCAST_rptFmt=TEXT"));
+        assertTrue(command.getWinCommand().contains("VCAST_CUSTOM_REPORT_FORMAT=HTML"));
+        assertTrue(command.getWinCommand().contains("_rebuild.html"));
+        assertTrue(command.getUnixCommand().contains("VCAST_CUSTOM_REPORT_FORMAT=HTML"));
+        assertFalse(command.getWinCommand().contains("VCAST_HTML_OR_TEXT"));
+        assertFalse(command.getUnixCommand().contains("VCAST_HTML_OR_TEXT"));
         assertTrue(command.getWinCommand().contains("--dont-gen-exec-rpt"));
         assertTrue(command.getWinCommand().contains("VCAST_USE_CBT=\n"));
         assertTrue(command.getUnixCommand().contains("source setup-unix.sh"));
@@ -493,7 +497,6 @@ public class NewSingleJobTest {
         form.put("jobName", "  nightly  ");
         form.put("nodeLabel", "  agent-a  ");
         form.put("optionErrorLevel", "  failure  ");
-        form.put("optionHtmlBuildDesc", "  Text  ");
         form.put("pclpResultsPattern", "  lint-results.xml  ");
         form.put("pclpCommand", "  run-lint --all  ");
         form.put("squoreCommand", "  run-squore --all  ");
@@ -512,7 +515,6 @@ public class NewSingleJobTest {
         assertEquals("nightly", job.getProjectName());
         assertEquals("agent-a", job.getNodeLabel());
         assertEquals(2, job.getOptionErrorLevel());
-        assertEquals("Text", job.getOptionHTMLBuildDesc());
         assertEquals("lint-results.xml", job.getPclpResultsPattern());
         assertEquals("archivedResults/project.vcr",
             job.getExternalResultsFilename());
