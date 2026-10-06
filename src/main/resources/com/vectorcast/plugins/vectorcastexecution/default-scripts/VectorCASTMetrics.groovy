@@ -133,10 +133,13 @@ class VectorCASTMetricsImpl {
             """
         }
 
-        // run the metrics at the end
+        // Preserve the build log for CBT skipped-test analysis. Keep the
+        // environment full reports parallel; vcast_exec --utfull is serial.
+        def cbtReportOption = VC.useCBT ? '--aggregate-rebuild' : ''
+        def ciOption = VC.useCI ? '--ci' : ''
         cmds += """
-            _VECTORCAST_DIR/vpython  "${script.env.WORKSPACE}"/vc_scripts/generate-results.py  ${VC.mpName} --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --junit --extended ${extraOptStr} --buildlog unstashed_build.log"
-            _VECTORCAST_DIR/vpython  "${script.env.WORKSPACE}"/vc_scripts/parallel_full_reports.py  ${VC.mpName} --jobs max
+            _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/vcast_exec.py "${VC.mpName}" --junit --cobertura_extended --buildlog unstashed_build.log --no-start-line --aggregate --metrics --fullstatus --fixup-reports --noindex ${cbtReportOption} ${ciOption} ${extraOptStr}
+            _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/parallel_full_reports.py "${VC.mpName}" --jobs max
         """
 
         if (VC.useRGW3) {
@@ -146,10 +149,9 @@ class VectorCASTMetricsImpl {
             """
         }
 
+        // Build the index after the parallel environment reports are present.
         cmds += """
-            _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/incremental_build_report_aggregator.py ${mpName} --verbose
-            _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/full_report_no_toc.py "${VC.mpName}"
-            _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}"  ${VC.useCI} --create-report=aggregate   --output=${mpName}_aggregate_report.html"
+            _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/create_index_html.py "${VC.mpName}" --output-dir "${script.env.WORKSPACE}"
         """
 
         if (VC.useImpRst) {

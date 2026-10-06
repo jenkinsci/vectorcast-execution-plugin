@@ -126,6 +126,11 @@ class VectorCASTExecute(object):
         self.metrics = args.metrics
         self.fullstatus = args.fullstatus
         self.aggregate = args.aggregate
+        self.buildlog = args.buildlog
+        self.generate_individual_reports = not args.dont_generate_individual_reports
+        self.no_start_line = args.no_start_line
+        self.fixup_reports = args.fixup_reports
+        self.aggregate_rebuild = args.aggregate_rebuild
         self.pclp_output_html = args.pclp_output_html
         self.pclp_input = args.pclp_input
 
@@ -388,18 +393,25 @@ class VectorCASTExecute(object):
         generate_results.print_exc = self.print_exc
         generate_results.timing = self.timing
 
-        if checkVectorCASTVersion(21, quiet=True):
+        if not self.no_start_line and checkVectorCASTVersion(21, quiet=True):
             self.useStartLine = True
         else:
             self.useStartLine = False
+
+        cbt_dict = None
+        if self.buildlog:
+            from parse_console_for_cbt import ParseConsoleForCBT
+            with open(self.buildlog, "rb") as build_log:
+                lines = [line.decode(self.encFmt, "replace") for line in build_log]
+            cbt_dict = ParseConsoleForCBT(self.verbose).parse(lines)
 
         self.failed_count, self.passed_count = generate_results.buildReports(
                 FullManageProjectName = self.FullMP,
                 level =self.level,
                 envName = self.environment,
-                generate_individual_reports = True,
+                generate_individual_reports = self.generate_individual_reports,
                 timing = self.timing,
-                cbtDict = None,
+                cbtDict = cbt_dict,
                 use_archive_extract = False,
                 report_only_failures = False,
                 no_full_report = False,
@@ -484,12 +496,21 @@ class VectorCASTExecute(object):
             self.manageWait.exec_manage_command ("--create-report=metrics --output=" + met_rpt_name)
             self.needIndexHtml = True
         if self.fullstatus:
-            fs_rpt_name =self.mpName + "_full_status_report.html"
+            fs_rpt_name = self.mpName + ("_full_report.html" if self.fixup_reports
+                                         else "_full_status_report.html")
             if os.path.exists(fs_rpt_name):
                 os.remove(fs_rpt_name)
             print("Creating Full Status Report")
             self.manageWait.exec_manage_command ("--full-status=" + fs_rpt_name)
             self.needIndexHtml = True
+
+    def finishJenkinsReports(self):
+        if self.fixup_reports:
+            from full_report_no_toc import fixup_full_status_reports
+            fixup_full_status_reports(self.FullMP)
+        if self.aggregate_rebuild:
+            from incremental_build_report_aggregator import parse_html_files
+            parse_html_files(self.mpName, self.verbose)
 
     def reportCreate(self, report_type, desc):
         from vector.apps.DataAPI.vcproject_api import VCProjectApi
@@ -682,6 +703,12 @@ if __name__ == '__main__':
     metricsGroup.add_argument('--cobertura_extended', help='Generate coverage results in extended Cobertura xml format', action="store_true", default = False)
     metricsGroup.add_argument('--lcov', help='Generate coverage results in an LCOV format', action="store_true", default = False)
     metricsGroup.add_argument('--junit', help='Generate test results in Junit xml format', action="store_true", default = False)
+    metricsGroup.add_argument('--buildlog', help='Build log for CBT skipped-test analysis', default=None)
+    metricsGroup.add_argument('--dont-gen-exec-rpt', '--dont-generate-individual-reports',
+                              dest='dont_generate_individual_reports', action='store_true', default=False,
+                              help='Do not generate per-test execution reports')
+    metricsGroup.add_argument('--no-start-line', action='store_true', default=False,
+                              help='Keep the existing Jenkins JUnit source-line value of zero')
     metricsGroup.add_argument('--export_rgw', help='Export RGW data', action="store_true", default = False)
     metricsGroup.add_argument('--junit_use_cte_for_classname', help=argparse.SUPPRESS, action="store_true", dest="use_cte")
     metricsGroup.add_argument('--sonarqube', help='Generate test results in SonarQube Generic test execution report format (CppUnit)', action="store_true", default = False)
@@ -701,6 +728,10 @@ if __name__ == '__main__':
     reportGroup.add_argument('--aggregate', help='Generate aggregate coverage report VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--metrics', help='Generate metrics reports for VectorCAST Project', action="store_true", default = False)
     reportGroup.add_argument('--fullstatus', help='Generate full status reports for VectorCAST Project', action="store_true", default = False)
+    reportGroup.add_argument('--fixup-reports', dest='fixup_reports', action='store_true', default=False,
+                             help='Create Jenkins summary HTML fragments from full-status and metrics reports')
+    reportGroup.add_argument('--aggregate-rebuild', dest='aggregate_rebuild', action='store_true', default=False,
+                             help='Combine parallel incremental rebuild reports for the Jenkins summary')
     reportGroup.add_argument('--utfull', help='Generate Full Reports for each VectorCAST environment in project', action="store_true", default = False)
     reportGroup.add_argument('--tcmr', help='Generate Test Cases Management Reports for each VectorCAST environment in project', action="store_true", default = False)
     reportGroup.add_argument('--noindex', help='Stops index.html report that ties all the other HTML reports together from being created', action="store_true", default = False)
@@ -723,6 +754,9 @@ if __name__ == '__main__':
     actionGroup.add_argument('--version', help='Displays the version information', action="store_true", default = False)
 
     args = parser.parse_args()
+
+    if args.fixup_reports and not (args.fullstatus and args.metrics):
+        parser.error('--fixup-reports requires --fullstatus and --metrics')
     
     if args.importedResults and not args.incremental:
         print("[INFO] Calling conflict of --use_import_result and not --incremental")
@@ -793,6 +827,8 @@ if __name__ == '__main__':
 
     if args.utfull:
         vcExec.generateUtFullReport()
+
+    vcExec.finishJenkinsReports()
 
     if vcExec.needIndexHtml and not vcExec.noIndex:
         vcExec.generateIndexHtml()

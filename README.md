@@ -164,7 +164,7 @@ Single Job creates a Single Jenkins Job to build/execute and (optionally) report
 
 Pipeline Job creates a Pipeline Jenkins Job to build/execute and (optionally) report on all environments in a VectorCAST Project in parallel. A Pipeline script (Jenkinsfile) is created to run a build/execute job for each environment and an overall job to combine the results.
 
-:warning: *Pipeline Jobs require VectorCAST 2018 as a minimum version and VectorCAST 2019SP3 to perform parallel execution on a single VectorCAST Project.*
+:warning: *VectorCAST jobs require VectorCAST 2023 or newer. The legacy test targets are VectorCAST 2023SP7 and 2025SP8.*
 
 ![](docs/images/pipeline_create.png)
 

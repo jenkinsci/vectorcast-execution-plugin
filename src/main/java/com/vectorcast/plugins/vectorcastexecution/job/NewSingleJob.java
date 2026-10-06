@@ -222,7 +222,6 @@ public class NewSingleJob extends BaseJob {
       addEnvVars += "VCAST_USE_IMPORTED_RESULTS=0\n";
     }
 
-    addEnvVars += "VCAST_USE_COVERAGE_PLUGIN=1\n";
     return addEnvVars;
   }
 
@@ -264,8 +263,6 @@ public class NewSingleJob extends BaseJob {
     } else {
       addEnvVars += "set VCAST_USE_IMPORTED_RESULTS=FALSE\n";
     }
-
-    addEnvVars += "set VCAST_USE_COVERAGE_PLUGIN=TRUE\n";
 
     return addEnvVars;
   }

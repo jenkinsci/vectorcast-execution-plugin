@@ -1,8 +1,10 @@
 """Focused tests for the packaged reporting scripts (run with vpython)."""
 
+import ast
 import contextlib
 import importlib.util
 import io
+import logging
 import os
 from pathlib import Path
 import sys
@@ -17,6 +19,11 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 import check_build_log
 import archive_extract_reports
+import create_index_html
+import full_report_no_toc
+import incremental_build_report_aggregator
+import merge_vcr
+import parse_console_for_cbt
 import runtime_logging
 import vcast_exec
 
@@ -26,7 +33,44 @@ generate_results = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(generate_results)
 
 
+class MergeVcrPathTest(unittest.TestCase):
+    def test_external_result_is_staged_under_new_vcr_directory(self):
+        external_result = os.path.abspath("external.vcr")
+        with mock.patch.object(merge_vcr.os, "makedirs"), \
+             mock.patch.object(merge_vcr.shutil, "copyfile",
+                               side_effect=RuntimeError("stop after staging")) as copy:
+            with self.assertRaisesRegex(RuntimeError, "stop after staging"):
+                merge_vcr.run("original.vcr", external_result, "merged.vcr", False)
+        self.assertEqual(os.path.join("newVcr", "external.vcr"),
+                         copy.call_args.args[1])
+
+
+class IndexReportPathTest(unittest.TestCase):
+    def test_cli_uses_explicit_workspace_directory(self):
+        with mock.patch.object(sys, "argv", ["create_index_html.py", "Project.vcm",
+                                             "--output-dir", "C:/Jenkins Workspace"]), \
+             mock.patch.object(create_index_html, "run", return_value=0) as run:
+            self.assertEqual(0, create_index_html.main())
+        run.assert_called_once_with("Project.vcm", "C:/Jenkins Workspace")
+
+    def test_report_is_written_to_workspace_root(self):
+        workspace = "C:/Jenkins Workspace"
+        with mock.patch("vector.apps.DataAPI.vcproject_api.VCProjectApi") as project, \
+             mock.patch("vector.apps.ReportBuilder.custom_report.CustomReport.report_from_api") as report, \
+             mock.patch.object(create_index_html, "baseOutputDir", ""):
+            create_index_html.create_index_html("Project.vcm", output_dir=workspace)
+        self.assertEqual(os.path.join(workspace, "index.html"),
+                         report.call_args.kwargs["output_file"])
+        project.return_value.close.assert_called_once_with()
+
+
 class RuntimeScriptsTest(unittest.TestCase):
+    def test_all_packaged_scripts_parse_as_python_39(self):
+        for path in sorted(SCRIPT_DIR.rglob("*.py")):
+            with self.subTest(script=path.name):
+                ast.parse(path.read_text(encoding="utf-8-sig"),
+                          filename=str(path), feature_version=(3, 9))
+
     def setUp(self):
         logger = runtime_logging._LOGGER
         for handler in logger.handlers[:]:
@@ -62,11 +106,14 @@ class RuntimeScriptsTest(unittest.TestCase):
             self.assertIn("broken report", output)
         self.assertEqual(2, check_build_log.check_build_log("command.log"))
 
-    def test_version_24_or_newer_is_required_and_api_is_closed(self):
-        for version, accepted in (("24", True), ("24sp4", True),
+    def test_version_23_or_newer_is_required_and_api_is_closed(self):
+        for version, accepted in (("23", True), ("23sp7", True),
+                                  ("23.sp7 (02/13/24)", True),
+                                  ("24", True), ("24sp4", True),
                                   ("24.sp4", True), ("25.sp4", True),
                                   ("26.sp4 (09/07/26)", True),
-                                  ("23.sp4", False), ("unknown", False)):
+                                  ("22", False), ("22.sp7", False),
+                                  ("230", False), ("unknown", False)):
             with self.subTest(version=version):
                 api = mock.Mock(tool_version=version)
                 with mock.patch.object(generate_results, "VCProjectApi",
@@ -74,7 +121,7 @@ class RuntimeScriptsTest(unittest.TestCase):
                     if accepted:
                         generate_results.require_supported_data_api("project.vcm")
                     else:
-                        with self.assertRaisesRegex(RuntimeError, "24 or newer DataAPI"):
+                        with self.assertRaisesRegex(RuntimeError, "23 or newer DataAPI"):
                             generate_results.require_supported_data_api("project.vcm")
                 api.close.assert_called_once_with()
 
@@ -121,6 +168,85 @@ class RuntimeScriptsTest(unittest.TestCase):
              mock.patch.dict(sys.modules, {"parallel_build_execute": None}):
             with self.assertRaisesRegex(RuntimeError, "before VectorCAST 25"):
                 executor.runExec()
+
+    def test_vcast_exec_passes_build_log_cbt_data_to_junit(self):
+        Path("unstashed_build.log").write_text("CBT log line\n", encoding="utf-8")
+        executor = object.__new__(vcast_exec.VectorCASTExecute)
+        executor.FullMP = "Project.vcm"
+        executor.buildlog = "unstashed_build.log"
+        executor.encFmt = "utf-8"
+        executor.verbose = False
+        executor.print_exc = False
+        executor.timing = False
+        executor.level = None
+        executor.environment = None
+        executor.generate_individual_reports = True
+        executor.no_start_line = True
+        executor.ci = ""
+        executor.xml_data_dir = "xml_data"
+        executor.cobertura = False
+        executor.cobertura_extended = True
+        executor.useJunitFailCountPct = False
+        executor.needIndexHtml = False
+        with mock.patch.object(parse_console_for_cbt, "ParseConsoleForCBT") as parser, \
+             mock.patch.object(vcast_exec.generate_results, "buildReports",
+                               return_value=(1, 3)) as reports, \
+             mock.patch.object(vcast_exec, "checkVectorCASTVersion", return_value=True):
+            parser.return_value.parse.return_value = {"env": "skipped"}
+            executor.runJunitMetrics()
+        parser.return_value.parse.assert_called_once()
+        self.assertEqual(["CBT log line"],
+                         [line.strip() for line in parser.return_value.parse.call_args.args[0]])
+        self.assertEqual({"env": "skipped"}, reports.call_args.kwargs["cbtDict"])
+        self.assertFalse(reports.call_args.kwargs["generate_coverage"])
+        self.assertFalse(reports.call_args.kwargs["useStartLine"])
+        self.assertEqual((1, 3), (executor.failed_count, executor.passed_count))
+
+    def test_vcast_exec_finishes_only_requested_jenkins_reports(self):
+        executor = object.__new__(vcast_exec.VectorCASTExecute)
+        executor.FullMP = "Project.vcm"
+        executor.mpName = "Project"
+        executor.verbose = True
+        executor.fixup_reports = True
+        executor.aggregate_rebuild = True
+        with mock.patch.object(full_report_no_toc, "fixup_full_status_reports") as fixup, \
+             mock.patch.object(incremental_build_report_aggregator,
+                               "parse_html_files", return_value=True) as aggregate:
+            executor.finishJenkinsReports()
+            fixup.assert_called_once_with("Project.vcm")
+            aggregate.assert_called_once_with("Project", True)
+            executor.aggregate_rebuild = False
+            fixup.reset_mock()
+            aggregate.reset_mock()
+            executor.finishJenkinsReports()
+            fixup.assert_called_once_with("Project.vcm")
+            aggregate.assert_not_called()
+
+    def test_vcast_exec_uses_jenkins_full_report_filename_when_fixing_up(self):
+        executor = object.__new__(vcast_exec.VectorCASTExecute)
+        executor.mpName = "Project"
+        executor.aggregate = False
+        executor.metrics = True
+        executor.fullstatus = True
+        executor.fixup_reports = True
+        executor.needIndexHtml = False
+        executor.manageWait = mock.Mock()
+        executor.runReports()
+        commands = [call.args[0] for call in
+                    executor.manageWait.exec_manage_command.call_args_list]
+        self.assertIn("--create-report=metrics --output=Project_metrics_report.html",
+                      commands)
+        self.assertIn("--full-status=Project_full_report.html", commands)
+
+    def test_full_status_fixup_creates_both_summary_fragments(self):
+        for name in ("Project_full_report.html", "Project_metrics_report.html"):
+            Path(name).write_text("<html>report</html>", encoding="utf-8")
+        with mock.patch.object(full_report_no_toc.fixup_reports,
+                               "fixup_2020_reports") as fixup:
+            full_report_no_toc.fixup_full_status_reports("Project.vcm")
+        for name in ("Project_full_report.html", "Project_metrics_report.html"):
+            self.assertEqual("<html>report</html>", Path(name + "_tmp").read_text())
+        self.assertEqual(2, fixup.call_count)
 
     def test_report_driver_writes_counts_from_manage_api(self):
         Path("project.vcm").touch()
@@ -193,6 +319,70 @@ class RuntimeScriptsTest(unittest.TestCase):
         coverage.assert_called_once_with(
             "project.vcm", xml_data_dir="xml_data", extended=True)
 
+    def test_cobertura_reuses_class_for_source_outside_workspace(self):
+        cobertura = generate_results.cobertura
+        classes = cobertura.etree.Element("classes")
+        metrics = mock.Mock(
+            branches=0, mcdc_branches=0, max_covered_branches=0,
+            max_covered_mcdc_branches=0, max_annotations_branches=0,
+            max_annotations_mcdc_branches=0,
+            max_covered_statements_pct=50,
+            max_covered_mcdc_pairs_pct=0,
+            max_covered_function_calls_pct=0,
+            max_covered_functions_pct=0, statements=2, complexity=1)
+        source = mock.Mock(display_name="source.c", _relative_path="source.c",
+                           display_path="C:/qa/project/source.c", metrics=metrics)
+        with mock.patch.dict(os.environ, {"WORKSPACE": "C:/qa/workspace"}, clear=True):
+            first_methods, first_lines = cobertura.getFileXML(classes, source)
+            second_methods, second_lines = cobertura.getFileXML(classes, source)
+        self.assertIs(first_methods, second_methods)
+        self.assertIs(first_lines, second_lines)
+        self.assertEqual(1, len(classes.findall("class")))
+        self.assertTrue(classes.find("class").attrib["filename"])
+
+    def test_cobertura_reads_relative_source_paths_outside_workspace(self):
+        cobertura = generate_results.cobertura
+        source_root = Path(self.workdir.name) / "external"
+        source = source_root / "nested" / "source.c"
+        source.parent.mkdir(parents=True)
+        source.write_text("int source;", encoding="utf-8")
+        source_api = mock.Mock(source_path=os.path.join("nested", "source.c"),
+                               display_path=os.path.join("nested", "source.c"),
+                               realpath=str(source))
+        cover_api = mock.Mock()
+        cover_api.SourceFile.all.return_value = [source_api]
+
+        original = Path.cwd()
+        with cobertura.source_file_directory(cover_api):
+            self.assertEqual("int source;",
+                             Path(source_api.source_path).read_text(encoding="utf-8"))
+            self.assertEqual(source_root, Path.cwd())
+        self.assertEqual(original, Path.cwd())
+        with self.assertRaisesRegex(RuntimeError, "report failed"):
+            with cobertura.source_file_directory(cover_api):
+                raise RuntimeError("report failed")
+        self.assertEqual(original, Path.cwd())
+
+    def test_cobertura_resolves_environment_paths_from_project_ancestors(self):
+        cobertura = generate_results.cobertura
+        campaign = Path(self.workdir.name) / "campaign"
+        source = campaign / "suite" / "working_dir" / "unit.c"
+        source.parent.mkdir(parents=True)
+        source.write_text("int unit;", encoding="utf-8")
+        project_file = source.parent / "Project.vcm"
+        project_file.touch()
+        relative = os.path.join("suite", "working_dir", "unit.c")
+        source_api = mock.Mock(source_path=relative, display_path=relative,
+                               realpath=str(Path.cwd() / relative))
+        cover_api = mock.Mock()
+        cover_api.SourceFile.all.return_value = [source_api]
+
+        original = Path.cwd()
+        with cobertura.source_file_directory(cover_api, str(project_file)):
+            self.assertEqual("int unit;", Path(relative).read_text(encoding="utf-8"))
+            self.assertEqual(campaign, Path.cwd())
+        self.assertEqual(original, Path.cwd())
+
     def test_generated_jenkins_jobs_request_coverage_once(self):
         templates = (
             SCRIPT_DIR / "baselineSingleJobLinux.txt",
@@ -203,8 +393,10 @@ class RuntimeScriptsTest(unittest.TestCase):
         for template in templates:
             with self.subTest(template=template.name):
                 content = template.read_text(encoding="utf-8")
-                self.assertIn("generate-results.py", content)
-                self.assertIn("--extended", content)
+                self.assertIn("vcast_exec.py", content)
+                self.assertIn("--cobertura_extended", content)
+                self.assertIn("--buildlog", content)
+                self.assertIn("--fixup-reports", content)
                 self.assertNotIn("/cobertura.py", content)
                 self.assertNotIn("\\cobertura.py", content)
 
@@ -212,6 +404,30 @@ class RuntimeScriptsTest(unittest.TestCase):
             encoding="utf-8")
         self.assertNotIn("VectorCASTPublisher", pipeline)
         self.assertNotIn("xml_data/coverage_results*.xml", pipeline)
+
+    def test_incremental_report_aggregator_checks_encoding_before_reports(self):
+        root_logger = logging.getLogger()
+        existing_handlers = set(root_logger.handlers)
+        try:
+            with mock.patch.object(incremental_build_report_aggregator,
+                                   "getVectorCASTEncoding", return_value="utf-8") as encoding:
+                self.assertFalse(
+                    incremental_build_report_aggregator.parse_html_files("Project"))
+        finally:
+            for handler in root_logger.handlers[:]:
+                if handler not in existing_handlers:
+                    root_logger.removeHandler(handler)
+                    handler.close()
+        encoding.assert_called_once_with()
+
+    def test_pipeline_archives_junit_before_coverage_and_skips_empty_coverage(self):
+        pipeline = (SCRIPT_DIR / "baseJenkinsfile.groovy").read_text(
+            encoding="utf-8")
+        self.assertIn("coverageReport?.contains('<packages/>')", pipeline)
+        self.assertLess(pipeline.index("JUnitResultArchiver"),
+                        pipeline.index("recordCoverage"))
+        self.assertLess(pipeline.index("archiveArtifacts allowEmptyArchive"),
+                        pipeline.index("recordCoverage"))
 
     def test_report_archive_includes_cobertura_xml_and_dtd(self):
         Path("management").mkdir()
@@ -247,8 +463,8 @@ class RuntimeScriptsTest(unittest.TestCase):
         Path("xml_data").mkdir()
         Path("xml_data/previous.xml").write_text("preserve")
         with mock.patch.object(generate_results, "VCProjectApi") as factory:
-            factory.return_value.tool_version = "23.sp4"
-            with self.assertRaisesRegex(RuntimeError, "24 or newer DataAPI"):
+            factory.return_value.tool_version = "22.sp4"
+            with self.assertRaisesRegex(RuntimeError, "23 or newer DataAPI"):
                 generate_results.buildReports("project.vcm")
         self.assertTrue(Path("xml_data/previous.xml").exists())
 

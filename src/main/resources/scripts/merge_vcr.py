@@ -65,7 +65,7 @@ def run(origVcrFile, newVcrFile, outputVcrFile, verbose):
     except Exception as e:
         print(e)
     
-    tempNewVcrFile = os.path.join("newVcr",newVcrFile)
+    tempNewVcrFile = os.path.join("newVcr",os.path.basename(newVcrFile))
     tempOrigVcrFile = os.path.join("origVcr",os.path.basename(origVcrFile))
     
     shutil.copyfile(newVcrFile, tempNewVcrFile)

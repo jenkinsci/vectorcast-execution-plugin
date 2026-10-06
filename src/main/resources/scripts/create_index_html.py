@@ -191,11 +191,11 @@ def create_index_html_body ():
     return topLevelEntries, indEnvFullEntries, indEnvTcmrEntries, miscEntries
 
 
-def run(mpName):
+def run(mpName, output_dir=""):
 
     print("Creating index.html for VectorCAST Project Reports")
 
-    create_index_html (mpName)
+    create_index_html(mpName, output_dir=output_dir)
 
     return 0
 
@@ -203,6 +203,8 @@ def run(mpName):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('ManageProject',       help='Manager Project Name')
+    parser.add_argument('--output-dir', default='',
+                        help='Directory for index.html (defaults to the current directory)')
     args = parser.parse_args()
 
 
@@ -212,7 +214,7 @@ def main():
     except:
         prj_dir = os.getcwd().replace("\\","/") + "/"
 
-    return run(mpName)
+    return run(mpName, args.output_dir)
 
 if __name__ == "__main__" :
     sys.exit (main())

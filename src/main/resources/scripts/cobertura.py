@@ -45,6 +45,7 @@ import sys, os
 from collections import defaultdict
 from pprint import pprint
 import argparse
+from contextlib import contextmanager
     
 from pathlib import PureWindowsPath
 
@@ -115,10 +116,13 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
     tmpPath = PureWindowsPath(coverAPI.display_path.replace("\\","/"))
     try:
         repoFilePath = tmpPath.relative_to(tmpRoot).as_posix()
-    except Exception as e:
-        repoFilePath = ""
-        print(e)
-        pass
+    except ValueError:
+        # Manage projects may live outside the Jenkins workspace. Keep a
+        # distinct path for each source file instead of an empty filename.
+        try:
+            repoFilePath = os.path.relpath(str(tmpPath), str(tmpRoot)).replace("\\", "/")
+        except ValueError:
+            repoFilePath = tmpPath.as_posix()
     
     branch_totals = float(coverAPI.metrics.branches + coverAPI.metrics.mcdc_branches)
     branch_covered = float(
@@ -146,9 +150,14 @@ def getFileXML(testXml, coverAPI, verbose = False, extended = False, source_root
         print ("   repoFilePath   = " + repoFilePath)
 
     for element in testXml.iter():
-        if element.tag == "class" and element.attrib['filename'] == fpath:
+        if element.tag == "class" and element.attrib['filename'] == repoFilePath:
             file = element
-            lines = file[0]
+            methods = file.find("methods")
+            lines = file.find("lines")
+            if methods is None:
+                methods = etree.SubElement(file, "methods")
+            if lines is None:
+                lines = etree.SubElement(file, "lines")
 
     if file == None:
         file = etree.SubElement(testXml, "class")
@@ -289,20 +298,64 @@ def has_anything_covered(line):
         line.metrics.max_annotations_functions +
         line.metrics.max_annotations_function_calls)
 
+def get_lis_mcdc_pairs_by_line(file_api):
+    """Recover pairs omitted by the LIS SourceLine metrics adapter.
+
+    SourceFunction metrics take maximum counts across instrumentations. Apply
+    the same rule per function/line, then sum distinct source functions. Count
+    conditions with a satisfied independence pair, not all possible row pairs.
+    SFP already supplies these metrics and must not use this fallback.
+    """
+    try:
+        from vector.apps.DataAPI.coverdb import SourceCoverageMode
+    except ImportError:
+        return {}
+    if file_api.coverdb.coverage_mode.get_source_coverage_mode() != \
+            SourceCoverageMode.LIS_SOURCE_COVERAGE_MODE:
+        return {}
+
+    result = defaultdict(lambda: [0, 0])
+    for function in file_api.functions:
+        if not function.metrics.mcdc_pairs:
+            # Simplified condition coverage intentionally has no pair metric.
+            continue
+        function_lines = defaultdict(lambda: [0, 0])
+        for instrumentation in function.instrumented_functions:
+            instrumentation_lines = defaultdict(lambda: [0, 0])
+            for decision in instrumentation.mcdc_decisions:
+                if decision.is_branch:
+                    continue
+                counts = instrumentation_lines[decision.start_line]
+                for condition in decision.conditions:
+                    counts[1] += 1
+                    counts[0] += int(condition.get_covered_pair() is not None)
+            for number, counts in instrumentation_lines.items():
+                merged = function_lines[number]
+                merged[0] = max(merged[0], counts[0])
+                merged[1] = max(merged[1], counts[1])
+        for number, counts in function_lines.items():
+            result[number][0] += counts[0]
+            result[number][1] += counts[1]
+    return dict(result)
+
+
 def processStatementBranchMCDC(fileApi, lines, extended = False):
 
     linesTotal = 0
     linesCovered = 0
 
+    lis_pairs = get_lis_mcdc_pairs_by_line(fileApi) if extended else {}
+
     for line in fileApi.iterate_coverage():
-        if not has_any_coverage(line):
+        pair_counts = lis_pairs.get(line.line_number, (0, 0))
+        if not has_any_coverage(line) and not pair_counts[1]:
             continue
 
         linesTotal += 1
 
         covEle = getLineCoverageElementXML(lines,line.line_number)
 
-        if has_anything_covered(line):
+        if has_anything_covered(line) or pair_counts[0]:
             linesCovered += 1
             covEle.attrib['hits'] = "1"
 
@@ -339,6 +392,9 @@ def processStatementBranchMCDC(fileApi, lines, extended = False):
             totalPr = line.metrics.mcdc_pairs
             coverPr = line.metrics.max_covered_mcdc_pairs
             pairPct = (coverPr * 100 ) / totalPr
+        elif pair_counts[1]:
+            coverPr, totalPr = pair_counts
+            pairPct = (coverPr * 100) / totalPr
 
         ## function call
         totalFc = -1.0
@@ -358,7 +414,7 @@ def processStatementBranchMCDC(fileApi, lines, extended = False):
         hasBranches = False
         pairPctString = None
         branchPctString = None
-        if line.metrics.branches + line.metrics.mcdc_branches + line.metrics.mcdc_pairs:
+        if line.metrics.branches + line.metrics.mcdc_branches + totalPr:
             hasBranches = True
             if branchPct == -1:
                 branchPctString = "0.0% (0/0)"
@@ -441,12 +497,70 @@ def procesCoverage(coverXML, coverApi, extended = False, source_root = ""):
 
     return processStatementBranchMCDC(coverApi, lines, extended)
 
+@contextmanager
+def source_file_directory(api, project_file=None):
+    """Resolve project source paths stored relative to a different directory.
+
+    CoverDb's iterate_coverage() opens SourceFile.source_path relative to the
+    process directory. Jenkins may run this exporter in a workspace while the
+    project was created in an external directory. Search the project file's
+    ancestors for a base that resolves the stored source path, falling back
+    to an absolute DataAPI path. Restore the caller's directory afterward.
+    """
+    previous = os.getcwd()
+    source_directory = None
+    ancestors = []
+    if project_file:
+        parent = os.path.dirname(os.path.abspath(project_file))
+        while parent:
+            ancestors.append(parent)
+            next_parent = os.path.dirname(parent)
+            if next_parent == parent:
+                break
+            parent = next_parent
+    sources = api.SourceFile.all() if api is not None else ()
+    for source in sources:
+        relative = source.source_path
+        if not relative or os.path.isabs(relative):
+            continue
+        relative = os.path.normpath(relative)
+        for candidate in ancestors:
+            if os.path.isfile(os.path.join(candidate, relative)):
+                source_directory = candidate
+                break
+        if source_directory:
+            break
+        for absolute in (source.realpath, source.display_path):
+            if not absolute or not os.path.isabs(absolute):
+                continue
+            absolute = os.path.normpath(absolute)
+            if not os.path.normcase(absolute).endswith(os.path.normcase(relative)):
+                continue
+            candidate = absolute[:-len(relative)].rstrip("\\/")
+            if candidate and os.path.isfile(os.path.join(candidate, relative)):
+                source_directory = candidate
+                break
+        if source_directory:
+            break
+    try:
+        if source_directory:
+            os.chdir(source_directory)
+        yield
+    finally:
+        if source_directory:
+            os.chdir(previous)
+
+
 def runCoverageResultsMP(packages, mpFile, verbose = False, extended=False, source_root = ""):
 
     vcproj = VCProjectApi(mpFile)
     api = vcproj.project.cover_api
-    results = runCoberturaResults(packages, api, verbose = False, extended = extended, source_root = source_root)
-    vcproj.close()
+    try:
+        with source_file_directory(api, mpFile):
+            results = runCoberturaResults(packages, api, verbose = verbose,
+                                          extended = extended, source_root = source_root)
+    finally:
+        vcproj.close()
 
     return results
 
@@ -918,36 +1032,20 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data",
     if MCDC_rate   != -1.0: print ("mcdc pairs: {:.2f}% ({:d} out of {:d})".format(MCDC_rate*100.0, cov_mcdc, total_mcdc))
 
     # use selected coverage from --covToDisplay option
-    match covToDisplay:
-        case "statement":
-            if statement_rate != -1.0: 
-                print ("coverage: {:.2f}% of statements".format(statement_rate*100.0))
-            else:
-                print (f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
-
-        case "branch":
-            if branch_rate != -1.0: 
-                print ("coverage: {:.2f}% of branch".format(branch_rate*100.0))
-            else:
-                print (f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
-
-        case "mcdc":
-            if MCDC_rate != -1.0: 
-                print ("coverage: {:.2f}% of mcdc pairs".format(MCDC_rate*100.0))
-            else:
-                print (f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
-
-        case "function":
-            if func_rate != -1.0: 
-                print ("coverage: {:.2f}% of functions".format(func_rate*100.0))
-            else:
-                print (f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
-
-        case "functioncall":
-            if FC_rate != -1.0: 
-                print ("coverage: {:.2f}% of function calls".format(FC_rate*100.0))
-            else:
-                print (f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
+    coverage_to_display = {
+        "statement": (statement_rate, "statements"),
+        "branch": (branch_rate, "branch"),
+        "mcdc": (MCDC_rate, "mcdc pairs"),
+        "function": (func_rate, "functions"),
+        "functioncall": (FC_rate, "function calls"),
+    }
+    if covToDisplay in coverage_to_display:
+        selected_rate, coverage_name = coverage_to_display[covToDisplay]
+        if selected_rate != -1.0:
+            print("coverage: {:.2f}% of {}".format(
+                selected_rate * 100.0, coverage_name))
+        else:
+            print(f"[ERROR] selected coverage {covToDisplay} has no coverage metrics")
         
     if complexity       != -1.0: print ("complexity: {:d}".format(complexity))
     source = etree.SubElement(sources, "source")

@@ -4,6 +4,8 @@ import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.scm.NullSCM;
 import hudson.model.FreeStyleProject;
 import io.jenkins.plugins.coverage.metrics.steps.CoverageRecorder;
+import io.jenkins.plugins.coverage.metrics.model.Baseline;
+import io.jenkins.plugins.util.QualityGate.QualityGateCriticality;
 import edu.hm.hafner.coverage.Metric;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -102,6 +104,10 @@ class VectorCASTFolderActionTest {
             assertNotNull(recorder);
             assertEquals(List.of(Metric.LINE, Metric.BRANCH), recorder.getQualityGates()
                 .stream().map(gate -> gate.getMetric()).toList());
+            assertEquals(List.of(Baseline.PROJECT_DELTA, Baseline.PROJECT_DELTA),
+                recorder.getQualityGates().stream().map(gate -> gate.getBaseline()).toList());
+            assertEquals(List.of(QualityGateCriticality.NOTE, QualityGateCriticality.FAILURE),
+                recorder.getQualityGates().stream().map(gate -> gate.getCriticality()).toList());
             assertInstanceOf(HttpRedirect.class, singleController.doCreate(request, response));
             assertNotNull(singleController.getException());
             assertEquals(freestyle.getFullName(), singleController.getException().getProject());

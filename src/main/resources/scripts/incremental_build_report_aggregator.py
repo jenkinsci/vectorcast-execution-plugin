@@ -28,6 +28,7 @@ import logging
 import os
 import shutil
 from bs4 import BeautifulSoup
+from vcast_utils import getVectorCASTEncoding
 
 def parse_html_files(mpName, verbose = False):
     """

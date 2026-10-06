@@ -705,13 +705,13 @@ public abstract class BaseJob {
             CoverageQualityGate statement =
                 new CoverageQualityGate(Metric.LINE);
 
-            statement.setBaseline(Baseline.PROJECT);
-            statement.setCriticality(QualityGateCriticality.ERROR);
+            statement.setBaseline(Baseline.PROJECT_DELTA);
+            statement.setCriticality(QualityGateCriticality.NOTE);
             statement.setThreshold(COVERAGE_THRESHOLD);
 
             CoverageQualityGate branch = new CoverageQualityGate(Metric.BRANCH);
-            branch.setBaseline(Baseline.PROJECT);
-            branch.setCriticality(QualityGateCriticality.ERROR);
+            branch.setBaseline(Baseline.PROJECT_DELTA);
+            branch.setCriticality(QualityGateCriticality.FAILURE);
             branch.setThreshold(COVERAGE_THRESHOLD);
 
             qualityGates.add(statement);

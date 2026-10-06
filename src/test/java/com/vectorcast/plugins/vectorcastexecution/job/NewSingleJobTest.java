@@ -475,6 +475,8 @@ public class NewSingleJobTest {
         assertTrue(command.getUnixCommand().contains("VCAST_CUSTOM_REPORT_FORMAT=HTML"));
         assertFalse(command.getWinCommand().contains("VCAST_HTML_OR_TEXT"));
         assertFalse(command.getUnixCommand().contains("VCAST_HTML_OR_TEXT"));
+        assertFalse(command.getWinCommand().contains("VCAST_USE_COVERAGE_PLUGIN"));
+        assertFalse(command.getUnixCommand().contains("VCAST_USE_COVERAGE_PLUGIN"));
         assertTrue(command.getWinCommand().contains("--dont-gen-exec-rpt"));
         assertTrue(command.getWinCommand().contains("VCAST_USE_CBT=\n"));
         assertTrue(command.getUnixCommand().contains("source setup-unix.sh"));

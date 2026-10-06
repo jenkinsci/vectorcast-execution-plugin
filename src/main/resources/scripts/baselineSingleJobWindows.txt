@@ -48,12 +48,10 @@ if exist "%VCAST_PROJECT_BASENAME%_rebuild.html" (
 
 if "%VCAST_OPTION_USE_REPORTING%" == "TRUE" (
     %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --config VCAST_CUSTOM_REPORT_FORMAT=HTML"
-    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\generate-results.py" --junit --extended --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% %VCAST_PROJECT_NAME% %VCAST_DONT_GENERATE_EXEC_RPT% --buildlog complete_build.log
+    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\vcast_exec.py" "%VCAST_PROJECT_NAME%" --junit --cobertura_extended --buildlog complete_build.log --no-start-line --aggregate --metrics --fullstatus --fixup-reports %VCAST_DONT_GENERATE_EXEC_RPT%
     if "%VCAST_USE_RGW3%"=="TRUE" (
         %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --clicast-args rgw export"
     ) 
-    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\full_report_no_toc.py" "%VCAST_PROJECT_NAME%" 
-    %VECTORCAST_DIR%\vpython "%WORKSPACE%\vc_scripts\managewait.py" --wait_time %VCAST_WAIT_TIME% --wait_loops %VCAST_WAIT_LOOPS% --command_line "--project %VCAST_PROJECT_NAME% --create-report=aggregate --output=""%VCAST_PROJECT_BASENAME%_aggregate_report.html"""
 
     :: Use Imported Results
     if "%VCAST_USE_IMPORTED_RESULTS%"=="TRUE" if "%VCAST_USE_LOCAL_IMPORTED_RESULTS%"=="TRUE" ( 

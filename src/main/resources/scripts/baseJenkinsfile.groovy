@@ -111,28 +111,6 @@ def pluginCreateSummary(inIcon, inText) {
 }
 
 // ===============================================================
-def pprint(obj) {
-    if (obj instanceof Map) {
-        obj.each { key, value ->
-            println "${key}: ${value}"
-        }
-    }
-    else if (obj instanceof Collection) {
-        obj.eachWithIndex { value, index ->
-            println "${index}: ${value}"
-        }
-    }
-    else if (obj?.getClass()?.isArray()) {
-        obj.eachWithIndex { value, index ->
-            println "${index}: ${value}"
-        }
-    }
-    else {
-        println obj
-    }
-}
-
-// ===============================================================
 def makeStepFromSpec(VC, spec) {
     return {
         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
@@ -262,9 +240,6 @@ pipeline {
         stage('Get Environment Info') {
             steps {
                 script {
-
-                    pprint(VC)
-                    
                     if (currentBuild.description == null) {
                         currentBuild.description = ""
                     }
@@ -359,7 +334,7 @@ pipeline {
                             buildFileNames << ret.buildFileName
 
                             unstash(ret.stashName)
-                            buildLogText += runCommands(cmds)
+                            buildLogText += runCommands(ret.cmds)
                         }
 
                         concatenateBuildLogs(buildFileNames, "unstashed_build.log")
@@ -375,13 +350,6 @@ pipeline {
 
                         if (failureFlag) throw new Exception ("Error in Commands: " + foundKeywords)
 
-                        // Send reports to the Jenkins Coverage Plugin
-                        discoverReferenceBuild()
-                        if (VC.useCoverHist) {
-                            recordCoverage qualityGates: [[baseline: 'PROJECT_DELTA', criticality: 'NOTE', metric: 'LINE', threshold: -0.001], [baseline: 'PROJECT_DELTA', criticality: 'FAILURE', metric: 'BRANCH', threshold: -0.001]], tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
-                        } else {
-                            recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
-                        }
                     }
 
                     // Send test results to JUnit plugin
@@ -389,6 +357,23 @@ pipeline {
 
                     // Save all the html, xml, and txt files
                     archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.html, xml_data/**/*.xml, unit_test_*.txt, **/*.png, **/*.css, complete_build.log, *_results.vcr'
+
+                    script {
+                        // A project without instrumented sources produces an empty Cobertura
+                        // report. Coverage cannot parse it, but JUnit and artifacts remain valid.
+                        def mpName = VectorCASTUtils.getMpName(VC.mpName)
+                        def coverageReport = readIfExists("xml_data/cobertura/coverage_results_${mpName}.xml")
+                        if (coverageReport?.contains('<packages/>')) {
+                            echo 'No VectorCAST coverage metrics to publish'
+                        } else {
+                            discoverReferenceBuild()
+                            if (VC.useCoverHist) {
+                                recordCoverage qualityGates: [[baseline: 'PROJECT_DELTA', criticality: 'NOTE', metric: 'LINE', threshold: -0.001], [baseline: 'PROJECT_DELTA', criticality: 'FAILURE', metric: 'BRANCH', threshold: -0.001]], tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
+                            } else {
+                                recordCoverage tools: [[parser: 'VECTORCAST', pattern: 'xml_data/cobertura/coverage_results*.xml']]
+                            }
+                        }
+                    }
                 }
             }
         }

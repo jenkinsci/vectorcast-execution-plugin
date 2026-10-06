@@ -29,7 +29,7 @@ class VectorCASTExecutionImpl {
             cmds += "_VECTORCAST_DIR/vpython \"${script.env.WORKSPACE}\"/vc_scripts/patch_rgw_directory.py \"${VC.mpName}\"\n"
         }
         cmds += """
-            ${VC.preamble} _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} --level ${level} -e ${environment} --build-execute ${VC.useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
+            ${VC.preamble} _VECTORCAST_DIR/vpython "${script.env.WORKSPACE}"/vc_scripts/managewait.py --wait_time ${VC.waitTime} --wait_loops ${VC.waitLoops} --command_line "--project "${VC.mpName}" ${VC.useCI} ${VC.sharedBldDir ?: ''} --level ${level} -e ${environment} --build-execute ${VC.useCBT} --output ${compiler}_${test_suite}_${environment}_rebuild.html"
             ${VC.teardown}
         """
 

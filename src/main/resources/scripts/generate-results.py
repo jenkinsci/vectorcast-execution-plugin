@@ -56,9 +56,9 @@ def require_supported_data_api(project_file):
     finally:
         api.close()
     match = re.match(r"^(\d{2})(?!\d)", version.strip())
-    if match is None or int(match.group(1)) < 24:
+    if match is None or int(match.group(1)) < 23:
         raise RuntimeError(
-            "VectorCAST 24 or newer DataAPI is required; found " + version)
+            "VectorCAST 23 or newer DataAPI is required; found " + version)
 
 
 def useManageAPI(FullManageProjectName, cbtDict, generate_exec_rpt_each_testcase, use_archive_extract, report_only_failures, no_full_report, useStartLine, teePrint, use_cte):
