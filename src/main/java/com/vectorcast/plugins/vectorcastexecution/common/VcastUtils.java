@@ -23,31 +23,28 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.common;
 
+import com.vectorcast.plugins.vectorcastexecution.Messages;
+import hudson.PluginWrapper;
+import hudson.model.AutoCompletionCandidates;
+import hudson.model.Label;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
+import hudson.security.PermissionScope;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Optional;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import hudson.PluginWrapper;
-import hudson.security.Permission;
-import hudson.security.PermissionGroup;
-import hudson.security.PermissionScope;
 import jenkins.model.Jenkins;
-
-import hudson.model.Label;
-import hudson.model.AutoCompletionCandidates;
-
-import com.vectorcast.plugins.vectorcastexecution.Messages;
 
 /** Utility class for VectorCAST. */
 public class VcastUtils {
 
     /** Logger for plugin diagnostics. */
-    private static final Logger LOGGER = Logger.getLogger(VcastUtils.class
-        .getName());
+    private static final Logger LOGGER = Logger.getLogger(VcastUtils.class.getName());
 
     /** Plugin short name used by Jenkins' plugin manager. */
     private static final String PLUGIN_SHORT_NAME = "vectorcast-execution";
@@ -61,25 +58,22 @@ public class VcastUtils {
     /** Permission of current view. */
     private static volatile Permission viewPermission;
 
-   /**
+    /**
      * Get the current view permissions.
      * @return Permission for current view
      */
     public static synchronized Permission getViewPermission() {
         if (viewPermission == null) {
-            PermissionGroup group = new PermissionGroup(
-                VcastUtils.class,
-                Messages._VectorCASTRootAction_PermissionGroup()
-            );
+            PermissionGroup group =
+                    new PermissionGroup(VcastUtils.class, Messages._VectorCASTRootAction_PermissionGroup());
 
             viewPermission = new Permission(
-                group,
-                "View",
-                Messages._VectorCASTRootAction_ViewPermissionDescription(),
-                Jenkins.ADMINISTER,
-                true,
-                new PermissionScope[]{PermissionScope.JENKINS}
-            );
+                    group,
+                    "View",
+                    Messages._VectorCASTRootAction_ViewPermissionDescription(),
+                    Jenkins.ADMINISTER,
+                    true,
+                    new PermissionScope[] {PermissionScope.JENKINS});
         }
         return viewPermission;
     }
@@ -91,31 +85,26 @@ public class VcastUtils {
     public static Optional<String> getVersion() {
         Jenkins instance = Jenkins.getInstanceOrNull();
         if (instance != null) {
-            PluginWrapper plugin = instance.getPluginManager().getPlugin(
-                PLUGIN_SHORT_NAME);
+            PluginWrapper plugin = instance.getPluginManager().getPlugin(PLUGIN_SHORT_NAME);
             if (plugin != null) {
                 return Optional.of(plugin.getVersion());
             }
         }
 
-        String implementationVersion = VcastUtils.class.getPackage()
-            .getImplementationVersion();
+        String implementationVersion = VcastUtils.class.getPackage().getImplementationVersion();
         if (implementationVersion != null) {
             return Optional.of(implementationVersion);
         }
 
-        URL source = VcastUtils.class.getProtectionDomain().getCodeSource()
-            .getLocation();
+        URL source = VcastUtils.class.getProtectionDomain().getCodeSource().getLocation();
         if (!"file".equals(source.getProtocol())
                 || !source.getPath().toLowerCase().endsWith(".jar")) {
             return Optional.empty();
         }
         try (JarFile archive = new JarFile(new File(source.toURI()))) {
-            return Optional.ofNullable(archive.getManifest()
-                .getMainAttributes().getValue("Plugin-Version"));
+            return Optional.ofNullable(archive.getManifest().getMainAttributes().getValue("Plugin-Version"));
         } catch (IOException | URISyntaxException ex) {
-            LOGGER.log(Level.FINE, "Unable to read VectorCAST plugin version",
-                ex);
+            LOGGER.log(Level.FINE, "Unable to read VectorCAST plugin version", ex);
             return Optional.empty();
         }
     }
@@ -130,8 +119,8 @@ public class VcastUtils {
             return null;
         }
         return supportsMonochromeIcons(Jenkins.VERSION)
-            ? "/plugin/vectorcast-execution/icons/vector_favicon_bw.png"
-            : "/plugin/vectorcast-execution/icons/vector_favicon.png";
+                ? "/plugin/vectorcast-execution/icons/vector_favicon_bw.png"
+                : "/plugin/vectorcast-execution/icons/vector_favicon.png";
     }
 
     private static boolean supportsMonochromeIcons(final String version) {
@@ -139,12 +128,9 @@ public class VcastUtils {
         try {
             int major = Integer.parseInt(components[0]);
             int minor = Integer.parseInt(components[1]);
-            return major > MONOCHROME_ICON_MAJOR
-                || (major == MONOCHROME_ICON_MAJOR
-                && minor >= MONOCHROME_ICON_MINOR);
+            return major > MONOCHROME_ICON_MAJOR || (major == MONOCHROME_ICON_MAJOR && minor >= MONOCHROME_ICON_MINOR);
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-            LOGGER.log(Level.FINE, "Unable to parse Jenkins version: {0}",
-                version);
+            LOGGER.log(Level.FINE, "Unable to parse Jenkins version: {0}", version);
             return false;
         }
     }
@@ -164,17 +150,15 @@ public class VcastUtils {
      * @return AutoCompletionCandidates with the list of the potential
      *         node matches
      */
-    public static AutoCompletionCandidates completeNodeLabel(
-            final String value) {
+    public static AutoCompletionCandidates completeNodeLabel(final String value) {
 
         AutoCompletionCandidates c = new AutoCompletionCandidates();
 
         for (Label l : Jenkins.get().getLabels()) {
-            if (l.getName().startsWith(value)) {               
+            if (l.getName().startsWith(value)) {
                 c.add(l.getName());
             }
         }
         return c;
     }
-
 }

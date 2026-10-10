@@ -1,10 +1,9 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
-import org.jenkinsci.plugins.workflow.cps.CpsScript;
-
 import java.io.Serial;
 import java.util.Map;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
+import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 /**
  * Pipeline global bridge for {@code VectorCASTLogs}.
@@ -17,12 +16,10 @@ public class VectorCASTLogsBridge extends VectorCASTGroovyBridge {
 
     /** Bundled Groovy source resource. */
     private static final String DEFAULT_RESOURCE_PATH =
-        "/com/vectorcast/plugins/vectorcastexecution"
-        + "/default-scripts/VectorCASTLogs.groovy";
+            "/com/vectorcast/plugins/vectorcastexecution" + "/default-scripts/VectorCASTLogs.groovy";
 
     /** Groovy implementation class defined by the bundled source. */
-    private static final String IMPL_CLASS_NAME =
-            "com.vectorcast.plugins.vectorcastexecution.VectorCASTLogsImpl";
+    private static final String IMPL_CLASS_NAME = "com.vectorcast.plugins.vectorcastexecution.VectorCASTLogsImpl";
 
     /**
      * Creates a new bridge for the given Pipeline execution.
@@ -41,9 +38,6 @@ public class VectorCASTLogsBridge extends VectorCASTGroovyBridge {
      */
     @Whitelisted
     public Object checkBuildLogPlan(final Object vc, final Map<?, ?> inputs) {
-        return getDelegate().invokeMethod(
-                "checkBuildLogPlan",
-                new Object[] {vc, inputs }
-        );
+        return getDelegate().invokeMethod("checkBuildLogPlan", new Object[] {vc, inputs});
     }
 }

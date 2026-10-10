@@ -23,56 +23,48 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
 public class VectorCASTCommandTest {
-    
+
     @Test
-    public void executesThePlatformAppropriateCommand(JenkinsRule rule)
-            throws Exception {
+    public void executesThePlatformAppropriateCommand(JenkinsRule rule) throws Exception {
         if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
             FreeStyleProject project = rule.createFreeStyleProject();
-            VectorCASTCommand command = new VectorCASTCommand(
-                "echo \"Windows Command\"", "Unix Command");
+            VectorCASTCommand command = new VectorCASTCommand("echo \"Windows Command\"", "Unix Command");
             project.getBuildersList().add(command);
             FreeStyleBuild build = project.scheduleBuild2(0).get();
             rule.assertBuildStatus(Result.SUCCESS, build);
-            assertEquals("echo \"Windows Command\"",
-                command.getWinCommand());
+            assertEquals("echo \"Windows Command\"", command.getWinCommand());
             assertEquals("Unix Command", command.getUnixCommand());
-            assertTrue(command.getDescriptor().isApplicable(
-                FreeStyleProject.class));
+            assertTrue(command.getDescriptor().isApplicable(FreeStyleProject.class));
 
             FreeStyleProject failingProject = rule.createFreeStyleProject();
-            failingProject.getBuildersList().add(new VectorCASTCommand(
-                "exit /b 1", "Unix Command"));
-            rule.assertBuildStatus(Result.FAILURE,
-                failingProject.scheduleBuild2(0).get());
+            failingProject.getBuildersList().add(new VectorCASTCommand("exit /b 1", "Unix Command"));
+            rule.assertBuildStatus(
+                    Result.FAILURE, failingProject.scheduleBuild2(0).get());
         } else {
             FreeStyleProject project = rule.createFreeStyleProject();
-            VectorCASTCommand command = new VectorCASTCommand(
-                "Windows Command", "echo \"Unix Command\"");
+            VectorCASTCommand command = new VectorCASTCommand("Windows Command", "echo \"Unix Command\"");
             project.getBuildersList().add(command);
             FreeStyleBuild build = project.scheduleBuild2(0).get();
             rule.assertBuildStatus(Result.SUCCESS, build);
             assertEquals("Windows Command", command.getWinCommand());
             assertEquals("echo \"Unix Command\"", command.getUnixCommand());
-            assertTrue(command.getDescriptor().isApplicable(
-                FreeStyleProject.class));
+            assertTrue(command.getDescriptor().isApplicable(FreeStyleProject.class));
 
             FreeStyleProject failingProject = rule.createFreeStyleProject();
-            failingProject.getBuildersList().add(new VectorCASTCommand(
-                "Windows Command", "exit 1"));
-            rule.assertBuildStatus(Result.FAILURE,
-                failingProject.scheduleBuild2(0).get());
+            failingProject.getBuildersList().add(new VectorCASTCommand("Windows Command", "exit 1"));
+            rule.assertBuildStatus(
+                    Result.FAILURE, failingProject.scheduleBuild2(0).get());
         }
     }
 }

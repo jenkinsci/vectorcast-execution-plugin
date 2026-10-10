@@ -33,7 +33,8 @@ public class VectorCASTUtilsGlobal extends GlobalVariable {
     /**
      * Name of the global variable as seen by Pipeline scripts.
      */
-    @Override @NonNull
+    @Override
+    @NonNull
     public String getName() {
         return "VectorCASTUtils";
     }
@@ -45,7 +46,8 @@ public class VectorCASTUtilsGlobal extends GlobalVariable {
      * @param script the CPS-transformed Pipeline script for the current run
      * @return a delegate that implements the public utility functions
      */
-    @Override @NonNull
+    @Override
+    @NonNull
     public Object getValue(@NonNull final CpsScript script) {
         return new VectorCASTUtilsBridge(script);
     }

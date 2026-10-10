@@ -1,9 +1,8 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
-import org.jenkinsci.plugins.workflow.cps.CpsScript;
-
 import java.io.Serial;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
+import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 /**
  * Pipeline global bridge for {@code VectorCASTExecution}.
@@ -16,12 +15,10 @@ public class VectorCASTExecutionBridge extends VectorCASTGroovyBridge {
 
     /** Bundled Groovy source resource. */
     private static final String DEFAULT_RESOURCE_PATH =
-        "/com/vectorcast/plugins/vectorcastexecution/"
-        + "default-scripts/VectorCASTExecution.groovy";
+            "/com/vectorcast/plugins/vectorcastexecution/" + "default-scripts/VectorCASTExecution.groovy";
 
     /** Groovy implementation class defined by the bundled source. */
-    private static final String IMPL_CLASS_NAME =
-        "com.vectorcast.plugins.vectorcastexecution.VectorCASTExecutionImpl";
+    private static final String IMPL_CLASS_NAME = "com.vectorcast.plugins.vectorcastexecution.VectorCASTExecutionImpl";
 
     /**
      * Creates a new bridge for the given Pipeline execution.
@@ -40,8 +37,7 @@ public class VectorCASTExecutionBridge extends VectorCASTGroovyBridge {
      */
     @Whitelisted
     public Object getRunCommands(final Object vc, final String commands) {
-        return getDelegate().invokeMethod("getRunCommands",
-                new Object[] {vc, commands});
+        return getDelegate().invokeMethod("getRunCommands", new Object[] {vc, commands});
     }
     /**
      * Forwards to Groovy: {@code getSetupManageProject(VC)}.
@@ -61,8 +57,6 @@ public class VectorCASTExecutionBridge extends VectorCASTGroovyBridge {
      */
     @Whitelisted
     public Object buildStepSpec(final Object vc, final String inputString) {
-        return getDelegate().invokeMethod("buildStepSpec",
-            new Object[] {vc, inputString }
-        );
+        return getDelegate().invokeMethod("buildStepSpec", new Object[] {vc, inputString});
     }
 }

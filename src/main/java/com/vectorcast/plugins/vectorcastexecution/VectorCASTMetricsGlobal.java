@@ -36,7 +36,8 @@ public class VectorCASTMetricsGlobal extends GlobalVariable {
      *
      * @return Name of groovy script name
      */
-    @Override @NonNull
+    @Override
+    @NonNull
     public String getName() {
         return "VectorCASTMetrics";
     }
@@ -48,7 +49,8 @@ public class VectorCASTMetricsGlobal extends GlobalVariable {
      * @param script the CPS-transformed Pipeline script for the current run
      * @return a delegate that implements the public utility functions
      */
-    @Override @NonNull
+    @Override
+    @NonNull
     public Object getValue(@NonNull final CpsScript script) {
         return new VectorCASTMetricsBridge(script);
     }

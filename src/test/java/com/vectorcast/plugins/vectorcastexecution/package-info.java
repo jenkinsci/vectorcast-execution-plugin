@@ -27,12 +27,8 @@
  *
  * @author Vector Informatik, GmbH.
  */
-
-
 @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
-    value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
-    justification = "Fields and getters are intentionally "
-        + "exposed for Jenkins Stapler binding and view rendering."
-)
-
+        value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+        justification =
+                "Fields and getters are intentionally " + "exposed for Jenkins Stapler binding and view rendering.")
 package com.vectorcast.plugins.vectorcastexecution;

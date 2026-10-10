@@ -1,5 +1,9 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Project;
@@ -15,10 +19,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.MockedStatic;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 /** Tests validation and creation failure policy without starting Jenkins. */
 class BaseJobPolicyTest {
@@ -40,24 +40,21 @@ class BaseJobPolicyTest {
         form.put("manageProjectName", "x".repeat(1001));
         StaplerRequest request = request(form);
         try (MockedStatic<Jenkins> access = controller(true, true)) {
-            IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
-                () -> new TestJob(request));
+            IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () -> new TestJob(request));
             assertEquals("manageProjectName too long > 1000", error.getMessage());
         }
     }
 
     @ParameterizedTest
     @CsvSource({"false, true", "true, false", "false, false"})
-    void requiresBothCreateAndConfigurePermissions(boolean create, boolean configure)
-            throws Exception {
+    void requiresBothCreateAndConfigurePermissions(boolean create, boolean configure) throws Exception {
         JSONObject form = new JSONObject();
         form.put("manageProjectName", "project.vcm");
         try (MockedStatic<Jenkins> access = controller(create, configure)) {
             TestJob single = new TestJob(request(form));
             assertThrows(AccessDeniedException3.class, single::create);
             assertFalse(single.created);
-            NewPipelineJob pipeline = new NewPipelineJob(request(form),
-                mock(StaplerResponse.class), null);
+            NewPipelineJob pipeline = new NewPipelineJob(request(form), mock(StaplerResponse.class), null);
             assertThrows(AccessDeniedException3.class, pipeline::create);
         }
     }
@@ -80,8 +77,7 @@ class BaseJobPolicyTest {
             TestJob job = new TestJob(request(new JSONObject()));
             job.project = mock(FreeStyleProject.class);
             job.invalid = new InvalidProjectFileException();
-            InvalidProjectFileException error = assertThrows(
-                InvalidProjectFileException.class, job::create);
+            InvalidProjectFileException error = assertThrows(InvalidProjectFileException.class, job::create);
             assertSame(job.invalid, error);
             assertTrue(job.cleaned);
             assertTrue(job.configured);

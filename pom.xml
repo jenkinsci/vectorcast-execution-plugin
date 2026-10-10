@@ -1,341 +1,344 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <!-- Jenkins plugin parent that supports Java 21&25 -->
-    <parent>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>plugin</artifactId>
-        <version>6.2152.ve00a_731c3ce9</version>
-        <relativePath/>
-    </parent>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.568.x</artifactId>
-                <version>7020.vf38cb_40380d1</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>org.jenkins-ci.main</groupId>
-                <artifactId>maven-plugin</artifactId>
-                <version>3.27</version>
-            </dependency>
-            <dependency>
-              <groupId>org.apache.logging.log4j</groupId>
-              <artifactId>log4j-api</artifactId>
-              <version>2.26.1</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <!-- Jenkins plugin parent that supports Java 21&25 -->
+  <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
-    <artifactId>vectorcast-execution</artifactId>
-    <version>0.81-SNAPSHOT</version>
-    <packaging>hpi</packaging>
+    <artifactId>plugin</artifactId>
+    <version>6.2152.ve00a_731c3ce9</version>
+    <relativePath />
+  </parent>
 
-    <name>VectorCAST Execution Plugin</name>
-    <url>https://github.com/vector/vectorcast-execution-plugin</url>
+  <groupId>org.jenkins-ci.plugins</groupId>
+  <artifactId>vectorcast-execution</artifactId>
+  <version>0.81-SNAPSHOT</version>
+  <packaging>hpi</packaging>
 
-    <!-- Minimum Jenkins core -->
-    <properties>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <findbugs.failOnError>false</findbugs.failOnError>
-        <jenkins.version>2.568.3</jenkins.version>
-        <changelist>-SNAPSHOT</changelist>
-        <lintCompilerArgs>-Xlint:-options</lintCompilerArgs>
-        <ban-junit4-imports.skip>false</ban-junit4-imports.skip>   
-        <jacocoArgLine></jacocoArgLine>        
-    </properties>
-    <organization>
-        <name>Vector Informatik, GmbH</name>
-        <url>https://www.vector.com/</url>
-    </organization>
-    <developers>
-        <developer>
-            <id>TimSVector</id>
-            <name>Tim Schneider</name>
-            <email>Tim.Schneider@vector.com</email>
-            <organization>Vector Informatik, GmbH</organization>
-        </developer>
-    </developers>
-    <scm>
-        <connection>scm:git:https://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
-        <developerConnection>scm:git:https://github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
-        <tag>HEAD</tag>
-    </scm>
-    <repositories>
-        <repository>
-            <id>repo.jenkins-ci.org</id>
-            <url>https://repo.jenkins-ci.org/public/</url>
-        </repository>
-        <repository>
-            <id>incremental.jenkins-ci.org</id>
-            <url>https://repo.jenkins-ci.org/incrementals/</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>repo.jenkins-ci.org</id>
-            <url>https://repo.jenkins-ci.org/public/</url>
-        </pluginRepository>
-       <pluginRepository>
-           <id>incremental.jenkins-ci.org</id>
-           <url>https://repo.jenkins-ci.org/incrementals/</url>
-       </pluginRepository>
-    </pluginRepositories>
+  <name>VectorCAST Execution Plugin</name>
+  <url>https://github.com/vector/vectorcast-execution-plugin</url>
+  <organization>
+    <name>Vector Informatik, GmbH</name>
+    <url>https://www.vector.com/</url>
+  </organization>
+  <developers>
+    <developer>
+      <id>TimSVector</id>
+      <name>Tim Schneider</name>
+      <email>Tim.Schneider@vector.com</email>
+      <organization>Vector Informatik, GmbH</organization>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://github.com/jenkinsci/vectorcast-execution-plugin.git</connection>
+    <developerConnection>scm:git:https://github.com/jenkinsci/vectorcast-execution-plugin.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/jenkinsci/vectorcast-execution-plugin</url>
+  </scm>
 
+  <!-- Minimum Jenkins core -->
+  <properties>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <findbugs.failOnError>false</findbugs.failOnError>
+    <jenkins.version>2.568.3</jenkins.version>
+    <changelist>-SNAPSHOT</changelist>
+    <lintCompilerArgs>-Xlint:-options</lintCompilerArgs>
+    <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
+    <jacocoArgLine />
+  </properties>
 
-
+  <dependencyManagement>
     <dependencies>
-        <!-- JUnit 5 (Jupiter) -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>io.jenkins.tools.bom</groupId>
+        <artifactId>bom-2.568.x</artifactId>
+        <version>7020.vf38cb_40380d1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>2.26.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>maven-plugin</artifactId>
+        <version>3.27</version>
+      </dependency>
+      <!-- Required by Coverage until the BOM includes this version. -->
+      <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-multibranch</artifactId>
+        <version>842.v3a_b_59b_57b_e6e</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
-        <!-- Required to exercise Jenkins' real SCM descriptor form binding. -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>git</artifactId>
-            <scope>test</scope>
-        </dependency>
+  <dependencies>
 
-        <!-- Jenkins plugins - versions provided by BOM -->
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>warnings-ng</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.xml.bind</groupId>
-                    <artifactId>jaxb-impl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jaxb-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.activation</groupId>
-                    <artifactId>activation</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+    <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <version>4.9.8</version>
+    </dependency>
 
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>coverage</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>badge</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>copyartifact</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>coverage</artifactId>
+      <version>3.3395.vcc183b_4a_0d7b_</version>
+    </dependency>
 
-        <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
-            <version>4.9.8</version>
-        </dependency>
+    <!-- Jenkins plugins - versions provided by BOM -->
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>warnings-ng</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-impl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.activation</groupId>
+          <artifactId>activation</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.xml.bind</groupId>
+          <artifactId>jaxb-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>badge</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <!-- For folder jobs -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>cloudbees-folder</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>copyartifact</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>credentials-binding</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>ws-cleanup</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>credentials-binding</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>ws-cleanup</artifactId>
+    </dependency>
 
-        <!-- Pipeline components -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-job</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-step-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-basic-steps</artifactId>
-        </dependency>
-<!--         <dependency>
+    <!-- Pipeline components -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-basic-steps</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-job</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-step-api</artifactId>
+    </dependency>
+
+    <!-- Declarative pipeline -->
+    <dependency>
+      <groupId>org.jenkinsci.plugins</groupId>
+      <artifactId>pipeline-model-definition</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>test-annotations</artifactId>
+      <version>127.v2f87da_3ce079</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.junit.vintage</groupId>
+          <artifactId>junit-vintage-engine</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Required to exercise Jenkins' real SCM descriptor form binding. -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>git</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- JUnit 5 (Jupiter) -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!--         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-durable-task-step</artifactId>
         </dependency>
  -->
 
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.12.0</version>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>5.12.0</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-        <!-- Declarative pipeline -->
-        <dependency>
-            <groupId>org.jenkinsci.plugins</groupId>
-            <artifactId>pipeline-model-definition</artifactId>
-          <scope>compile</scope>
-        </dependency>
+  </dependencies>
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </repository>
+    <repository>
+      <id>incremental.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/incrementals/</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>incremental.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/incrementals/</url>
+    </pluginRepository>
+  </pluginRepositories>
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>**/__pycache__/**</exclude>
+          <exclude>**/*.pyc</exclude>
+        </excludes>
+      </resource>
+    </resources>
 
-        <!-- For folder jobs -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>cloudbees-folder</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.jenkins-ci</groupId>
-          <artifactId>test-annotations</artifactId>
-          <version>127.v2f87da_3ce079</version>
-          <scope>test</scope>
-          <exclusions>
-            <exclusion>
-              <groupId>org.junit.vintage</groupId>
-              <artifactId>junit-vintage-engine</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.6.0</version>
 
-    </dependencies>
+        <configuration>
+          <configLocation>${project.basedir}/checkstyle.xml</configLocation>
+        </configuration>
+      </plugin>
 
-    <profiles>
-        <profile>
-            <id>lint</id>
-            <properties>
-                <lintCompilerArgs>-Xlint:all,-processing</lintCompilerArgs>
-            </properties>
-        </profile>
-        <profile>
-            <id>jacoco</id>
-            <build>
-              <plugins>
-                <plugin>
-                  <groupId>org.jacoco</groupId>
-                  <artifactId>jacoco-maven-plugin</artifactId>
-                  <version>0.8.14</version>
-                  <configuration>
-                    <propertyName>jacocoArgLine</propertyName>
-                    <destFile>${project.build.directory}/jacoco.exec</destFile>
-                  </configuration>
-                  <executions>
-                    <execution>
-                      <goals><goal>prepare-agent</goal></goals>
-                    </execution>
-                    <execution>
-                      <id>report</id>
-                      <phase>verify</phase>
-                      <goals><goal>report</goal></goals>
-                    </execution>
-                  </executions>
-                </plugin>
-              </plugins>
-            </build>
-        </profile>
-    </profiles>
-    <build>
-      <resources>
-        <resource>
-          <directory>src/main/resources</directory>
-          <excludes>
-            <exclude>**/__pycache__/**</exclude>
-            <exclude>**/*.pyc</exclude>
-          </excludes>
-        </resource>
-      </resources>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <id>jxr</id>
+            <goals>
+              <goal>jxr</goal>
+              <goal>test-jxr</goal>
+            </goals>
+            <phase>site</phase>
+          </execution>
+        </executions>
+      </plugin>
 
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.6.0</version>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.15.0</version>
+        <configuration>
+          <source>21</source>
+          <target>21</target>
+          <compilerArgs>
+            <arg>${lintCompilerArgs}</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
 
-                <configuration>
-                    <configLocation>${project.basedir}/checkstyle.xml</configLocation>
-                </configuration>
-            </plugin>
-
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-jxr-plugin</artifactId>
-              <version>3.6.0</version>
-              <executions>
-                <execution>
-                  <id>jxr</id>
-                  <phase>site</phase>
-                  <goals>
-                    <goal>jxr</goal>
-                    <goal>test-jxr</goal>
-                  </goals>
-                </execution>
-              </executions>
-            </plugin>
-
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.15.0</version>
-                <configuration>
-                    <source>21</source>
-                    <target>21</target>
-                    <compilerArgs>
-                        <arg>${lintCompilerArgs}</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <version>3.5.5</version>
-              <configuration>
-                <argLine>
-                  @{jacocoArgLine}
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.5</version>
+        <configuration>
+          <argLine>@{jacocoArgLine}
                   @{jenkins.addOpens}
                   @{jenkins.insaneHook}
                   -Djdk.net.URLClassPath.disableClassPathURLCheck=true
                   --enable-native-access=ALL-UNNAMED
                   --add-opens java.base/java.lang=ALL-UNNAMED
-                  --add-opens java.base/java.util=ALL-UNNAMED
-                </argLine>
-                <excludeJUnit5Engines>junit-vintage</excludeJUnit5Engines>
-                <!-- Jenkins harness controllers are heavyweight and contend
+                  --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+          <excludeJUnit5Engines>junit-vintage</excludeJUnit5Engines>
+          <!-- Jenkins harness controllers are heavyweight and contend
                      for ports, test homes, and the local Maven repository. -->
-                <forkCount>1</forkCount>
-                <reuseForks>true</reuseForks>
-              </configuration>
-            </plugin>
+          <forkCount>1</forkCount>
+          <reuseForks>true</reuseForks>
+        </configuration>
+      </plugin>
 
-            <plugin>
-                <groupId>org.jenkins-ci.tools</groupId>
-                <artifactId>maven-hpi-plugin</artifactId>
-                <version>3.1838.va_13472137a_6a_</version>
-                <extensions>true</extensions>
-            </plugin>
+      <plugin>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <version>3.1838.va_13472137a_6a_</version>
+        <extensions>true</extensions>
+      </plugin>
 
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>lint</id>
+      <properties>
+        <lintCompilerArgs>-Xlint:all,-processing</lintCompilerArgs>
+      </properties>
+    </profile>
+    <profile>
+      <id>jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.8.14</version>
+            <configuration>
+              <propertyName>jacocoArgLine</propertyName>
+              <destFile>${project.build.directory}/jacoco.exec</destFile>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>report</id>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
-    </build>
+      </build>
+    </profile>
+  </profiles>
 </project>

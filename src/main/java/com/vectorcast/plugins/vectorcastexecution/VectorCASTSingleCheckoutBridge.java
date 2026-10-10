@@ -1,9 +1,8 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
-import org.jenkinsci.plugins.workflow.cps.CpsScript;
-
 import java.io.Serial;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
+import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 /**
  * Pipeline global bridge for {@code VectorCASTSingleCheckout}.
@@ -16,13 +15,11 @@ public class VectorCASTSingleCheckoutBridge extends VectorCASTGroovyBridge {
 
     /** Bundled Groovy source resource. */
     private static final String DEFAULT_RESOURCE_PATH =
-        "/com/vectorcast/plugins/vectorcastexecution/"
-        + "default-scripts/VectorCASTSingleCheckout.groovy";
+            "/com/vectorcast/plugins/vectorcastexecution/" + "default-scripts/VectorCASTSingleCheckout.groovy";
 
     /** Groovy implementation class defined by the bundled source. */
     private static final String IMPL_CLASS_NAME =
-        "com.vectorcast.plugins.vectorcastexecution"
-        + ".VectorCASTSingleCheckoutImpl";
+            "com.vectorcast.plugins.vectorcastexecution" + ".VectorCASTSingleCheckoutImpl";
 
     /**
      * Creates a new bridge for the given Pipeline execution.
@@ -40,9 +37,7 @@ public class VectorCASTSingleCheckoutBridge extends VectorCASTGroovyBridge {
      */
     @Whitelisted
     public boolean updateForSingleCheckout(final Object vc) {
-        Object r = getDelegate().invokeMethod("updateForSingleCheckout",
-                new Object[] {vc }
-        );
+        Object r = getDelegate().invokeMethod("updateForSingleCheckout", new Object[] {vc});
 
         if (r == null) {
             return false; // or throw if you consider null a bug

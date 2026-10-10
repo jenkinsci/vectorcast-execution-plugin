@@ -1,55 +1,49 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
 import com.cloudbees.hudson.plugins.folder.Folder;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTPostBuildPublisher;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
 import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Item;
+import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.plugins.ws_cleanup.PreBuildCleanup;
+import hudson.scm.NullSCM;
 import hudson.security.Permission;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
-import hudson.util.DescribableList;
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-
 import hudson.tasks.junit.JUnitResultArchiver;
-import hudson.plugins.copyartifact.CopyArtifact;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.mockito.Mockito;
-
-import static org.mockito.Mockito.when;
-import org.mockito.Mockito;
-
+import hudson.util.DescribableList;
 import io.jenkins.plugins.coverage.metrics.steps.CoverageRecorder;
 import io.jenkins.plugins.coverage.metrics.steps.CoverageTool;
 import io.jenkins.plugins.coverage.metrics.steps.CoverageTool.Parser;
 import io.jenkins.plugins.forensics.reference.SimpleReferenceRecorder;
-import java.util.List;
 import java.io.IOException;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-
-import com.cloudbees.hudson.plugins.folder.Folder;
-import hudson.model.Descriptor.FormException;
-import hudson.scm.NullSCM;
-
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.mockito.Mockito;
 
 @WithJenkins
 public class NewSingleJobTest {
 
     final String DEFAULT_ARTIFACT_LIST = "**/*.html, xml_data/**/*.xml,"
-                + "unit_test_*.txt, **/*.png, **/*.css,"
-                + "complete_build.log, *_results.vcr";
+            + "unit_test_*.txt, **/*.png, **/*.css,"
+            + "complete_build.log, *_results.vcr";
 
     final long USE_LOCAL_IMPORTED_RESULTS = 1;
     final long USE_EXTERNAL_IMPORTED_RESULTS = 2;
@@ -57,28 +51,22 @@ public class NewSingleJobTest {
 
     private static final String PROJECTNAME = "project_vcast_single";
 
-    private NewSingleJob setupTestBasic(JSONObject jsonForm, JenkinsRule rule) throws ServletException, IOException,
-            ExternalResultsFileException, FormException, JobAlreadyExistsException,
-            InvalidProjectFileException, Exception {
+    private NewSingleJob setupTestBasic(JSONObject jsonForm, JenkinsRule rule)
+            throws ServletException, IOException, ExternalResultsFileException, FormException,
+                    JobAlreadyExistsException, InvalidProjectFileException, Exception {
         return setupTestBasic(jsonForm, rule, "test_single", PROJECTNAME);
     }
 
-    private NewSingleJob setupTestBasic(final JSONObject jsonForm,
-                                      final JenkinsRule rule,
-                                      final String folderName
-        ) throws ServletException, IOException, ExternalResultsFileException,
-            FormException, JobAlreadyExistsException,
-            InvalidProjectFileException, Exception {
-            return setupTestBasic(jsonForm, rule, folderName, PROJECTNAME);
-        }
+    private NewSingleJob setupTestBasic(final JSONObject jsonForm, final JenkinsRule rule, final String folderName)
+            throws ServletException, IOException, ExternalResultsFileException, FormException,
+                    JobAlreadyExistsException, InvalidProjectFileException, Exception {
+        return setupTestBasic(jsonForm, rule, folderName, PROJECTNAME);
+    }
 
-    private NewSingleJob setupTestBasic(final JSONObject jsonForm,
-                                          final JenkinsRule rule,
-                                          final String folderName,
-                                          final String projectName
-        ) throws ServletException, IOException, ExternalResultsFileException,
-            FormException, JobAlreadyExistsException,
-            InvalidProjectFileException, Exception {
+    private NewSingleJob setupTestBasic(
+            final JSONObject jsonForm, final JenkinsRule rule, final String folderName, final String projectName)
+            throws ServletException, IOException, ExternalResultsFileException, FormException,
+                    JobAlreadyExistsException, InvalidProjectFileException, Exception {
 
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         MockAuthorizationStrategy mockStrategy = new MockAuthorizationStrategy();
@@ -98,8 +86,7 @@ public class NewSingleJobTest {
         assertEquals("project", job.getBaseName());
         job.create();
         String requestedName = jsonForm.optString("jobName", "").trim();
-        String expectedName = requestedName.isEmpty() ? projectName
-            : requestedName.replaceAll("[^a-zA-Z0-9_]", "_");
+        String expectedName = requestedName.isEmpty() ? projectName : requestedName.replaceAll("[^a-zA-Z0-9_]", "_");
         assertEquals(expectedName, job.getProjectName());
         assertNotNull(job.getTopProject());
 
@@ -107,29 +94,26 @@ public class NewSingleJobTest {
     }
 
     private void checkJunitPostBuildPublisher(
-            DescribableList<Publisher, Descriptor<Publisher>> publisherList,
-            int jUnitIndex, int postBuildIndex) {
+            DescribableList<Publisher, Descriptor<Publisher>> publisherList, int jUnitIndex, int postBuildIndex) {
         // Publisher 1- JUnitResultArchiver
         assertTrue(publisherList.get(jUnitIndex) instanceof JUnitResultArchiver);
-        JUnitResultArchiver jUnit = (JUnitResultArchiver)publisherList.get(jUnitIndex);
+        JUnitResultArchiver jUnit = (JUnitResultArchiver) publisherList.get(jUnitIndex);
         assertEquals("**/test_results_*.xml", jUnit.getTestResults());
 
         // Final publisher - native VectorCAST post-build result publisher.
-        assertTrue(publisherList.get(postBuildIndex)
-                instanceof VectorCASTPostBuildPublisher);
-        VectorCASTPostBuildPublisher postBuild =
-                (VectorCASTPostBuildPublisher) publisherList.get(postBuildIndex);
+        assertTrue(publisherList.get(postBuildIndex) instanceof VectorCASTPostBuildPublisher);
+        VectorCASTPostBuildPublisher postBuild = (VectorCASTPostBuildPublisher) publisherList.get(postBuildIndex);
         assertEquals("project", postBuild.getProjectBase());
-
     }
 
     private void checkArchiverList(ArtifactArchiver archiver, String artifactsList) {
         String artifactsFromArchiver = archiver.getArtifacts();
-        assertEquals(artifactsList,artifactsFromArchiver);
+        assertEquals(artifactsList, artifactsFromArchiver);
         assertFalse(archiver.getAllowEmptyArchive());
     }
 
-    private void checkCoveragePlugin(DescribableList<Publisher,Descriptor<Publisher>> publisherList, int pubListIndex) {
+    private void checkCoveragePlugin(
+            DescribableList<Publisher, Descriptor<Publisher>> publisherList, int pubListIndex) {
 
         // Publisher 2 - CoverageRecorder
         assertTrue(publisherList.get(pubListIndex) instanceof CoverageRecorder);
@@ -146,26 +130,26 @@ public class NewSingleJobTest {
     }
 
     private void checkReferenceBuildPublisher(
-            final DescribableList<Publisher, Descriptor<Publisher>> publisherList,
-            final int publisherIndex) {
-        assertTrue(publisherList.get(publisherIndex)
-                instanceof SimpleReferenceRecorder);
+            final DescribableList<Publisher, Descriptor<Publisher>> publisherList, final int publisherIndex) {
+        assertTrue(publisherList.get(publisherIndex) instanceof SimpleReferenceRecorder);
     }
 
-    private void checkBuildWrappers(NewSingleJob job, int builderSize){
+    private void checkBuildWrappers(NewSingleJob job, int builderSize) {
 
         // Check build wrappers...
-        DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList = job.getTopProject().getBuildWrappersList();
+        DescribableList<BuildWrapper, Descriptor<BuildWrapper>> bldWrappersList =
+                job.getTopProject().getBuildWrappersList();
         assertEquals(builderSize, bldWrappersList.size());
         BuildWrapper wrapper = bldWrappersList.get(0);
         assertTrue(wrapper instanceof PreBuildCleanup);
-        PreBuildCleanup cleanup = (PreBuildCleanup)wrapper;
+        PreBuildCleanup cleanup = (PreBuildCleanup) wrapper;
         assertTrue(cleanup.getDeleteDirs());
     }
 
-    private void checkBuildAction (NewSingleJob job, Boolean checkBuildAction) {
+    private void checkBuildAction(NewSingleJob job, Boolean checkBuildAction) {
         // Check build actions...
-        DescribableList<Builder,Descriptor<Builder>> bldrsList = job.getTopProject().getBuildersList();
+        DescribableList<Builder, Descriptor<Builder>> bldrsList =
+                job.getTopProject().getBuildersList();
 
         if (checkBuildAction) {
             assertEquals(3, bldrsList.size());
@@ -179,35 +163,34 @@ public class NewSingleJobTest {
         }
     }
 
-    private void checkImportedResults(NewSingleJob job, long useLocalResults, Boolean useExternalResults, String externalResultsFilename) {
+    private void checkImportedResults(
+            NewSingleJob job, long useLocalResults, Boolean useExternalResults, String externalResultsFilename) {
         if (useLocalResults == USE_LOCAL_IMPORTED_RESULTS) {
             assertTrue(job.getUseLocalImportedResults());
-        }
-        else if (useLocalResults == USE_EXTERNAL_IMPORTED_RESULTS) {
+        } else if (useLocalResults == USE_EXTERNAL_IMPORTED_RESULTS) {
             assertFalse(job.getUseLocalImportedResults());
         }
         assertEquals(useExternalResults, job.getUseExternalImportedResults());
         assertEquals(externalResultsFilename, job.getExternalResultsFilename());
     }
 
-    private void checkAdditionalTools (NewSingleJob job,
-            final String squoreCommand,
-            final String pclpCommand,
-            final String pclpResultsPattern) {
+    private void checkAdditionalTools(
+            NewSingleJob job, final String squoreCommand, final String pclpCommand, final String pclpResultsPattern) {
 
         assertEquals(squoreCommand, job.getSquoreCommand());
         assertEquals(pclpCommand, job.getPclpCommand());
         assertEquals(pclpResultsPattern, job.getPclpResultsPattern());
     }
 
-    private void checkOptions (NewSingleJob job,
-                Boolean optionExecutionReport,
-                Boolean optionUseReporting,
-                Boolean useCiLicense,
-                Boolean useStrictTestcaseImport,
-                Boolean useRGW3,
-                Boolean useImportedResults,
-                Boolean useCoverageHistory) {
+    private void checkOptions(
+            NewSingleJob job,
+            Boolean optionExecutionReport,
+            Boolean optionUseReporting,
+            Boolean useCiLicense,
+            Boolean useStrictTestcaseImport,
+            Boolean useRGW3,
+            Boolean useImportedResults,
+            Boolean useCoverageHistory) {
 
         assertEquals(optionExecutionReport, job.getOptionExecutionReport());
         assertEquals(optionUseReporting, job.getOptionUseReporting());
@@ -230,15 +213,16 @@ public class NewSingleJobTest {
         NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         // Check publishers...
-        DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
+        DescribableList<Publisher, Descriptor<Publisher>> publisherList =
+                job.getTopProject().getPublishersList();
         assertEquals(5, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
         assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
-        ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
+        ArtifactArchiver archiver = (ArtifactArchiver) publisherList.get(0);
 
         checkBuildWrappers(job, 1);
-        checkBuildAction(job,false);
+        checkBuildAction(job, false);
         checkArchiverList(archiver, DEFAULT_ARTIFACT_LIST);
         checkJunitPostBuildPublisher(publisherList, 1, 4);
         checkReferenceBuildPublisher(publisherList, 2);
@@ -252,33 +236,31 @@ public class NewSingleJobTest {
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
         jsonForm.put("useCoverageHistory", true);
-        jsonForm.put("pclpCommand","call lint_my_code.bat");
-        jsonForm.put("pclpResultsPattern","lint_results.xml");
-        jsonForm.put("squoreCommand","hello squore test world");
+        jsonForm.put("pclpCommand", "call lint_my_code.bat");
+        jsonForm.put("pclpResultsPattern", "lint_results.xml");
+        jsonForm.put("squoreCommand", "hello squore test world");
 
         NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         // Check publishers...
-        DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
+        DescribableList<Publisher, Descriptor<Publisher>> publisherList =
+                job.getTopProject().getPublishersList();
         assertEquals(6, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
         assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
-        ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
+        ArtifactArchiver archiver = (ArtifactArchiver) publisherList.get(0);
 
         String addToolArtifacts = DEFAULT_ARTIFACT_LIST;
         addToolArtifacts += ", lint_results.xml";
 
         checkBuildWrappers(job, 1);
-        checkBuildAction(job,false);
+        checkBuildAction(job, false);
         checkArchiverList(archiver, addToolArtifacts);
         checkJunitPostBuildPublisher(publisherList, 2, 5);
         checkReferenceBuildPublisher(publisherList, 3);
         checkCoveragePlugin(publisherList, 4);
-        checkAdditionalTools(job,
-                "hello squore test world",
-                "call lint_my_code.bat",
-                "lint_results.xml");
+        checkAdditionalTools(job, "hello squore test world", "call lint_my_code.bat", "lint_results.xml");
     }
 
     @Test
@@ -289,24 +271,25 @@ public class NewSingleJobTest {
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionClean", true);
         jsonForm.put("useCoverageHistory", false);
-        jsonForm.put("pclpCommand","call lint_my_code.bat");
-        jsonForm.put("pclpResultsPattern","lint_results.xml");
+        jsonForm.put("pclpCommand", "call lint_my_code.bat");
+        jsonForm.put("pclpResultsPattern", "lint_results.xml");
 
         NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         // Check publishers...
-        DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
+        DescribableList<Publisher, Descriptor<Publisher>> publisherList =
+                job.getTopProject().getPublishersList();
         assertEquals(6, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
         assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
-        ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
+        ArtifactArchiver archiver = (ArtifactArchiver) publisherList.get(0);
 
         String addToolArtifacts = DEFAULT_ARTIFACT_LIST;
         addToolArtifacts += ", lint_results.xml";
 
         checkBuildWrappers(job, 1);
-        checkBuildAction(job,false);
+        checkBuildAction(job, false);
         checkArchiverList(archiver, addToolArtifacts);
         checkJunitPostBuildPublisher(publisherList, 2, 5);
         checkReferenceBuildPublisher(publisherList, 3);
@@ -316,7 +299,7 @@ public class NewSingleJobTest {
     @Test
     public void testLocalImportedResults(JenkinsRule rule) throws Exception {
 
-        JSONObject jsonImportResults  = new JSONObject();
+        JSONObject jsonImportResults = new JSONObject();
         jsonImportResults.put("value", USE_LOCAL_IMPORTED_RESULTS);
 
         JSONObject jsonForm = new JSONObject();
@@ -328,12 +311,13 @@ public class NewSingleJobTest {
         NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         // Check publishers...
-        DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
+        DescribableList<Publisher, Descriptor<Publisher>> publisherList =
+                job.getTopProject().getPublishersList();
         assertEquals(5, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
         assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
-        ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
+        ArtifactArchiver archiver = (ArtifactArchiver) publisherList.get(0);
 
         checkBuildWrappers(job, 1);
         checkBuildAction(job, true);
@@ -347,9 +331,9 @@ public class NewSingleJobTest {
     @Test
     public void testExternalImportedResults(JenkinsRule rule) throws Exception {
 
-        JSONObject jsonImportResults  = new JSONObject();
+        JSONObject jsonImportResults = new JSONObject();
         jsonImportResults.put("value", USE_EXTERNAL_IMPORTED_RESULTS);
-        jsonImportResults.put("externalResultsFilename",EXTERNAL_RESULT_FILENAME);
+        jsonImportResults.put("externalResultsFilename", EXTERNAL_RESULT_FILENAME);
 
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
@@ -360,15 +344,16 @@ public class NewSingleJobTest {
         NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         // Check publishers...
-        DescribableList<Publisher,Descriptor<Publisher>> publisherList = job.getTopProject().getPublishersList();
+        DescribableList<Publisher, Descriptor<Publisher>> publisherList =
+                job.getTopProject().getPublishersList();
         assertEquals(5, publisherList.size());
 
         // Publisher 0 - ArtifactArchiver
         assertTrue(publisherList.get(0) instanceof ArtifactArchiver);
-        ArtifactArchiver archiver = (ArtifactArchiver)publisherList.get(0);
+        ArtifactArchiver archiver = (ArtifactArchiver) publisherList.get(0);
 
         checkBuildWrappers(job, 1);
-        checkBuildAction(job,false);
+        checkBuildAction(job, false);
         checkArchiverList(archiver, DEFAULT_ARTIFACT_LIST);
         checkJunitPostBuildPublisher(publisherList, 1, 4);
         checkReferenceBuildPublisher(publisherList, 2);
@@ -384,9 +369,8 @@ public class NewSingleJobTest {
 
         NewSingleJob job = setupTestBasic(jsonForm, rule);
 
-        checkOptions (job, true, true, false, true, false, false, false);
-        assertEquals("built-in",
-            job.getTopProject().getAssignedLabel().getName());
+        checkOptions(job, true, true, false, true, false, false, false);
+        assertEquals("built-in", job.getTopProject().getAssignedLabel().getName());
     }
 
     @Test
@@ -396,15 +380,15 @@ public class NewSingleJobTest {
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionExecutionReport", false);
         jsonForm.put("optionUseReporting", false);
-        jsonForm.put("useCiLicense",false);
+        jsonForm.put("useCiLicense", false);
         jsonForm.put("useStrictTestcaseImport", false);
-        jsonForm.put("useRGW3",false);
+        jsonForm.put("useRGW3", false);
         jsonForm.put("useImportedResults", false);
         jsonForm.put("useCoverageHistory", false);
 
         NewSingleJob job = setupTestBasic(jsonForm, rule);
 
-        checkOptions (job, false, false, false, false, false, false, false);
+        checkOptions(job, false, false, false, false, false, false, false);
     }
 
     @Test
@@ -414,20 +398,19 @@ public class NewSingleJobTest {
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("optionExecutionReport", true);
         jsonForm.put("optionUseReporting", true);
-        jsonForm.put("useCiLicense",true);
+        jsonForm.put("useCiLicense", true);
         jsonForm.put("useStrictTestcaseImport", true);
-        jsonForm.put("useRGW3",true);
+        jsonForm.put("useRGW3", true);
         jsonForm.put("useImportedResults", true);
         jsonForm.put("useCoverageHistory", true);
 
         NewSingleJob job = setupTestBasic(jsonForm, rule);
 
-        checkOptions (job, true, true, true, true, true, true, true);
+        checkOptions(job, true, true, true, true, true, true, true);
     }
 
     @Test
-    public void customFreestyleOptionsAreAppliedToTheGeneratedJob(
-            JenkinsRule rule) throws Exception {
+    public void customFreestyleOptionsAreAppliedToTheGeneratedJob(JenkinsRule rule) throws Exception {
         JSONObject jsonForm = new JSONObject();
         jsonForm.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         jsonForm.put("jobName", "nightly_build/1");
@@ -454,8 +437,7 @@ public class NewSingleJobTest {
         NewSingleJob job = setupTestBasic(jsonForm, rule);
 
         assertEquals("nightly_build_1", job.getProjectName());
-        assertEquals("windows-agent",
-            job.getTopProject().getAssignedLabel().getName());
+        assertEquals("windows-agent", job.getTopProject().getAssignedLabel().getName());
         assertInstanceOf(NullSCM.class, job.getTopProject().getScm());
         assertFalse(job.isUsingScm());
         assertEquals(2, job.getTopProject().getBuildersList().size());
@@ -466,8 +448,7 @@ public class NewSingleJobTest {
         assertEquals(7L, job.getWaitLoops());
         assertEquals(8L, job.getMaxParallel());
 
-        VectorCASTCommand command = job.getTopProject().getBuildersList()
-            .get(VectorCASTCommand.class);
+        VectorCASTCommand command = job.getTopProject().getBuildersList().get(VectorCASTCommand.class);
         assertTrue(command.getWinCommand().contains("call setup-win.bat"));
         assertTrue(command.getWinCommand().contains("VCAST_WAIT_TIME=30"));
         assertTrue(command.getWinCommand().contains("VCAST_CUSTOM_REPORT_FORMAT=HTML"));
@@ -488,12 +469,10 @@ public class NewSingleJobTest {
     }
 
     @Test
-    public void trimsIdentifiersPathsPatternsAndSelectorsButNotCommands(
-            JenkinsRule rule) throws Exception {
+    public void trimsIdentifiersPathsPatternsAndSelectorsButNotCommands(JenkinsRule rule) throws Exception {
         JSONObject importedResults = new JSONObject();
         importedResults.put("value", USE_EXTERNAL_IMPORTED_RESULTS);
-        importedResults.put("externalResultsFilename",
-            "  archivedResults\\project.vcr  ");
+        importedResults.put("externalResultsFilename", "  archivedResults\\project.vcr  ");
         JSONObject form = new JSONObject();
         form.put("manageProjectName", "  /work/project  ");
         form.put("jobName", "  nightly  ");
@@ -518,23 +497,19 @@ public class NewSingleJobTest {
         assertEquals("agent-a", job.getNodeLabel());
         assertEquals(2, job.getOptionErrorLevel());
         assertEquals("lint-results.xml", job.getPclpResultsPattern());
-        assertEquals("archivedResults/project.vcr",
-            job.getExternalResultsFilename());
+        assertEquals("archivedResults/project.vcr", job.getExternalResultsFilename());
         assertEquals("  run-lint --all  ", job.getPclpCommand());
         assertEquals("  run-squore --all  ", job.getSquoreCommand());
         assertEquals("  call setup.bat  ", job.getEnvironmentSetupWin());
         assertEquals("  call preamble.bat  ", job.getExecutePreambleWin());
-        assertEquals("  call teardown.bat  ",
-            job.getEnvironmentTeardownWin());
+        assertEquals("  call teardown.bat  ", job.getEnvironmentTeardownWin());
         assertEquals("  . ./setup.sh  ", job.getEnvironmentSetupUnix());
         assertEquals("  ./preamble.sh  ", job.getExecutePreambleUnix());
-        assertEquals("  ./teardown.sh  ",
-            job.getEnvironmentTeardownUnix());
+        assertEquals("  ./teardown.sh  ", job.getEnvironmentTeardownUnix());
     }
 
     @Test
-    public void externalImportWithoutAFilenameIsRejected(JenkinsRule rule)
-            throws Exception {
+    public void externalImportWithoutAFilenameIsRejected(JenkinsRule rule) throws Exception {
         JSONObject importedResults = new JSONObject();
         importedResults.put("value", USE_EXTERNAL_IMPORTED_RESULTS);
         JSONObject form = new JSONObject();
@@ -547,13 +522,11 @@ public class NewSingleJobTest {
         when(request.getSubmittedForm()).thenReturn(form);
         Folder folder = rule.jenkins.createProject(Folder.class, "invalid-import");
 
-        assertThrows(ExternalResultsFileException.class,
-            () -> new NewSingleJob(request, response, folder));
+        assertThrows(ExternalResultsFileException.class, () -> new NewSingleJob(request, response, folder));
     }
 
     @Test
-    public void normalizesUnixWindowsAndUncManageProjectPaths(JenkinsRule rule)
-            throws Exception {
+    public void normalizesUnixWindowsAndUncManageProjectPaths(JenkinsRule rule) throws Exception {
         JSONObject unix = new JSONObject();
         unix.put("manageProjectName", "/work/project");
         NewSingleJob unixJob = newJobForPathTest(unix, rule, "unix-path");
@@ -562,8 +535,7 @@ public class NewSingleJobTest {
 
         JSONObject windows = new JSONObject();
         windows.put("manageProjectName", "C:\\work\\project.vcm");
-        NewSingleJob windowsJob = newJobForPathTest(windows, rule,
-            "windows-path");
+        NewSingleJob windowsJob = newJobForPathTest(windows, rule, "windows-path");
         assertEquals("C:/work/project.vcm", windowsJob.getManageProjectName());
 
         JSONObject unc = new JSONObject();
@@ -578,14 +550,11 @@ public class NewSingleJobTest {
      * live SCM binding itself is exercised in {@link NewSingleJobScmTest}.
      */
     @Test
-    public void createsFreestyleJobsForAbsolutePathsWithoutScm(
-            JenkinsRule rule) throws Exception {
+    public void createsFreestyleJobsForAbsolutePathsWithoutScm(JenkinsRule rule) throws Exception {
         JSONObject windows = new JSONObject();
         windows.put("manageProjectName", "C:\\work\\project.vcm");
-        NewSingleJob windowsJob = setupTestBasic(windows, rule,
-            "windows-absolute-path");
-        assertEquals("C:/work/project.vcm",
-            windowsJob.getManageProjectName());
+        NewSingleJob windowsJob = setupTestBasic(windows, rule, "windows-absolute-path");
+        assertEquals("C:/work/project.vcm", windowsJob.getManageProjectName());
         assertInstanceOf(NullSCM.class, windowsJob.getTopProject().getScm());
 
         JSONObject unc = new JSONObject();
@@ -596,38 +565,33 @@ public class NewSingleJobTest {
     }
 
     @Test
-    public void emptyManageProjectNameIsRejectedBeforeCreatingAJob(
-            JenkinsRule rule) throws Exception {
+    public void emptyManageProjectNameIsRejectedBeforeCreatingAJob(JenkinsRule rule) throws Exception {
         JSONObject form = new JSONObject();
         StaplerRequest request = Mockito.mock(StaplerRequest.class);
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
         when(request.getSubmittedForm()).thenReturn(form);
-        NewSingleJob job = new NewSingleJob(request, response,
-            rule.jenkins.createProject(Folder.class, "empty-project"));
+        NewSingleJob job =
+                new NewSingleJob(request, response, rule.jenkins.createProject(Folder.class, "empty-project"));
 
         assertNull(job.createProject());
-        Mockito.verify(response).sendError(HttpServletResponse.SC_NOT_MODIFIED,
-            "No project name specified");
+        Mockito.verify(response).sendError(HttpServletResponse.SC_NOT_MODIFIED, "No project name specified");
     }
 
     @Test
-    public void identifiesAnExistingGeneratedFreestyleName(JenkinsRule rule)
-            throws Exception {
+    public void identifiesAnExistingGeneratedFreestyleName(JenkinsRule rule) throws Exception {
         JSONObject form = new JSONObject();
         form.put("manageProjectName", "/home/jenkins/vcast/project.vcm");
         NewSingleJob job = setupTestBasic(form, rule);
 
-        assertThrows(JobAlreadyExistsException.class,
-            () -> job.checkIfProjectExists(PROJECTNAME));
+        assertThrows(JobAlreadyExistsException.class, () -> job.checkIfProjectExists(PROJECTNAME));
     }
 
-    private NewSingleJob newJobForPathTest(final JSONObject form,
-            final JenkinsRule rule, final String folderName) throws Exception {
+    private NewSingleJob newJobForPathTest(final JSONObject form, final JenkinsRule rule, final String folderName)
+            throws Exception {
         StaplerRequest request = Mockito.mock(StaplerRequest.class);
         StaplerResponse response = Mockito.mock(StaplerResponse.class);
         when(request.getSubmittedForm()).thenReturn(form);
-        return new NewSingleJob(request, response,
-            rule.jenkins.createProject(Folder.class, folderName));
+        return new NewSingleJob(request, response, rule.jenkins.createProject(Folder.class, folderName));
     }
     /*
      * Coverage inventory:

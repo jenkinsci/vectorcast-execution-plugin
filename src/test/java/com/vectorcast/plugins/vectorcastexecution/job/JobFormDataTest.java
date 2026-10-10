@@ -1,10 +1,10 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
-import net.sf.json.JSONObject;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import net.sf.json.JSONObject;
+import org.junit.jupiter.api.Test;
 
 class JobFormDataTest {
     @Test
@@ -25,8 +25,7 @@ class JobFormDataTest {
         assertFalse(form.flag("missing", false));
         assertEquals(4, form.number("parallel", 0));
         assertEquals(2, form.section("importedResults").number("value", 0));
-        assertEquals("results.vcr", form.section("importedResults")
-            .text("externalResultsFilename", ""));
+        assertEquals("results.vcr", form.section("importedResults").text("externalResultsFilename", ""));
         assertEquals("", form.section("missing").text("value", ""));
     }
 }

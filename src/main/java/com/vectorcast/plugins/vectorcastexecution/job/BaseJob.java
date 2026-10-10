@@ -23,52 +23,48 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTSetup;
+import edu.hm.hafner.coverage.Metric;
 import hudson.model.Descriptor;
+import hudson.model.Item;
 import hudson.model.Project;
-import hudson.plugins.ws_cleanup.PreBuildCleanup;
-import hudson.scm.SCM;
 import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.plugins.copyartifact.StatusBuildSelector;
+import hudson.plugins.ws_cleanup.PreBuildCleanup;
+import hudson.scm.SCM;
+import hudson.security.AccessDeniedException3;
+import hudson.security.Permission;
 import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.junit.JUnitResultArchiver;
+import io.jenkins.plugins.analysis.core.steps.IssuesRecorder;
+import io.jenkins.plugins.analysis.warnings.PcLint;
+import io.jenkins.plugins.coverage.metrics.model.Baseline;
+import io.jenkins.plugins.coverage.metrics.steps.CoverageQualityGate;
+import io.jenkins.plugins.coverage.metrics.steps.CoverageRecorder;
+import io.jenkins.plugins.coverage.metrics.steps.CoverageTool;
+import io.jenkins.plugins.coverage.metrics.steps.CoverageTool.Parser;
+import io.jenkins.plugins.forensics.reference.SimpleReferenceRecorder;
+import io.jenkins.plugins.util.QualityGate.QualityGateCriticality;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FilenameUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import hudson.tasks.junit.JUnitResultArchiver;
-import io.jenkins.plugins.analysis.warnings.PcLint;
-import io.jenkins.plugins.analysis.core.steps.IssuesRecorder;
-import io.jenkins.plugins.coverage.metrics.steps.CoverageRecorder;
-import io.jenkins.plugins.coverage.metrics.steps.CoverageTool;
-import io.jenkins.plugins.coverage.metrics.steps.CoverageTool.Parser;
-import io.jenkins.plugins.coverage.metrics.steps.CoverageQualityGate;
-import io.jenkins.plugins.coverage.metrics.model.Baseline;
-import io.jenkins.plugins.util.QualityGate.QualityGateCriticality;
-import edu.hm.hafner.coverage.Metric;
-import io.jenkins.plugins.forensics.reference.SimpleReferenceRecorder;
-import java.util.List;
-import java.util.ArrayList;
-
-import java.net.URL;
 import org.kohsuke.stapler.verb.POST;
-import hudson.model.Item;
-import hudson.security.AccessDeniedException3;
-import hudson.security.Permission;
-import com.cloudbees.hudson.plugins.folder.Folder;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
 
 /**
  * Base job management - create/delete/update.
  */
 public abstract class BaseJob {
     /** Logger for common job creation behavior. */
-    private static final Logger LOGGER = Logger.getLogger(BaseJob.class
-        .getName());
+    private static final Logger LOGGER = Logger.getLogger(BaseJob.class.getName());
     /** Coverage Delta threshold. */
     private static final float COVERAGE_THRESHOLD = -0.001f;
 
@@ -122,7 +118,7 @@ public abstract class BaseJob {
     /** Use external file for imported results. */
     private boolean useExternalImportedResults = false;
     /** Filename for external results. */
-    private String  externalResultsFilename;
+    private String externalResultsFilename;
 
     /** Use coverage history to control build status. */
     private boolean useCoverageHistory;
@@ -163,12 +159,13 @@ public abstract class BaseJob {
      * @throws IllegalArgumentException exception
      * @throws BadOptionComboException exception
      */
-    protected BaseJob(final StaplerRequest req,
-            final StaplerResponse resp, final Folder inputFolder,
+    protected BaseJob(
+            final StaplerRequest req,
+            final StaplerResponse resp,
+            final Folder inputFolder,
             final JobCreationRequest options)
-            throws ServletException, IOException,
-            ExternalResultsFileException, IllegalArgumentException,
-            BadOptionComboException {
+            throws ServletException, IOException, ExternalResultsFileException, IllegalArgumentException,
+                    BadOptionComboException {
 
         instance = Jenkins.get();
         request = req;
@@ -204,7 +201,6 @@ public abstract class BaseJob {
         pclpCommand = options.pclpCommand();
         pclpResultsPattern = options.pclpResultsPattern();
         squoreCommand = options.squoreCommand();
-
     }
 
     /**
@@ -212,13 +208,10 @@ public abstract class BaseJob {
      * New action code should parse the request once and use the overload that
      * accepts {@link JobCreationRequest}.
      */
-    protected BaseJob(final StaplerRequest req,
-            final StaplerResponse resp, final Folder inputFolder)
-            throws ServletException, IOException,
-            ExternalResultsFileException, IllegalArgumentException,
-            BadOptionComboException {
-        this(req, resp, inputFolder,
-            JobCreationRequest.parse(req.getSubmittedForm()));
+    protected BaseJob(final StaplerRequest req, final StaplerResponse resp, final Folder inputFolder)
+            throws ServletException, IOException, ExternalResultsFileException, IllegalArgumentException,
+                    BadOptionComboException {
+        this(req, resp, inputFolder, JobCreationRequest.parse(req.getSubmittedForm()));
     }
 
     /**
@@ -372,7 +365,7 @@ public abstract class BaseJob {
     protected Long getMaxParallel() {
         return maxParallel;
     }
-     /**
+    /**
      * Get use CI license for Linux.
      * @return String command to set
      */
@@ -380,12 +373,11 @@ public abstract class BaseJob {
         String ciEnvVars = "";
 
         if (useCILicenses) {
-            ciEnvVars = "set VCAST_USING_HEADLESS_MODE=1\n"
-                + "set VCAST_USE_CI_LICENSES=1\n";
+            ciEnvVars = "set VCAST_USING_HEADLESS_MODE=1\n" + "set VCAST_USE_CI_LICENSES=1\n";
         }
         return ciEnvVars;
     }
-     /**
+    /**
      * Get use CI license for Linux.
      * @return String command to set
      */
@@ -393,12 +385,11 @@ public abstract class BaseJob {
         String ciEnvVars = "";
 
         if (useCILicenses) {
-            ciEnvVars = "export VCAST_USING_HEADLESS_MODE=1\n"
-                + "export VCAST_USE_CI_LICENSES=1\n";
+            ciEnvVars = "export VCAST_USING_HEADLESS_MODE=1\n" + "export VCAST_USE_CI_LICENSES=1\n";
         }
         return ciEnvVars;
     }
-   /**
+    /**
      * Get the time to wait between retries.
      * @return number of seconds
      */
@@ -512,12 +503,11 @@ public abstract class BaseJob {
     protected void addDelWSBeforeBuild(final Project<?, ?> project) {
         if (optionClean) {
             PreBuildCleanup cleanup = new PreBuildCleanup(
-                null,    /*patterns*/
-                true,
-                "",      /*cleanup param*/
-                "",      /*external delete*/
-                false /*disableDeferredWipeout*/
-            );
+                    null, /*patterns*/
+                    true,
+                    "", /*cleanup param*/
+                    "", /*external delete*/
+                    false /*disableDeferredWipeout*/);
             project.getBuildWrappersList().add(cleanup);
         }
     }
@@ -531,21 +521,12 @@ public abstract class BaseJob {
      * @throws AccessDeniedException3 exception
      */
     @POST
-    public void create() throws
-            IOException,
-            ServletException,
-            Descriptor.FormException,
-            JobAlreadyExistsException,
-            InvalidProjectFileException,
-            AccessDeniedException3 {
+    public void create()
+            throws IOException, ServletException, Descriptor.FormException, JobAlreadyExistsException,
+                    InvalidProjectFileException, AccessDeniedException3 {
 
-        if (!instance.hasPermission(Item.CREATE)
-            || !instance.hasPermission(Item.CONFIGURE)) {
-            throw new AccessDeniedException3(
-                instance.getAuthentication2(),
-                Permission.CREATE
-
-            );
+        if (!instance.hasPermission(Item.CREATE) || !instance.hasPermission(Item.CONFIGURE)) {
+            throw new AccessDeniedException3(instance.getAuthentication2(), Permission.CREATE);
         }
 
         // Create the top-level project
@@ -573,8 +554,7 @@ public abstract class BaseJob {
      * @throws IOException exception
      * @throws JobAlreadyExistsException exception
      */
-    protected abstract Project<?, ?> createProject()
-            throws IOException, JobAlreadyExistsException;
+    protected abstract Project<?, ?> createProject() throws IOException, JobAlreadyExistsException;
     /**
      * Cleanup top-level project, as in delete.
      */
@@ -588,10 +568,7 @@ public abstract class BaseJob {
      */
     @POST
     protected abstract void doCreate()
-        throws IOException,
-        ServletException,
-        Descriptor.FormException,
-        InvalidProjectFileException;
+            throws IOException, ServletException, Descriptor.FormException, InvalidProjectFileException;
 
     /**
      * Add the VectorCAST setup step to copy the python scripts to.
@@ -599,8 +576,7 @@ public abstract class BaseJob {
      * @param project project
      * @return the setup build step
      */
-    protected VectorCASTSetup addSetup(final Project<?, ?> project)
-            throws IOException {
+    protected VectorCASTSetup addSetup(final Project<?, ?> project) throws IOException {
         VectorCASTSetup setup = new VectorCASTSetup();
 
         project.getBuildersList().add(setup);
@@ -623,8 +599,7 @@ public abstract class BaseJob {
                 + "unit_test_*.txt, **/*.png, **/*.css,"
                 + "complete_build.log, *_results.vcr";
 
-        ArtifactArchiver archiver =
-                new ArtifactArchiver(defaultArchive + addToolsArchive);
+        ArtifactArchiver archiver = new ArtifactArchiver(defaultArchive + addToolsArchive);
         archiver.setExcludes("");
         archiver.setAllowEmptyArchive(false);
         project.getPublishersList().add(archiver);
@@ -651,17 +626,14 @@ public abstract class BaseJob {
      * Add JUnit rules step.
      * @param project project to add step to
      */
-
     protected void addJunit(final Project<?, ?> project) {
-        JUnitResultArchiver junit =
-            new JUnitResultArchiver("**/test_results_*.xml");
+        JUnitResultArchiver junit = new JUnitResultArchiver("**/test_results_*.xml");
         project.getPublishersList().add(junit);
     }
     /**
      * Add PC-Lint Plus step.
      * @param project project to add step to do PC-Lint Plus
      */
-
     protected void addPCLintPlus(final Project<?, ?> project) {
         if (pclpCommand.length() != 0) {
             IssuesRecorder recorder = new IssuesRecorder();
@@ -692,7 +664,6 @@ public abstract class BaseJob {
      */
     protected void addJenkinsCoverage(final Project<?, ?> project) {
 
-
         List<CoverageTool> tools = new ArrayList<>();
         CoverageTool tool = new CoverageTool();
         tool.setParser(Parser.VECTORCAST);
@@ -702,8 +673,7 @@ public abstract class BaseJob {
         List<CoverageQualityGate> qualityGates = new ArrayList<>();
 
         if (getUseCoverageHistory()) {
-            CoverageQualityGate statement =
-                new CoverageQualityGate(Metric.LINE);
+            CoverageQualityGate statement = new CoverageQualityGate(Metric.LINE);
 
             statement.setBaseline(Baseline.PROJECT_DELTA);
             statement.setCriticality(QualityGateCriticality.NOTE);
@@ -716,7 +686,6 @@ public abstract class BaseJob {
 
             qualityGates.add(statement);
             qualityGates.add(branch);
-
         }
 
         CoverageRecorder publisher = new CoverageRecorder();
@@ -749,8 +718,7 @@ public abstract class BaseJob {
      */
     protected URL getBaselineWindowsSingleFile() {
         // GOOD: The call is always made on an object of the same type.
-        return BaseJob.class.
-            getResource("/scripts/baselineSingleJobWindows.txt");
+        return BaseJob.class.getResource("/scripts/baselineSingleJobWindows.txt");
     }
     /**
      * Call to get baseline linux single job file.
@@ -787,8 +755,7 @@ public abstract class BaseJob {
      * @return true when the path is local, UNC, or Unix absolute
      */
     protected static boolean isAbsoluteProjectPath(final String path) {
-        return path.startsWith("//") || path.startsWith("/")
-            || path.matches("[a-zA-Z]:.*");
+        return path.startsWith("//") || path.startsWith("/") || path.matches("[a-zA-Z]:.*");
     }
     /**
      * Call to get baseline config.xml with parameters for pipeline job .
@@ -837,8 +804,7 @@ public abstract class BaseJob {
      * @throws IOException exception
      * @throws JobAlreadyExistsException exception
      */
-    protected Boolean checkIfProjectExists(String inProjectName)
-        throws IOException, JobAlreadyExistsException {
+    protected Boolean checkIfProjectExists(String inProjectName) throws IOException, JobAlreadyExistsException {
 
         String fullProjectName = "";
 
@@ -849,16 +815,13 @@ public abstract class BaseJob {
         }
 
         for (String name : getInstance().getJobNames()) {
-            LOGGER.log(Level.FINE, "Checking {0} for {1}",
-                new Object[]{name, fullProjectName});
+            LOGGER.log(Level.FINE, "Checking {0} for {1}", new Object[] {name, fullProjectName});
 
             if (name.equals(fullProjectName)) {
-                LOGGER.log(Level.INFO, "Job already exists: {0}",
-                    fullProjectName);
+                LOGGER.log(Level.INFO, "Job already exists: {0}", fullProjectName);
                 throw new JobAlreadyExistsException(fullProjectName);
             }
         }
         return false;
     }
-
 }

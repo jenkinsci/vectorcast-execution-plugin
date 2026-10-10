@@ -1,29 +1,5 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
-import com.jenkinsci.plugins.badge.action.BadgeAction;
-import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
-import hudson.FilePath;
-import hudson.model.Action;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.markup.MarkupFormatter;
-import hudson.util.StreamTaskListener;
-import java.io.ByteArrayOutputStream;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HexFormat;
-import jenkins.model.Jenkins;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +10,30 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.jenkinsci.plugins.badge.action.BadgeAction;
+import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
+import hudson.FilePath;
+import hudson.markup.MarkupFormatter;
+import hudson.model.Action;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.util.StreamTaskListener;
+import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HexFormat;
+import jenkins.model.Jenkins;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 /** Exercises report decoding and result policy without starting Jenkins. */
 class VectorCASTPostBuildPolicyTest {
@@ -73,52 +73,53 @@ class VectorCASTPostBuildPolicyTest {
         "ff, \u00ff, ISO-2022-KR",
         "fe, \u00fe, ISO-2022-KR"
     })
-    void decodesMetricsOnlyReportsAndHandlesBomBoundaries(String hex,
-            String expected, String charset) throws Exception {
-        Files.write(workspace.resolve("demo_metrics_report.html_tmp"),
-            HexFormat.of().parseHex(hex));
+    void decodesMetricsOnlyReportsAndHandlesBomBoundaries(String hex, String expected, String charset)
+            throws Exception {
+        Files.write(
+                workspace.resolve("demo_metrics_report.html_tmp"),
+                HexFormat.of().parseHex(hex));
         Run<?, ?> run = mock(Run.class);
         when(run.getLogReader()).thenReturn(new StringReader("normal build\n"));
         ByteArrayOutputStream log = new ByteArrayOutputStream();
-        try (StreamTaskListener listener = new StreamTaskListener(log,
-                StandardCharsets.UTF_8)) {
-            new VectorCASTPostBuildPublisher("demo").perform(run,
-                new FilePath(workspace.toFile()), null, listener);
+        try (StreamTaskListener listener = new StreamTaskListener(log, StandardCharsets.UTF_8)) {
+            new VectorCASTPostBuildPublisher("demo").perform(run, new FilePath(workspace.toFile()), null, listener);
         }
         ArgumentCaptor<Action> actions = ArgumentCaptor.forClass(Action.class);
         verify(run).addAction(actions.capture());
         BadgeSummaryAction summary = (BadgeSummaryAction) actions.getValue();
-        assertEquals("<hr style=\"height:5px;border-width:0;"
-            + "color:gray;background-color:gray\"> " + expected,
-            summary.getText());
-        assertTrue(log.toString(StandardCharsets.UTF_8)
-            .contains("with charset: " + charset));
+        assertEquals(
+                "<hr style=\"height:5px;border-width:0;" + "color:gray;background-color:gray\"> " + expected,
+                summary.getText());
+        assertTrue(log.toString(StandardCharsets.UTF_8).contains("with charset: " + charset));
         verify(run, never()).setResult(any(Result.class));
         verify(run, never()).setDescription(any());
     }
 
     @Test
-    void repeatedFailuresProduceOneStatusBadgeAndMissingReportsStayFailed()
-            throws Exception {
+    void repeatedFailuresProduceOneStatusBadgeAndMissingReportsStayFailed() throws Exception {
         Run<?, ?> run = mock(Run.class);
-        when(run.getLogReader()).thenReturn(new StringReader(
-            "INCR_BUILD_FAILED\nINCR_BUILD_FAILED\n"));
-        try (StreamTaskListener listener = new StreamTaskListener(
-                new ByteArrayOutputStream(), StandardCharsets.UTF_8)) {
-            new VectorCASTPostBuildPublisher("demo").perform(run,
-                new FilePath(workspace.toFile()), null, listener);
+        when(run.getLogReader()).thenReturn(new StringReader("INCR_BUILD_FAILED\nINCR_BUILD_FAILED\n"));
+        try (StreamTaskListener listener =
+                new StreamTaskListener(new ByteArrayOutputStream(), StandardCharsets.UTF_8)) {
+            new VectorCASTPostBuildPublisher("demo").perform(run, new FilePath(workspace.toFile()), null, listener);
         }
         verify(run).setResult(Result.FAILURE);
         verify(run, never()).setResult(Result.UNSTABLE);
         ArgumentCaptor<Action> actions = ArgumentCaptor.forClass(Action.class);
         verify(run, times(5)).addAction(actions.capture());
-        assertEquals(1, actions.getAllValues().stream()
-            .filter(BadgeAction.class::isInstance)
-            .map(BadgeAction.class::cast)
-            .filter(action -> "Build Error".equals(action.getText())).count());
-        assertEquals(1, actions.getAllValues().stream()
-            .filter(BadgeSummaryAction.class::isInstance)
-            .map(BadgeSummaryAction.class::cast)
-            .filter(action -> "General Failure".equals(action.getText())).count());
+        assertEquals(
+                1,
+                actions.getAllValues().stream()
+                        .filter(BadgeAction.class::isInstance)
+                        .map(BadgeAction.class::cast)
+                        .filter(action -> "Build Error".equals(action.getText()))
+                        .count());
+        assertEquals(
+                1,
+                actions.getAllValues().stream()
+                        .filter(BadgeSummaryAction.class::isInstance)
+                        .map(BadgeSummaryAction.class::cast)
+                        .filter(action -> "General Failure".equals(action.getText()))
+                        .count());
     }
 }

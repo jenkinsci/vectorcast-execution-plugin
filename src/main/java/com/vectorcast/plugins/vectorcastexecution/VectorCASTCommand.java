@@ -23,9 +23,9 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
-import hudson.Launcher;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -33,14 +33,13 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BatchFile;
-import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Builder;
 import hudson.tasks.Shell;
-import jenkins.tasks.SimpleBuildStep;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.tasks.SimpleBuildStep;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * This class allows a command script to be specified for both Linux and Windows
@@ -48,8 +47,7 @@ import java.util.logging.Logger;
  */
 public class VectorCASTCommand extends Builder implements SimpleBuildStep {
     /** Logger for VectorCAST command execution. */
-    private static final Logger LOGGER = Logger.getLogger(
-        VectorCASTCommand.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(VectorCASTCommand.class.getName());
 
     /** windows environment setup command. */
     private final String winCommand;
@@ -79,8 +77,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * @param unixCommand the unix variant of the command
      */
     @DataBoundConstructor
-    public VectorCASTCommand(final String winCommand,
-            final String unixCommand) {
+    public VectorCASTCommand(final String winCommand, final String unixCommand) {
 
         this.winCommand = winCommand;
         this.unixCommand = unixCommand;
@@ -94,8 +91,8 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * @param listener info
      */
     @Override
-    public void perform(final Run<?, ?> build, final FilePath workspace,
-            final Launcher launcher, final TaskListener listener) {
+    public void perform(
+            final Run<?, ?> build, final FilePath workspace, final Launcher launcher, final TaskListener listener) {
         // Windows check and run batch command
         if (!launcher.isUnix()) {
             // Get the windows batch command and run it if this node is Windows
@@ -104,35 +101,28 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
 
             BatchFile batchFile = new BatchFile(windowsCmd);
             try {
-                if (!batchFile.perform((AbstractBuild<?, ?>) build,
-                        launcher, (BuildListener) listener)) {
+                if (!batchFile.perform((AbstractBuild<?, ?>) build, launcher, (BuildListener) listener)) {
                     build.setResult(Result.FAILURE);
                 }
             } catch (InterruptedException ex) {
-                LOGGER.log(Level.SEVERE,
-                    "Interrupted while executing the Windows VectorCAST command",
-                    ex);
+                LOGGER.log(Level.SEVERE, "Interrupted while executing the Windows VectorCAST command", ex);
                 build.setResult(Result.FAILURE);
             }
         }
-
 
         // Linux check and batch command
         if (launcher.isUnix()) {
             // Get the Linux/Unix batch command and
             // run it if this node is not Windows
             String unixCmd = getUnixCommand();
-        
+
             Shell shell = new Shell(unixCmd);
             try {
-                if (!shell.perform((AbstractBuild<?, ?>) build,
-                        launcher, (BuildListener) listener)) {
+                if (!shell.perform((AbstractBuild<?, ?>) build, launcher, (BuildListener) listener)) {
                     build.setResult(Result.FAILURE);
                 }
             } catch (InterruptedException ex) {
-                LOGGER.log(Level.SEVERE,
-                    "Interrupted while executing the Unix VectorCAST command",
-                    ex);
+                LOGGER.log(Level.SEVERE, "Interrupted while executing the Unix VectorCAST command", ex);
                 build.setResult(Result.FAILURE);
             }
         }
@@ -142,7 +132,6 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * Get the descriptor.
      * @return descriptor
      */
-
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) super.getDescriptor();
@@ -153,8 +142,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
      * The class is marked as public so that it can be accessed from views.
      */
     @Extension
-    public static final class DescriptorImpl extends
-            BuildStepDescriptor<Builder> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
          * In order to load the persisted global configuration, you have to
          * call load() in the constructor.
@@ -169,8 +157,7 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
          * @return boolean - always true
          */
         @Override
-        public boolean isApplicable(
-                final Class<? extends AbstractProject> aClass) {
+        public boolean isApplicable(final Class<? extends AbstractProject> aClass) {
             // Indicates that this builder can be used
             // with all kinds of project types
             return true;
@@ -185,5 +172,4 @@ public class VectorCASTCommand extends Builder implements SimpleBuildStep {
             return Messages.VectorCASTCommand_DisplayName();
         }
     }
-
 }

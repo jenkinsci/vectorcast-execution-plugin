@@ -1,10 +1,9 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
-import org.jenkinsci.plugins.workflow.cps.CpsScript;
-
 import java.io.Serial;
 import java.util.List;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
+import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 /**
  * Pipeline global bridge for {@code VectorCASTMetrics}.
@@ -17,12 +16,10 @@ public class VectorCASTMetricsBridge extends VectorCASTGroovyBridge {
 
     /** Bundled Groovy source resource. */
     private static final String DEFAULT_RESOURCE_PATH =
-        "/com/vectorcast/plugins/vectorcastexecution"
-        + "/default-scripts/VectorCASTMetrics.groovy";
+            "/com/vectorcast/plugins/vectorcastexecution" + "/default-scripts/VectorCASTMetrics.groovy";
 
     /** Groovy implementation class defined by the bundled source. */
-    private static final String IMPL_CLASS_NAME =
-        "com.vectorcast.plugins.vectorcastexecution.VectorCASTMetricsImpl";
+    private static final String IMPL_CLASS_NAME = "com.vectorcast.plugins.vectorcastexecution.VectorCASTMetricsImpl";
 
     /**
      * Creates a new bridge for the given Pipeline execution.
@@ -41,9 +38,7 @@ public class VectorCASTMetricsBridge extends VectorCASTGroovyBridge {
      */
     @Whitelisted
     public Object getMetricsEnvCmds(final Object vc, final String envDesc) {
-        return getDelegate().invokeMethod("getMetricsEnvCmds",
-            new Object[] {vc, envDesc }
-        );
+        return getDelegate().invokeMethod("getMetricsEnvCmds", new Object[] {vc, envDesc});
     }
 
     /**
@@ -54,10 +49,7 @@ public class VectorCASTMetricsBridge extends VectorCASTGroovyBridge {
      * @return list of commands to run
      */
     @Whitelisted
-    public Object getMetricsCmds(final Object vc,
-                                 final List<?> extraResultOptions) {
-        return getDelegate().invokeMethod(
-                "getMetricsCmds", new Object[] {vc, extraResultOptions }
-        );
+    public Object getMetricsCmds(final Object vc, final List<?> extraResultOptions) {
+        return getDelegate().invokeMethod("getMetricsCmds", new Object[] {vc, extraResultOptions});
     }
 }

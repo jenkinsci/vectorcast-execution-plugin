@@ -35,7 +35,8 @@ public class VectorCASTSingleCheckoutGlobal extends GlobalVariable {
      * Name of the global variable as seen by Pipeline scripts.
      * @return Name of groovy script name
      */
-    @Override @NonNull
+    @Override
+    @NonNull
     public String getName() {
         return "VectorCASTSingleCheckout";
     }
@@ -47,7 +48,8 @@ public class VectorCASTSingleCheckoutGlobal extends GlobalVariable {
      * @param script the CPS-transformed Pipeline script for the current run
      * @return a delegate that implements the public utility functions
      */
-    @Override @NonNull
+    @Override
+    @NonNull
     public Object getValue(@NonNull final CpsScript script) {
         return new VectorCASTSingleCheckoutBridge(script);
     }

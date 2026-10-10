@@ -23,14 +23,12 @@
  */
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 import hudson.Extension;
 import hudson.model.RootAction;
-
 import java.util.List;
 import jenkins.model.Jenkins;
-import com.cloudbees.hudson.plugins.folder.Folder;
-
-import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
 /**
  * Top level of VectorCAST job control.
@@ -76,7 +74,7 @@ public class VectorCASTJobRoot implements RootAction {
         return "VectorCAST"; // folder or global use same name
     }
 
-   /**
+    /**
      * Get the icon to use.
      * @return icon to use or null if user does not have permissions
      */
@@ -98,8 +96,7 @@ public class VectorCASTJobRoot implements RootAction {
      * @return version
      */
     public String getVersion() {
-        return VcastUtils.getVersion().
-            orElse("Error - Could not determine version");
+        return VcastUtils.getVersion().orElse("Error - Could not determine version");
     }
     /**
      * Get dynamic 'job' - used by Stapler.
@@ -111,7 +108,7 @@ public class VectorCASTJobRoot implements RootAction {
             if (ui != null) {
                 String urlName = ui.getUrlName();
                 if (urlName != null && urlName.equals(name)) {
-                        return ui;
+                    return ui;
                 }
             }
         }

@@ -1,23 +1,20 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
-import com.cloudbees.hudson.plugins.folder.Folder;
-import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
-import org.htmlunit.html.HtmlPage;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+import com.cloudbees.hudson.plugins.folder.Folder;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
 public class VectorCASTJobRootTest {
 
     @Test
-    public void loadsAsExtensionAndRendersIndexJelly(JenkinsRule rule)
-            throws Exception {
+    public void loadsAsExtensionAndRendersIndexJelly(JenkinsRule rule) throws Exception {
         var list = rule.jenkins.getExtensionList(VectorCASTJobRoot.class);
         assertThat("extension should load", list, is(not(empty())));
         VectorCASTJobRoot action = list.get(0);
@@ -32,7 +29,7 @@ public class VectorCASTJobRootTest {
         assertSame(folder, new VectorCASTJobRoot(folder).getFolder());
 
         var wc = rule.createWebClient();
-        HtmlPage page = wc.goTo("VectorCAST");           // same as "/my-action/"
+        HtmlPage page = wc.goTo("VectorCAST"); // same as "/my-action/"
         assertThat(page.getTitleText(), containsString("VectorCAST"));
         assertThat(page.asNormalizedText(), containsString("VectorCAST Jobs"));
     }

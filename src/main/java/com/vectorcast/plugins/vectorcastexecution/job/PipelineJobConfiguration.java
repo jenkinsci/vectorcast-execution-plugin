@@ -26,5 +26,4 @@ public record PipelineJobConfiguration(
         boolean useImportedResults,
         boolean useLocalImportedResults,
         boolean useExternalImportedResults,
-        String externalResultsFilename) {
-}
+        String externalResultsFilename) {}

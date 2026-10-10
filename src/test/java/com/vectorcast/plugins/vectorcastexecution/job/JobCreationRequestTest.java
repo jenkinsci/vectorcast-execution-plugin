@@ -1,12 +1,12 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
-import net.sf.json.JSONObject;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import net.sf.json.JSONObject;
+import org.junit.jupiter.api.Test;
 
 class JobCreationRequestTest {
     @Test
@@ -38,7 +38,6 @@ class JobCreationRequestTest {
         form.put("useImportedResults", true);
         form.put("importedResults", importedResults);
 
-        assertThrows(ExternalResultsFileException.class,
-            () -> JobCreationRequest.parse(form));
+        assertThrows(ExternalResultsFileException.class, () -> JobCreationRequest.parse(form));
     }
 }

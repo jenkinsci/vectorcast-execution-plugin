@@ -2,16 +2,15 @@ package com.vectorcast.plugins.vectorcastexecution;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
-import org.jenkinsci.plugins.workflow.cps.CpsScript;
-
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.io.InputStream;
-import java.io.IOException;
+import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 /**
  * Base bridge for exposing a Pipeline global backed by a
@@ -65,16 +64,11 @@ public abstract class VectorCASTGroovyBridge implements Serializable {
      * @param inputImplClassName fully-qualified Groovy
      *                      implementation class name (non-null)
      */
-    protected VectorCASTGroovyBridge(final CpsScript inputScript,
-                                     final String inputResourcePath,
-                                     final String inputImplClassName) {
+    protected VectorCASTGroovyBridge(
+            final CpsScript inputScript, final String inputResourcePath, final String inputImplClassName) {
         this.script = Objects.requireNonNull(inputScript, "script");
-        this.resourcePath = Objects.requireNonNull(
-                inputResourcePath, "resourcePath"
-        );
-        this.implClassName = Objects.requireNonNull(inputImplClassName,
-                "implClassName"
-        );
+        this.resourcePath = Objects.requireNonNull(inputResourcePath, "resourcePath");
+        this.implClassName = Objects.requireNonNull(inputImplClassName, "implClassName");
     }
 
     /** Getter for pipeline script.
@@ -91,36 +85,27 @@ public abstract class VectorCASTGroovyBridge implements Serializable {
      * @throws IllegalStateException if the resource is missing,
      *      fails to compile, or the impl class cannot be created
      */
-    protected GroovyObject getDelegate() 
-            throws IllegalStateException {
-                
+    protected GroovyObject getDelegate() throws IllegalStateException {
+
         if (delegate != null) {
             return delegate;
         }
 
         final String groovySource = readBundledGroovy(resourcePath);
-        final String scriptName =
-                resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
+        final String scriptName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
 
-        try (GroovyClassLoader gcl =
-                 new GroovyClassLoader(getClass().getClassLoader())
-        ) {
+        try (GroovyClassLoader gcl = new GroovyClassLoader(getClass().getClassLoader())) {
             // Compile the source so the impl class becomes loadable
             gcl.parseClass(groovySource, scriptName);
 
             final Class<?> implClass = gcl.loadClass(implClassName);
-            final Object impl =
-                    implClass.getConstructor(Object.class).newInstance(script);
+            final Object impl = implClass.getConstructor(Object.class).newInstance(script);
 
             delegate = (GroovyObject) impl;
             return delegate;
         } catch (Exception e) {
             throw new IllegalStateException(
-                    "Failed to compile/instantiate "
-                    + implClassName
-                    + " from "
-                    + resourcePath, e
-            );
+                    "Failed to compile/instantiate " + implClassName + " from " + resourcePath, e);
         }
     }
 
@@ -131,24 +116,16 @@ public abstract class VectorCASTGroovyBridge implements Serializable {
      * @return full resource content as text
      * @throws IllegalStateException
      */
-    private String readBundledGroovy(final String inputResourcePath)
-            throws IllegalStateException {
+    private String readBundledGroovy(final String inputResourcePath) throws IllegalStateException {
 
-        final InputStream raw =
-            VectorCASTGroovyBridge.class.getResourceAsStream(inputResourcePath);
+        final InputStream raw = VectorCASTGroovyBridge.class.getResourceAsStream(inputResourcePath);
 
         if (raw == null) {
-            throw new IllegalStateException(
-                "Missing resource: " + inputResourcePath
-            );
+            throw new IllegalStateException("Missing resource: " + inputResourcePath);
         }
 
-        try (
-            InputStream in = raw;
-            BufferedReader r = new BufferedReader(
-                new InputStreamReader(in, StandardCharsets.UTF_8)
-            )
-        ) {
+        try (InputStream in = raw;
+                BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = r.readLine()) != null) {
@@ -156,9 +133,7 @@ public abstract class VectorCASTGroovyBridge implements Serializable {
             }
             return sb.toString();
         } catch (IOException e) {
-            throw new IllegalStateException(
-                "Failed reading bundled Groovy: " + inputResourcePath, e
-            );
+            throw new IllegalStateException("Failed reading bundled Groovy: " + inputResourcePath, e);
         }
     }
 }

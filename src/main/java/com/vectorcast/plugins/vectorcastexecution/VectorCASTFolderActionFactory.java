@@ -22,20 +22,18 @@
  * THE SOFTWARE.
  */
 
-
 package com.vectorcast.plugins.vectorcastexecution;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.Extension;
 import hudson.model.Action;
 import java.util.Collection;
 import java.util.Collections;
-import com.cloudbees.hudson.plugins.folder.Folder;
 import jenkins.model.TransientActionFactory;
 import org.jspecify.annotations.NonNull;
 
 @Extension
-public class VectorCASTFolderActionFactory
-        extends TransientActionFactory<Folder> {
+public class VectorCASTFolderActionFactory extends TransientActionFactory<Folder> {
 
     /**
      * Returns the type handled by this factory.
@@ -50,7 +48,8 @@ public class VectorCASTFolderActionFactory
      * @param folder - Folder to create job in
      * @return Collection of actions
      */
-    @Override @NonNull
+    @Override
+    @NonNull
     public Collection<? extends Action> createFor(final Folder folder) {
         return Collections.singletonList(new VectorCASTFolderAction(folder));
     }

@@ -42,8 +42,7 @@ public record JobCreationRequest(
         boolean useParameters) {
 
     /** Converts Stapler's submitted JSON into normalized creation values. */
-    public static JobCreationRequest parse(final JSONObject json)
-            throws ExternalResultsFileException {
+    public static JobCreationRequest parse(final JSONObject json) throws ExternalResultsFileException {
         JobFormData form = JobFormData.from(json);
         String manageProject = form.text("manageProjectName", "");
         if (manageProject.length() > 1000) {
@@ -56,11 +55,12 @@ public record JobCreationRequest(
             name = normalizeJobName(name);
         }
         String errorLevel = form.text("optionErrorLevel", "unstable").trim();
-        int errorResult = switch (errorLevel) {
-            case "failure" -> 2;
-            case "unstable" -> 1;
-            default -> 0;
-        };
+        int errorResult =
+                switch (errorLevel) {
+                    case "failure" -> 2;
+                    case "unstable" -> 1;
+                    default -> 0;
+                };
 
         boolean imported = form.flag("useImportedResults", false);
         JobFormData importedSection = form.section("importedResults");
@@ -69,8 +69,8 @@ public record JobCreationRequest(
         boolean external = importSource == 2;
         String externalFile = "";
         if (external) {
-            externalFile = importedSection.text("externalResultsFilename", "")
-                .trim().replace('\\', '/');
+            externalFile =
+                    importedSection.text("externalResultsFilename", "").trim().replace('\\', '/');
             if (externalFile.isEmpty()) {
                 throw new ExternalResultsFileException();
             }
@@ -78,38 +78,46 @@ public record JobCreationRequest(
 
         String sharedDirectory = form.text("sharedArtifactDir", "").trim();
         if (!sharedDirectory.isEmpty()) {
-            sharedDirectory = "--workspace="
-                + sharedDirectory.replace('\\', '/');
+            sharedDirectory = "--workspace=" + sharedDirectory.replace('\\', '/');
         }
 
         return new JobCreationRequest(
-            manageProject, name, form.text("nodeLabel", "").trim(),
-            form.text("environmentSetupWin", ""),
-            form.text("executePreambleWin", ""),
-            form.text("environmentTeardownWin", ""),
-            form.text("environmentSetupUnix", ""),
-            form.text("executePreambleUnix", ""),
-            form.text("environmentTeardownUnix", ""),
-            form.flag("optionUseReporting", true), errorResult,
-            form.flag("optionExecutionReport", true),
-            form.flag("optionClean", false),
-            form.number("waitTime", 30), form.number("waitLoops", 1),
-            form.flag("useCiLicense", false),
-            form.flag("useStrictTestcaseImport", true),
-            form.flag("useRGW3", false), imported, local, external,
-            externalFile, form.flag("useCoverageHistory", false),
-            form.number("maxParallel", 0),
-            form.text("pclpCommand", "").replace('\\', '/'),
-            form.text("pclpResultsPattern", "").trim(),
-            form.text("squoreCommand", "").replace('\\', '/'),
-            form.flag("useCBT", true), sharedDirectory,
-            form.text("scmSnippet", "").trim(),
-            form.flag("singleCheckout", false),
-            form.text("environmentSetup", null),
-            form.text("executePreamble", null),
-            form.text("environmentTeardown", null),
-            form.text("postSCMCheckoutCommands", null),
-            form.flag("useParameters", false));
+                manageProject,
+                name,
+                form.text("nodeLabel", "").trim(),
+                form.text("environmentSetupWin", ""),
+                form.text("executePreambleWin", ""),
+                form.text("environmentTeardownWin", ""),
+                form.text("environmentSetupUnix", ""),
+                form.text("executePreambleUnix", ""),
+                form.text("environmentTeardownUnix", ""),
+                form.flag("optionUseReporting", true),
+                errorResult,
+                form.flag("optionExecutionReport", true),
+                form.flag("optionClean", false),
+                form.number("waitTime", 30),
+                form.number("waitLoops", 1),
+                form.flag("useCiLicense", false),
+                form.flag("useStrictTestcaseImport", true),
+                form.flag("useRGW3", false),
+                imported,
+                local,
+                external,
+                externalFile,
+                form.flag("useCoverageHistory", false),
+                form.number("maxParallel", 0),
+                form.text("pclpCommand", "").replace('\\', '/'),
+                form.text("pclpResultsPattern", "").trim(),
+                form.text("squoreCommand", "").replace('\\', '/'),
+                form.flag("useCBT", true),
+                sharedDirectory,
+                form.text("scmSnippet", "").trim(),
+                form.flag("singleCheckout", false),
+                form.text("environmentSetup", null),
+                form.text("executePreamble", null),
+                form.text("environmentTeardown", null),
+                form.text("postSCMCheckoutCommands", null),
+                form.flag("useParameters", false));
     }
 
     static String normalizeJobName(final String input) {
@@ -121,7 +129,6 @@ public record JobCreationRequest(
             return input;
         }
         String normalized = input.replace('\\', '/').trim();
-        return normalized.toLowerCase().endsWith(".vcm")
-            ? normalized : normalized + ".vcm";
+        return normalized.toLowerCase().endsWith(".vcm") ? normalized : normalized + ".vcm";
     }
 }

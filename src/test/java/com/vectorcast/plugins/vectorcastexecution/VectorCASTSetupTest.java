@@ -1,20 +1,18 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import hudson.FilePath;
 import hudson.model.FreeStyleProject;
-import hudson.model.Result;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
 public class VectorCASTSetupTest {
 
     @Test
-    public void copiesScriptsIntoWorkspacePrintsVersionAndRoundTripsConfig(
-            JenkinsRule rule) throws Exception {
+    public void copiesScriptsIntoWorkspacePrintsVersionAndRoundTripsConfig(JenkinsRule rule) throws Exception {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(new VectorCASTSetup());
 
@@ -42,8 +40,7 @@ public class VectorCASTSetupTest {
 
         rule.configRoundtrip(roundTripProject);
 
-        VectorCASTSetup after = roundTripProject.getBuildersList()
-            .get(VectorCASTSetup.class);
+        VectorCASTSetup after = roundTripProject.getBuildersList().get(VectorCASTSetup.class);
         rule.assertEqualDataBoundBeans(before, after);
     }
 }

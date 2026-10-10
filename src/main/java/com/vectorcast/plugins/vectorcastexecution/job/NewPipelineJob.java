@@ -24,50 +24,39 @@
  */
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
-
-
 import hudson.model.Descriptor;
+import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Project;
-
+import hudson.security.AccessDeniedException3;
+import hudson.security.Permission;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.commons.io.IOUtils;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-
-
-import org.kohsuke.stapler.verb.POST;
-import hudson.model.Item;
-import hudson.security.AccessDeniedException3;
-import hudson.security.Permission;
 import jenkins.model.Jenkins;
-import com.cloudbees.hudson.plugins.folder.Folder;
+import org.apache.commons.io.IOUtils;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * Create a new single job.
@@ -75,8 +64,7 @@ import com.cloudbees.hudson.plugins.folder.Folder;
 public class NewPipelineJob extends BaseJob {
 
     /** Logger for Pipeline job creation. */
-    private static final Logger LOGGER = Logger.getLogger(
-        NewPipelineJob.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(NewPipelineJob.class.getName());
 
     /** shared artifact directory. */
     private String sharedArtifactDirectory;
@@ -109,15 +97,10 @@ public class NewPipelineJob extends BaseJob {
      * @throws ExternalResultsFileException      exception
      * @throws BadOptionComboException exception
      */
-    public NewPipelineJob(
-            final StaplerRequest request,
-            final StaplerResponse response,
-            final Folder inputFolder)
-            throws ServletException, IOException,
-            ScmConflictException, ExternalResultsFileException,
-            BadOptionComboException {
-        this(request, response, inputFolder,
-            JobCreationRequest.parse(request.getSubmittedForm()));
+    public NewPipelineJob(final StaplerRequest request, final StaplerResponse response, final Folder inputFolder)
+            throws ServletException, IOException, ScmConflictException, ExternalResultsFileException,
+                    BadOptionComboException {
+        this(request, response, inputFolder, JobCreationRequest.parse(request.getSubmittedForm()));
     }
 
     /** Creates a Pipeline job from values already parsed by the action. */
@@ -126,9 +109,8 @@ public class NewPipelineJob extends BaseJob {
             final StaplerResponse response,
             final Folder inputFolder,
             final JobCreationRequest options)
-            throws ServletException, IOException,
-            ScmConflictException, ExternalResultsFileException,
-            BadOptionComboException {
+            throws ServletException, IOException, ScmConflictException, ExternalResultsFileException,
+                    BadOptionComboException {
         super(request, response, inputFolder, options);
 
         sharedArtifactDirectory = options.sharedArtifactDirectory();
@@ -158,17 +140,15 @@ public class NewPipelineJob extends BaseJob {
      * @return project
      * @throws IOException                   exception
      * @throws JobAlreadyExistsException     exception
-
+     *
      */
     @Override
-    protected Project<?, ?> createProject()
-        throws IOException, JobAlreadyExistsException {
+    protected Project<?, ?> createProject() throws IOException, JobAlreadyExistsException {
 
         String projectName = "";
 
         if (getBaseName().isEmpty()) {
-            getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED,
-                "No project name specified");
+            getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED, "No project name specified");
             return null;
         }
 
@@ -198,13 +178,11 @@ public class NewPipelineJob extends BaseJob {
      */
     @Override
     @RequirePOST
-    public void doCreate()
-            throws IOException, ServletException, Descriptor.FormException {
+    public void doCreate() throws IOException, ServletException, Descriptor.FormException {
 
         try (InputStream template = getPipelineConfigTemplate();
                 ByteArrayOutputStream generatedXml = new ByteArrayOutputStream()) {
-            DocumentBuilderFactory factory =
-                    DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(template);
 
@@ -214,19 +192,15 @@ public class NewPipelineJob extends BaseJob {
 
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
-            transformer.transform(
-                    new DOMSource(document),
-                    new StreamResult(generatedXml)
-            );
+            transformer.transform(new DOMSource(document), new StreamResult(generatedXml));
 
-            ItemGroup<?> parent = (getFolder() != null)
-                    ? getFolder() : getInstance();
+            ItemGroup<?> parent = (getFolder() != null) ? getFolder() : getInstance();
 
-            LOGGER.log(Level.INFO, "Creating job {0} in parent {1}",
-                new Object[]{getProjectName(), parent.getFullName()});
+            LOGGER.log(
+                    Level.INFO, "Creating job {0} in parent {1}", new Object[] {getProjectName(), parent.getFullName()
+                    });
 
-            try (InputStream xmlInput = new ByteArrayInputStream(
-                    generatedXml.toByteArray())) {
+            try (InputStream xmlInput = new ByteArrayInputStream(generatedXml.toByteArray())) {
                 if (parent instanceof Folder) {
                     Folder currFolder = (Folder) parent;
 
@@ -235,21 +209,16 @@ public class NewPipelineJob extends BaseJob {
                 } else if (parent instanceof Jenkins) {
                     Jenkins.get().createProjectFromXML(getProjectName(), xmlInput);
                 } else {
-                    throw new IllegalStateException(
-                        "Cannot create project in parent of type: "
-                        + parent.getClass().getName()
-                    );
+                    throw new IllegalStateException("Cannot create project in parent of type: "
+                            + parent.getClass().getName());
                 }
             }
 
-        } catch (ParserConfigurationException | SAXException
-                | TransformerException ex) {
-            LOGGER.log(Level.SEVERE, "Unable to construct Pipeline job XML",
-                ex);
+        } catch (ParserConfigurationException | SAXException | TransformerException ex) {
+            LOGGER.log(Level.SEVERE, "Unable to construct Pipeline job XML", ex);
             throw new IOException("Unable to construct Pipeline job XML", ex);
         }
     }
-
 
     /**
      * Create the Pipeline Jenkinsfile script.
@@ -260,24 +229,16 @@ public class NewPipelineJob extends BaseJob {
      * @throws InvalidProjectFileException exception
      * @throws AccessDeniedException3 exception
      */
-     @POST
-     @Override
-     public void create() throws
-            IOException,
-            ServletException,
-            Descriptor.FormException,
-            JobAlreadyExistsException,
-            InvalidProjectFileException,
-            AccessDeniedException3 {
+    @POST
+    @Override
+    public void create()
+            throws IOException, ServletException, Descriptor.FormException, JobAlreadyExistsException,
+                    InvalidProjectFileException, AccessDeniedException3 {
 
         Jenkins instance = getInstance();
 
-        if (!instance.hasPermission(Item.CREATE)
-            || !instance.hasPermission(Item.CONFIGURE)) {
-            throw new AccessDeniedException3(
-                instance.getAuthentication2(),
-                Permission.CREATE
-            );
+        if (!instance.hasPermission(Item.CREATE) || !instance.hasPermission(Item.CONFIGURE)) {
+            throw new AccessDeniedException3(instance.getAuthentication2(), Permission.CREATE);
         }
 
         // Create the top-level project
@@ -287,8 +248,7 @@ public class NewPipelineJob extends BaseJob {
 
     /** Returns the packaged Pipeline XML template for the selected job type. */
     private InputStream getPipelineConfigTemplate() throws IOException {
-        return (useParameters ? getPipelineConfigParametersXML()
-            : getPipelineConfigXML()).openStream();
+        return (useParameters ? getPipelineConfigParametersXML() : getPipelineConfigXML()).openStream();
     }
 
     /**
@@ -379,7 +339,6 @@ public class NewPipelineJob extends BaseJob {
      * @return script portion of pipeline job.
      * @throws IOException
      */
-
     private String generateJenkinsfile() throws IOException {
         String setup = "";
         String preamble = "";
@@ -387,32 +346,44 @@ public class NewPipelineJob extends BaseJob {
         String postCheckoutCmds = "";
 
         // Doing once per MultiJobDetail similar to MultiJob plugin
-        if ((executePreamble != null)
-                && (!executePreamble.isEmpty())) {
+        if ((executePreamble != null) && (!executePreamble.isEmpty())) {
             preamble = correctPath(executePreamble);
         }
-        if ((environmentSetup != null)
-                && (!environmentSetup.isEmpty())) {
+        if ((environmentSetup != null) && (!environmentSetup.isEmpty())) {
             setup = correctPath(environmentSetup);
         }
-        if ((environmentTeardown != null)
-                && (!environmentTeardown.isEmpty())) {
+        if ((environmentTeardown != null) && (!environmentTeardown.isEmpty())) {
             teardown = correctPath(environmentTeardown);
         }
-        if ((postSCMCheckoutCommands != null)
-                && (!postSCMCheckoutCommands.isEmpty())) {
+        if ((postSCMCheckoutCommands != null) && (!postSCMCheckoutCommands.isEmpty())) {
             postCheckoutCmds = correctPath(postSCMCheckoutCommands);
         }
         PipelineJobConfiguration configuration = new PipelineJobConfiguration(
-            getManageProjectName(), setup, preamble, teardown, pipelineSCM,
-            postCheckoutCmds, sharedArtifactDirectory, getNodeLabel(),
-            getWaitTime(), getWaitLoops(), getMaxParallel(), singleCheckout,
-            getUseCILicenses(), useCBT,
-            VcastUtils.getVersion().orElse("Unknown"), getPclpCommand(),
-            getPclpResultsPattern(), getSquoreCommand(),
-            getUseCoverageHistory(), getUseStrictTestcaseImport(), getUseRGW3(),
-            getUseImportedResults(), getUseLocalImportedResults(),
-            getUseExternalImportedResults(), getExternalResultsFilename());
+                getManageProjectName(),
+                setup,
+                preamble,
+                teardown,
+                pipelineSCM,
+                postCheckoutCmds,
+                sharedArtifactDirectory,
+                getNodeLabel(),
+                getWaitTime(),
+                getWaitLoops(),
+                getMaxParallel(),
+                singleCheckout,
+                getUseCILicenses(),
+                useCBT,
+                VcastUtils.getVersion().orElse("Unknown"),
+                getPclpCommand(),
+                getPclpResultsPattern(),
+                getSquoreCommand(),
+                getUseCoverageHistory(),
+                getUseStrictTestcaseImport(),
+                getUseRGW3(),
+                getUseImportedResults(),
+                getUseLocalImportedResults(),
+                getUseExternalImportedResults(),
+                getExternalResultsFilename());
         String topOfJenkinsfile = PipelineScriptRenderer.render(configuration);
 
         String baseJenkinsfile = "";
@@ -423,8 +394,7 @@ public class NewPipelineJob extends BaseJob {
             in = getBaselinePipelineGroovy().openStream();
             baseJenkinsfile = IOUtils.toString(in, "UTF-8");
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING,
-                "Unable to load the Pipeline script body", ex);
+            LOGGER.log(Level.WARNING, "Unable to load the Pipeline script body", ex);
         } finally {
             if (in != null) {
                 in.close();
@@ -432,13 +402,12 @@ public class NewPipelineJob extends BaseJob {
         }
 
         if (baseJenkinsfile == null) {
-            baseJenkinsfile = "\n\n\n *** Errors reading the baseJenkinsfile..."
-                + " check the Jenkins System Logs***\n\n";
+            baseJenkinsfile =
+                    "\n\n\n *** Errors reading the baseJenkinsfile..." + " check the Jenkins System Logs***\n\n";
         }
 
         return topOfJenkinsfile + baseJenkinsfile;
     }
-
 
     /**
      * Cleans up the project - should not be called at this level.

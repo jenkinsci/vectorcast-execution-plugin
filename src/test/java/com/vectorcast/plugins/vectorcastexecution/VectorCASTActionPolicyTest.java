@@ -1,5 +1,12 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 import hudson.scm.NullSCM;
 import jenkins.model.Jenkins;
@@ -8,18 +15,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
 /** Checks menu visibility and icon compatibility without a controller startup. */
 class VectorCASTActionPolicyTest {
     @ParameterizedTest
-    @CsvSource({"2.360, vector_favicon.png", "2.361, vector_favicon_bw.png",
-        "1.600, vector_favicon.png", "development, vector_favicon.png"})
+    @CsvSource({
+        "2.360, vector_favicon.png",
+        "2.361, vector_favicon_bw.png",
+        "1.600, vector_favicon.png",
+        "development, vector_favicon.png"
+    })
     void selectsCompatibleIconsForAllMenuLocations(String version, String icon) {
         Jenkins jenkins = mock(Jenkins.class);
         when(jenkins.hasPermission(VcastUtils.getViewPermission())).thenReturn(true);
@@ -61,6 +65,5 @@ class VectorCASTActionPolicyTest {
         assertEquals("", folderAction.getFolderFullName());
     }
 
-    private static final class NamedAction extends JobBase {
-    }
+    private static final class NamedAction extends JobBase {}
 }

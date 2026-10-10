@@ -24,7 +24,7 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
-
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -46,27 +46,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
-import hudson.EnvVars;
 
 /**
  * VectorCAST setup build action.
  */
 public class VectorCASTSetup extends Builder implements SimpleBuildStep {
     /** Logger for setup diagnostics. */
-    private static final Logger LOGGER = Logger.getLogger(
-        VectorCASTSetup.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(VectorCASTSetup.class.getName());
     /** script directory. */
     private static final String SCRIPT_DIR = "/scripts/";
-
 
     /**
      * Default constructor.
      *
      */
-
     @DataBoundConstructor
-    public VectorCASTSetup() {
-    }
+    public VectorCASTSetup() {}
 
     /**
      * Copy the files in a directory recursively to the job workspace.
@@ -79,11 +74,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @throws IOException exception
      * @throws InterruptedException exception
      */
-
-    private void processDir(final File scriptDir,
-            final String base,
-            final FilePath destDir,
-            final Boolean directDir) throws IOException, InterruptedException {
+    private void processDir(final File scriptDir, final String base, final FilePath destDir, final Boolean directDir)
+            throws IOException, InterruptedException {
 
         destDir.mkdirs();
         File[] files = scriptDir.listFiles();
@@ -94,20 +86,14 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
             if (file.isDirectory()) {
                 FilePath newDest = new FilePath(destDir, file.getName());
-                processDir(file,
-                    base + "/" + file.getName(),
-                    newDest, directDir);
+                processDir(file, base + "/" + file.getName(), newDest, directDir);
             } else {
                 if (directDir) {
 
                     // change the copy mechanism
                     // to copy file to remote node
-                    File newFile = new File(destDir
-                        + File.separator
-                        + file.getName());
-                    File inFile = new File(scriptDir
-                        + File.separator
-                        + file.getName());
+                    File newFile = new File(destDir + File.separator + file.getName());
+                    File inFile = new File(scriptDir + File.separator + file.getName());
 
                     FilePath dest = new FilePath(destDir, newFile.getName());
                     InputStream is = null;
@@ -122,11 +108,8 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                     }
                 } else {
                     FilePath newFile = new FilePath(destDir, file.getName());
-                    try (InputStream is = VectorCASTSetup.class.
-                            getResourceAsStream(SCRIPT_DIR
-                                + base
-                                + "/"
-                                + file.getName())) {
+                    try (InputStream is =
+                            VectorCASTSetup.class.getResourceAsStream(SCRIPT_DIR + base + "/" + file.getName())) {
                         newFile.copyFrom(is);
                     }
                 }
@@ -140,8 +123,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      */
     private void printVersion(final PrintStream logger) {
         logger.println("[VectorCAST Execution Version]: "
-            + VcastUtils.getVersion().
-            orElse("Error - Could not determine version"));
+                + VcastUtils.getVersion().orElse("Error - Could not determine version"));
     }
 
     /**
@@ -155,9 +137,13 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * @throws IOException exception
      */
     @Override
-    public void perform(final Run<?, ?> build, final FilePath workspace,
-            final EnvVars env, final Launcher launcher,
-            final TaskListener listener) throws IOException {
+    public void perform(
+            final Run<?, ?> build,
+            final FilePath workspace,
+            final EnvVars env,
+            final Launcher launcher,
+            final TaskListener listener)
+            throws IOException {
 
         FilePath destScriptDir = new FilePath(workspace, "vc_scripts");
         JarFile jFile = null;
@@ -170,13 +156,14 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 path = overridePath;
                 extraScriptPath = "";
                 directDir = true;
-                String msg = " "
-                    + "VectorCAST - overriding vc_scripts. Copying from '"
-                    + path + "'";
+                String msg = " " + "VectorCAST - overriding vc_scripts. Copying from '" + path + "'";
                 LOGGER.log(Level.INFO, msg);
             } else {
-                path = VectorCASTSetup.class.getProtectionDomain().
-                    getCodeSource().getLocation().getPath();
+                path = VectorCASTSetup.class
+                        .getProtectionDomain()
+                        .getCodeSource()
+                        .getLocation()
+                        .getPath();
                 path = URLDecoder.decode(path, "utf-8");
             }
             File testPath = new File(path);
@@ -192,32 +179,25 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
 
                     if (entryName.startsWith("scripts/")) {
 
-
-                        if (entryName.contains("..")
-                                || entryName.startsWith("/")
-                                || entryName.startsWith("\\")) {
-                            throw new IOException("? Zip Slip detected: "
-                                + entryName);
+                        if (entryName.contains("..") || entryName.startsWith("/") || entryName.startsWith("\\")) {
+                            throw new IOException("? Zip Slip detected: " + entryName);
                         }
 
                         // Resolve paths securely
-                        String fileOrDir = entryName
-                            .substring("scripts/".length());
-                        File destDir = new File(destScriptDir
-                            .getRemote());
+                        String fileOrDir = entryName.substring("scripts/".length());
+                        File destDir = new File(destScriptDir.getRemote());
                         File destFile = new File(destDir, fileOrDir);
 
                         // ?? Prevent Zip Slip: Use URI for security
-                        if (!destFile.getCanonicalFile().toURI().getPath()
-                                .startsWith(destDir.getCanonicalFile()
-                                .toURI().getPath())) {
-                            throw new IOException("? Zip Slip detected: "
-                                + entryName);
+                        if (!destFile.getCanonicalFile()
+                                .toURI()
+                                .getPath()
+                                .startsWith(destDir.getCanonicalFile().toURI().getPath())) {
+                            throw new IOException("? Zip Slip detected: " + entryName);
                         }
 
                         // Handle directory vs. file
-                        FilePath dest = new FilePath(
-                            destScriptDir, fileOrDir);
+                        FilePath dest = new FilePath(destScriptDir, fileOrDir);
 
                         if (entry.isDirectory()) {
                             dest.mkdirs();
@@ -225,13 +205,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                             FilePath parentDir = dest.getParent();
                             if (parentDir != null) {
                                 parentDir.mkdirs();
-                                try (InputStream is = VectorCASTSetup.class.
-                                    getResourceAsStream("/" + entryName)) {
+                                try (InputStream is = VectorCASTSetup.class.getResourceAsStream("/" + entryName)) {
                                     dest.copyFrom(is);
                                 } catch (IOException ex) {
-                                    LOGGER.log(Level.WARNING,
-                                        "Unable to copy packaged script: "
-                                        + entryName, ex);
+                                    LOGGER.log(Level.WARNING, "Unable to copy packaged script: " + entryName, ex);
                                 }
                             }
                         }
@@ -243,12 +220,10 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
                 processDir(scriptDir, "./", destScriptDir, directDir);
             }
         } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE,
-                "Unable to prepare VectorCAST workspace scripts", ex);
+            LOGGER.log(Level.SEVERE, "Unable to prepare VectorCAST workspace scripts", ex);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            LOGGER.log(Level.WARNING,
-                "Interrupted while preparing VectorCAST workspace scripts", ex);
+            LOGGER.log(Level.WARNING, "Interrupted while preparing VectorCAST workspace scripts", ex);
         } finally {
             if (jFile != null) {
                 try {
@@ -265,8 +240,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
         if (files != null) {
             for (File file : files) {
                 if (file.isFile() && !file.delete()) {
-                    throw new IOException("Unable to delete file: "
-                        + file.getAbsolutePath());
+                    throw new IOException("Unable to delete file: " + file.getAbsolutePath());
                 }
             }
         }
@@ -284,8 +258,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
      * The class is marked as public so that it can be accessed from views.
      */
     @Extension
-    public static final class DescriptorImpl
-            extends BuildStepDescriptor<Builder> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
          * In order to load the persisted global configuration, you have to
          * call load() in the constructor.
@@ -301,8 +274,7 @@ public class VectorCASTSetup extends Builder implements SimpleBuildStep {
          */
         @Override
         @SuppressWarnings("rawtypes")
-        public boolean isApplicable(
-            final Class<? extends AbstractProject> aClass) {
+        public boolean isApplicable(final Class<? extends AbstractProject> aClass) {
             return true;
         }
         /**

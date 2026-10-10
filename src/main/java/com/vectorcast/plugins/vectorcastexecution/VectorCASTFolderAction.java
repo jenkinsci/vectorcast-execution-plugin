@@ -25,18 +25,15 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
-import hudson.model.Action;
 import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
+import hudson.model.Action;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
- 
 /**
  * VectorCASTFolderAction implements actions.
  */
-
 public class VectorCASTFolderAction implements Action {
-
 
     /** Folder information. */
     private final Folder folder;
@@ -86,7 +83,7 @@ public class VectorCASTFolderAction implements Action {
      * @return this
      */
     public Object getTarget() {
-        return this;  // allows index.jelly to render
+        return this; // allows index.jelly to render
     }
 
     /**
@@ -119,8 +116,7 @@ public class VectorCASTFolderAction implements Action {
      * @param rsp stapler response
      * @return newly created job
      */
-    public Object getDynamic(final String token,
-            final StaplerRequest req, final StaplerResponse rsp) {
+    public Object getDynamic(final String token, final StaplerRequest req, final StaplerResponse rsp) {
 
         if ("single-job".equals(token)) {
             return new VectorCASTJobSingle(folder);

@@ -10,12 +10,10 @@ import java.util.Map;
 public final class PipelineScriptRenderer {
     private static final String TEMPLATE = "pipeline-header.groovy.template";
 
-    private PipelineScriptRenderer() {
-    }
+    private PipelineScriptRenderer() {}
 
     /** Renders a Pipeline header using named placeholders. */
-    public static String render(final PipelineJobConfiguration config)
-            throws IOException {
+    public static String render(final PipelineJobConfiguration config) throws IOException {
         Map<String, String> values = new LinkedHashMap<>();
         values.put("manageProject", groovySingle(config.manageProjectName()));
         values.put("environmentSetup", groovyString(config.environmentSetup()));
@@ -23,10 +21,8 @@ public final class PipelineScriptRenderer {
         values.put("environmentTeardown", groovyString(config.environmentTeardown()));
         values.put("scmStep", config.pipelineScm());
         values.put("usingScm", Boolean.toString(!config.pipelineScm().isEmpty()));
-        values.put("postScmCheckout", groovyString(
-            config.postScmCheckoutCommands()));
-        values.put("sharedArtifactDirectory", groovyString(
-            config.sharedArtifactDirectory()));
+        values.put("postScmCheckout", groovyString(config.postScmCheckoutCommands()));
+        values.put("sharedArtifactDirectory", groovyString(config.sharedArtifactDirectory()));
         values.put("agentLabel", groovySingle(config.nodeLabel()));
         values.put("waitTime", groovySingle(Long.toString(config.waitTime())));
         values.put("waitLoops", groovySingle(Long.toString(config.waitLoops())));
@@ -44,17 +40,13 @@ public final class PipelineScriptRenderer {
         values.put("strictImport", Boolean.toString(config.useStrictImport()));
         values.put("rgw3", Boolean.toString(config.useRGW3()));
         values.put("importedResults", Boolean.toString(config.useImportedResults()));
-        values.put("localImportedResults", Boolean.toString(
-            config.useLocalImportedResults()));
-        values.put("externalImportedResults", Boolean.toString(
-            config.useExternalImportedResults()));
-        values.put("externalResultsFilename", groovyString(
-            config.externalResultsFilename()));
+        values.put("localImportedResults", Boolean.toString(config.useLocalImportedResults()));
+        values.put("externalImportedResults", Boolean.toString(config.useExternalImportedResults()));
+        values.put("externalResultsFilename", groovyString(config.externalResultsFilename()));
 
         String rendered = readTemplate();
         for (Map.Entry<String, String> entry : values.entrySet()) {
-            rendered = rendered.replace("{{" + entry.getKey() + "}}",
-                entry.getValue());
+            rendered = rendered.replace("{{" + entry.getKey() + "}}", entry.getValue());
         }
         if (rendered.contains("{{")) {
             throw new IOException("Pipeline header template has an unresolved placeholder");
@@ -63,8 +55,7 @@ public final class PipelineScriptRenderer {
     }
 
     private static String readTemplate() throws IOException {
-        try (InputStream input = PipelineScriptRenderer.class
-                .getResourceAsStream(TEMPLATE)) {
+        try (InputStream input = PipelineScriptRenderer.class.getResourceAsStream(TEMPLATE)) {
             if (input == null) {
                 throw new IOException("Missing Pipeline header template: " + TEMPLATE);
             }
@@ -80,8 +71,12 @@ public final class PipelineScriptRenderer {
         if (value == null || value.trim().isEmpty()) {
             return "\"\"";
         }
-        return "\"" + value.replace("\\", "\\\\")
-            .replace("\"", "\\\"").replace("$", "\\$")
-            .replace("\r", "\\r").replace("\n", "\\n") + "\"";
+        return "\""
+                + value.replace("\\", "\\\\")
+                        .replace("\"", "\\\"")
+                        .replace("$", "\\$")
+                        .replace("\r", "\\r")
+                        .replace("\n", "\\n")
+                + "\"";
     }
 }

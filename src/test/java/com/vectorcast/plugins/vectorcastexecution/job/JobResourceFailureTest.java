@@ -1,5 +1,11 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
 import java.net.URL;
 import java.nio.file.Path;
@@ -13,12 +19,6 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 /** Documents current behavior when a packaged job template cannot be read. */
 class JobResourceFailureTest {
     @TempDir
@@ -26,8 +26,7 @@ class JobResourceFailureTest {
 
     @Test
     @WithJenkins
-    void documentsUnreadableTemplateBehaviorInGeneratedJobs(JenkinsRule rule)
-            throws Exception {
+    void documentsUnreadableTemplateBehaviorInGeneratedJobs(JenkinsRule rule) throws Exception {
         URL missing = temporary.resolve("missing-template").toUri().toURL();
         JSONObject form = new JSONObject();
         form.put("manageProjectName", "project.vcm");
@@ -46,12 +45,9 @@ class JobResourceFailureTest {
             }
         };
         single.create();
-        VectorCASTCommand command = single.getTopProject().getBuildersList()
-            .get(VectorCASTCommand.class);
-        assertTrue(command.getWinCommand()
-            .contains("Missing baseline single job script for Windows"));
-        assertTrue(command.getUnixCommand()
-            .contains("Missing baseline single job script for Linux"));
+        VectorCASTCommand command = single.getTopProject().getBuildersList().get(VectorCASTCommand.class);
+        assertTrue(command.getWinCommand().contains("Missing baseline single job script for Windows"));
+        assertTrue(command.getUnixCommand().contains("Missing baseline single job script for Linux"));
 
         NewPipelineJob pipeline = new NewPipelineJob(request, response, null) {
             @Override
@@ -60,10 +56,8 @@ class JobResourceFailureTest {
             }
         };
         pipeline.create();
-        WorkflowJob job = assertInstanceOf(WorkflowJob.class,
-            rule.jenkins.getItem(pipeline.getProjectName()));
-        CpsFlowDefinition definition = assertInstanceOf(CpsFlowDefinition.class,
-            job.getDefinition());
+        WorkflowJob job = assertInstanceOf(WorkflowJob.class, rule.jenkins.getItem(pipeline.getProjectName()));
+        CpsFlowDefinition definition = assertInstanceOf(CpsFlowDefinition.class, job.getDefinition());
         assertTrue(definition.getScript().contains("def VC_Manage_Project = 'project.vcm'"));
         assertFalse(definition.getScript().contains("def VC_Healthy_Target"));
         // Current defect: the catch leaves an empty string, so the null-only

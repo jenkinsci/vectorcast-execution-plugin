@@ -1,10 +1,9 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
-import org.jenkinsci.plugins.workflow.cps.CpsScript;
-
 import java.io.Serial;
 import java.util.List;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
+import org.jenkinsci.plugins.workflow.cps.CpsScript;
 
 /**
  * Pipeline global bridge for {@code VectorCASTUtils}.
@@ -17,12 +16,10 @@ public class VectorCASTUtilsBridge extends VectorCASTGroovyBridge {
 
     /** Bundled Groovy source resource. */
     private static final String DEFAULT_RESOURCE_PATH =
-        "/com/vectorcast/plugins/vectorcastexecution"
-        + "/default-scripts/VectorCASTUtils.groovy";
+            "/com/vectorcast/plugins/vectorcastexecution" + "/default-scripts/VectorCASTUtils.groovy";
 
     /** Groovy implementation class defined by the bundled source. */
-    private static final String IMPL_CLASS_NAME =
-            "com.vectorcast.plugins.vectorcastexecution.VectorCASTUtilsImpl";
+    private static final String IMPL_CLASS_NAME = "com.vectorcast.plugins.vectorcastexecution.VectorCASTUtilsImpl";
 
     /**
      * Creates a new bridge for the given Pipeline execution.
@@ -40,8 +37,8 @@ public class VectorCASTUtilsBridge extends VectorCASTGroovyBridge {
      */
     @Whitelisted
     public String fixUpName(final String name) {
-         Object r = getDelegate().invokeMethod("fixUpName", name);
-         return (r != null) ? r.toString() : "";
+        Object r = getDelegate().invokeMethod("fixUpName", name);
+        return (r != null) ? r.toString() : "";
     }
 
     /**
@@ -54,7 +51,7 @@ public class VectorCASTUtilsBridge extends VectorCASTGroovyBridge {
         Object r = getDelegate().invokeMethod("getMpName", inputMpName);
         return (r != null) ? r.toString() : "";
     }
-    
+
     /**
      * Forwards to Groovy: {@code getEnvironmentInfo(VC)}.
      * @param getJobsLog String returned from getjobs.py --type
@@ -68,15 +65,14 @@ public class VectorCASTUtilsBridge extends VectorCASTGroovyBridge {
         getScript().invokeMethod("echo", "returned from getDelegate()");
 
         if (r == null) {
-            getScript().invokeMethod("echo",
-                "getEnvironmentInfo returned null "
-                + "Groovy impl did not return [UtEnvList, StEnvList])"
-            );
+            getScript()
+                    .invokeMethod(
+                            "echo",
+                            "getEnvironmentInfo returned null " + "Groovy impl did not return [UtEnvList, StEnvList])");
             return null; // unreachable after error(), but keeps compiler happy
         }
         if (!(r instanceof List)) {
-            getScript().invokeMethod("echo",
-            "getEnvironmentInfo returned " + r.getClass() + " not a List");
+            getScript().invokeMethod("echo", "getEnvironmentInfo returned " + r.getClass() + " not a List");
             return null;
         }
         return (List<?>) r;

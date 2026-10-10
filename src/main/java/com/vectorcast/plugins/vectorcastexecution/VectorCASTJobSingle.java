@@ -24,30 +24,29 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
+import com.vectorcast.plugins.vectorcastexecution.job.BadOptionComboException;
+import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.InvalidProjectFileException;
 import com.vectorcast.plugins.vectorcastexecution.job.JobAlreadyExistsException;
-import com.vectorcast.plugins.vectorcastexecution.job.ExternalResultsFileException;
-import com.vectorcast.plugins.vectorcastexecution.job.BadOptionComboException;
-import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
 import com.vectorcast.plugins.vectorcastexecution.job.JobCreationRequest;
-import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
+import com.vectorcast.plugins.vectorcastexecution.job.NewSingleJob;
 import hudson.Extension;
+import hudson.model.AutoCompletionCandidates;
 import hudson.model.Descriptor;
+import hudson.model.TopLevelItem;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.kohsuke.stapler.HttpResponses;
-
-import hudson.model.AutoCompletionCandidates;
-import org.kohsuke.stapler.QueryParameter;
-import hudson.model.TopLevelItem;
-import jenkins.model.Jenkins;
 
 /**
  * Create single job.
@@ -55,8 +54,7 @@ import jenkins.model.Jenkins;
 @Extension
 public class VectorCASTJobSingle extends JobBase {
     /** Logger for Single-job form actions. */
-    private static final Logger LOGGER = Logger.getLogger(
-        VectorCASTJobSingle.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(VectorCASTJobSingle.class.getName());
     /** Job already exists exception. */
     private JobAlreadyExistsException exception;
     /** Project name. */
@@ -112,8 +110,7 @@ public class VectorCASTJobSingle extends JobBase {
          * @return AutoCompletionCandidates with the list of the potential
          *         node matches
          */
-        public AutoCompletionCandidates doAutoCompleteNodeLabel(
-                @QueryParameter final String value) {
+        public AutoCompletionCandidates doAutoCompleteNodeLabel(@QueryParameter final String value) {
             return VcastUtils.completeNodeLabel(value);
         }
     }
@@ -128,41 +125,36 @@ public class VectorCASTJobSingle extends JobBase {
      * @throws hudson.model.Descriptor.FormException exception
      */
     @RequirePOST
-    public HttpResponse doCreate(final StaplerRequest request,
-            final StaplerResponse response)
+    public HttpResponse doCreate(final StaplerRequest request, final StaplerResponse response)
             throws ServletException, IOException, Descriptor.FormException {
         try {
 
             Folder currFolder = getFolder();
 
             // Create single-job
-            NewSingleJob job = new NewSingleJob(request, response, currFolder,
-                JobCreationRequest.parse(request.getSubmittedForm()));
-
+            NewSingleJob job = new NewSingleJob(
+                    request, response, currFolder, JobCreationRequest.parse(request.getSubmittedForm()));
 
             job.create();
 
             projectName = job.getProjectName();
 
-            TopLevelItem createdItem =
-                    (currFolder != null) ? currFolder.getItem(projectName)
-                            : Jenkins.get().getItem(projectName);
+            TopLevelItem createdItem = (currFolder != null)
+                    ? currFolder.getItem(projectName)
+                    : Jenkins.get().getItem(projectName);
 
-            String folderName = (
-                    currFolder != null) ? currFolder.getFullName() : null;
+            String folderName = (currFolder != null) ? currFolder.getFullName() : null;
 
             return HttpResponses.forwardToView(this, "created")
-                .with("createdItem", createdItem)
-                .with("folderName", folderName);
+                    .with("createdItem", createdItem)
+                    .with("folderName", folderName);
 
         } catch (JobAlreadyExistsException ex) {
             exception = ex;
             return new HttpRedirect("exists");
         } catch (InvalidProjectFileException ex) {
             // Can't happen for the single job
-            LOGGER.log(Level.SEVERE,
-                "Unexpected invalid project file while creating a Single job",
-                ex);
+            LOGGER.log(Level.SEVERE, "Unexpected invalid project file while creating a Single job", ex);
             return new HttpRedirect("exists");
         } catch (ExternalResultsFileException ex) {
             return new HttpRedirect("extresblank");

@@ -27,6 +27,4 @@
  *
  * @author Vector Informatik, GmbH.
  */
-
 package com.vectorcast.plugins.vectorcastexecution.common;
-

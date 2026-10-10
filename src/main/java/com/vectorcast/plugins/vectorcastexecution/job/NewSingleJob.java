@@ -24,389 +24,355 @@
 package com.vectorcast.plugins.vectorcastexecution.job;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
-import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
-
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTCommand;
 import com.vectorcast.plugins.vectorcastexecution.VectorCASTPostBuildPublisher;
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
+import hudson.model.ItemGroup;
 import hudson.model.Label;
 import hudson.model.Project;
 import hudson.model.labels.LabelAtom;
-import hudson.model.ItemGroup;
-import jenkins.model.Jenkins;
-
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.apache.commons.io.IOUtils;
-import java.io.InputStream;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
 /**
  * Create a new single job.
  */
 public class NewSingleJob extends BaseJob {
-  /** Logger for Freestyle job creation. */
-  private static final Logger LOGGER = Logger.getLogger(
-      NewSingleJob.class.getName());
-  /** Whether to run VectorCAST Change Based Testing. */
-  private final boolean useCBT;
-  /**
-   * Constructor.
-   * @param request request object
-   * @param response response object
-   * @param folder that contains the job location
-   * @throws ServletException exception
-   * @throws IOException exception
-   * @throws ExternalResultsFileException exception
-   * @throws BadOptionComboException exception
-   */
-  public NewSingleJob(final StaplerRequest request,
-        final StaplerResponse response, final Folder folder)
-        throws ServletException, IOException, ExternalResultsFileException,
-        BadOptionComboException {
-    this(request, response, folder,
-        JobCreationRequest.parse(request.getSubmittedForm()));
-  }
+    /** Logger for Freestyle job creation. */
+    private static final Logger LOGGER = Logger.getLogger(NewSingleJob.class.getName());
+    /** Whether to run VectorCAST Change Based Testing. */
+    private final boolean useCBT;
+    /**
+     * Constructor.
+     * @param request request object
+     * @param response response object
+     * @param folder that contains the job location
+     * @throws ServletException exception
+     * @throws IOException exception
+     * @throws ExternalResultsFileException exception
+     * @throws BadOptionComboException exception
+     */
+    public NewSingleJob(final StaplerRequest request, final StaplerResponse response, final Folder folder)
+            throws ServletException, IOException, ExternalResultsFileException, BadOptionComboException {
+        this(request, response, folder, JobCreationRequest.parse(request.getSubmittedForm()));
+    }
 
-  /**
-   * Creates a Freestyle job from values already parsed by the action.
-   */
-  public NewSingleJob(final StaplerRequest request,
-        final StaplerResponse response, final Folder folder,
-        final JobCreationRequest options)
-        throws ServletException, IOException, ExternalResultsFileException,
-        BadOptionComboException {
-    super(request, response, folder, options);
-    useCBT = options.useCBT();
-  }
-  /**
-   * Gets the configruation for Windows.
-   * @param pluginVersion plugin version of the running plugin while create
-   * @param noGenExecReport don't generate execution report
-   * @return String of configuration for Windows
-   */
-  private String getWindowsConfig(
-        final String pluginVersion,
-        final String noGenExecReport)
-        throws IOException {
+    /**
+     * Creates a Freestyle job from values already parsed by the action.
+     */
+    public NewSingleJob(
+            final StaplerRequest request,
+            final StaplerResponse response,
+            final Folder folder,
+            final JobCreationRequest options)
+            throws ServletException, IOException, ExternalResultsFileException, BadOptionComboException {
+        super(request, response, folder, options);
+        useCBT = options.useCBT();
+    }
+    /**
+     * Gets the configruation for Windows.
+     * @param pluginVersion plugin version of the running plugin while create
+     * @param noGenExecReport don't generate execution report
+     * @return String of configuration for Windows
+     */
+    private String getWindowsConfig(final String pluginVersion, final String noGenExecReport) throws IOException {
 
-    String win = ":: Created with vectorcast-execution plugin v"
-      + pluginVersion + "\n\n"
-      + "set VCAST_PROJECT_NAME=" + getManageProjectName() + "\n"
-      + "set VCAST_PROJECT_BASENAME=" + getBaseName() + "\n"
-      + getEnvironmentSetupWin() + "\n"
-      + "set VCAST_EXECUTE_PREAMBLE_WIN=" + getExecutePreambleWin() + "\n"
-      + getUseCILicensesWin() + "\n"
-      + getAdditonalEnvVarsWindows() + "\n"
-      + "set VCAST_WAIT_TIME=" + getWaitTime() + "\n"
-      + "set VCAST_WAIT_LOOPS=" + getWaitLoops() + "\n"
-      + "set VCAST_OPTION_USE_REPORTING="
-      +     (getOptionUseReporting() ? "TRUE" : "FALSE") + "\n"
-      + "set VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
-      + "set VCAST_USE_CBT=" + getUseCBTOption()
-      + "\n\n";
+        String win = ":: Created with vectorcast-execution plugin v"
+                + pluginVersion + "\n\n"
+                + "set VCAST_PROJECT_NAME=" + getManageProjectName() + "\n"
+                + "set VCAST_PROJECT_BASENAME=" + getBaseName() + "\n"
+                + getEnvironmentSetupWin() + "\n"
+                + "set VCAST_EXECUTE_PREAMBLE_WIN=" + getExecutePreambleWin() + "\n"
+                + getUseCILicensesWin() + "\n"
+                + getAdditonalEnvVarsWindows() + "\n"
+                + "set VCAST_WAIT_TIME=" + getWaitTime() + "\n"
+                + "set VCAST_WAIT_LOOPS=" + getWaitLoops() + "\n"
+                + "set VCAST_OPTION_USE_REPORTING="
+                + (getOptionUseReporting() ? "TRUE" : "FALSE") + "\n"
+                + "set VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
+                + "set VCAST_USE_CBT=" + getUseCBTOption()
+                + "\n\n";
 
-    InputStream in = null;
+        InputStream in = null;
 
-    try {
-        in = getBaselineWindowsSingleFile().openStream();
-        win += IOUtils.toString(in, "UTF-8");
-    } catch (IOException ex) {
-        LOGGER.log(Level.WARNING,
-            "Unable to load the Windows command template", ex);
-        win += "Missing baseline single job script for Windows";
-    } finally {
-        if (in != null) {
-            in.close();
+        try {
+            in = getBaselineWindowsSingleFile().openStream();
+            win += IOUtils.toString(in, "UTF-8");
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Unable to load the Windows command template", ex);
+            win += "Missing baseline single job script for Windows";
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+
+        win += getEnvironmentTeardownWin() + "\n" + getPclpCommand() + "\n" + getSquoreCommand() + "\n";
+
+        return win;
+    }
+
+    /**
+     * Gets the configruation for Unix.
+     * @param pluginVersion plugin version of the running plugin while create
+     * @param noGenExecReport don't generate execution report
+     * @return String of configuration for unix
+     */
+    private String getUnixConfig(final String pluginVersion, final String noGenExecReport) throws IOException {
+
+        String unix = "# Created with vectorcast-execution plugin v"
+                + pluginVersion + "\n\n"
+                + "VCAST_PROJECT_NAME=" + getManageProjectName() + "\n"
+                + "VCAST_PROJECT_BASENAME=" + getBaseName() + "\n"
+                + getEnvironmentSetupUnix() + "\n"
+                + "VCAST_EXECUTE_PREAMBLE_LINUX=" + getExecutePreambleUnix() + "\n"
+                + getUseCILicensesUnix() + "\n"
+                + getAdditonalEnvVarsLinux() + "\n"
+                + "VCAST_WAIT_TIME=" + getWaitTime() + "\n"
+                + "VCAST_WAIT_LOOPS=" + getWaitLoops() + "\n"
+                + "VCAST_OPTION_USE_REPORTING="
+                + (getOptionUseReporting() ? "1" : "0") + "\n"
+                + "VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
+                + "VCAST_USE_CBT=" + getUseCBTOption()
+                + "\n\n";
+
+        InputStream in = null;
+
+        try {
+            in = getBaselineLinuxSingleFile().openStream();
+            unix += IOUtils.toString(in, "UTF-8");
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Unable to load the Unix command template", ex);
+            unix += "Missing baseline single job script for Linux";
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+
+        unix += getEnvironmentTeardownUnix() + getPclpCommand() + "\n" + getSquoreCommand() + "\n";
+
+        return unix;
+    }
+
+    /**
+     * Builds up additional environment variables for linux.
+     * @return String of additional environment variables for linux
+     */
+    private String getAdditonalEnvVarsLinux() {
+        String addEnvVars = "";
+
+        if (getUseStrictTestcaseImport()) {
+            addEnvVars += "VCAST_USE_STRICT_IMPORT=1\n";
+        } else {
+            addEnvVars += "VCAST_USE_STRICT_IMPORT=0\n";
+        }
+        if (getUseRGW3()) {
+            addEnvVars += "VCAST_USE_RGW3=1\n";
+        } else {
+            addEnvVars += "VCAST_USE_RGW3=0\n";
+        }
+
+        if (getUseLocalImportedResults()) {
+            addEnvVars += "VCAST_USE_LOCAL_IMPORTED_RESULTS=1\n";
+        } else {
+            addEnvVars += "VCAST_USE_LOCAL_IMPORTED_RESULTS=0\n";
+        }
+
+        if (getUseExternalImportedResults()) {
+            addEnvVars += "VCAST_USE_EXTERNAL_IMPORTED_RESULTS=1\n";
+            addEnvVars += "VCAST_USE_EXTERNAL_FILENAME=" + getExternalResultsFilename() + "\n";
+
+        } else {
+            addEnvVars += "VCAST_USE_EXTERNAL_IMPORTED_RESULTS=0\n";
+        }
+
+        if (getUseImportedResults()) {
+            addEnvVars += "VCAST_USE_IMPORTED_RESULTS=1\n";
+        } else {
+            addEnvVars += "VCAST_USE_IMPORTED_RESULTS=0\n";
+        }
+
+        return addEnvVars;
+    }
+
+    /**
+     * Builds up additional environment variables for windows.
+     * @return String of additional environment variables for windows
+     */
+    private String getAdditonalEnvVarsWindows() {
+        String addEnvVars = "";
+
+        if (getUseStrictTestcaseImport()) {
+            addEnvVars += "set VCAST_USE_STRICT_IMPORT=TRUE\n";
+        } else {
+            addEnvVars += "set VCAST_USE_STRICT_IMPORT=FALSE\n";
+        }
+
+        if (getUseRGW3()) {
+            addEnvVars += "set VCAST_USE_RGW3=TRUE\n";
+        } else {
+            addEnvVars += "set VCAST_USE_RGW3=FALSE\n";
+        }
+
+        if (getUseLocalImportedResults()) {
+            addEnvVars += "set VCAST_USE_LOCAL_IMPORTED_RESULTS=TRUE\n";
+        } else {
+            addEnvVars += "set VCAST_USE_LOCAL_IMPORTED_RESULTS=FALSE\n";
+        }
+
+        if (getUseExternalImportedResults()) {
+            addEnvVars += "set VCAST_USE_EXTERNAL_IMPORTED_RESULTS=TRUE\n";
+            addEnvVars += "set VCAST_USE_EXTERNAL_FILENAME=" + getExternalResultsFilename() + "\n";
+        } else {
+            addEnvVars += "set VCAST_USE_EXTERNAL_IMPORTED_RESULTS=FALSE\n";
+        }
+
+        if (getUseImportedResults()) {
+            addEnvVars += "set VCAST_USE_IMPORTED_RESULTS=TRUE\n";
+        } else {
+            addEnvVars += "set VCAST_USE_IMPORTED_RESULTS=FALSE\n";
+        }
+
+        return addEnvVars;
+    }
+
+    /**
+     * Add build commands step to job.
+     */
+    private void addCommandSingleJob() throws IOException {
+        String noGenExecReport = "";
+        if (!getOptionExecutionReport()) {
+            noGenExecReport = " --dont-gen-exec-rpt";
+        }
+
+        String pluginVersion = VcastUtils.getVersion().orElse("Unknown");
+
+        /*
+         *  Windows config portion
+         */
+        String win = getWindowsConfig(pluginVersion, noGenExecReport);
+
+        /*
+         *  Unix config portion
+         */
+        String unix = getUnixConfig(pluginVersion, noGenExecReport);
+
+        VectorCASTCommand command = new VectorCASTCommand(win, unix);
+        if (!getTopProject().getBuildersList().add(command)) {
+            throw new UnsupportedOperationException("Failed to add VectorCASTCommand to Builders List");
         }
     }
+    /** Add the native post-build result publisher to the job. */
+    private void addPostBuildResultPublisher() {
+        getTopProject().getPublishersList().add(new VectorCASTPostBuildPublisher(getBaseName()));
+    }
 
-    win += getEnvironmentTeardownWin() + "\n"
-      + getPclpCommand() + "\n"
-      + getSquoreCommand() + "\n";
+    /** Returns the command-line value consumed by the packaged scripts. */
+    protected String getUseCBTOption() {
+        return useCBT ? "--incremental" : "";
+    }
+    /**
+     * Create project.
+     * @return project
+     * @throws IOException exception
+     * @throws JobAlreadyExistsException exception
+     */
+    @Override
+    protected Project<?, ?> createProject() throws IOException, JobAlreadyExistsException {
 
-    return win;
-  }
-
-  /**
-   * Gets the configruation for Unix.
-   * @param pluginVersion plugin version of the running plugin while create
-   * @param noGenExecReport don't generate execution report
-   * @return String of configuration for unix
-   */
-  private String getUnixConfig(
-        final String pluginVersion,
-        final String noGenExecReport)
-        throws IOException {
-
-    String unix = "# Created with vectorcast-execution plugin v"
-      + pluginVersion + "\n\n"
-      + "VCAST_PROJECT_NAME=" + getManageProjectName() + "\n"
-      + "VCAST_PROJECT_BASENAME=" + getBaseName() + "\n"
-      + getEnvironmentSetupUnix() + "\n"
-      + "VCAST_EXECUTE_PREAMBLE_LINUX=" + getExecutePreambleUnix() + "\n"
-      + getUseCILicensesUnix() + "\n"
-      + getAdditonalEnvVarsLinux() + "\n"
-      + "VCAST_WAIT_TIME=" + getWaitTime() + "\n"
-      + "VCAST_WAIT_LOOPS=" + getWaitLoops() + "\n"
-      + "VCAST_OPTION_USE_REPORTING="
-      +     (getOptionUseReporting() ? "1" : "0") + "\n"
-      + "VCAST_DONT_GENERATE_EXEC_RPT=" + noGenExecReport + "\n"
-      + "VCAST_USE_CBT=" + getUseCBTOption()
-      + "\n\n";
-
-    InputStream in = null;
-
-    try {
-        in = getBaselineLinuxSingleFile().openStream();
-        unix += IOUtils.toString(in, "UTF-8");
-    } catch (IOException ex) {
-        LOGGER.log(Level.WARNING,
-            "Unable to load the Unix command template", ex);
-        unix += "Missing baseline single job script for Linux";
-    } finally {
-        if (in != null) {
-            in.close();
+        if (getBaseName().isEmpty()) {
+            getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED, "No project name specified");
+            return null;
         }
+        String projectName = getBaseName() + ".vcast.single";
+        if (getJobName() != null && !getJobName().isEmpty()) {
+            projectName = getJobName();
+        }
+
+        // Remove all non-alphanumeric characters from the Jenkins Job name
+        projectName = normalizeJobName(projectName);
+
+        setProjectName(projectName);
+
+        if (checkIfProjectExists(projectName)) {
+            return null;
+        }
+
+        ItemGroup<?> parent = (getFolder() != null) ? getFolder() : getInstance();
+
+        Project<?, ?> project;
+
+        if (parent instanceof Folder) {
+            Folder currFolder = (Folder) parent;
+
+            LOGGER.log(Level.INFO, "Creating job in folder: {0}", currFolder.getFullName());
+
+            project = currFolder.createProject(FreeStyleProject.class, projectName);
+        } else if (parent instanceof Jenkins) {
+            LOGGER.info("Creating job in the Jenkins root");
+            project = Jenkins.get().createProject(FreeStyleProject.class, projectName);
+        } else {
+            throw new IllegalStateException("Cannot create project in parent of type: "
+                    + parent.getClass().getName());
+        }
+
+        /*     Project<?, ?> project = getInstance()
+               .createProject(FreeStyleProject.class, projectName);
+        */
+
+        if (getNodeLabel() != null && !getNodeLabel().isEmpty()) {
+            Label label = new LabelAtom(getNodeLabel());
+            project.setAssignedLabel(label);
+        }
+        return project;
     }
-
-    unix += getEnvironmentTeardownUnix()
-      + getPclpCommand() + "\n"
-      + getSquoreCommand() + "\n";
-
-    return unix;
-  }
-
-  /**
-   * Builds up additional environment variables for linux.
-   * @return String of additional environment variables for linux
-   */
-  private String getAdditonalEnvVarsLinux() {
-    String addEnvVars = "";
-
-    if (getUseStrictTestcaseImport()) {
-      addEnvVars += "VCAST_USE_STRICT_IMPORT=1\n";
-    } else {
-      addEnvVars += "VCAST_USE_STRICT_IMPORT=0\n";
-    }
-    if (getUseRGW3()) {
-      addEnvVars += "VCAST_USE_RGW3=1\n";
-    } else {
-      addEnvVars += "VCAST_USE_RGW3=0\n";
-    }
-
-    if (getUseLocalImportedResults()) {
-      addEnvVars += "VCAST_USE_LOCAL_IMPORTED_RESULTS=1\n";
-    } else {
-      addEnvVars += "VCAST_USE_LOCAL_IMPORTED_RESULTS=0\n";
-    }
-
-    if (getUseExternalImportedResults()) {
-      addEnvVars += "VCAST_USE_EXTERNAL_IMPORTED_RESULTS=1\n";
-      addEnvVars += "VCAST_USE_EXTERNAL_FILENAME="
-        + getExternalResultsFilename() + "\n";
-
-    } else {
-      addEnvVars += "VCAST_USE_EXTERNAL_IMPORTED_RESULTS=0\n";
-    }
-
-    if (getUseImportedResults()) {
-      addEnvVars += "VCAST_USE_IMPORTED_RESULTS=1\n";
-    } else {
-      addEnvVars += "VCAST_USE_IMPORTED_RESULTS=0\n";
-    }
-
-    return addEnvVars;
-  }
-
-  /**
-   * Builds up additional environment variables for windows.
-   * @return String of additional environment variables for windows
-   */
-  private String getAdditonalEnvVarsWindows() {
-    String addEnvVars = "";
-
-    if (getUseStrictTestcaseImport()) {
-      addEnvVars += "set VCAST_USE_STRICT_IMPORT=TRUE\n";
-    } else {
-      addEnvVars += "set VCAST_USE_STRICT_IMPORT=FALSE\n";
-    }
-
-    if (getUseRGW3()) {
-      addEnvVars += "set VCAST_USE_RGW3=TRUE\n";
-    } else {
-      addEnvVars += "set VCAST_USE_RGW3=FALSE\n";
-    }
-
-    if (getUseLocalImportedResults()) {
-      addEnvVars += "set VCAST_USE_LOCAL_IMPORTED_RESULTS=TRUE\n";
-    } else {
-      addEnvVars += "set VCAST_USE_LOCAL_IMPORTED_RESULTS=FALSE\n";
-    }
-
-    if (getUseExternalImportedResults()) {
-      addEnvVars += "set VCAST_USE_EXTERNAL_IMPORTED_RESULTS=TRUE\n";
-      addEnvVars += "set VCAST_USE_EXTERNAL_FILENAME="
-        + getExternalResultsFilename() + "\n";
-    } else {
-      addEnvVars += "set VCAST_USE_EXTERNAL_IMPORTED_RESULTS=FALSE\n";
-    }
-
-    if (getUseImportedResults()) {
-      addEnvVars += "set VCAST_USE_IMPORTED_RESULTS=TRUE\n";
-    } else {
-      addEnvVars += "set VCAST_USE_IMPORTED_RESULTS=FALSE\n";
-    }
-
-    return addEnvVars;
-  }
-
-  /**
-   * Add build commands step to job.
-   */
-  private void addCommandSingleJob() throws IOException {
-    String noGenExecReport = "";
-    if (!getOptionExecutionReport()) {
-      noGenExecReport = " --dont-gen-exec-rpt";
-    }
-
-    String pluginVersion = VcastUtils.getVersion().orElse("Unknown");
-
-    /*
-     *  Windows config portion
+    /**
+     * Add build steps.
+     * @throws IOException exception
+     * @throws ServletException exception
      */
-    String win = getWindowsConfig(pluginVersion, noGenExecReport);
+    @Override
+    @RequirePOST
+    public void doCreate() throws IOException, ServletException, Descriptor.FormException {
+        getTopProject().setDescription("Single job to run the manage project: " + getManageProjectName());
 
-    /*
-     *  Unix config portion
+        // Build actions...
+        if (getUseImportedResults() && getUseLocalImportedResults()) {
+            addCopyResultsToImport(getTopProject());
+        }
+        addSetup(getTopProject());
+        addCommandSingleJob();
+
+        addArchiveArtifacts(getTopProject());
+
+        // Post-build actions - only is using reporting
+        if (getOptionUseReporting()) {
+            addReportingPublishers(getTopProject());
+        }
+        addPostBuildResultPublisher();
+
+        getTopProject().save();
+    }
+
+    /**
+     * throw error if cleanupProject is called.
+     * @throws UnsupportedOperationException cleanupProject Not supported
      */
-    String unix = getUnixConfig(pluginVersion, noGenExecReport);
-
-    VectorCASTCommand command = new VectorCASTCommand(win, unix);
-    if (!getTopProject().getBuildersList().add(command)) {
-      throw new UnsupportedOperationException(
-        "Failed to add VectorCASTCommand to Builders List"
-      );
+    @Override
+    protected void cleanupProject() {
+        // To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-  }
-  /** Add the native post-build result publisher to the job. */
-  private void addPostBuildResultPublisher() {
-    getTopProject().getPublishersList().add(
-        new VectorCASTPostBuildPublisher(getBaseName()));
-  }
-
-  /** Returns the command-line value consumed by the packaged scripts. */
-  protected String getUseCBTOption() {
-    return useCBT ? "--incremental" : "";
-  }
-  /**
-   * Create project.
-   * @return project
-   * @throws IOException exception
-   * @throws JobAlreadyExistsException exception
-   */
-  @Override
-  protected Project<?, ?> createProject()
-        throws IOException, JobAlreadyExistsException {
-
-    if (getBaseName().isEmpty()) {
-      getResponse().sendError(HttpServletResponse.SC_NOT_MODIFIED,
-        "No project name specified");
-      return null;
-    }
-    String projectName = getBaseName() + ".vcast.single";
-    if (getJobName() != null && !getJobName().isEmpty()) {
-      projectName = getJobName();
-    }
-
-    // Remove all non-alphanumeric characters from the Jenkins Job name
-    projectName = normalizeJobName(projectName);
-
-    setProjectName(projectName);
-
-    if (checkIfProjectExists(projectName)) {
-        return null;
-    }
-    
-    ItemGroup<?> parent = (getFolder() != null)
-            ? getFolder() : getInstance();
-
-    Project<?, ?> project;
-
-    if (parent instanceof Folder) {
-        Folder currFolder = (Folder) parent;
-
-        LOGGER.log(Level.INFO, "Creating job in folder: {0}",
-            currFolder.getFullName());
-            
-        project = currFolder.createProject(
-            FreeStyleProject.class, projectName
-        );
-    } else if (parent instanceof Jenkins) {
-        LOGGER.info("Creating job in the Jenkins root");
-        project = Jenkins.get().createProject(
-            FreeStyleProject.class, projectName
-        );
-    } else {
-        throw new IllegalStateException(
-            "Cannot create project in parent of type: "
-            + parent.getClass().getName()
-        );
-    }
-
-/*     Project<?, ?> project = getInstance()
-        .createProject(FreeStyleProject.class, projectName);
- */
-
-    if (getNodeLabel() != null && !getNodeLabel().isEmpty()) {
-      Label label = new LabelAtom(getNodeLabel());
-      project.setAssignedLabel(label);
-    }
-    return project;
-  }
-  /**
-   * Add build steps.
-   * @throws IOException exception
-   * @throws ServletException exception
-   */
-  @Override
-  @RequirePOST
-  public void doCreate()
-        throws IOException, ServletException, Descriptor.FormException {
-    getTopProject().setDescription("Single job to run the manage project: "
-        + getManageProjectName());
-
-    // Build actions...
-    if (getUseImportedResults() && getUseLocalImportedResults()) {
-        addCopyResultsToImport(getTopProject());
-    }
-    addSetup(getTopProject());
-    addCommandSingleJob();
-
-    addArchiveArtifacts(getTopProject());
-
-    // Post-build actions - only is using reporting
-    if (getOptionUseReporting()) {
-      addReportingPublishers(getTopProject());
-    }
-    addPostBuildResultPublisher();
-
-    getTopProject().save();
-  }
-
-  /**
-   * throw error if cleanupProject is called.
-   * @throws UnsupportedOperationException cleanupProject Not supported
-   */
-  @Override
-  protected void cleanupProject() {
-     //To change body of generated methods, choose Tools | Templates.
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
 }

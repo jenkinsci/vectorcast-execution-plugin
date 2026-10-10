@@ -24,21 +24,19 @@
 package com.vectorcast.plugins.vectorcastexecution;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
+import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
 import hudson.model.Describable;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
-
 import jenkins.model.Jenkins;
-import com.vectorcast.plugins.vectorcastexecution.common.VcastUtils;
 
 /**
  * Base job.
  */
-public abstract class JobBase implements ExtensionPoint, Action,
-        Describable<JobBase> {
+public abstract class JobBase implements ExtensionPoint, Action, Describable<JobBase> {
 
     /** SCM to use initially. */
     private SCM scm;
