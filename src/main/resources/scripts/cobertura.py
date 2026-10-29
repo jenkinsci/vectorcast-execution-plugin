@@ -1000,6 +1000,14 @@ def generateCoverageResults(inFile, azure = False, xml_data_dir = "xml_data",
             source_root=source_root,
         )
         
+    if len(packages) == 0:
+        print("No VectorCAST coverage data; skipping Cobertura report")
+        report_path = os.path.join(
+            xml_data_dir, "cobertura", "coverage_results_" + name + ".xml")
+        if os.path.exists(report_path):
+            os.remove(report_path)
+        return
+
     if line_rate        != -1.0: coverages.attrib['line-rate']        = str(line_rate)
     if statement_rate   != -1.0: coverages.attrib['statement-rate']   = str(statement_rate)
     if branch_rate      != -1.0: coverages.attrib['branch-rate']      = str(branch_rate)
